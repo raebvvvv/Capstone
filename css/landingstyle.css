@@ -1,0 +1,50 @@
+body {
+    background-color: #f8f9fa;
+    color: #333;
+    font-family: "Inter";
+}
+
+/* Navbar styling */
+.navbar-brand {
+    margin-right: auto;
+}
+
+.navbar-nav .nav-link {
+    color: white;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #ff9800;
+}
+
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+
+.full-width-img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.team-photo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.info-box {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    margin-top: 5px;
+    font-size: 14px;
+}
+.bg-dark-blue {
+    background-color: #012252;
+}

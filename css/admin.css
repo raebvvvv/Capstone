@@ -1,0 +1,101 @@
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f8fafc; 
+}
+
+.navbar-brand {
+    font-weight: bold;
+    
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.card-text {
+    font-size: 1rem;
+}
+.col-md-3{
+    float: right;
+
+}
+img{
+    height: 60px;
+    margin-right: 5px;
+  }
+
+.summary-card {
+    border-radius: 16px;
+    padding: 24px 18px;
+    margin-right: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 2px 8px rgba(0,0,0,0.10);
+    display: inline-block;
+    min-width: 170px;
+}
+.summary-card h2 { 
+    font-size: 2.2rem; margin-bottom: 0; 
+}
+.summary-card span {
+     font-size: 1rem; color: #888;
+     }
+.summary-card.pending { 
+    background: #ffe5e5; 
+}
+.summary-card.approved { 
+    background: #fff8c3; 
+}
+.summary-card.completed { 
+    background: #c3ffd3; 
+}
+.summary-card.total {
+     background: #f3f0ff; 
+}
+.summary-card.users { 
+    background: #f3f0ff; 
+}
+.dashboard-section { 
+    background: #fff; 
+    border-radius: 16px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+    padding: 32px; 
+    margin-bottom: 32px; 
+}
+
+.footer { 
+    text-align: center; 
+    font-size: 0.95rem; 
+    color: #888; 
+    margin-top: 40px; 
+}
+.chart-container { 
+    margin: 0 auto; 
+    max-width: 350px; /* reduced from 600px */
+}
+#applicationOverviewChart {
+    width: 300px;
+    height: 300px;
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    margin: 0 auto;
+}
+.bar-chart-container { 
+    margin: 0 auto; max-width: 700px; 
+}
+.card-title { 
+    font-weight: 600; 
+}
+.legend-dot { 
+    display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; 
+}
+.legend-undergrad { 
+    background: #3b82f6; 
+}
+.legend-grad {
+     background: #a855f7; 
+    }
+.legend-open { 
+    background: #ef4444; 
+}
