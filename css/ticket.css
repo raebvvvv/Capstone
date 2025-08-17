@@ -1,0 +1,426 @@
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f8fafc; 
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+img {
+    height: 60px;
+    margin-right: 5px;
+}
+
+.search-bar input[type="search"] {
+    border-radius: 50px !important;
+    padding-left: 2.5rem;
+    font-size: 1rem;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+.search-bar .input-group-text {
+    background: transparent;
+    border: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+.btn-light.rounded-pill {
+    border: 1px solid #ddd;
+    background: #f8f8f8;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.nav-tabs .nav-link {
+    border: none;
+    background: none;
+    font-size: 1.1rem;
+    color: #222;
+    margin-right: 8px;
+}
+.nav-tabs .nav-link.active {
+    color: #6c2eb7;
+    border-bottom: 2px solid #6c2eb7;
+    background: none;
+}
+.nav-tabs {
+    margin-left: -100px;
+}
+.table th, .table td {
+    vertical-align: middle !important;
+    font-size: 1rem;
+}
+.table thead {
+    background: #f8f8f8;
+    border-bottom: 2px solid #eee;
+}
+.btn-primary.rounded-pill {
+    background: #3b82f6;
+    border: none;
+}
+.btn-success.rounded-pill {
+    background: #27ae60;
+    border: none;
+}
+.btn-danger.rounded-pill {
+    background: #ef4444;
+    border: none;
+}
+.btn-sm {
+    font-size: 0.95rem;
+    padding: 0.25rem 0.8rem;
+}
+.table tr {
+    border-bottom: 1px solid #eee;
+}
+.table-responsive {
+    min-width: 1500px;
+    width: 100%;
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    margin-left: -100px; /* adjust as needed */
+}
+.table {
+    width: 100% !important;
+    min-width: 1000px !important;
+    margin: 0 !important;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+}
+.action-btn-group {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+}
+.btn-view {
+    background: #3b82f6 !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-approve {
+    background: #22c55e !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-incomplete {
+    background: #ef4444 !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-comments {
+    background: #ffe066 !important;
+    color: #222 !important;
+    border: none !important;
+}
+/* Removed: using flex on .action created extra header height */
+.details-modal-content {
+    border-radius: 12px;
+    padding: 24px 32px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+.details-modal-content .modal-header {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.details-modal-content .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+.details-modal-content .modal-body {
+    font-size: 1rem;
+    color: #222;
+}
+.btn-download {
+    background: #7c3aed;
+    color: #fff;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    padding: 2px 14px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: background 0.2s;
+}
+.btn-download:hover {
+    background: #5b21b6;
+    color: #fff;
+}
+/* Modal header and button improvements */
+.modal-header {
+    background: none;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.btn-edit-modal {
+    background: #3b82f6 !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    font-size: 0.93rem;
+    padding: 3px 13px;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    font-weight: 500;
+    border: none;
+    transition: background 0.18s;
+}
+.btn-edit-modal:hover {
+    background: #2563eb !important;
+}
+hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin-bottom: 1rem;
+}
+.details-modal-content .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+.details-modal-content .modal-body {
+    font-size: 1rem;
+    color: #222;
+    padding-top: 0;
+}
+/* Student info section */
+.details-modal-content .fw-bold {
+    font-weight: 600 !important;
+}
+.details-modal-content .mb-3 {
+    margin-bottom: 1.1rem !important;
+}
+.details-modal-content .modal-footer {
+    border-top: none;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+}
+.btn-close-modal {
+    background: #6c757d !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    padding: 4px 18px;
+    font-size: 1rem;
+    border: none;
+    font-weight: 500;
+    transition: background 0.18s;
+}
+.btn-close-modal:hover {
+    background: #495057 !important;
+}
+.btn-save-modal {
+    background: #7c3aed !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    padding: 4px 18px;
+    font-size: 1rem;
+    border: none;
+    font-weight: 500;
+    transition: background 0.18s;
+}
+.btn-save-modal:hover {
+    background: #5b21b6 !important;
+}
+/* Incomplete Modal Styles */
+.incomplete-modal-content .modal-header {
+    background: none;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.btn-remarks-modal {
+    background: #3b82f6 !important;
+    color: #fff !important;
+    font-weight: 500;
+    border-radius: 6px !important;
+    font-size: 0.93rem;
+    padding: 3px 13px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    transition: background 0.18s;
+}
+.btn-remarks-modal:hover {
+    background: #2563eb !important;
+}
+.incomplete-modal-content .modal-footer {
+    border-top: none;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+}
+/* Incomplete Modal Styles (Active Tab) */
+.incomplete-modal-content .modal-header {
+    background: none;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.btn-remarks-modal {
+    background: #3b82f6 !important;
+    color: #fff !important;
+    font-weight: 500;
+    border-radius: 6px !important;
+    font-size: 0.93rem;
+    padding: 3px 13px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    transition: background 0.18s;
+}
+.btn-remarks-modal:hover {
+    background: #2563eb !important;
+}
+.incomplete-modal-content .modal-footer {
+    border-top: none;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+}
+.btn-close-modal {
+    background: #6c757d !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    padding: 4px 18px;
+    font-size: 1rem;
+    border: none;
+    font-weight: 500;
+    transition: background 0.18s;
+}
+.btn-close-modal:hover {
+    background: #495057 !important;
+}
+.btn-confirm-modal {
+    background: #7c3aed !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    padding: 4px 18px;
+    font-size: 1rem;
+    border: none;
+    font-weight: 500;
+    transition: background 0.18s;
+}
+.btn-confirm-modal:hover {
+    background: #5b21b6 !important;
+}
+
+th.action {
+    text-align: center;
+}
+
+/* Center the buttons inside the Action column cells */
+.table td .action-btn-group {
+    justify-content: center;
+}
+#successModal .modal-body {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #28a745;
+}
+#successModal .btn-primary {
+    background-color: #6c63ff;
+    border: none;
+    font-weight: 500;
+    padding: 8px 20px;
+    border-radius: 6px;
+}
+#successModal .btn-primary:hover {
+    background-color: #574bff;
+}
+#commentModal .modal-body {
+    text-align: left;
+    font-size: 1rem;
+    color: #333;
+}
+#commentModal textarea {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 1rem;
+    width: 100%;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.1);
+}
+#commentModal .btn-primary {
+    background-color: #6c63ff;
+    border: none;
+    font-weight: 500;
+    padding: 8px 20px;
+    border-radius: 6px;
+}
+#commentModal .btn-primary:hover {
+    background-color: #574bff;
+}
+#commentModal .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    font-weight: 500;
+    padding: 8px 20px;
+    border-radius: 6px;
+}
+#commentModal .btn-secondary:hover {
+    background-color: #495057;
+}
+.btn-view-file {
+    background: #6c63ff;
+    color: #fff;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    padding: 2px 14px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: background 0.2s;
+}
+.btn-view-file:hover {
+    color: #fff;
+    background: #574bff;
+}
+
+/* Author list styles in Details modal */
+.author-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+.author-entry .author-name {
+    min-width: 180px;
+}
+
+/* Certificate Modal Styles */
+#certificateModal .certificate-preview {
+    background: #fff;
+    border: 1px solid #000;
+    min-height: 260px;
+    height: 320px;
+    padding: 0;
+}
+#certificateModal .certificate-preview iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+}
+
+#certificateModal .btn-close-certificate {
+    background: #6c757d;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-weight: 500;
+}
+#certificateModal .btn-close-certificate:hover {
+    background: #495057;
+    color: #fff;
+}
+
+#certificateModal .btn-download-pdf {
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-weight: 500;
+}
+#certificateModal .btn-download-pdf:hover {
+    background: #5b21b6;
+    color: #fff;
+}
