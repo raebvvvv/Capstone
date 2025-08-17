@@ -1,0 +1,118 @@
+/* site-base.css */
+html, body {
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background: #fafafa;
+  margin: 0;
+  overflow-y: auto; /* allow scrolling if needed */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+}
+
+.navbar-brand span {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.navbar-brand img {
+  width: 40px;
+  height: auto;
+}
+
+.disabled-btn {
+  pointer-events: none; /* disables click */
+  cursor: default;      /* changes mouse cursor */
+   opacity: 0.65 !important;
+}
+
+.btn-success {
+  background-color: #198754;
+  border: none;
+  color: #fff;
+}
+
+.btn-success:hover {
+  background-color: #39ad63;
+  color: #fff;
+}
+
+.btn-warning {
+  background-color: #ffe066;
+  color: #222;
+  border: none;
+}
+
+.btn-warning:hover {
+  background-color: #ffd43b;
+  color: #111;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #b02a37;
+  color: #fff;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  color: #fff;
+}
+
+footer {
+  color: #555;
+  font-size: 0.80em !important;
+  text-align: center;
+  padding: 1em 0;
+}
+
+.footer-link-blue {
+  color: #0d6efd !important;
+  text-decoration: underline;
+}
+
+/* Make Terms of Service and Privacy Statement links blue */
+footer a[href*="Terms"], 
+footer a[href*="Privacy"] {
+  color: #0d6efd; /* Bootstrap's default link blue */
+}
+
+@media (max-width: 900px) {
+  .row > .col-md-4:not(:last-child) {
+    margin-right: 1rem; /* less space on smaller screens */
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .cards-container {
+    flex-direction: column;
+    gap: 0.7em;
+  }
+  .card {
+    max-width: 95vw;
+    padding: 0.05em 0.2em; /* further reduced for mobile */
+  }
+  .card-title {
+    font-size: 1.1rem;
+  }
+  body {
+    font-size: 0.95rem;
+  }
+  footer {
+    font-size: 0.9em;
+    padding: 0.5em 0;
+  }
+}

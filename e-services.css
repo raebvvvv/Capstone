@@ -1,0 +1,81 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fafafa;
+  font-family: Arial, sans-serif;
+  margin: 0;
+}
+
+main.container {
+  flex: 1 0 auto;
+  margin-top: 2rem;
+}
+
+
+body {
+  background: #fafafa;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+
+.card {
+  box-sizing: border-box;
+  width: 100%; /* was 105% */
+  max-width: 600px;
+  margin: 0.25em auto;
+  padding: 0.2em 0.5em;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.9rem; /* slightly smaller font size inside cards */
+}
+
+.card ul {
+  padding-left: 1.2em;
+  margin-bottom: 0;
+}
+
+
+/* Container for all cards */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: stretch; /* aligns cards vertically */
+  justify-content: center;
+}
+
+/* Style for the Apply button */
+.card .apply-btn {
+  margin-top: auto; /* pushes button to bottom */
+  align-self: flex-end; /* aligns button horizontally */
+}
+
+.card .btn-success {
+  width: 60%;      /* Make Apply buttons smaller in width */
+  min-width: 120px; /* Optional: set a minimum width for usability */
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+/* Add horizontal spacing between the first two cards */
+.row > .col-md-4:not(:last-child) {
+  margin-right: 2rem; /* increase horizontal space between first two cards */
+}
+

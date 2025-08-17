@@ -1,0 +1,103 @@
+/* Base styles */
+html, body {
+  height: 100%;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  background: #fafafa;
+  margin: 0;
+  padding: 0;
+}
+
+main.container {
+  flex: 1 0 auto;
+  padding-bottom: 2rem;
+}
+
+/* Section backgrounds */
+.bg-light {
+  background-color: #f3f3f3 !important;
+  border-radius: 12px;
+  padding: 1.5em 1.5em;
+  margin-bottom: 1.5em;
+}
+
+.bg-white {
+  background-color: #fff !important;
+  border-radius: 10px;
+  padding: 1em 1.5em;
+  margin-bottom: 1em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Headings */
+h2, h4 {
+  font-weight: bold;
+}
+
+.fw-bold {
+  font-weight: bold !important;
+}
+
+/* FAQ icons */
+.faq-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 0.5em;
+  vertical-align: middle;
+}
+
+/* Step numbers */
+.step-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* Button styles (use Bootstrap classes for consistency) */
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+}
+.btn-danger:hover {
+  background-color: #b02a37;
+  color: #fff;
+}
+
+/* Remove black outline for uniform button style */
+main .btn,
+.bg-white .btn,
+.bg-light .btn {
+  border: none !important;
+  box-shadow: none;
+}
+
+/* Optionally, make sure navbar button stays default */
+.navbar .btn {
+  border: none !important;
+  border-radius: 6px !important;
+}
+
+/* Info text */
+.text-muted {
+  color: #6c757d !important;
+  font-size: 0.98em;
+}
+
+/* Important notes */
+.text-danger {
+  color: #dc3545 !important;
+  font-size: 0.98em;
+}
+
+/* Footer */
+footer {
+  color: #555;
+  font-size: 0.95em;
+  text-align: center;
+  padding: 1em 0;
+}
+
+.footer-link-blue {
+  color: #0d6efd !important;
+  text-decoration: underline;
+}
