@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile | PUP e-IPMO</title>
     <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-    <link rel="stylesheet" href="main.css">
-    <link rel="stylesheet" href="student-profile.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/student-profile.css">
 </head>
 <body>
   <!-- Navbar (uniform across project) -->
@@ -23,12 +23,12 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="user_index.html">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">About Us</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-application.html">My Application</a></li>
-          <li class="nav-item"><a class="nav-link fw-bold" href="student-profile.html">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="after-landing.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link fw-bold" href="student-profile.php">My Profile</a></li>
         </ul>
-        <a href="e-services.html" class="btn btn-success ms-3">Proceed to e-Services</a>
+        <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
       </div>
     </div>
   </nav>

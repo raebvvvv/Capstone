@@ -1,0 +1,165 @@
+body, html {
+  background: #fff;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+main.container {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.navbar {
+  border-bottom: 1px solid #eee;
+}
+
+.back-btn-content {
+  background: transparent !important;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.guide-section {
+  width: 100%;
+}
+
+.guide-card {
+  background: #f4f4f4;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  padding: 1.2rem 1.6rem;
+  margin-bottom: 1.5rem;
+  border: none;
+  display: flex;
+  align-items: flex-start;
+}
+
+.step-icon {
+  margin-left: 0;
+  margin-right: 2rem;
+  min-width: 64px;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.step-icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.icon-sm {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.step-number {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.step-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.step-desc {
+  font-size: 1.05rem;
+}
+
+.card-desc {
+  min-width: 0;
+}
+
+.step-actions {
+  min-width: 180px;
+}
+
+.btn-danger {
+  background-color: #800000;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #a60000;
+}
+
+.btn-warning {
+  background-color: #ffe066;
+  color: #212529;
+  border: none;
+}
+
+.btn-warning:hover {
+  background-color: #ffd43b;
+  color: #212529;
+}
+
+.contact-info {
+  font-size: 1.08rem;
+}
+
+footer {
+  font-size: 0.92rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-radius: 0 0 18px 18px;
+  background: #fff;
+  border-top: 1px solid #eee;
+}
+@media (max-width: 992px) {
+  .guide-card {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      padding: 1rem 0.7rem;
+  }
+  .step-icon {
+      margin-bottom: 12px;
+      margin-right: 0;
+      width: 56px;
+      height: 56px;
+  }
+  .step-icon img {
+      width: 38px;
+      height: 38px;
+  }
+  .step-actions {
+      width: 100%;
+      min-width: 0;
+      align-items: flex-start !important;
+      margin-top: 0.8rem;
+      margin-left: 0;
+  }
+  .card-desc {
+      width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .guide-card {
+      padding: 0.8rem 0.3rem;
+      border-radius: 10px;
+  }
+  .step-title, .step-number {
+      font-size: 1.06rem;
+  }
+  .step-desc {
+      font-size: 0.98rem;
+  }
+  .contact-info {
+      font-size: 0.95rem;
+  }
+}

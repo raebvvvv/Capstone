@@ -1,0 +1,145 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    background: #fafafa;
+    color: #202020;
+    font-family: 'Inter', Arial, sans-serif;
+}
+  
+body {
+    min-height: 100vh;
+}
+  
+.back-btn-content {
+    background: transparent !important;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-right: 0;
+    margin-left: 0;
+}
+  
+.navbar {
+    margin-bottom: 0;
+}
+  
+main.container {
+    margin-top: 12px;
+}
+  
+.icon-sm {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+  
+.turnitin-logo {
+    height: 1.75em;
+    vertical-align: middle;
+    margin-bottom: 3px;
+}
+  
+.guide-card {
+    border-radius: 16px;
+    background: #f4f4f4;
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+/* Added flex and left/top alignment for icons in guide-card */
+.guide-card .card-body {
+    display: flex;
+    align-items: flex-start; /* Align icon to top */
+    flex-wrap: nowrap;
+    padding: 1.2rem 1.6rem;
+}
+
+/* Updated step-icon for left alignment and spacing */
+.step-icon {
+    width: 80px;          /* Larger, as in sample image */
+    height: auto;
+    margin-left: 0;
+    margin-right: 2rem;
+    object-fit: contain;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+h2, h4, h5 {
+    letter-spacing: -0.5px;
+}
+  
+.step-box {
+    width: 100%;
+    margin-top: 0;
+}
+  
+.step-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    margin-bottom: 15px;
+    border: none;
+}
+  
+.step-title {
+    font-size: 1.2rem;
+    margin-bottom: 3px;
+}
+  
+.step-number {
+    font-size: 1.2rem;
+    font-family: inherit;
+    font-weight: bold;
+    margin-right: 8px;
+}
+  
+.step-desc {
+    font-size: 1rem;
+}
+  
+.step-item:last-child {
+    margin-bottom: 0;
+}
+  
+.btn-sm {
+    font-size: 0.96rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 6px;
+}
+  
+footer {
+    font-size: 0.92rem;
+}
+  
+@media (max-width: 992px) {
+    .guide-card .card-body {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 1.1rem 0.9rem;
+    }
+    .step-icon {
+        margin-bottom: 12px;
+        margin-right: 0;
+        width: 56px;
+    }
+    .step-box, .step-item {
+        padding: 12px 12px;
+    }
+    .step-title {
+        font-size: 1rem;
+    }
+}
+
+.btn-originality {
+    background-color: #830404;
+    color: #fff;
+    border: none;
+}
+.btn-originality:hover {
+    background-color: #800000;
+    color: rgb(240, 240, 240);
+}

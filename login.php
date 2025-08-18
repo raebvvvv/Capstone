@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($user['is_admin']) {
                     header("Location: admin.php"); // Redirect to admin home page
                 } else {
-                    header("Location: user_home.php"); // Redirect to user home page
+                    header("Location: after-landing.php"); // Redirect to user landing page
                 }
                 exit();
             }

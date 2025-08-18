@@ -1,0 +1,128 @@
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  background: #f7f7f7;
+  color: #212121;
+}
+
+.icon-sm {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+h1, h2, h4, h5 {
+  letter-spacing: -1px;
+}
+
+main.container {
+  max-width: 1200px;
+  padding-top: 40px !important;
+  padding-bottom: 40px !important;
+}
+
+/* Responsive row spacing */
+.row.mb-5.gx-3.gy-4 {
+  margin-bottom: 0 !important;
+  gap: 0 !important;
+  padding-bottom: 16px !important;
+}
+
+.col-lg-7 {
+  padding-right: 32px !important;
+  position: relative;
+  left: -40px;
+  transition: left 0.2s;
+}
+
+@media (max-width: 1200px) {
+  .col-lg-7 {
+    left: 0;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .col-lg-7 {
+    left: 0;
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .col-lg-7 {
+    left: 0;
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+  }
+}
+
+.custom-push-right {
+  padding-left: 245px; 
+}
+
+@media (max-width: 992px) {
+  .custom-push-right {
+    padding-left: 0;
+  }
+}
+
+
+section {
+  background: transparent;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.border-danger {
+  border-color: #900c0c !important;
+}
+
+section.mb-5.pb-3 {
+  margin-top: 40px !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  padding-top: 0 !important;
+}
+
+.ps-3 {
+  padding-left: 28px !important;
+}
+
+ol {
+  margin-bottom: 0 !important;
+  padding-left: 24px !important;
+}
+
+footer {
+  font-size: 0.92rem;
+  margin-top: 38px;
+}
+
+@media (max-width: 768px) {
+  .navbar-brand span {
+    font-size: 1.1rem;
+  }
+  main.container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
+  }
+  h1, h2 {
+    font-size: 1.6rem;
+  }
+  h5 {
+    font-size: 1.05rem;
+  }
+  section {
+    padding-left: 0 !important;
+    border-left: none !important;
+    margin-top: 24px !important;
+  }
+  footer {
+    margin-top: 24px;
+  }
+}

@@ -1,0 +1,160 @@
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  background: #fafafa;
+  color: #202020;
+}
+
+.main-center-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.icon-sm {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+h1, h2, h5 {
+  letter-spacing: -1px;
+}
+
+.card {
+  border-radius: 14px;
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+
+.card-img-top {
+  border-radius: 14px 14px 0 0;
+  object-fit: cover;
+  height: 180px;
+}
+
+.btn-login {
+  background: #900c0c;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  border: none;
+  transition: background 0.18s;
+}
+
+.btn-login:hover,
+.btn-login:focus {
+  background: #b71c1c;
+  color: #fff;
+}
+
+footer {
+  font-size: 0.92rem;
+}
+
+.office-right {
+  margin-left: 220px; 
+}
+
+@media (max-width: 992px) {
+  .office-right {
+    margin-left: 0; 
+  }
+}
+
+.cards-center-row {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.cards-center-row .card {
+  min-width: 340px;
+  max-width: 380px;
+  margin: 0;
+}
+
+.login-section-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0;
+  margin-bottom: 32px;
+}
+
+.login-section-center h5 {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.login-section-center .d-flex {
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .cards-center-row {
+    gap: 20px;
+  }
+  .cards-center-row .card {
+    min-width: 260px;
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 992px) {
+  .navbar .btn {
+    width: 100%;
+    margin-top: 12px;
+  }
+  .card-img-top {
+    height: 140px;
+  }
+  .cards-center-row {
+    flex-direction: column;
+    margin: 0 auto;
+    align-items: center;
+    gap: 24px;
+  }
+  .cards-center-row .card {
+    width: 100%;
+    max-width: 380px;
+  }
+  .login-section-center .d-flex {
+    flex-direction: column;
+    gap: 18px;
+    width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-brand span {
+    font-size: 1.1rem;
+  }
+  .container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  h1, h2 {
+    font-size: 1.6rem;
+  }
+  h5 {
+    font-size: 1.05rem;
+  }
+  .card-img-top {
+    height: 100px;
+  }
+  .btn-login {
+    font-size: 1rem;
+    padding: 0.7rem 1.5rem;
+  }
+}
