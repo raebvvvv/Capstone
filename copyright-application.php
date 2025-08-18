@@ -45,8 +45,7 @@
       </li>
       <li class="mb-4">
         Once printed and accomplished, you may proceed to the <strong>submission form.</strong><br>
-        <!-- Use only .btn and .submission-btn, NOT .btn-success -->
-        <a href="#" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a>
+        <a href="student-copyright-forms.php" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a>
       </li>
     </ol>
     <p class="text-muted mb-3" style="font-size:0.95em;">
