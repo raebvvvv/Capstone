@@ -20,24 +20,13 @@
         aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse flex-grow-0" id="navbarNav">
-        <ul class="navbar-nav gap-2 align-items-center ms-auto">
-          <li class="nav-item">
-            <a class="nav-link fw-bold" href="after-landing.php">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fw-bold" href="after-about.php">About Us</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fw-bold" href="#">My Application</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fw-bold" href="#">My Profile <span class="ms-1"><i class="bi bi-person"></i></span></a>
-          </li>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link nav-bold" href="after-landing.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="after-about.php">About</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="student-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="student-profile.php">My Profile</a></li>
         </ul>
-        <div class="ms-3 d-flex gap-2">
-          <a href="#" class="btn btn-success btn-sm px-3">Proceed to<br>e-Services</a>
-        </div>
+        <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
       </div>
     </div>
   </nav>

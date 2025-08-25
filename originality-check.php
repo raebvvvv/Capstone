@@ -12,29 +12,30 @@
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom">
-  <div class="container">
-    <a class="navbar-brand d-flex align-items-center" href="#">
-      <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
-      <span>PUP e-IPMO</span>
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">About Us</a></li>
-        <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
-        <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
-      </ul>
-      <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+        <span>PUP e-IPMO</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link nav-bold" href="after-landing.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="student-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="student-profile.php">My Profile</a></li>
+        </ul>
+        <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+
   <main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="fw-bold mb-0">How to get Originality Check Certificate?</h2>
-      <a href="e-services.php" style="color:black;">&larr; Back</a>
+      <a href="e-services.php" style="color:black;" class="text-decoration-none">&#x21B6; Back</a>
     </div>
     <p class="mb-2 fs-5">IPMO offers Originality Checking through 
       <img src="Photos/Icons/turnitin-icon.png" alt="Turnitin" height="40" width="120" style="vertical-align:middle;">

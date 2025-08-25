@@ -1,14 +1,46 @@
+/* Prevent navbar movement by ensuring all nav-links have same font-weight and color */
+.nav-link.nav-bold {
+  font-weight: 700;
+  color: #212529 !important;
+}
+.nav-link.active-page {
+  font-weight: 700;
+  color: #212529 !important;
+}
 /* site-base.css */
 html, body {
   height: 100%;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', Arial, sans-serif;
   background: #fafafa;
   margin: 0;
   overflow-y: auto; /* allow scrolling if needed */
 }
 
-h1, h2, h3, h4, h5, h6 {
+main {
+  flex: 1 0 auto;
+}
+
+h1, h2, h3 {
   font-weight: bold;
+}
+
+/* Ensure navbar height and padding matches other pages */
+.navbar {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  min-height: 56px; /* Bootstrap default navbar height */
+}
+
+.nav-bold {
+  color: #111 !important;
+  font-weight:500 !important;
+  
+}
+.active-page {
+  color: #111 !important;
+  font-weight: 800 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 0.2em;
 }
 
 .navbar-brand span {
@@ -71,9 +103,17 @@ h1, h2, h3, h4, h5, h6 {
   color: #fff;
 }
 
+.office-right {
+  margin-left: 450px;
+}
+
+.p-font-size {
+  font-size: 1.1rem;
+}
+
 footer {
   color: #555;
-  font-size: 0.80em !important;
+  font-size: 0.90em !important;
   text-align: center;
   padding: 1em 0;
 }
