@@ -1,3 +1,8 @@
+<?php
+require __DIR__ . '/security_bootstrap.php';
+secure_bootstrap();
+require __DIR__ . '/auth_check.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

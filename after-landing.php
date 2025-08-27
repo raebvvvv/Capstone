@@ -1,3 +1,6 @@
+<?php
+require __DIR__ . '/auth_check.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

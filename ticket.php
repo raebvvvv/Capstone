@@ -1,42 +1,61 @@
 <?php
-session_start();
+require __DIR__ . '/security_bootstrap.php';
+secure_bootstrap();
 require 'conn.php'; // Ensure database connection is included
 
-// Check if the user is logged in
-if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
-    header("Location: login.php");
-    exit();
+// Enforce admin role for application management
+require_admin();
+
+// Graceful handling if legacy table rental_requests was dropped
+function table_exists(mysqli $conn, string $table): bool {
+    if (!$conn) return false;
+    if ($stmt = $conn->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1")) {
+        $stmt->bind_param('s', $table);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $exists = (bool)$res->fetch_row();
+        $stmt->close();
+        return $exists;
+    }
+    return false;
 }
+
+$requests_table_exists = table_exists($conn, 'rental_requests');
 
 // Handle search
 $search_query = "";
-if (isset($_GET['search'])) {
-    $search_query = $_GET['search'];
-    $query_all = "SELECT * FROM rental_requests WHERE student_name LIKE ?";
-    $stmt_search = $conn->prepare($query_all);
-    $search_param = "%" . $search_query . "%";
-    $stmt_search->bind_param("s", $search_param);
-    $stmt_search->execute();
-    $result_all = $stmt_search->get_result();
+if ($requests_table_exists) {
+    if (isset($_GET['search'])) {
+        $search_query = $_GET['search'];
+        $query_all = "SELECT request_id, student_id, student_name, user_classification, program, request_date, status, remark, approved_timestamp, completed_timestamp FROM rental_requests WHERE student_name LIKE ?";
+        if ($stmt_search = $conn->prepare($query_all)) {
+            $search_param = "%" . $search_query . "%";
+            $stmt_search->bind_param("s", $search_param);
+            if ($stmt_search->execute()) {
+                $result_all = $stmt_search->get_result();
+            } else {
+                log_event('DB_ERROR', 'Ticket search execute failed', ['error' => $stmt_search->error]);
+            }
+        } else {
+            log_event('DB_ERROR', 'Ticket search prepare failed', ['error' => $conn->error]);
+        }
+    } else {
+        $query_all = "SELECT request_id, student_id, student_name, user_classification, program, request_date, status, remark, approved_timestamp, completed_timestamp FROM rental_requests";
+        $result_all = $conn->query($query_all);
+        if (!$result_all) {
+            log_event('DB_ERROR', 'Ticket list query failed', ['error' => $conn->error]);
+        }
+    }
+    if (!isset($result_all) || !$result_all) {
+        echo "An error occurred loading requests."; // Generic message (details logged)
+        $result_all = new class { public function fetch_assoc(){ return null; } public function data_seek($n){} }; // Safe no-op iterator
+    }
 } else {
-    $query_all = "SELECT * FROM rental_requests";
-    $result_all = $conn->query($query_all);
+    // Table missing: provide empty iterator and notice
+    log_event('DB_WARN', 'rental_requests table missing in ticket.php');
+    $result_all = new class { public function fetch_assoc(){ return null; } public function data_seek($n){} }; // Safe no-op iterator
 }
-
-if (!$result_all) {
-    die("Database query failed: " . $conn->error); // Debugging error message
-}
-if (!$result_all) {
-    die("Database query failed: " . $conn->error); // Debugging error message
-}
-// Handle logout
-if (isset($_GET['logout'])) {
-    // Destroy the session
-    session_destroy();
-    // Redirect to login page
-    header("Location: login.php");
-    exit();
-}
+// (Logout via dedicated POST form to logout.php elsewhere)
 
 // Fetch admin data from the database
 if (isset($_SESSION['user_id'])) {
@@ -63,67 +82,28 @@ $result = $conn->query($query);
 
 // Handle ticket approval
 if (isset($_POST['approve_ticket_id'])) {
-    $approve_ticket_id = $_POST['approve_ticket_id'];
+    verify_csrf_post();
+    $approve_ticket_id = (int)$_POST['approve_ticket_id'];
     $query_approve = "UPDATE rental_requests SET status = 'Approved', approved_timestamp = NOW() WHERE request_id = ?";
     $stmt_approve = $conn->prepare($query_approve);
     $stmt_approve->bind_param("i", $approve_ticket_id);
     $stmt_approve->execute();
-
-    // Update stock quantity in tools table
-    $query_tools = "SELECT tools_data FROM rental_requests WHERE request_id = ?";
-    $stmt_tools = $conn->prepare($query_tools);
-    $stmt_tools->bind_param("i", $approve_ticket_id);
-    $stmt_tools->execute();
-    $result_tools = $stmt_tools->get_result();
-    $tools_data = $result_tools->fetch_assoc()['tools_data'];
-    $tools = json_decode($tools_data, true);
-
-    foreach ($tools as $tool) {
-        $query_update_stock = "UPDATE tools SET stock_quantity = stock_quantity - ? WHERE tool_name = ?";
-        $stmt_update_stock = $conn->prepare($query_update_stock);
-        $stmt_update_stock->bind_param("is", $tool['quantity'], $tool['name']);
-        $stmt_update_stock->execute();
-    }
-
+    log_event('APPROVE_REQUEST', 'Request approved', ['request_id' => $approve_ticket_id]);
     header("Location: ticket.php");
     exit();
 }
 
 // Handle ticket completion
 if (isset($_POST['complete_ticket_id'])) {
-    $complete_ticket_id = $_POST['complete_ticket_id'];
-    $remarks = $_POST['remark']; // Ensure 'remarks' is the correct field name from your form
-    
-// Fetch tools data for the completed ticket
-$query_tools = "SELECT tools_data FROM rental_requests WHERE request_id = ?";
-$stmt_tools = $conn->prepare($query_tools);
-$stmt_tools->bind_param("i", $complete_ticket_id);
-$stmt_tools->execute();
-$result_tools = $stmt_tools->get_result();
-$tools_data = $result_tools->fetch_assoc()['tools_data'];
-$tools = json_decode($tools_data, true);
-
-// Update stock quantity in tools table
-foreach ($tools as $tool) {
-    $query_update_stock = "UPDATE tools SET stock_quantity = stock_quantity + ? WHERE tool_name = ?";
-    $stmt_update_stock = $conn->prepare($query_update_stock);
-    $stmt_update_stock->bind_param("is", $tool['quantity'], $tool['name']);
-    $stmt_update_stock->execute();
-}
-
-    
-    // Prepare the update query
-    $query_complete = "UPDATE rental_requests 
-                       SET status = 'Completed', 
-                           remark = ?, 
-                           completed_timestamp = NOW() 
-                       WHERE request_id = ?";
+    verify_csrf_post();
+    $complete_ticket_id = (int)$_POST['complete_ticket_id'];
+    $remarks = $_POST['remark'];
+    $query_complete = "UPDATE rental_requests SET status='Completed', remark = ?, completed_timestamp = NOW() WHERE request_id = ?";
     $stmt_complete = $conn->prepare($query_complete);
     $stmt_complete->bind_param("si", $remarks, $complete_ticket_id);
-
-    // Execute the query
     if ($stmt_complete->execute()) {
-        header("Location: ticket.php"); // Redirect to the same page after completing
+        log_event('COMPLETE_REQUEST', 'Request marked complete', ['request_id' => $complete_ticket_id]);
+        header("Location: ticket.php");
         exit();
     } else {
         echo "Error updating ticket: " . $stmt_complete->error;
@@ -132,11 +112,13 @@ foreach ($tools as $tool) {
 
 // Handle ticket rejection
 if (isset($_POST['reject_ticket_id'])) {
-    $reject_ticket_id = $_POST['reject_ticket_id'];
+    verify_csrf_post();
+    $reject_ticket_id = (int)$_POST['reject_ticket_id'];
     $query_reject = "UPDATE rental_requests SET status = 'Completed', remark = 'Out of Stock', completed_timestamp = NOW() WHERE request_id = ?";
     $stmt_reject = $conn->prepare($query_reject);
     $stmt_reject->bind_param("i", $reject_ticket_id);
     $stmt_reject->execute();
+    log_event('REJECT_REQUEST', 'Request rejected', ['request_id' => $reject_ticket_id]);
     header("Location: ticket.php");
     exit();
 }
@@ -173,7 +155,10 @@ if (isset($_POST['reject_ticket_id'])) {
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
                             <li class="nav-item"><a class="nav-link" aria-current="page" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" href="ticket.php">Applications</a></li>
-                            <a href="?logout=true" class="btn btn-primary rounded-pill px-4">Logout</a>
+                            <form action="logout.php" method="post" class="d-inline ms-2">
+                                <?php csrf_input(); ?>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4">Logout</button>
+                            </form>
                             </li>
                         </ul>
                     </div>
@@ -232,6 +217,7 @@ if (isset($_POST['reject_ticket_id'])) {
                                     <div class="action-btn-group">
                                         <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
                                         <form method="post" style="display:inline;">
+                                            <?php csrf_input(); ?>
                                             <input type="hidden" name="approve_ticket_id" value="SRID-2025-0808-001">
                                             <button type="submit" class="btn btn-approve btn-sm rounded-pill px-3">Approve</button>
                                         </form>
@@ -252,6 +238,7 @@ if (isset($_POST['reject_ticket_id'])) {
                                         <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
                                         <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
                                         <form method="post" style="display:inline;">
+                                            <?php csrf_input(); ?>
                                             <input type="hidden" name="approve_ticket_id" value="SRID-2025-0808-001">
                                             <button type="submit" class="btn btn-approve btn-sm rounded-pill px-3">Approve</button>
                                         </form>
@@ -276,6 +263,7 @@ if (isset($_POST['reject_ticket_id'])) {
                                                 <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
                                                 <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
                                                 <form method="post" style="display:inline;">
+                                                    <?php csrf_input(); ?>
                                                     <input type="hidden" name="approve_ticket_id" value="<?php echo htmlspecialchars($ticket['request_id']); ?>">
                                                     <button type="submit" class="btn btn-approve btn-sm rounded-pill px-3">Approve</button>
                                                 </form>
@@ -319,6 +307,7 @@ if (isset($_POST['reject_ticket_id'])) {
                         <div class="action-btn-group">
                             <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
                             <form method="post" style="display:inline;">
+                                <?php csrf_input(); ?>
                                 <input type="hidden" name="approve_ticket_id" value="<?php echo htmlspecialchars($ticket['request_id']); ?>">
                                 <button type="submit" class="btn btn-approve btn-sm rounded-pill px-3">Complete</button>
                             </form>
@@ -431,6 +420,7 @@ if (isset($_POST['reject_ticket_id'])) {
         <div class="modal-dialog">
             <div class="modal-content">
                 <form method="post">
+                    <?php csrf_input(); ?>
                     <div class="modal-header">
                         <h5 class="modal-title" id="completeModalLabel">Complete</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -604,6 +594,10 @@ if (isset($_POST['reject_ticket_id'])) {
     </div>
 </div>
 <script>
+// Escape helper to mitigate XSS when inserting dynamic text into HTML (issue fix)
+function escapeHTML(str){
+    return String(str).replace(/[&<>"]|'/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c];});
+}
 let currentDetails = {};
 let currentAuthorIndex = null; // for the author modal
 
@@ -684,21 +678,21 @@ function renderDetails(details, editMode = false) {
     modalBody.innerHTML = `
         <div>
             <h5>Student Information</h5>
-            <p><strong>Name:</strong> ${editMode ? `<input type='text' id='editStudentName' value='${v(details.studentName, '')}' />` : v(details.studentName, '—')}</p>
-            <p><strong>Student Number:</strong> ${editMode ? `<input type='text' id='editStudentNumber' value='${v(details.studentNumber, '')}' />` : v(details.studentNumber, '—')}</p>
-            <p><strong>Email Address:</strong> ${editMode ? `<input type='email' id='editEmail' value='${v(details.email, '')}' />` : v(details.email, '—')}</p>
-            <p><strong>Home Address:</strong> ${editMode ? `<input type='text' id='editHomeAddress' value='${v(details.homeAddress, '')}' />` : v(details.homeAddress, '—')}</p>
-            <p><strong>Campus:</strong> ${editMode ? `<input type='text' id='editCampus' value='${v(details.campus, '')}' />` : v(details.campus, '—')}</p>
-            <p><strong>Department:</strong> ${editMode ? `<input type='text' id='editDepartment' value='${v(details.department, '')}' />` : v(details.department, '—')}</p>
-            <p><strong>College:</strong> ${editMode ? `<input type='text' id='editCollege' value='${v(details.college, '')}' />` : v(details.college, '—')}</p>
-            <p><strong>Program:</strong> ${editMode ? `<input type='text' id='editProgram' value='${v(details.program, '')}' />` : v(details.program, '—')}</p>
+            <p><strong>Name:</strong> ${editMode ? `<input type='text' id='editStudentName' value='${escapeHTML(v(details.studentName, ''))}' />` : escapeHTML(v(details.studentName, '—'))}</p>
+            <p><strong>Student Number:</strong> ${editMode ? `<input type='text' id='editStudentNumber' value='${escapeHTML(v(details.studentNumber, ''))}' />` : escapeHTML(v(details.studentNumber, '—'))}</p>
+            <p><strong>Email Address:</strong> ${editMode ? `<input type='email' id='editEmail' value='${escapeHTML(v(details.email, ''))}' />` : escapeHTML(v(details.email, '—'))}</p>
+            <p><strong>Home Address:</strong> ${editMode ? `<input type='text' id='editHomeAddress' value='${escapeHTML(v(details.homeAddress, ''))}' />` : escapeHTML(v(details.homeAddress, '—'))}</p>
+            <p><strong>Campus:</strong> ${editMode ? `<input type='text' id='editCampus' value='${escapeHTML(v(details.campus, ''))}' />` : escapeHTML(v(details.campus, '—'))}</p>
+            <p><strong>Department:</strong> ${editMode ? `<input type='text' id='editDepartment' value='${escapeHTML(v(details.department, ''))}' />` : escapeHTML(v(details.department, '—'))}</p>
+            <p><strong>College:</strong> ${editMode ? `<input type='text' id='editCollege' value='${escapeHTML(v(details.college, ''))}' />` : escapeHTML(v(details.college, '—'))}</p>
+            <p><strong>Program:</strong> ${editMode ? `<input type='text' id='editProgram' value='${escapeHTML(v(details.program, ''))}' />` : escapeHTML(v(details.program, '—'))}</p>
         </div>
         <div>
             <h5>Document Information</h5>
-            <p><strong>Title:</strong> ${editMode ? `<input type='text' id='editDocumentTitle' value='${v(details.documentTitle, '')}' />` : v(details.documentTitle, '—')}</p>
-            <p><strong>Author/s Full name/s:</strong> ${v(details.studentName, '—')}</p>
+            <p><strong>Title:</strong> ${editMode ? `<input type='text' id='editDocumentTitle' value='${escapeHTML(v(details.documentTitle, ''))}' />` : escapeHTML(v(details.documentTitle, '—'))}</p>
+            <p><strong>Author/s Full name/s:</strong> ${escapeHTML(v(details.studentName, '—'))}</p>
             ${authorsListHTML ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${authorsListHTML}</div>` : ''}
-            <p class="mt-2"><strong>Date Accomplished:</strong> ${editMode ? `<input type='date' id='editAccomplishmentDate' value='${v(details.accomplishmentDate, '')}' />` : v(details.accomplishmentDate, '—')}</p>
+            <p class="mt-2"><strong>Date Accomplished:</strong> ${editMode ? `<input type='date' id='editAccomplishmentDate' value='${escapeHTML(v(details.accomplishmentDate, ''))}' />` : escapeHTML(v(details.accomplishmentDate, '—'))}</p>
         </div>
         <div class="mt-3">
             <h5>Uploaded Files</h5>
@@ -925,7 +919,10 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const res = await fetch('approve_request.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': '<?php echo htmlspecialchars(csrf_token()); ?>'
+                },
                 body: JSON.stringify({ request_id: requestId, comment })
             });
             const data = await res.json();

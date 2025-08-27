@@ -1,5 +1,6 @@
 <?php
-session_start();
+require __DIR__ . '/security_bootstrap.php';
+secure_bootstrap();
 require 'conn.php'; // Include your database connection file
 
 // Check if the user is logged in and is an admin
@@ -8,14 +9,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true 
     exit();
 }
 
-// Handle logout
-if (isset($_GET['logout'])) {
-    // Destroy the session
-    session_destroy();
-    // Redirect to login page
-    header("Location: login.php");
-    exit();
-}
+// (Logout handled via POST to logout.php)
 // --- Example data for demonstration. Replace with actual DB query as needed. ---
 $applications = [
     [
@@ -153,9 +147,6 @@ $applications = [
     ],
 ];
 
-// Fetch tools from the database
-$sql = "SELECT * FROM tools"; // Adjust table name if necessary
-$result = $conn->query($sql);
 ?>
 
 
@@ -192,7 +183,10 @@ $result = $conn->query($sql);
                             <li class="nav-item"><a class="nav-link fw-bold" href="#">Completed Applications</a></li>
                             <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
-                            <a href="?logout=true" class="btn btn-primary rounded-pill px-4">Logout</a>
+                            <form method="POST" action="logout.php" class="d-inline">
+                                <?php csrf_input(); ?>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4">Logout</button>
+                            </form>
                             </li>
                         </ul>
                     </div>

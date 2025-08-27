@@ -1,20 +1,42 @@
 <?php
-session_start();
+require __DIR__ . '/security_bootstrap.php';
+secure_bootstrap();
 require 'conn.php';
 
-// Helper: Secure count query
+// Helper: Check if table exists (returns bool)
+function table_exists(mysqli $conn, string $table): bool {
+    $stmt = $conn->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1");
+    if (!$stmt) { return false; }
+    $stmt->bind_param('s', $table);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    return (bool)$res->fetch_row();
+}
+
+// Helper: Secure count query with graceful fallback if table dropped
 function getCount($conn, $table, $where = '', $params = []) {
-    $sql = "SELECT COUNT(*) as count FROM $table";
-    if ($where) $sql .= " WHERE $where";
+    if (!table_exists($conn, $table)) {
+        if (function_exists('log_event')) { log_event('DB_WARN', 'Table missing for count', ['table' => $table]); }
+        return 0;
+    }
+    $sql = "SELECT COUNT(*) as count FROM `$table`";
+    if ($where) { $sql .= " WHERE $where"; }
     $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        if (function_exists('log_event')) { log_event('DB_ERROR', 'Prepare failed in getCount', ['table' => $table, 'error' => $conn->error]); }
+        return 0;
+    }
     if ($params) {
         $types = str_repeat('s', count($params));
         $stmt->bind_param($types, ...$params);
     }
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        if (function_exists('log_event')) { log_event('DB_ERROR', 'Execute failed in getCount', ['table' => $table, 'error' => $stmt->error]); }
+        return 0;
+    }
     $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    return $row ? $row['count'] : 0;
+    $row = $result ? $result->fetch_assoc() : null;
+    return $row ? (int)$row['count'] : 0;
 }
 
 // Auth check
@@ -22,15 +44,11 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true 
     header("Location: login.php");
     exit();
 }
-if (isset($_GET['logout'])) {
-    session_destroy();
-    header("Location: login.php");
-    exit();
-}
+// (Logout handled via dedicated POST form to logout.php)
 
 // Dashboard counts
-$total_tools = getCount($conn, 'tools', 'status = ?', ['available']);
 $total_users = getCount($conn, 'users', 'status = ?', ['approved']);
+// Application counts (table may have been dropped; handled gracefully)
 $total_applications = getCount($conn, 'rental_requests');
 $pending_applications = getCount($conn, 'rental_requests', 'status = ?', ['Pending']);
 $approved_applications = getCount($conn, 'rental_requests', 'status = ?', ['Approved']);
@@ -67,6 +85,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,7 +113,10 @@ if (isset($_SESSION['user_id'])) {
                             <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
                             <button type="button" class="btn btn-outline-secondary rounded-pill px-3 me-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
-                            <a href="?logout=true" class="btn btn-primary rounded-pill px-4">Logout</a>
+                            <form method="POST" action="logout.php" class="d-inline">
+                                <?php csrf_input(); ?>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4">Logout</button>
+                            </form>
                         </ul>
                     </div>
                 </div>
@@ -301,7 +323,7 @@ if (isset($_SESSION['user_id'])) {
 
     <script>
         // Handle Change Password submit
-        document.getElementById('changePasswordForm')?.addEventListener('submit', async function(e) {
+    document.getElementById('changePasswordForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
             const cur = document.getElementById('currentPassword').value.trim();
             const pass = document.getElementById('newPassword').value.trim();
@@ -320,17 +342,26 @@ if (isset($_SESSION['user_id'])) {
             if (cur === pass) return showAlert('New password must be different from current password.');
 
             try {
+                const csrf = document.querySelector('meta[name="csrf-token"]').content;
                 const res = await fetch('change_password.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrf
+                    },
                     body: JSON.stringify({ current_password: cur, new_password: pass })
                 });
-                const data = await res.json();
+                let data;
+                const text = await res.text();
+                try { data = JSON.parse(text); } catch { data = { success:false, error:text.trim() || 'Unexpected response' }; }
+                if (!res.ok) {
+                    return showAlert(data.error || `Error ${res.status}`);
+                }
                 if (data.success) {
                     showAlert('Password updated successfully.', 'success');
-                    (document.getElementById('currentPassword').value = ''),
-                    (document.getElementById('newPassword').value = ''),
-                    (document.getElementById('confirmPassword').value = '');
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
                 } else {
                     showAlert(data.error || 'Failed to update password.');
                 }

@@ -1,0 +1,29 @@
+{"ts":"2025-08-27T11:55:13+02:00","type":"PASSWORD_CHANGE","user_id":22,"ip":"127.0.0.1","msg":"Password changed","ctx":[]}
+{"ts":"2025-08-27T11:59:40+02:00","type":"USER_DELETE","user_id":22,"ip":"127.0.0.1","msg":"Deleted user","ctx":{"target_user_id":27}}
+{"ts":"2025-08-27T12:00:17+02:00","type":"USER_DELETE","user_id":22,"ip":"127.0.0.1","msg":"Deleted user","ctx":{"target_user_id":26}}
+{"ts":"2025-08-27T12:00:47+02:00","type":"REGISTER","user_id":null,"ip":"127.0.0.1","msg":"User registered","ctx":{"student_number":"2022-89204-MN-0"}}
+{"ts":"2025-08-27T12:02:20+02:00","type":"REGISTER","user_id":null,"ip":"127.0.0.1","msg":"User registered","ctx":{"student_number":"2022-08680-MN-0"}}
+{"ts":"2025-08-27T12:12:43+02:00","type":"REGISTER","user_id":null,"ip":"127.0.0.1","msg":"User registered","ctx":{"student_number":"2020-08509-MN-0"}}
+{"ts":"2025-08-27T12:17:17+02:00","type":"USER_DELETE","user_id":22,"ip":"127.0.0.1","msg":"Deleted user","ctx":{"target_user_id":30}}
+{"ts":"2025-08-27T13:48:56+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:48:56+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:48:56+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:48:56+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:48:56+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:48:56+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:48:56+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:48:56+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:49:02+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:49:02+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:49:02+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T13:49:02+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:08:14+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:08:14+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:08:14+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:08:14+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:09:25+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"rental_requests table missing in ticket.php","ctx":[]}
+{"ts":"2025-08-27T14:09:46+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:09:46+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:09:46+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:09:46+02:00","type":"DB_WARN","user_id":22,"ip":"127.0.0.1","msg":"Table missing for count","ctx":{"table":"rental_requests"}}
+{"ts":"2025-08-27T14:10:11+02:00","type":"LOGIN_SUCCESS","user_id":25,"ip":"127.0.0.1","msg":"User logged in","ctx":{"user_id":25}}

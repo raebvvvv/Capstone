@@ -1,3 +1,8 @@
+<?php
+require __DIR__ . '/security_bootstrap.php';
+secure_bootstrap();
+require __DIR__ . '/auth_check.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,9 +50,12 @@
           Edit Profile
         </button>           
       </div>
-      <button id="signOutBtn" type="button" class="btn btn-danger btn-sm px-4">
-        Sign Out
-      </button>
+      <form id="logoutForm" method="POST" action="logout.php" class="m-0">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+        <button id="signOutBtn" type="submit" class="btn btn-danger btn-sm px-4" onclick="return confirm('Sign out now?');">
+          Sign Out
+        </button>
+      </form>
     </div>
     <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p>
     <div class="bg-white rounded-3 shadow-sm p-4 mx-auto" style="max-width: 1100px;">
@@ -135,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const cancelBtn = document.getElementById('cancelEditBtn');
   const form = document.getElementById('profileForm');
   const inputs = form.querySelectorAll('input:not([id="webmail"])');
+  // Sign out now handled by POST form with CSRF token (no JS redirect needed)
 
   editBtn.addEventListener('click', function() {
     inputs.forEach(input => input.disabled = false);

@@ -83,7 +83,7 @@
           </div>
           <div class="step-actions d-flex flex-column justify-content-center align-items-md-end align-items-start ms-md-3 mt-3 mt-md-0">
             <div class="mb-2 small text-center">Click here for a preview of the IP Application forms.</div>
-            <a href="#" class="btn btn-warning btn-sm fw-bold px-4">Go to e-Services</a>
+            <a href="login.php" class="btn btn-warning btn-sm fw-bold px-4">Go to e-Services</a>
           </div>
         </div>
       </div>

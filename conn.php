@@ -5,10 +5,11 @@ $password = "";       // Use your database password
 $dbname = "hasmin_users"; // Replace with your database name
 
 // Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
+$conn = @new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Generic message (avoid leaking internal details). Log internally if logger loaded later.
+    error_log('DB connection failed');
+    // Provide minimal stub object so includes can continue (pages should handle missing data gracefully)
+    die('Service temporarily unavailable. Please try again later.');
 }
 ?>

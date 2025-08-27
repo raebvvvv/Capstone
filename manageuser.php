@@ -1,5 +1,6 @@
 <?php
-session_start();
+require __DIR__ . '/security_bootstrap.php';
+secure_bootstrap();
 require 'conn.php'; // Include your database connection file
 
 // Check if the user is logged in and is an admin
@@ -8,14 +9,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true 
     exit();
 }
 
-// Handle logout
-if (isset($_GET['logout'])) {
-    // Destroy the session
-    session_destroy();
-    // Redirect to login page
-    header("Location: login.php");
-    exit();
-}
+// (Logout handled via dedicated POST to logout.php)
 
 // Fetch admin data from the database
 if (isset($_SESSION['user_id'])) {
@@ -42,6 +36,7 @@ $result_pending = $conn->query($query_pending);
 
 // Handle user update
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
+    verify_csrf_post();
     $user_id = $_POST['user_id'];
     $username = $_POST['username'];
     $email = $_POST['email'];
@@ -96,7 +91,10 @@ $result_active = $stmt_active->get_result();
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Appplications</a></li>
-                            <a href="?logout=true" class="btn btn-primary rounded-pill px-4">Logout</a>
+                            <form method="POST" action="logout.php" class="d-inline">
+                                <?php csrf_input(); ?>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4">Logout</button>
+                            </form>
                             </li>
                         </ul>
                     </div>
@@ -178,7 +176,11 @@ $result_active = $stmt_active->get_result();
                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
                                     <td>
                                         <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#editUserModal<?php echo $row['user_id']; ?>">Edit</button>
-                                        <a href="delete_user.php?user_id=<?php echo $row['user_id']; ?>" class="btn btn-danger btn-sm mb-2">Delete</a>
+                                        <form method="POST" action="delete_user.php" style="display:inline;" onsubmit="return confirm('Delete this user?');">
+                                            <?php csrf_input(); ?>
+                                            <input type="hidden" name="user_id" value="<?php echo (int)$row['user_id']; ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm mb-2">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
 
@@ -192,6 +194,7 @@ $result_active = $stmt_active->get_result();
                                             </div>
                                             <div class="modal-body">
                                                 <form method="POST" action="manageuser.php">
+                                                    <?php csrf_input(); ?>
                                                     <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
                                                     <div class="mb-3">
                                                         <label for="username" class="form-label">Name</label>

@@ -1,14 +1,15 @@
 <?php
-session_start();
-require 'conn.php'; // Include your database connection file
+require __DIR__ . '/security_bootstrap.php';
+secure_bootstrap();
+require 'conn.php'; // DB connection
 
-// Check if the user is logged in and is an admin
-if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
-    header("Location: login.php");
-    exit();
-}
+// Use unified helper for admin enforcement
+require_admin();
 
-// Fetch completed tickets from the database
-$query = "SELECT * FROM tickets WHERE status = 'completed'";
+// Fetch completed requests (explicit columns) from current requests table
+$query = "SELECT request_id, student_id, student_name, user_classification, program, request_date, status, remark, completed_timestamp FROM rental_requests WHERE status = 'Completed'";
 $result = $conn->query($query);
+if (!$result) {
+    log_event('DB_ERROR', 'Completed tickets query failed', ['error' => $conn->error]);
+}
 ?>
