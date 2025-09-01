@@ -1,0 +1,71 @@
+-- 1. Users Table
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    student_number VARCHAR(20),
+    employee_number VARCHAR(20),
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('student', 'employee', 'admin') NOT NULL,
+    status ENUM('active', 'inactive', 'pending') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. User Profile Table
+CREATE TABLE user_profiles (
+    profile_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    middle_name VARCHAR(50),
+    last_name VARCHAR(50) NOT NULL,
+    home_address VARCHAR(255),
+    mobile_number VARCHAR(20),
+    webmail VARCHAR(100),
+    campus VARCHAR(100),
+    college VARCHAR(100),
+    department VARCHAR(100),
+    program VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 3. Applications Table
+CREATE TABLE applications (
+    app_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title_of_work VARCHAR(255) NOT NULL,
+    status ENUM('pending', 'approved', 'completed', 'rejected') DEFAULT 'pending',
+    remarks TEXT,
+    action VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 4. Documents (Submissions) Table
+CREATE TABLE documents (
+    doc_id INT AUTO_INCREMENT PRIMARY KEY,
+    app_id INT NOT NULL,
+    doc_type ENUM(
+        'journal_publication',
+        'notarized_copyright_form',
+        'receipt_of_payment',
+        'full_manuscript',
+        'notarized_co_authorship',
+        'approval_sheet',
+        'record_of_copyright_application'
+    ) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (app_id) REFERENCES applications(app_id) ON DELETE CASCADE
+);
+
+-- 5. Admin Actions / History Table
+CREATE TABLE application_history (
+    history_id INT AUTO_INCREMENT PRIMARY KEY,
+    app_id INT NOT NULL,
+    admin_id INT NOT NULL,
+    action ENUM('approved', 'rejected', 'commented', 'requested_resubmission') NOT NULL,
+    remarks TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (app_id) REFERENCES applications(app_id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
