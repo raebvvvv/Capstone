@@ -168,7 +168,7 @@ if (isset($_SESSION['user_id'])) {
 
         <!-- PUP MAIN–Undergraduates Bar Chart -->
         <div class="dashboard-section mb-4">
-            <h5><span class="legend-dot legend-undergrad"></span> PUP MAIN–Undergraduates</h5>
+            <h5><span class="legend-dot legend-undergrad"></span> Count of Applicant Details/College</h5>
             <div class="bar-chart-container">
                 <canvas id="mainUndergradChart"></canvas>
             </div>
@@ -176,7 +176,7 @@ if (isset($_SESSION['user_id'])) {
 
         <!-- Other Branches and Campus Bar Chart -->
         <div class="dashboard-section mb-4">
-            <h5><span class="legend-dot legend-grad"></span> Other Branches and Campus</h5>
+            <h5><span class="legend-dot legend-grad"></span> Other Campus</h5>
             <div class="bar-chart-container">
                 <canvas id="branchesChart"></canvas>
             </div>

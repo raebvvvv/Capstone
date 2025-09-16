@@ -34,23 +34,30 @@
         type:'bar',
         data:{
           labels:[
-            'College of Tourism, Hospitality and Transportation Management',
-            'Science College',
-            'College of Social Sciences and Development',
-            'College of Political Science and Public Administration',
-            'College of Law',
-            'College of Human Kinetics',
-            'College of Communication',
-            'College of Business Administration',
-            'College of Arts and Letters',
-            'College of Accountancy and Finance',
-            'College of Education',
-            'College of Engineering',
-            'College of Computer and Information Sciences'
+            'CSA',
+            'CAF',
+            'CSSD',
+            'CPSPA',
+            'ITECH',
+            'CHK',
+            'COC',
+            'CBA',
+            'CAL',
+            'CAF',
+            'CADBE',
+            'COE',
+            'CCIS'
           ],
           datasets:[{ label:'Applications', data:[20,10,15,5,10,359,8,7,6,5,4,3,2], backgroundColor:'#3b82f6' }]
         },
-        options:{ indexAxis:'y', plugins:{ legend:{display:false}, title:{display:false} }, scales:{ x:{beginAtZero:true} } }
+        options:{
+          // vertical bars (default indexAxis is 'x')
+          plugins:{ legend:{display:false}, title:{display:false} },
+          scales:{
+            x:{ ticks:{ autoSkip:false, maxRotation:45, minRotation:45 } },
+            y:{ beginAtZero:true }
+          }
+        }
       });
     }
 
@@ -59,7 +66,7 @@
     if(branchesCanvas){
       new Chart(branchesCanvas,{
         type:'bar',
-        data:{ labels:['San Juan City','Quezon City','Taguig City'], datasets:[{ label:'Applications', data:[80,10,65], backgroundColor:'#a855f7' }] },
+        data:{ labels:['Sta. Maria, Bulacan','Pulilan, Bulacan ','Cabiao, Nueva Ecija'], datasets:[{ label:'Applications', data:[80,10,65], backgroundColor:'#a855f7' }] },
         options:{ indexAxis:'y', plugins:{ legend:{display:false}, title:{display:false} }, scales:{ x:{beginAtZero:true} } }
       });
     }
