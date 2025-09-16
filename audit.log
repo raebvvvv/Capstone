@@ -34,3 +34,5 @@
 {"ts":"2025-08-31T02:18:46+02:00","type":"LOGIN_SUCCESS","user_id":25,"ip":"::1","msg":"User logged in","ctx":{"user_id":25}}
 {"ts":"2025-08-31T02:50:32+02:00","type":"LOGIN_SUCCESS","user_id":25,"ip":"::1","msg":"User logged in","ctx":{"user_id":25}}
 {"ts":"2025-08-31T02:50:39+02:00","type":"LOGIN_SUCCESS","user_id":25,"ip":"::1","msg":"User logged in","ctx":{"user_id":25}}
+{"ts":"2025-09-16T08:09:09+02:00","type":"LOGIN_SUCCESS","user_id":22,"ip":"127.0.0.1","msg":"User logged in","ctx":{"user_id":22}}
+{"ts":"2025-09-16T08:42:52+02:00","type":"LOGIN_SUCCESS","user_id":22,"ip":"127.0.0.1","msg":"User logged in","ctx":{"user_id":22}}

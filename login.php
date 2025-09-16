@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($error)) {
                 $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
                 log_event('LOGIN_SUCCESS', 'User logged in', ['user_id' => $user['user_id']]);
-                $destination = $user['is_admin'] ? 'admin.php' : 'after-landing.php';
+                $destination = $user['is_admin'] ? 'admin/admin.php' : 'after-landing.php';
                 header('Location: ' . $destination);
                 exit();
             } else {

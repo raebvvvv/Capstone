@@ -3,9 +3,11 @@ $servername = "localhost";
 $username = "root";   // Use your database username
 $password = "";       // Use your database password
 $dbname = "hasmin_users"; // Replace with your database name
+$port="3306";
+
 
 // Create connection
-$conn = @new mysqli($servername, $username, $password, $dbname);
+$conn = @new mysqli($servername, $username, $password, $dbname, $port);
 if ($conn->connect_error) {
     // Generic message (avoid leaking internal details). Log internally if logger loaded later.
     error_log('DB connection failed');

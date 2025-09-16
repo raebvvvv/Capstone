@@ -81,7 +81,11 @@ if (!function_exists('secure_bootstrap')) {
 if (!function_exists('require_admin')) {
     function require_admin(): void {
         if (empty($_SESSION['user_logged_in']) || empty($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
-            header('Location: login.php');
+            // Redirect to login from both root and /admin context
+            $script = $_SERVER['SCRIPT_NAME'] ?? '';
+            $inAdmin = strpos($script, '/admin/') !== false || basename(dirname($script)) === 'admin';
+            $location = $inAdmin ? '../login.php' : 'login.php';
+            header('Location: ' . $location);
             exit();
         }
     }
