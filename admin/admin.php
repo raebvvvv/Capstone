@@ -74,12 +74,12 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/admin.css?v=5">
+    <link rel="stylesheet" href="../css/admin.css?v=4">
 </head>
 <body>
     <header class="bg-light border-bottom py-3 shadow-sm">
@@ -144,12 +144,16 @@ if (isset($_SESSION['user_id'])) {
                 </div>
             </div>
         </div>
-
+  <!-- Application Overview Section -->
         <div class="dashboard-section mb-4">
             <div class="row align-items-center">
                 <h5 class="mb-5"><span class="legend-dot legend-open"></span>Application Overview</h5>
                 <div class="col-md-6 chart-container d-flex justify-content-center align-items-center">
-                    <canvas id="applicationOverviewChart"></canvas>
+                    <canvas id="applicationOverviewChart"
+                            data-undergrad="<?= (int)$undergrad ?>"
+                            data-grad="<?= (int)$grad ?>"
+                            data-open="<?= (int)$open ?>">
+                    </canvas>
                 </div>
                 <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
                     <div style="font-size: 1.2rem;">
@@ -162,6 +166,7 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
 
+        <!-- PUP MAIN–Undergraduates Bar Chart -->
         <div class="dashboard-section mb-4">
             <h5><span class="legend-dot legend-undergrad"></span> PUP MAIN–Undergraduates</h5>
             <div class="bar-chart-container">
@@ -169,6 +174,7 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
 
+        <!-- Other Branches and Campus Bar Chart -->
         <div class="dashboard-section mb-4">
             <h5><span class="legend-dot legend-grad"></span> Other Branches and Campus</h5>
             <div class="bar-chart-container">
@@ -176,28 +182,15 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
 
+        <!-- Footer -->
         <div class="footer">
             © 2024 Polytechnic University of the Philippines | <a href="https://www.pup.edu.ph/terms" target="_blank">Terms of Use</a> | <a href="https://www.pup.edu.ph/privacy" target="_blank">Privacy Statement</a>
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var overviewCanvas = document.getElementById('applicationOverviewChart');
-            if (overviewCanvas) {
-                new Chart(overviewCanvas, {
-                    type: 'doughnut',
-                    data: { labels: ['Undergraduate', 'Graduate School', 'Open University'], datasets: [{ data: [<?= $undergrad ?>, <?= $grad ?>, <?= $open ?>], backgroundColor: ['#3b82f6', '#a855f7', '#ef4444'] }] },
-                    options: { cutout: '70%', plugins: { legend: { display: true, position: 'bottom' }, title: { display: false } } }
-                });
-            }
-        });
-        new Chart(document.getElementById('mainUndergradChart'), { type: 'bar', data: { labels: [
-            "College of Tourism, Hospitality and Transportation Management","Science College","College of Social Sciences and Development","College of Political Science and Public Administration","College of Law","College of Human Kinetics","College of Communication","College of Business Administration","College of Arts and Letters","College of Accountancy and Finance","College of Education","College of Engineering","College of Computer and Information Sciences"
-        ], datasets: [{ label: 'Applications', data: [20,10,15,5,10,359,8,7,6,5,4,3,2], backgroundColor: '#3b82f6' }] }, options: { indexAxis: 'y', plugins: { legend: { display: false }, title: { display: false } }, scales: { x: { beginAtZero: true } } });
-        new Chart(document.getElementById('branchesChart'), { type: 'bar', data: { labels: ["San Juan City","Quezon City","Taguig City"], datasets: [{ label: 'Applications', data: [80,10,65], backgroundColor: '#a855f7' }] }, options: { indexAxis: 'y', plugins: { legend: { display: false }, title: { display: false } }, scales: { x: { beginAtZero: true } } });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+    <script src="../javascript/admin-dashboard.js" defer></script>
+
 
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
         <div class="modal-dialog">
