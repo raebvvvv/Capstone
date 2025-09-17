@@ -49,3 +49,4 @@
 {"ts":"2025-09-16T18:07:40+02:00","type":"LOGIN_SUCCESS","user_id":25,"ip":"127.0.0.1","msg":"User logged in","ctx":{"user_id":25}}
 {"ts":"2025-09-16T18:50:41+02:00","type":"LOGIN_SUCCESS","user_id":22,"ip":"127.0.0.1","msg":"User logged in","ctx":{"user_id":22}}
 {"ts":"2025-09-16T19:01:32+02:00","type":"LOGIN_SUCCESS","user_id":25,"ip":"127.0.0.1","msg":"User logged in","ctx":{"user_id":25}}
+{"ts":"2025-09-17T17:14:35+02:00","type":"ADMIN_PROFILE_UPDATE","user_id":22,"ip":"127.0.0.1","msg":"Profile updated","ctx":{"uid":22}}

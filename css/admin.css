@@ -1,6 +1,20 @@
+html, body {
+    height: 100%;
+}
 body { 
     font-family: 'Inter', sans-serif; 
     background: #f8fafc; 
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main.page-wrapper, .page-wrapper { /* optional helper wrapper */
+    flex: 1 0 auto;
+}
+
+footer, .site-footer {
+    flex-shrink: 0;
 }
 
 .navbar-brand {
@@ -41,19 +55,26 @@ img{
      font-size: 1rem; color: #888;
      }
 .summary-card.pending { 
-    background: #ffe5e5; 
+    background: #FFD54F;
+     color:#800000;
 }
 .summary-card.approved { 
-    background: #fff8c3; 
+    background: white; 
+    color:#800000;
+     border: 2px solid #800000;
 }
 .summary-card.completed { 
-    background: #c3ffd3; 
+    background: white; 
+    color:#800000;
+    border: 2px solid #800000;
 }
 .summary-card.total {
-     background: #f3f0ff; 
+     background: #800000; 
+     color:white;
 }
 .summary-card.users { 
-    background: #f3f0ff; 
+    background: #800000; 
+    color:white;
 }
 .dashboard-section { 
     background: #fff; 
@@ -91,11 +112,24 @@ img{
     display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; 
 }
 .legend-undergrad { 
-    background: #3b82f6; 
+    background: #870000; 
 }
 .legend-grad {
-     background: #a855f7; 
+     background: #870000; 
     }
 .legend-open { 
-    background: #ef4444; 
+    background: #870000; 
+}
+.btn-logout {
+    background-color: maroon;
+    color: #fff;
+    border: none;
+}
+.btn-logout:hover,
+.btn-logout:focus,
+.btn-logout:active {
+    background-color: maroon !important;
+    color: #fff !important;
+    border-color: maroon !important;
+    box-shadow: none !important;
 }

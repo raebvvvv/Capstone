@@ -55,10 +55,11 @@ $result_active = $stmt_active->get_result();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="../css/manageuser.css?v=2">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>User Management</title>
 </head>
 <body>
-    <header class="bg-light border-bottom py-3 shadow-sm">
+    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -75,6 +76,7 @@ $result_active = $stmt_active->get_result();
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Appplications</a></li>
+                            <button type="button" class="btn btn-outline-secondary px-3 me-2" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
                             <form method="POST" action="../logout.php" class="d-inline ms-2">
                                 <?php csrf_input(); ?>
                                 <button type="submit" class="btn btn-logout px-4">Logout</button>
@@ -192,5 +194,70 @@ $result_active = $stmt_active->get_result();
             </div>
         </div>
     </div>
+    <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminProfileLabel">My Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="adminProfileBody">
+                    <div class="border rounded p-3 mb-4 bg-light-subtle" style="border-color:#ddd!important;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-bold">Account Information</h6>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary" id="profileEditBtn">Edit</button>
+                                <button type="button" class="btn btn-outline-secondary d-none" id="profileCancelBtn">Cancel</button>
+                            </div>
+                        </div>
+                        <form id="profileInfoForm">
+                            <div class="mb-3">
+                                <label for="profileAdminName" class="form-label fw-semibold">Name</label>
+                                <input type="text" class="form-control" id="profileAdminName" required disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
+                                <input type="email" class="form-control" id="profileAdminEmail" required disabled>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary d-none" id="profileSaveBtn">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                    <hr>
+                    <h6 class="fw-bold mb-3">Change Password</h6>
+                    <form id="profileChangePasswordForm">
+                        <div class="mb-3">
+                            <label for="profileCurrentPassword" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="profileCurrentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="profileNewPassword" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="profileNewPassword" minlength="8" required>
+                            <div class="form-text">At least 8 characters.</div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="profileConfirmPassword" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="profileConfirmPassword" minlength="8" required>
+                        </div>
+                        <div id="profileChangePassAlert" class="alert d-none mt-3" role="alert"></div>
+                        <div class="modal-footer px-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../javascript/admin-profile.js?v=2" defer></script>
+      <!-- Footer -->
+  <footer class="bg-white border-top py-3">
+    <div class="container text-center small">
+      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
+    </div>
+  </footer>
 </body>
 </html>

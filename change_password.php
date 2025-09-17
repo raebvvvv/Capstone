@@ -1,4 +1,5 @@
 <?php
+// User password change endpoint (non-admin). Admins use admin/admin_change_password.php.
 require __DIR__ . '/security_bootstrap.php';
 secure_bootstrap();
 // Simple rate limiting (issue #22): allow max 10 password change attempts per user per hour
@@ -44,20 +45,20 @@ if (!$row) {
 $hash = $row['password'];
 if (!password_verify($current, $hash)) {
     echo json_encode(['success' => false, 'error' => 'Current password is incorrect']);
-    log_event('PASSWORD_CHANGE_FAIL', 'Incorrect current password');
+    log_event('USER_PASSWORD_CHANGE_FAIL', 'Incorrect current password');
     exit();
 }
 
-if (strlen($new) < 8) { echo json_encode(['success' => false, 'error' => 'New password must be at least 8 characters']); log_event('PASSWORD_CHANGE_FAIL', 'New password too short'); exit(); }
+if (strlen($new) < 8) { echo json_encode(['success' => false, 'error' => 'New password must be at least 8 characters']); log_event('USER_PASSWORD_CHANGE_FAIL', 'New password too short'); exit(); }
 if (strlen($new) > 200) { echo json_encode(['success'=>false,'error'=>'Password too long']); exit(); }
 
 $newHash = password_hash($new, PASSWORD_BCRYPT);
 $upd = $conn->prepare('UPDATE users SET password = ? WHERE user_id = ?');
 $upd->bind_param('si', $newHash, $user_id);
 if ($upd->execute()) {
-    log_event('PASSWORD_CHANGE', 'Password changed');
+    log_event('USER_PASSWORD_CHANGE', 'Password changed');
     echo json_encode(['success' => true]);
 } else {
-    log_event('PASSWORD_CHANGE_FAIL', 'DB update failed', ['err'=>$upd->error]);
+    log_event('USER_PASSWORD_CHANGE_FAIL', 'DB update failed', ['err'=>$upd->error]);
     echo json_encode(['success' => false, 'error' => 'Operation failed']);
 }
