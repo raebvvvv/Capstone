@@ -11,10 +11,10 @@
   <link rel="stylesheet" href="css/copyright-application.css">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+          <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -27,7 +27,7 @@
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
-        <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+          <a href="../../e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
       </div>
     </div>
   </nav>
@@ -110,6 +110,6 @@
   </footer>
 
   <!-- Bootstrap JS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,6 +1,4 @@
-<?php
-require __DIR__ . '/auth_check.php';
-?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,14 +8,15 @@ require __DIR__ . '/auth_check.php';
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/landing.css?v=5">
+  <link rel="stylesheet" href="css/main.css?v=5">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -25,39 +24,42 @@ require __DIR__ . '/auth_check.php';
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link nav-bold active-page" aria-current="page" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="after-about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="student-profile.php">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="after-landing.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
         <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
-        </ul>
       </div>
     </div>
   </nav>
 
+
   <!-- Main Section -->
-  <main class="container py-4">
+  <section class="container py-5">
+    <!-- Top row: intro (left) and office hours (right) side by side, matching index.php -->
     <div class="row g-5 align-items-start">
-      <div class="col-lg-5">
-        <h1 class="fw-bold mb-2">e-IPMO Services</h1>
-        <p class="mb-3 p-font-size"><span class="fw-bold">e-IPMO</span> is an online system that lets students easily register, submit, and track their IP applications—all in one secure and user-friendly platform. It simplifies the first step of the application process for a smoother start.</p>
-        <p class="mb-2"> <p></p>
-          <span class="me-3"><img src="Photos/Icons/Email-icon.png" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
-          <span><img src="Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm"> (+632) 5335-1787</span>
-        </p>
-        <p>The purpose of IP is to protect works from misuse or theft. Click <a href="https://www.wto.org/english/tratop_e/trips_e/intel1_e.htm" class="fw-bold text-primary" target="_blank">here</a> to read about Intellectual Property Rights.</p>
-      </div>
-      <div class="col-lg-7">
-        <div class="office-right">
-          <h2 class="fw-bold">Office Hours</h2>
-          <div class="mb-2">
-            <div>Monday - Friday<br>8:00 AM - 8:00 PM</div>
-            <div class="text-danger fw-bold mt-1">NO SATURDAY SERVICES.</div>
+      <div class="d-flex flex-row justify-content-between align-items-start w-100 flex-wrap main-intro-row">
+        <div class="d-flex flex-row justify-content-between align-items-start w-100 flex-wrap">
+          <div class="flex-grow-1" style="max-width: 60%;">
+            <h1 class="fw-bold mb-2">e-IPMO Services</h1>
+            <p class="fs-5 mb-3"><span class="fw-bold">e-IPMO</span> is an online system for students to easily register, submit, and track IP applications in one secure platform. Start your application process smoothly and efficiently.</p>
+            <p class="mb-2">
+              <span class="me-3"><img src="Photos/Icons/Email-icon.png" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
+              <span><img src="Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm"> (+632) 5335-1787</span>
+            </p>
+            <p class="ip-purpose">The purpose of IP is to protect works   from misuse or theft. Click <a href="https://www.wto.org/english/tratop_e/trips_e/intel1_e.htm" class="fw-bold text-primary" target="_blank">here</a> to read about Intellectual Property Rights.</p>
           </div>
-          <div class="mt-3">
-            <div><span class="fw-bold">Location:</span></div>
-            <div>PUP Main Building<br>S407, South Wing, 4th Floor<br>Anonas St. Sta. Mesa, Manila</div>
+          <div class="ms-5">  
+            <h2 class="fw-bold">Office Hours</h2>
+            <div class="mb-2">
+              <div>Monday - Friday<br>8:00 AM - 8:00 PM</div>
+              <div class="text-danger fw-bold mt-1">NO SATURDAY SERVICES.</div>
+            </div>
+            <div class="mt-3">
+              <div><span class="fw-bold">Location:</span></div>
+              <div>PUP Main Building<br>S407, South Wing, 4th Floor<br>Anonas St. Sta. Mesa, Manila</div>
+            </div>
           </div>
         </div>
       </div>
@@ -78,8 +80,8 @@ require __DIR__ . '/auth_check.php';
             <img src="Photos/Icons/how-apply.png" alt="apply" class="mb-3 mx-auto d-block" style="height:40px;">
             <h5 class="fw-bold mb-2">How do I apply for IP?</h5>
             <div class="d-flex justify-content-center gap-2 mb-2">
-              <a href="ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
-              <a href="before-originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
+              <a href="after-ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
+              <a href="after-originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
             </div>
           </div>
         </div>
@@ -91,54 +93,41 @@ require __DIR__ . '/auth_check.php';
           </div>
         </div>
       </div>
-      <div class="login-section-center">
-        <h5 class="fw-bold mb-3">Register or Login here!</h5>
-        <div class="d-flex">
-          <a href="login.php" class="btn btn-login fw-bold px-5 py-2">STUDENT</a>
-          <a href="login.php" class="btn btn-login fw-bold px-5 py-2">EMPLOYEE</a>
-        </div>
-      </div>
     </div>
   </section>
 
-  <!-- Announcements Section -->
-  <section class="container py-5" id="announcements">
+  <!-- Announcements Section (matches index.php) -->
+  <section class="container py-1 mb-5" id="announcements">
     <h2 class="fw-bold mb-4">Announcements</h2>
     <div class="row g-4">
-      <!-- Announcement Card 1 -->
       <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <img src="Photos/hiring.jpg" class="card-img-top" alt="Hiring Announcement">
+        <div class="card announcement-card">
+          <img src="Photos/hiring.jpg" class="announcement-img" alt="Hiring Announcement">
         </div>
       </div>
-      <!-- Announcement Card 2 -->
       <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <img src="Photos/hiring2.jpg" class="card-img-top" alt="Application Process">
+        <div class="card announcement-card">
+          <img src="Photos/hiring2.jpg" class="announcement-img" alt="Application Process">
         </div>
       </div>
-      <!-- Announcement Card 3 -->
       <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <img src="Photos/hiring3.jpg" class="card-img-top" alt="Technical Assistant I">
+        <div class="card announcement-card">
+          <img src="Photos/hiring3.jpg" class="announcement-img" alt="Technical Assistant I">
         </div>
       </div>
-      <!-- Announcement Card 4 -->
       <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <img src="Photos/hiring4.jpg" class="card-img-top" alt="Technical Assistant III">
+        <div class="card announcement-card">
+          <img src="Photos/hiring4.jpg" class="announcement-img" alt="Technical Assistant III">
         </div>
       </div>
-      <!-- Announcement Card 5 -->
       <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <img src="Photos/hiring5.jpg" class="card-img-top" alt="Technical Expert">
+        <div class="card announcement-card">
+          <img src="Photos/hiring5.jpg" class="announcement-img" alt="Technical Expert">
         </div>
       </div>
-      <!-- Announcement Card 6 -->
       <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <img src="Photos/hirinh6.jpg" class="card-img-top" alt="Technical Expert">
+        <div class="card announcement-card">
+          <img src="Photos/hirinh6.jpg" class="announcement-img" alt="Technical Expert">
         </div>
       </div>
     </div>
@@ -152,10 +141,10 @@ require __DIR__ . '/auth_check.php';
     <h5 class="fw-bold mt-4 mb-3">MEMORANDUM ORDER<br>No. 031, Series of 2013</h5>
     <div class="row g-3">
       <div class="col-md-6">
-        <img src="Photos/memo 1.png" class="img-fluid rounded shadow-sm" alt="Memo 1">
+          <img src="Photos/memo 1.png" class="img-fluid rounded shadow-sm" alt="Memo 1">
       </div>
       <div class="col-md-6">
-        <img src="Photos/memo 2.png" class="img-fluid rounded shadow-sm" alt="Memo 2">
+          <img src="Photos/memo 2.png" class="img-fluid rounded shadow-sm" alt="Memo 2">
       </div>
     </div>
   </section>
@@ -189,19 +178,19 @@ require __DIR__ . '/auth_check.php';
         </div>
       </div>
     </div>
-</main>
+  </section>
 
   <!-- Footer -->
-  <footer class="text-center mt-5">
-    <small>
-      © 2025 Polytechnic University of the Philippines | 
-      <a href="https://www.pup.edu.ph/terms" class="footer-link-blue" target="_blank">Terms of Service</a> | 
-      <a href="https://www.pup.edu.ph/privacy" class="footer-link-blue" target="_blank">Privacy Statement</a> 
-    </small>
+  <footer class="bg-white border-top py-3 mt-4">
+    <div class="container text-center small">
+      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
+    </div>
   </footer>
 
   <!-- Bootstrap JS + Icons -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="javascript/landing.js"></script>
+  <script src="javascript/after-landing.js"></script>
 </body>
 </html>

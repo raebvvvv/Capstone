@@ -60,9 +60,9 @@ $applications = [
     <div class="ipapp-container">
         <header class="ipapp-header">
             <span class="ipapp-title">IP APPLICATIONS</span>
-            <form class="ipapp-search" method="get">
-                <input type="search" class="ipapp-search-input" placeholder="Search" name="search">
-                <button type="submit" class="ipapp-search-icon" aria-label="Search">
+            <form class="ipapp-search" method="get" onsubmit="return false;">
+                <input type="search" class="ipapp-search-input" id="ipappSearch" placeholder="Search by description, name, date" autocomplete="off">
+                <button type="button" class="ipapp-search-icon" aria-label="Search" id="ipappSearchBtn">
                     <svg width="20" height="20" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#222"/><path stroke="#222" stroke-linecap="round" d="M17.5 17.5l-4.5-4.5"/></svg>
                 </button>
             </form>
@@ -141,10 +141,10 @@ $applications = [
             </div>
             <button class="ipapp-go-btn">Go</button>
         </div>
-        <main class="ipapp-list">
+        <main class="ipapp-list" id="ipappList">
             <?php foreach ($applications as $app): ?>
                 <?php $detailsAttr = isset($app['details']) ? htmlspecialchars(base64_encode(json_encode($app['details'])), ENT_QUOTES, 'UTF-8') : ''; ?>
-                <div class="ipapp-list-item">
+                <div class="ipapp-list-item" data-description="<?php echo htmlspecialchars(strtolower($app['description'])); ?>" data-name="<?php echo htmlspecialchars(strtolower($app['name'])); ?>" data-date="<?php echo htmlspecialchars(strtolower($app['date'])); ?>">
                     <a href="#" class="ipapp-desc ipapp-desc-link" data-details="<?php echo $detailsAttr; ?>">
                         <?php echo htmlspecialchars($app['description']); ?>
                     </a>
@@ -189,6 +189,9 @@ $applications = [
     </div>
 
 <script>
+    // Utility: throttle for performance if large lists (currently trivial)
+    function throttle(fn, delay){ let t=0; return function(...args){ const now=Date.now(); if(now-t>delay){ t=now; fn.apply(this,args);} }; }
+
     const backdrop = document.getElementById('dropdown-backdrop');
     document.getElementById('othersBtn').onclick = function() {
         var bar = document.getElementById('filtersBar');
@@ -204,8 +207,61 @@ $applications = [
     document.body.addEventListener('click', function() { document.getElementById('allTimeDropdownMenu').classList.remove('menu-active'); document.getElementById('allTimeDropdownMenu').style.display = 'none'; closeAllMiniMenus(); });
     document.querySelectorAll('.ipapp-mini-menu').forEach(m => { m.addEventListener('click', e => e.stopPropagation()); });
     document.getElementById('allTimeDropdownMenu').onclick = function(e){ e.stopPropagation(); };
-    document.addEventListener('click', function(e) { const link = e.target.closest('.ipapp-desc-link'); if (!link) return; e.preventDefault(); const payload = link.getAttribute('data-details') || ''; let details = null; try { details = payload ? JSON.parse(atob(payload)) : null; } catch (err) { details = null; } const v = (x, d='') => (x === undefined || x === null || x === '' ? d : x); const s = details?.student || {}; const d = details?.document || {}; const files = Array.isArray(details?.files) ? details.files : []; const filesHTML = files.map(f => { const url = f.url || ''; const safeHref = url || '#'; const disabledAttrs = url ? '' : 'aria-disabled="true" tabindex="-1"'; const downloadAttrs = url ? 'download' : disabledAttrs; const viewAttrs = url ? 'target="_blank" rel="noopener"' : disabledAttrs; return `<div class="g-file-row"><span>${f.label}</span><div class="g-chip-group"><a class="g-chip" href="${safeHref}" ${downloadAttrs}>Download File</a><a class="g-chip g-chip-view" href="${safeHref}" ${viewAttrs}>View File</a></div></div>`; }).join(''); const html = `<div class="g-section"><h4 class="g-section-title">Student Information</h4><div class="g-line"><strong>Name:</strong> ${v(s.name, '')}</div><div class="g-line"><strong>Student Number:</strong> ${v(s.number, '')}</div><div class="g-line"><strong>Email Address:</strong> ${s.email ? `<a href="mailto:${s.email}">${s.email}</a>` : ''}</div><div class="g-line"><strong>Home Address:</strong> ${v(s.homeAddress, '')}</div><div class="g-line"><strong>Campus:</strong> ${v(s.campus, '')}</div><div class="g-line"><strong>Department:</strong> ${v(s.department, '')}</div><div class="g-line"><strong>College:</strong> ${v(s.college, '')}</div><div class="g-line"><strong>Program:</strong> ${v(s.program, '')}</div></div><div class="g-section"><h4 class="g-section-title">Document Information</h4><div class="g-line"><strong>Title:</strong> ${v(d.title, '')}</div><div class="g-line"><strong>Author/s Full name/s:</strong> ${v(d.author, '')}</div><div class="g-line"><strong>Date Accomplished for the Work:</strong> ${v(d.dateAccomplished, '')}</div><div class="g-line"><strong>Application Date Accomplished:</strong> ${v(d.applicationDate, '')}</div></div><div class="g-files">${filesHTML}</div>`; document.getElementById('gmodalBody').innerHTML = html; new bootstrap.Modal(document.getElementById('detailsGModal')).show(); });
+    // Delegated click for description (details modal)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.ipapp-desc-link');
+        if (!link) return;
+        e.preventDefault();
+        const payload = link.getAttribute('data-details') || '';
+        let details = null;
+        try { details = payload ? JSON.parse(atob(payload)) : null; } catch (err) { details = null; }
+        const v = (x, d='') => (x === undefined || x === null || x === '' ? d : x);
+        const s = details?.student || {}; const dDoc = details?.document || {}; const files = Array.isArray(details?.files) ? details.files : [];
+        const filesHTML = files.map(f => {
+            const url = f.url || '';
+            const safeHref = url || '#';
+            const disabledAttrs = url ? '' : 'aria-disabled="true" tabindex="-1"';
+            const downloadAttrs = url ? 'download' : disabledAttrs;
+            const viewAttrs = url ? 'target="_blank" rel="noopener"' : disabledAttrs;
+            return `<div class="g-file-row"><span>${f.label}</span><div class="g-chip-group"><a class="g-chip" href="${safeHref}" ${downloadAttrs}>Download File</a><a class="g-chip g-chip-view" href="${safeHref}" ${viewAttrs}>View File</a></div></div>`;
+        }).join('');
+        const html = `
+            <div class="g-section"><h4 class="g-section-title">Student Information</h4>
+                <div class="g-line"><strong>Name:</strong> ${v(s.name)}</div>
+                <div class="g-line"><strong>Student Number:</strong> ${v(s.number)}</div>
+                <div class="g-line"><strong>Email Address:</strong> ${s.email ? `<a href="mailto:${s.email}">${s.email}</a>` : ''}</div>
+                <div class="g-line"><strong>Home Address:</strong> ${v(s.homeAddress)}</div>
+                <div class="g-line"><strong>Campus:</strong> ${v(s.campus)}</div>
+                <div class="g-line"><strong>Department:</strong> ${v(s.department)}</div>
+                <div class="g-line"><strong>College:</strong> ${v(s.college)}</div>
+                <div class="g-line"><strong>Program:</strong> ${v(s.program)}</div>
+            </div>
+            <div class="g-section"><h4 class="g-section-title">Document Information</h4>
+                <div class="g-line"><strong>Title:</strong> ${v(dDoc.title)}</div>
+                <div class="g-line"><strong>Author/s Full name/s:</strong> ${v(dDoc.author)}</div>
+                <div class="g-line"><strong>Date Accomplished for the Work:</strong> ${v(dDoc.dateAccomplished)}</div>
+                <div class="g-line"><strong>Application Date Accomplished:</strong> ${v(dDoc.applicationDate)}</div>
+            </div>
+            <div class="g-files">${filesHTML}</div>`;
+        document.getElementById('gmodalBody').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('detailsGModal')).show();
+    });
+
+    // View certificate button
     document.addEventListener('click', function(e) { const btn = e.target.closest('#gViewCertBtn'); if (!btn) return; e.preventDefault(); const detailsInst = bootstrap.Modal.getInstance(document.getElementById('detailsGModal')); if (detailsInst) detailsInst.hide(); new bootstrap.Modal(document.getElementById('certificateModalCA')).show(); });
+
+    // Search filter logic
+    function applyFilter(){
+        const q = (document.getElementById('ipappSearch').value || '').trim().toLowerCase();
+        const items = document.querySelectorAll('#ipappList .ipapp-list-item');
+        if(!q){ items.forEach(it=>it.style.display=''); return; }
+        items.forEach(it => {
+            const hay = (it.dataset.description + ' ' + it.dataset.name + ' ' + it.dataset.date).toLowerCase();
+            it.style.display = hay.includes(q) ? '' : 'none';
+        });
+    }
+    document.getElementById('ipappSearch').addEventListener('input', throttle(applyFilter, 150));
+    document.getElementById('ipappSearchBtn').addEventListener('click', applyFilter);
 </script>
 </body>
 </html>

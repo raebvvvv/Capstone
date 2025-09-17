@@ -14,14 +14,6 @@ main.container {
   border-bottom: 1px solid #eee;
 }
 
-.back-btn-content {
-  background: transparent !important;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  margin-right: 0;
-  margin-left: 0;
-}
 
 .guide-section {
   width: 100%;

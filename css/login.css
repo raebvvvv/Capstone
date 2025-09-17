@@ -1,0 +1,66 @@
+.password-field-custom {
+  margin-bottom: 0.3rem;
+}
+
+.forgot-password-link {
+  color: #2a2ae6;
+  text-decoration: none;
+  transition: color 0.18s, text-decoration 0.18s;
+  font-size: 0.87rem;
+}
+/* Login card styling */
+.login-card-custom {
+  max-width: 370px;
+  width: 100%;
+  border-radius: 12px;
+}
+
+.login-logo {
+  width: 90px;
+  height: 90px;
+}
+
+.student-login-text {
+  font-style: normal;
+  font-size: 1.15rem;
+}
+/* Hover effect for forgot password link */
+.forgot-password-link {
+  color: #2a2ae6;
+  text-decoration: none;
+  transition: color 0.18s, text-decoration 0.18s;
+}
+.forgot-password-link:hover, .forgot-password-link:focus {
+  color: #0d6efd;
+  text-decoration: underline;
+}
+
+/* More space between buttons */
+.login-btn-custom {
+  margin-bottom: 1.1rem !important;
+}
+/* Custom hover effects for login and register buttons on the login page */
+
+.login-btn-custom {
+  background: #1db31d;
+  color: #fff;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  transition: background 0.18s, color 0.18s;
+}
+.login-btn-custom:hover, .login-btn-custom:focus {
+  background: #198754;
+  color: #fff;
+}
+
+.register-btn-custom {
+  background: #900c0c;
+  color: #fff;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  transition: background 0.18s, color 0.18s;
+}
+.register-btn-custom:hover, .register-btn-custom:focus {
+  background: #b02a37;
+  color: #fff;
+}

@@ -147,7 +147,11 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
         <div class="d-flex justify-content-center mb-3 gap-2">
-            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Patent/Industrial Design/Utility Model/Trademark</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Ethics Clearance</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Patent</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Industrial Design</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Utility Model</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Trademark</button></a>
             <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Copyright</button></a>
         </div>
         <ul class="nav nav-tabs mb-3" id="requestTabs">
