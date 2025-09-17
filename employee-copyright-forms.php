@@ -179,6 +179,12 @@
                   <div class="col-md-3">
                     <label class="form-label">Adviser</label>
                     <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser" required>
+                    <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" name="adviser_coauthor" id="adviserCoauthor">
+                    <label class="form-check-label" for="adviserCoauthor">
+                      Adviser is a Co-author
+                    </label>
+                  </div>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Date Accomplished</label>
