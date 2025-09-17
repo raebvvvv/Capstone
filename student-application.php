@@ -9,6 +9,7 @@
   <link rel="icon" type="image/png" href="Photos/pup-logo.png">
   <link rel="stylesheet" href="css/student-application.css">
   <link rel="stylesheet" href="css/main.css">
+  
 </head>
 <body>
   <!-- Navbar (uniform across project) -->
@@ -37,10 +38,16 @@
   <main class="container py-4">
     <h1 class="fw-bold mb-2 mt-4" style="font-size:2.5rem;">My Application</h1>
     <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p>
-    <div class="d-flex flex-wrap mb-4">
-      <button class="category-btn active">Patent/Industrial Design/Utility Model/Trademark</button>
-      <button class="category-btn">Copyright</button>
-    </div>
+   
+ <div class="d-flex justify-content-center mb-3 gap-2">
+    <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Ethics Clearance</button></a>
+    <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Patent</button></a>
+    <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Industrial Design</button></a>
+    <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Utility Model</button></a>
+    <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Trademark</button></a>
+    <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Copyright</button></a>
+
+  </div>
     <ul class="nav nav-tabs mb-3" id="applicationTabs">
       <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#pending">Pending</a></li>
       <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#approved">Approved</a></li>
