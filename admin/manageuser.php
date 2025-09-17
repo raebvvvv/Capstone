@@ -49,12 +49,12 @@ $result_active = $stmt_active->get_result();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/manageuser.css?v=5">
+    <link rel="stylesheet" href="../css/manageuser.css?v=2">
     <title>User Management</title>
 </head>
 <body>
@@ -75,9 +75,9 @@ $result_active = $stmt_active->get_result();
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Appplications</a></li>
-                            <form method="POST" action="../logout.php" class="d-inline">
+                            <form method="POST" action="../logout.php" class="d-inline ms-2">
                                 <?php csrf_input(); ?>
-                                <button type="submit" class="btn btn-primary rounded-pill px-4">Logout</button>
+                                <button type="submit" class="btn btn-logout px-4">Logout</button>
                             </form>
                             </li>
                         </ul>
