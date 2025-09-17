@@ -20,3 +20,21 @@ body {
 }
 
 
+/* Logout button fixed color */
+.btn-logout {
+    background-color: maroon;
+    color: #fff;
+    border: none;
+}
+
+.btn-logout:hover,
+.btn-logout:focus,
+.btn-logout:active {
+    background-color: maroon !important;
+    color: #fff !important;
+    border-color: maroon !important;
+    box-shadow: none !important;
+}
+
+
+
