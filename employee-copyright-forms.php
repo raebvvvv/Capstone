@@ -404,6 +404,61 @@
       renderPlaceholder();
     })();
   </script>
+  <script>
+    (function(){
+      const adviserCheckbox = document.getElementById('adviserCoauthor');
+      const adviserInput = document.querySelector('input[name="adviser"]');
+      const authorsList = document.getElementById('authorsList');
+      const authorsHidden = document.getElementById('authorsHidden');
+      const adviserIdx = 'adviser';
+
+      function addAdviserAuthor(name) {
+        if (!document.getElementById('adviser-pill')) {
+          const div = document.createElement('div');
+          div.className = 'author-pill';
+          div.id = 'adviser-pill';
+          div.innerHTML = `<span class="fw-semibold">${name}</span> <small class="text-muted ms-2">Adviser</small>`;
+          if (authorsList.innerHTML.includes('No authors')) authorsList.innerHTML = '';
+          authorsList.appendChild(div);
+        }
+        if (!document.getElementById('adviser-hidden')) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = `authors[${adviserIdx}][name]`;
+          input.value = name;
+          input.id = 'adviser-hidden';
+          authorsHidden.appendChild(input);
+        }
+      }
+
+      function removeAdviserAuthor() {
+        const pill = document.getElementById('adviser-pill');
+        const hidden = document.getElementById('adviser-hidden');
+        if (pill) pill.remove();
+        if (hidden) hidden.remove();
+        if (!authorsHidden.children.length) {
+          authorsList.innerHTML = 'No authors added yet.';
+        }
+      }
+
+      adviserCheckbox.addEventListener('change', function() {
+        if (adviserCheckbox.checked && adviserInput.value.trim()) {
+          addAdviserAuthor(adviserInput.value.trim());
+        } else {
+          removeAdviserAuthor();
+        }
+      });
+
+      adviserInput.addEventListener('input', function() {
+        if (adviserCheckbox.checked) {
+          removeAdviserAuthor();
+          if (adviserInput.value.trim()) {
+            addAdviserAuthor(adviserInput.value.trim());
+          }
+        }
+      });
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
