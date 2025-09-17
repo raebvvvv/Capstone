@@ -6,28 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/ip-application.css">
+  <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <!-- Navbar (matches index.php) -->
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-        <img src="Photos/pup-logo.png" alt="PUP Logo" style="width:40px;height:40px;">
-        <span class="fw-bold fs-5">PUP e-IPMO</span>
+      <a class="navbar-brand d-flex align-items-center" href="#">
+  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+        <span>PUP e-IPMO</span>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-        data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
-        aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse flex-grow-0" id="navbarNav">
-        <ul class="navbar-nav gap-2 align-items-center ms-auto">
-          <li class="nav-item">
-            <a class="nav-link fw-bold" href="index.php">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fw-bold" href="about.php">About Us</a>
-          </li>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
         </ul>
       </div>
     </div>
@@ -83,7 +78,7 @@
           </div>
           <div class="step-actions d-flex flex-column justify-content-center align-items-md-end align-items-start ms-md-3 mt-3 mt-md-0">
             <div class="mb-2 small text-center">Click here for a preview of the IP Application forms.</div>
-            <a href="login.php" class="btn btn-warning btn-sm fw-bold px-4">Go to e-Services</a>
+            <a href="before-e-services.php" class="btn btn-warning btn-sm fw-bold px-4">Go to e-Services</a>
           </div>
         </div>
       </div>
@@ -171,14 +166,11 @@
   <!-- Footer -->
   <footer class="bg-white border-top py-3 mt-4">
     <div class="container text-center small">
-      For any questions or concerns, feel free to contact us via:<br>
-      <span class="me-3"><img src="Photos/Icons/Email-icon.png" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
-      <span><img src="Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm"> (+632) 5335-1787</span><br>
       © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none">Terms of Use</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none">Privacy Statement</a>
+      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
     </div>
-  </footer>
+  </footer> 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="javascript/ip-application.js"></script>

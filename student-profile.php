@@ -1,8 +1,3 @@
-<?php
-require __DIR__ . '/security_bootstrap.php';
-secure_bootstrap();
-require __DIR__ . '/auth_check.php';
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,16 +6,16 @@ require __DIR__ . '/auth_check.php';
     <title>My Profile | PUP e-IPMO</title>
     <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/student-profile.css">
+  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
+  <link rel="stylesheet" href="css/student-profile.css">
+  <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
   <!-- Navbar (uniform across project) -->
-  <nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -28,10 +23,10 @@ require __DIR__ . '/auth_check.php';
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link nav-bold" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="after-about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold active-page" aria-current="page" href="student-profile.php">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="after-landing.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link active" href="student-profile.php">My Profile</a></li>
         </ul>
         <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
       </div>
@@ -50,12 +45,9 @@ require __DIR__ . '/auth_check.php';
           Edit Profile
         </button>           
       </div>
-      <form id="logoutForm" method="POST" action="logout.php" class="m-0">
-        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-        <button id="signOutBtn" type="submit" class="btn btn-danger btn-sm px-4" onclick="return confirm('Sign out now?');">
-          Sign Out
-        </button>
-      </form>
+      <button id="signOutBtn" type="button" class="btn btn-danger btn-sm px-4">
+        Sign Out
+      </button>
     </div>
     <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p>
     <div class="bg-white rounded-3 shadow-sm p-4 mx-auto" style="max-width: 1100px;">
@@ -122,28 +114,27 @@ require __DIR__ . '/auth_check.php';
     </div>
   </main>
   
-  <footer class="text-center mt-5">
-    <p>
-      For any questions or concerns, feel free to contact us via:<br>
-      📧 ipmo@pup.edu.ph &nbsp; 📞 (+632) 5335-1787
-    </p>
-    <small>
-      © 2025 Polytechnic University of the Philippines | 
-      <a href="https://www.pup.edu.ph/terms" class="footer-link-blue" target="_blank">Terms of Service</a> | 
-      <a href="https://www.pup.edu.ph/privacy" class="footer-link-blue" target="_blank">Privacy Statement</a>
-    </small>
+  <!-- Footer -->
+  <footer class="bg-white border-top py-3 mt-4">
+    <div class="container text-center small">
+      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
+    </div>
   </footer>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+document.getElementById('signOutBtn').addEventListener('click', function() {
+  window.location.href = 'index.php';
+});
 document.addEventListener('DOMContentLoaded', function() {
   const editBtn = document.getElementById('editProfileBtn');
   const saveBtn = document.getElementById('saveProfileBtn');
   const cancelBtn = document.getElementById('cancelEditBtn');
   const form = document.getElementById('profileForm');
   const inputs = form.querySelectorAll('input:not([id="webmail"])');
-  // Sign out now handled by POST form with CSRF token (no JS redirect needed)
 
   editBtn.addEventListener('click', function() {
     inputs.forEach(input => input.disabled = false);

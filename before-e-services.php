@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PUP e-IPMO e-Services</title>
+  <title>PUP e-IPMO e-Services (Guide)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,9 +11,10 @@
   <link rel="stylesheet" href="css/e-services.css">
 </head>
 <body>
+  <!-- Navbar copied from index.php -->
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
+      <a class="navbar-brand d-flex align-items-center" href="index.php">
   <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
@@ -22,12 +23,9 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="after-about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
         </ul>
-        <a href="#" class="btn btn-success ms-3 disabled-btn">You are in e-Services</a>
       </div>
     </div>
   </nav>
@@ -47,7 +45,7 @@
               <span class="text-danger oc-rule-small"><b>15% - Graduate School (Doctorate and Masterals)</b></span><br>
               <span class="text-danger oc-rule-small"><b>20% and below - Undergraduate Degree</b></span>
             </p>
-            <button class="btn btn-success" onclick="window.location.href='after-originality-check.php'">Apply</button>
+            <button class="btn btn-warning fw-bold text-dark" onclick="window.location.href='originality-check.php'">Guide</button>
           </div>
         </div>
       </div>
@@ -60,7 +58,7 @@
               Copyright is the legal protection extended to the owner of the rights in an original work, such as <b>intellectual creations in the
               literary, scientific and artistic domain.</b>
             </p>
-            <button class="btn btn-success" onclick="window.location.href='copyright-application.php'">Apply</button>
+            <button class="btn btn-warning fw-bold text-dark" onclick="window.location.href='copyright-application.php'">Guide</button>
           </div>
         </div>
       </div>
@@ -73,11 +71,11 @@
               All four are subject to a government grant giving an inventor exclusive rights to a product or process that solves a technical problem in any human activity field.<br>
               <strong>They must be new, inventive, and industrially applicable.</strong>
             </p>
-            <button class="btn btn-success" onclick="apply('patent')">Apply</button>
+            <button class="btn btn-warning fw-bold text-dark" onclick="apply('patent')">Guide</button>
           </div>
         </div>
       </div>
-              <div class="text-center mt-5">
+        <div class="text-center mt-5">
           <p class="contact-info-small mb-0">
             For any questions or concerns, feel free to contact us via:<br>
             <span class="me-3">
@@ -99,6 +97,8 @@
       <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
     </div>
   </footer> 
+
+
 
   <!-- Bootstrap JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>

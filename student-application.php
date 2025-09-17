@@ -1,8 +1,3 @@
-<?php
-require __DIR__ . '/security_bootstrap.php';
-secure_bootstrap();
-require __DIR__ . '/auth_check.php';
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,16 +6,16 @@ require __DIR__ . '/auth_check.php';
     <title>My Application | PUP e-IPMO</title>
     <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/student-application.css">
+  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
+  <link rel="stylesheet" href="css/student-application.css">
+  <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
   <!-- Navbar (uniform across project) -->
-  <nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -28,10 +23,10 @@ require __DIR__ . '/auth_check.php';
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link nav-bold" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="after-about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold active-page" aria-current="page" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="student-profile.php">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="after-landing.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="student-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
         <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
       </div>
@@ -124,17 +119,13 @@ require __DIR__ . '/auth_check.php';
     </div>
   </main>
   
-  <!-- Footer (consistent across all pages) -->
-  <footer class="text-center mt-5">
-    <p>
-      For any questions or concerns, feel free to contact us via:<br>
-      📧 ipmo@pup.edu.ph &nbsp; 📞 (+632) 5335-1787
-    </p>
-    <small>
-      © 2025 Polytechnic University of the Philippines | 
-      <a href="https://www.pup.edu.ph/terms" class="footer-link-blue" target="_blank">Terms of Service</a> | 
-      <a href="https://www.pup.edu.ph/privacy" class="footer-link-blue" target="_blank">Privacy Statement</a>
-    </small>
+  <!-- Footer -->
+  <footer class="bg-white border-top py-3 mt-4">
+    <div class="container text-center small">
+      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
+    </div>
   </footer>
 
   <!-- Bootstrap JS -->

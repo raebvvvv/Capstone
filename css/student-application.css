@@ -2,8 +2,8 @@
 body {
   background: #f7f7f7;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  /* display: flex; */
+  /* flex-direction: column; */
 }
 
 main {

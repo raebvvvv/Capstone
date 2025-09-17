@@ -1,16 +1,74 @@
-
-html, body {
-  height: 100%;
+footer.footer-minimal {
+  font-size: 0.58rem !important;
+  color: #555 !important;
+  text-align: center !important;
+  padding: 0.1em 0 !important;
+  margin-top: 10px !important;
+}
+footer.footer-minimal a {
+  color: #0d6efd !important;
+  text-decoration: underline;
 }
 
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: #fafafa;
-  font-family: Arial, sans-serif;
-  margin: 0;
+
+/* Announcement images grid styling */
+.announcement-card {
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  margin-bottom: 0;
 }
+
+
+.intro-left {
+  flex: 1 1 350px;
+  min-width: 320px;
+  max-width: 700px;
+}
+
+.office-hours-box {
+  flex: 0 0 340px;
+  max-width: 370px;
+  margin-left: 32px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  min-width: 270px;
+}
+
+@media (max-width: 992px) {
+  .main-intro-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .office-hours-box {
+    margin-left: 0;
+    margin-top: 2rem;
+    max-width: 100%;
+    width: 100%;
+  }
+}
+.col-lg-7 {
+  margin-left: 12px !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  position: static;
+}
+/* Ensure main content aligns with logo and navbar text */
+.col-lg-7 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  position: static;
+}
+/* Align IP purpose paragraph with intro paragraph */
+p.ip-purpose {
+  max-width: 520px;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin-bottom: 1.1rem;
+}
+
+
 
 .icon-sm {
   width: 20px;
@@ -34,8 +92,12 @@ h1, h2, h5 {
 
 .card-img-top {
   border-radius: 14px 14px 0 0;
-  object-fit: cover;
-  height: 180px;
+  object-fit: contain;
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .btn-login {
@@ -53,6 +115,11 @@ h1, h2, h5 {
   color: #fff;
 }
 
+
+
+.office-right {
+  margin-left: 220px; 
+}
 
 @media (max-width: 992px) {
   .office-right {
