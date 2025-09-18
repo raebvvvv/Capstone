@@ -1,6 +1,7 @@
 html, body {
   height: 100%;
-  overflow-y: hidden !important;
+  /* Allow vertical scrolling so the footer is reachable */
+  overflow-y: auto;
 }
 
 body {
@@ -14,6 +15,11 @@ body {
 
 main.container {
   flex: 1 0 auto;
+}
+
+/* Ensure footer doesn't shrink in flex layout */
+footer {
+  flex-shrink: 0;
 }
 
 

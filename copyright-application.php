@@ -7,8 +7,9 @@
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/copyright-application.css">
+  <link rel="stylesheet" href="css/main.css">
+  
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
@@ -27,15 +28,23 @@
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
-          <a href="../../e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+          <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
       </div>
     </div>
   </nav>
+
+    <div class="container d-flex justify-content-end mt-3 mb-2">
+        <a href="#" onclick="window.history.back()" class="back-btn-content text-dark fs-5 text-decoration-none">
+          &#x21B6; Back
+        </a>
+      </div>
+
   <main class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-  <h2 class="fw-bold mb-0">Copyright Application</h2>
-  <a href="e-services.php" style="color:black;">&larr; Back</a>
-  </div>
+
+    <div class=" justify-content-between mb-4">
+      <h2 class="fw-bold mb-0">Copyright Application</h2>
+        <!-- Back Button Below Navbar, scrolls with content, transparent background -->
+    </div>
 
     <ol>
       <li class="mb-4">
@@ -97,19 +106,20 @@
       </div>
     </div>
   </main>
-  <footer class="text-center mt-5">
-    <p>
+   <p me-3-3 class="text-center text-muted" style="font-size:0.9em;">
       For any questions or concerns, feel free to contact us via:<br>
       📧 ipmo@pup.edu.ph &nbsp; 📞 (+632) 5335-1787
     </p>
-    <small>
-      © 2025 Polytechnic University of the Philippines | 
-      <a href="https://www.pup.edu.ph/terms" class="footer-link-blue" target="_blank">Terms of Service</a> | 
-      <a href="https://www.pup.edu.ph/privacy" class="footer-link-blue" target="_blank">Privacy Statement</a>
-    </small>
-  </footer>
+    <!-- Footer -->
+  <footer class="bg-white border-top py-3 mt-4">
+    <div class="container text-center small">
+      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
+    </div>
+  </footer> 
 
   <!-- Bootstrap JS CDN -->
-    <script src="../../https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

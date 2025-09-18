@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="Photos/pup-logo.png">
   <link rel="stylesheet" href="css/student-application.css">
   <link rel="stylesheet" href="css/main.css">
-  
+
 </head>
 <body>
   <!-- Navbar (uniform across project) -->
@@ -133,7 +133,7 @@
       <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
       <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
     </div>
-  </footer>
+  </footer> 
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>

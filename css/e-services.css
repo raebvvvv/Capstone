@@ -15,7 +15,14 @@ main.container {
   flex: 1 0 auto;
   margin-top: 2rem;
 }
-
+.back-btn-content {
+    background: transparent !important;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-right: 0;
+    margin-left: 0;
+}
 
 body {
   background: #fafafa;

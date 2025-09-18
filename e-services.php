@@ -31,6 +31,11 @@
       </div>
     </div>
   </nav>
+  <div class="container d-flex justify-content-end mt-3 mb-2">
+    <a href="#" onclick="window.history.back()" class="back-btn-content text-dark fs-5 text-decoration-none">
+      &#x21B6; Back
+    </a>
+  </div>
   <main class="container py-4">
     <h2 class="text-center mb-2"><strong>Instructions</strong> are provided in each e-Service.</h2>
     <p class="text-center text-muted mb-4">
@@ -77,20 +82,13 @@
           </div>
         </div>
       </div>
-              <div class="text-center mt-5">
-          <p class="contact-info-small mb-0">
-            For any questions or concerns, feel free to contact us via:<br>
-            <span class="me-3">
-              <img src="Photos/Icons/Email-icon.png" alt="email" class="icon-sm align-text-bottom" style="width:20px;height:20px;"> ipmo@pup.edu.ph
-            </span>
-            <span>
-              <img src="Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm align-text-bottom" style="width:20px;height:20px;"> (+632) 5335-1787
-            </span>
-          </p>
-        </div>
-    </div>
   </main>
 
+    <!-- Footer -->
+   <p me-3-3 class="text-center text-muted" style="font-size:0.9em;">
+      For any questions or concerns, feel free to contact us via:<br>
+      📧 ipmo@pup.edu.ph &nbsp; 📞 (+632) 5335-1787
+    </p>
     <!-- Footer -->
   <footer class="bg-white border-top py-3 mt-4">
     <div class="container text-center small">

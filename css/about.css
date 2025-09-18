@@ -132,10 +132,6 @@ ol {
   padding-left: 24px !important;
 }
 
-footer {
-  font-size: 0.92rem;
-  margin-top: 38px;
-}
 
 @media (max-width: 768px) {
   .navbar-brand span {

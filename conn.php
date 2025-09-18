@@ -3,7 +3,7 @@ $servername = "localhost";
 $username = "root";   // Use your database username
 $password = "";       // Use your database password
 $dbname = "hasmin_users"; // Replace with your database name
-$port="3306";
+$port="3307";
 
 
 // Create connection

@@ -110,16 +110,7 @@ main.container {
   font-size: 1.08rem;
 }
 
-footer {
-  font-size: 0.92rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  border-radius: 0 0 18px 18px;
-  background: #fff;
-  border-top: 1px solid #eee;
-}
+
 @media (max-width: 992px) {
   .guide-card {
       flex-direction: column !important;

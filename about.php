@@ -6,8 +6,8 @@
   <title>PUP e-IPMO | About Us</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/about.css?v=5">
-  <link rel="stylesheet" href="css/main.css?v=5">
+  <link rel="stylesheet" href="css/about.css">
+  <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
   <!-- Navbar -->
