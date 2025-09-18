@@ -45,7 +45,7 @@
               <span class="text-danger oc-rule-small"><b>15% - Graduate School (Doctorate and Masterals)</b></span><br>
               <span class="text-danger oc-rule-small"><b>20% and below - Undergraduate Degree</b></span>
             </p>
-            <button class="btn btn-warning fw-bold text-dark" onclick="window.location.href='originality-check.php'">Guide</button>
+            <button class="btn btn-warning fw-bold text-dark" onclick="window.location.href='before-originality-check.php'">Guide</button>
           </div>
         </div>
       </div>
@@ -58,7 +58,7 @@
               Copyright is the legal protection extended to the owner of the rights in an original work, such as <b>intellectual creations in the
               literary, scientific and artistic domain.</b>
             </p>
-            <button class="btn btn-warning fw-bold text-dark" onclick="window.location.href='copyright-application.php'">Guide</button>
+            <button class="btn btn-warning fw-bold text-dark" onclick="window.location.href='before-copyright-application.php'">Guide</button>
           </div>
         </div>
       </div>

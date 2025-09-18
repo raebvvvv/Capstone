@@ -1,0 +1,110 @@
+html, body {
+  height: 100%;
+  /* Allow vertical scrolling so the footer is reachable */
+  overflow-y: auto;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fafafa;
+  font-family: Arial, sans-serif;
+  margin: 0;
+}
+
+main.container {
+  flex: 1 0 auto;
+}
+
+/* Ensure footer doesn't shrink in flex layout */
+footer {
+  flex-shrink: 0;
+}
+
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2em;
+}
+
+.file-card {
+  display: flex;
+  align-items: center;
+  background: #f3f3f3;
+  border-radius: 12px;
+  padding: 1em 1.5em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  font-size: 1.05em;
+}
+
+.file-icon {
+  font-size: 2em;
+  margin-right: 1em;
+  color: #555;
+}
+
+.file-info {
+  flex: 1;
+}
+
+.file-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+}
+
+/* BUTTONS — unified colors with hover consistency */
+
+/* Yellow (Warning) */
+.btn-warning,
+.view-btn {
+  background-color: #ffc107; /* Bootstrap warning */
+  border: none;
+  color: #212529;
+}
+.btn-warning:hover,
+.view-btn:hover {
+  background-color: #e0a800; /* Darker yellow on hover */
+  color: #212529;
+}
+
+/* Red (Danger) */
+.btn-danger,
+.download-btn {
+  background-color: #dc3545; /* Bootstrap danger */
+  border: none;
+  color: #fff;
+}
+.btn-danger:hover,
+.download-btn:hover {
+  background-color: #b02a37; /* Darker red on hover */
+  color: #fff;
+}
+
+/* Blue (Primary) */
+.btn-primary {
+  background-color: #0d6efd; /* Bootstrap primary */
+  border: none;
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: #0b5ed7; /* Darker blue on hover */
+  color: #fff;
+}
+
+/* Green (Success) */
+.btn-success,
+.submission-btn {
+  background-color: #198754; /* Bootstrap success */
+  border: none;
+  color: #fff;
+}
+.btn-success:hover,
+.submission-btn:hover {
+  background-color: #157347; /* Darker green on hover */
+  color: #fff;
+}
+
+

@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
   <link rel="stylesheet" href="css/originality-check-before.css?v=5">
   <link rel="stylesheet" href="css/main.css?v=5">
 </head>
@@ -30,8 +31,8 @@
 
   <!-- Back Button Below Navbar, scrolls with content, transparent background -->
   <div class="container d-flex justify-content-end mt-3 mb-2">
-    <a href="#" onclick="window.history.back()" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold d-flex align-items-center back-btn-content">
-  &#x21B6; Back
+    <a href="#" onclick="window.history.back()" class="back-btn-content text-dark fs-5 text-decoration-none">
+      &#x21B6; Back
     </a>
   </div>
 
@@ -111,6 +112,11 @@
       </div>
     </section>
   </main>
+
+   <p me-3-3 class="text-center text-muted" style="font-size:0.9em;">
+      For any questions or concerns, feel free to contact us via:<br>
+      📧 ipmo@pup.edu.ph &nbsp; 📞 (+632) 5335-1787
+    </p>
 
   <!-- Footer -->
   <footer class="bg-white border-top py-3 mt-4">

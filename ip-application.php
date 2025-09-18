@@ -5,8 +5,10 @@
   <title>How do I apply for IP? | PUP e-IPMO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/ip-application.css">
+  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/ip-application.css">
+
 </head>
 <body>
   <!-- Navbar (matches index.php) -->
@@ -171,6 +173,7 @@
       <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
     </div>
   </footer> 
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="javascript/ip-application.js"></script>

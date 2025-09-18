@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
   <link rel="stylesheet" href="css/originality-form.css">
   <link rel="stylesheet" href="css/main.css">
 </head>
@@ -29,13 +30,15 @@
     </div>
   </nav>
 
+  <div class="container d-flex justify-content-end mt-3 mb-2">
+    <a href="#" onclick="window.history.back()" class="back-btn-content text-dark fs-5 text-decoration-none">
+      &#x21B6; Back
+    </a>
+  </div>
+
   <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="fw-bold m-0">Originality Check Form</h2>
-      <div class="d-flex gap-2">
-        <a href="#" onclick="window.history.back()" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold d-flex align-items-center back-btn-content"><span class="me-2" style="font-size:1.2em;">&#x21B6;</span>Back</a>
-        <button class="btn btn-danger btn-sm" id="download-pdf-btn">Download as PDF</button>
-      </div>
     </div>
     <div class="form-bg mx-auto shadow-sm p-4 rounded-4 mb-4 d-flex justify-content-center">
       <!-- Form image as in your screenshot -->
