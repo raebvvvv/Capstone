@@ -55,11 +55,12 @@ $result_active = $stmt_active->get_result();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="../css/manageuser.css?v=2">
+    <link rel="stylesheet" href="../css/admin-navbar.css?v=1">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>User Management</title>
 </head>
 <body>
-    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>">
+    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -71,16 +72,17 @@ $result_active = $stmt_active->get_result();
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                            <li class="nav-item"><a class="nav-link" href="admin.php">Dashboard</a></li>
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center w-100">
+                            <li class="nav-item ms-auto"><a class="nav-link" href="admin.php">Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
-                            <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="manageuser.php">Manage Users</a></li>
-                            <li class="nav-item"><a class="nav-link" href="ticket.php">Appplications</a></li>
-                            <button type="button" class="btn btn-outline-secondary px-3 me-2" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                            <form method="POST" action="../logout.php" class="d-inline ms-2">
-                                <?php csrf_input(); ?>
-                                <button type="submit" class="btn btn-logout px-4">Logout</button>
-                            </form>
+                            <li class="nav-item"><a class="nav-link fw-bold" aria-current="page"  href="manageuser.php">Manage Users</a></li>
+                            <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
+                            <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
+                                <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
+                                <form method="POST" action="../logout.php" class="d-inline ms-2">
+                                    <?php csrf_input(); ?>
+                                    <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
+                                </form>
                             </li>
                         </ul>
                     </div>
@@ -106,7 +108,7 @@ $result_active = $stmt_active->get_result();
             <div class="tab-pane fade show active" id="active">
                 <div class="table-responsive">
                     <table class="table table-bordered">
-                        <thead class="table-dark">
+                        <thead class="table-light">
                             <tr>
                                 <th>#</th>
                                 <th>Student Number/Employee ID</th>

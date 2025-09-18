@@ -104,11 +104,12 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="../css/ticket.css?v=5">
+    <link rel="stylesheet" href="../css/admin-navbar.css">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Manage Requests</title>
 </head>
 <body>
-    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>">
+     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -120,16 +121,17 @@ if (isset($_SESSION['user_id'])) {
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                            <li class="nav-item"><a class="nav-link" href="admin.php">Dashboard</a></li>
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center w-100">
+                            <li class="nav-item ms-auto"><a class="nav-link" href="admin.php">Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
-                            <li class="nav-item"><a class="nav-link" aria-current="page" href="manageuser.php">Manage Users</a></li>
-                            <li class="nav-item"><a class="nav-link fw-bold" href="ticket.php">Applications</a></li>
-                            <button type="button" class="btn btn-outline-secondary px-3 me-2" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                            <form action="../logout.php" method="post" class="d-inline ms-2">
-                                <?php csrf_input(); ?>
-                                <button type="submit" class="btn btn-logout px-4">Logout</button>
-                            </form>
+                            <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="ticket.php">Applications</a></li>
+                            <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
+                                <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
+                                <form method="POST" action="../logout.php" class="d-inline ms-2">
+                                    <?php csrf_input(); ?>
+                                    <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
+                                </form>
                             </li>
                         </ul>
                     </div>
@@ -507,7 +509,7 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-<script src="../javascript/admin-ticket.js"></script>
+<script src="../javascript/admin-ticket.js?v=2" defer></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
 
 <div class="modal fade" id="authorInfoModal" tabindex="-1" aria-labelledby="authorInfoModalLabel" aria-hidden="true">

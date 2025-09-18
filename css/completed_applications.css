@@ -81,6 +81,7 @@ footer, .site-footer {
     display: flex;
     align-items: center;
     gap: 18px;
+    flex-wrap: nowrap; /* keep items on one line like image 1 */
 }
 .ipapp-dropdown {
     font-size: 1rem;
@@ -91,6 +92,10 @@ footer, .site-footer {
     padding: 6px 12px;
     border-radius: 4px;
     transition: background 0.15s ease, color 0.15s ease;
+    display: inline-flex;            /* keep text and arrow on one line */
+    align-items: center;             /* vertical alignment */
+    white-space: nowrap;             /* prevent wrap like in screenshots 2/3 */
+    line-height: 1.2;
 }
 .ipapp-dropdown:hover {
     background: rgba(0, 0, 0, 0.05);
@@ -105,6 +110,12 @@ footer, .site-footer {
     border-radius: 8px;
     text-decoration: none;
     box-shadow: 0 2px 8px rgba(100,57,230,0.13);
+}
+
+/* Keep All time button width stable so layout doesn't shift when label changes */
+.ipapp-alltime-wrapper #allTimeBtn {
+    width: auto;               /* let the filter adjust itself */
+    justify-content: center;   /* keep text+arrow centered inside */
 }
 
 .ipapp-divider {
@@ -141,18 +152,41 @@ footer, .site-footer {
 
 #calendarSection {
     background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 14px 18px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    display: flex;
+    border: 1px solid #e6e6ea;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 6px 14px rgba(32,33,36,0.08);
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    max-width: 400px;
+    gap: 12px;
 }
 #calendarSection label {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: #222;
+}
+#calendarSection input[type="date"] {
+    border: 1px solid #dcdce3;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+.ipapp-apply-btn {
+    margin-left: 10px;
+    background: #6e0f0f; /* maroon variant */
+    color: #fff;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(110,15,15,0.25);
+    cursor: pointer;
+}
+.ipapp-apply-btn:hover {
+    background: #5d0d0d;
+}
+.ipapp-apply-btn:focus {
+    outline: 2px solid rgba(110,15,15,0.35);
+    outline-offset: 2px;
 }
 .ipapp-filters-bar {
     display: flex;
@@ -227,6 +261,16 @@ footer, .site-footer {
     color: #fff;
     border: none;
 }
+#confirmDownloadSummaryBtn{
+    background-color: maroon;
+    color: #fff;
+    border: none;
+}
+.btn-dl-summary{
+    background-color: maroon;
+    color: maroon;
+    border: none;
+}
 
 .btn-logout:hover,
 .btn-logout:focus,
@@ -238,29 +282,39 @@ footer, .site-footer {
 }
 
 /* Modern All Time Dropdown Menu */
-#allTimeDropdownMenu {
+/* Positioning container for All time dropdown */
+.ipapp-alltime-wrapper {
+    position: relative;
+}
+
+/* Modern All Time Dropdown Menu (scoped) */
+#allTimeDropdownMenu,
+.ipapp-alltime-menu {
     position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
     background: #fff;
     border: none;
     border-radius: 12px;
     min-width: 180px;
     box-shadow: 0 8px 24px rgba(32,33,36,0.13);
     padding: 10px 0;
-    z-index: 100;
-    margin-top: 6px;
+    z-index: 1000;
     opacity: 0;
     transform: translateY(-10px) scale(0.98);
     pointer-events: none;
     transition: opacity 0.18s, transform 0.18s;
 }
 
-#allTimeDropdownMenu.menu-active {
+#allTimeDropdownMenu.menu-active,
+.ipapp-alltime-menu.menu-active {
     opacity: 1;
     transform: translateY(0) scale(1);
     pointer-events: auto;
 }
 
-#allTimeDropdownMenu .dropdown-item {
+#allTimeDropdownMenu .dropdown-item,
+.ipapp-alltime-menu .dropdown-item {
     background: none;
     border: none;
     width: 100%;
@@ -275,7 +329,9 @@ footer, .site-footer {
 }
 
 #allTimeDropdownMenu .dropdown-item:hover,
-#allTimeDropdownMenu .dropdown-item:focus {
+#allTimeDropdownMenu .dropdown-item:focus,
+.ipapp-alltime-menu .dropdown-item:hover,
+.ipapp-alltime-menu .dropdown-item:focus {
     background: #f3f6fa;
     color: #4b2bb6;
 }
@@ -470,6 +526,47 @@ footer, .site-footer {
 #certificateModalCA .btn-download-pdf:hover {
     background: #5b21b6;
     color: #fff;
+}
+
+/* Uploaded Files action buttons in Completed Applications */
+.btn-download {
+    background: #ffd60a; /* yellow */
+    color: #222;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: background 0.18s ease, color 0.18s ease;
+}
+.btn-download:hover {
+    background: #e6c200; /* darker yellow */
+    color: #111;
+}
+.btn-download:focus {
+    outline: 2px solid rgba(255, 214, 10, 0.5);
+    outline-offset: 2px;
+}
+
+.btn-view-file {
+    background: maroon; /* maroon */
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: background 0.18s ease, color 0.18s ease;
+}
+.btn-view-file:hover {
+    background: #5d0d0d; /* darker maroon */
+    color: #fff;
+}
+.btn-view-file:focus {
+    outline: 2px solid rgba(128, 0, 0, 0.35);
+    outline-offset: 2px;
 }
 
 

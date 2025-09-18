@@ -4,6 +4,53 @@
 (function(){
   'use strict';
 
+  // CSP-safe Modal API wrapper: uses Bootstrap when available; otherwise falls back to minimal show/hide
+  const ModalApi = (function(){
+    function cleanupArtifacts(){
+      document.querySelectorAll('.modal-backdrop').forEach(el=>el.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
+    }
+    function makeBackdrop(){
+      const bd = document.createElement('div');
+      bd.className = 'modal-backdrop fade show';
+      document.body.appendChild(bd);
+      return bd;
+    }
+    function show(el){
+      try {
+        if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+          new bootstrap.Modal(el).show();
+          return;
+        }
+      } catch(_) {}
+      // Fallback in strict CSP
+      el.style.display = 'block';
+      el.removeAttribute('aria-hidden');
+      el.setAttribute('aria-modal','true');
+      el.classList.add('show');
+      makeBackdrop();
+      document.body.classList.add('modal-open');
+      el.querySelectorAll('[data-bs-dismiss="modal"]').forEach(btn=>{
+        btn.addEventListener('click', ()=> hide(el), { once:true });
+      });
+    }
+    function hide(el){
+      try {
+        if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+          const inst = bootstrap.Modal.getInstance(el);
+          if (inst) { inst.hide(); return; }
+        }
+      } catch(_) {}
+      el.classList.remove('show');
+      el.style.display = 'none';
+      el.setAttribute('aria-hidden','true');
+      cleanupArtifacts();
+    }
+    return { show, hide };
+  })();
+
   // Utility escape
   function escapeHTML(str){ return String(str).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c];}); }
   window.escapeHTML = escapeHTML; // if needed elsewhere
@@ -77,8 +124,8 @@
     const details = { studentName: cell(2), studentNumber: cell(1), email:'', homeAddress:'', campus:'', department:'', college:'', program: cell(4), documentTitle:'', authorName:'', accomplishmentDate: cell(5) };
     currentDetails = details;
     renderDetails(details,false);
-    const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
-    detailsModal.show();
+    const detailsModalEl = document.getElementById('detailsModal');
+    if(detailsModalEl) ModalApi.show(detailsModalEl);
   }
   function renderAuthorModal(author, edit){
     const body = document.getElementById('authorInfoBody');
@@ -116,7 +163,8 @@
     currentAuthorIndex = index;
     const author = (currentDetails.additionalAuthors || [])[index] || {};
     renderAuthorModal(author,false);
-    new bootstrap.Modal(document.getElementById('authorInfoModal')).show();
+    const authorEl = document.getElementById('authorInfoModal');
+    if(authorEl) ModalApi.show(authorEl);
   }
   window.showDetailsModal = showDetailsModal; // if needed by HTML (currently triggered via listeners)
 
@@ -133,9 +181,9 @@
     if(saveDetailsBtn){ saveDetailsBtn.addEventListener('click', ()=>{ const updatedDetails = { request_id: currentDetails.request_id, student_name: document.getElementById('edit_name')?.value || '', student_id: document.getElementById('edit_number')?.value || '', email: document.getElementById('edit_email')?.value || '', program: document.getElementById('edit_program')?.value || '', }; fetch('../edit_ticket.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(updatedDetails) }).then(res=>res.json()).then(data=>{ if(data.success){ renderDetails(updatedDetails,false); alert('Details updated successfully!'); } else { alert('Update failed: '+(data.error || 'Unknown error')); } }); }); }
 
     // Incomplete (pending)
-    document.querySelectorAll('#pending .btn-incomplete').forEach(btn=>{ btn.addEventListener('click', e=>{ e.preventDefault(); new bootstrap.Modal(document.getElementById('incompleteModal')).show(); }); });
+    document.querySelectorAll('#pending .btn-incomplete').forEach(btn=>{ btn.addEventListener('click', e=>{ e.preventDefault(); const el = document.getElementById('incompleteModal'); if(el) ModalApi.show(el); }); });
     const confirmIncompleteBtn = document.getElementById('confirmIncompleteBtn');
-    if(confirmIncompleteBtn){ confirmIncompleteBtn.addEventListener('click', ()=>{ bootstrap.Modal.getInstance(document.getElementById('incompleteModal'))?.hide(); }); }
+    if(confirmIncompleteBtn){ confirmIncompleteBtn.addEventListener('click', ()=>{ const el = document.getElementById('incompleteModal'); if(el) ModalApi.hide(el); }); }
 
     // Remark dropdown choices (now data-driven, no inline handlers)
     document.addEventListener('click', e=>{
@@ -155,14 +203,12 @@
       const hiddenInput = document.getElementById('complete_ticket_id');
       if(hiddenInput) hiddenInput.value = reqId;
       const completeModalEl = document.getElementById('completeModal');
-      if(completeModalEl) new bootstrap.Modal(completeModalEl).show();
+      if(completeModalEl) ModalApi.show(completeModalEl);
     });
 
     // Approve flow
-  const approveCommentModalEl = document.getElementById('approveCommentModal');
-    const approveCommentModal = approveCommentModalEl ? new bootstrap.Modal(approveCommentModalEl): null;
+    const approveCommentModalEl = document.getElementById('approveCommentModal');
     const successModalEl = document.getElementById('successModal');
-    const successModal = successModalEl ? new bootstrap.Modal(successModalEl): null;
 
     document.querySelectorAll('.btn-approve').forEach(btn=>{
       btn.addEventListener('click', e=>{
@@ -173,7 +219,7 @@
         if(reqInput) reqInput.value = requestId;
         const commentText = document.getElementById('approveCommentText');
         if(commentText) commentText.value = '';
-        approveCommentModal && approveCommentModal.show();
+        if(approveCommentModalEl) ModalApi.show(approveCommentModalEl);
       });
     });
 
@@ -185,28 +231,28 @@
       const comment = commentEl ? commentEl.value.trim() : '';
       if(!requestId) return;
       try {
-  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-  const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-  const res = await fetch('../approve_request.php', { method:'POST', headers:{ 'Content-Type':'application/json', 'X-CSRF-Token': csrfToken }, body: JSON.stringify({ request_id: requestId, comment }) });
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+        const res = await fetch('../approve_request.php', { method:'POST', headers:{ 'Content-Type':'application/json', 'X-CSRF-Token': csrfToken }, body: JSON.stringify({ request_id: requestId, comment }) });
         const data = await res.json();
         if(data.success){
-          approveCommentModal && approveCommentModal.hide();
+          if(approveCommentModalEl) ModalApi.hide(approveCommentModalEl);
           const row = [...document.querySelectorAll('tr')].find(r=> r.firstElementChild && r.firstElementChild.textContent.trim() === requestId);
           if(row){ const statusCell = row.querySelector('td:nth-child(7)'); if(statusCell) statusCell.textContent = 'Approved'; }
-          successModal && successModal.show();
+          if(successModalEl) ModalApi.show(successModalEl);
         } else { alert(data.error || 'Approval failed'); }
       } catch(err){ alert('Network error'); }
     }); }
 
     // Certificate view
-    document.addEventListener('click', e=>{ const trigger = e.target.closest('.btn-view-certificate'); if(!trigger) return; e.preventDefault(); const url = trigger.getAttribute('data-cert-url') || ''; const dl = document.getElementById('downloadCertificateBtn'); if(dl){ if(url){ dl.href = url; dl.setAttribute('download','certificate.pdf'); } else { dl.href='#'; dl.removeAttribute('download'); } } new bootstrap.Modal(document.getElementById('certificateModal')).show(); });
+    document.addEventListener('click', e=>{ const trigger = e.target.closest('.btn-view-certificate'); if(!trigger) return; e.preventDefault(); const url = trigger.getAttribute('data-cert-url') || ''; const dl = document.getElementById('downloadCertificateBtn'); if(dl){ if(url){ dl.href = url; dl.setAttribute('download','certificate.pdf'); } else { dl.href='#'; dl.removeAttribute('download'); } } const el = document.getElementById('certificateModal'); if(el) ModalApi.show(el); });
 
     // Incomplete Active
-    document.addEventListener('click', e=>{ const trigger = e.target.closest('.btn-incomplete-active'); if(!trigger) return; e.preventDefault(); new bootstrap.Modal(document.getElementById('incompleteActiveModal')).show(); });
+    document.addEventListener('click', e=>{ const trigger = e.target.closest('.btn-incomplete-active'); if(!trigger) return; e.preventDefault(); const el = document.getElementById('incompleteActiveModal'); if(el) ModalApi.show(el); });
     const confirmIncompleteActiveBtn = document.getElementById('confirmIncompleteActiveBtn');
-    if(confirmIncompleteActiveBtn){ confirmIncompleteActiveBtn.addEventListener('click', ()=>{ bootstrap.Modal.getInstance(document.getElementById('incompleteActiveModal'))?.hide(); }); }
+    if(confirmIncompleteActiveBtn){ confirmIncompleteActiveBtn.addEventListener('click', ()=>{ const el = document.getElementById('incompleteActiveModal'); if(el) ModalApi.hide(el); }); }
 
     // Comments
-    document.addEventListener('click', e=>{ const trigger = e.target.closest('.btn-comments'); if(!trigger) return; e.preventDefault(); let remarkText=''; const tr = trigger.closest('tr'); if(tr){ const tds = Array.from(tr.querySelectorAll('td')); if(tr.closest('#pending')){ remarkText = (tds[6]?.textContent || '').trim(); } else if(tr.closest('#approved')){ remarkText='No remarks available.'; } else if(tr.closest('#completed')){ remarkText = (tds[7]?.textContent || '').trim(); } } if(!remarkText) remarkText='No remarks available.'; const ta=document.getElementById('comment_text'); if(ta) ta.value = remarkText; new bootstrap.Modal(document.getElementById('commentModal')).show(); });
+    document.addEventListener('click', e=>{ const trigger = e.target.closest('.btn-comments'); if(!trigger) return; e.preventDefault(); let remarkText=''; const tr = trigger.closest('tr'); if(tr){ const tds = Array.from(tr.querySelectorAll('td')); if(tr.closest('#pending')){ remarkText = (tds[6]?.textContent || '').trim(); } else if(tr.closest('#approved')){ remarkText='No remarks available.'; } else if(tr.closest('#completed')){ remarkText = (tds[7]?.textContent || '').trim(); } } if(!remarkText) remarkText='No remarks available.'; const ta=document.getElementById('comment_text'); if(ta) ta.value = remarkText; const el = document.getElementById('commentModal'); if(el) ModalApi.show(el); });
   });
 })();

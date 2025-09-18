@@ -1,4 +1,6 @@
-html, body { height: 100%; }
+html, body { 
+    height: 100%;
+ }
 body {
     font-family: Arial, sans-serif;
     background-color: #f8f9fa;
@@ -9,7 +11,10 @@ body {
     min-height: 100vh;
 }
 
-main.page-wrapper, .page-wrapper { flex: 1 0 auto; }
+main.page-wrapper, .page-wrapper { 
+    flex: 1 0 auto; 
+}
+
 footer, .site-footer { 
   position: fixed;
   left: 0;

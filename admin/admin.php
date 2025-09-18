@@ -74,12 +74,11 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/admin.css?v=5">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../css/admin.css?v=2">
+    <link rel="stylesheet" href="../css/admin-navbar.css">
 </head>
 <body>
     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
@@ -94,16 +93,18 @@ if (isset($_SESSION['user_id'])) {
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                            <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="#">Dashboard</a></li>
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center w-100">
+                            <li class="nav-item ms-auto"><a class="nav-link fw-bold" aria-current="page" href="admin.php">Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
                             <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
-                            <button type="button" class="btn btn-outline-secondary px-3 me-2" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                            <form method="POST" action="../logout.php" class="d-inline">
-                                <?php csrf_input(); ?>
-                                <button type="submit" class="btn btn-logout px-4">Logout</button>
-                            </form>
+                            <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
+                                <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
+                                <form method="POST" action="../logout.php" class="d-inline ms-2">
+                                    <?php csrf_input(); ?>
+                                    <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
+                                </form>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -134,13 +135,13 @@ if (isset($_SESSION['user_id'])) {
             <div class="col-lg-2 col-md-4 col-6 mb-3 d-flex justify-content-center">
                 <div class="summary-card approved text-center w-100">
                     <h2><?= $approved_applications ?></h2>
-                    <span>Approved Evaluation</span>
+                    <p>Approved Evaluation<br></p>
                 </div>
             </div>
             <div class="col-lg-2 col-md-4 col-6 mb-3 d-flex justify-content-center">
                 <div class="summary-card completed text-center w-100">
                     <h2><?= $completed_applications ?></h2>
-                    <span>Completed Applications</span>
+                    <p>Completed Applications<br></p>
                 </div>
             </div>
         </div>

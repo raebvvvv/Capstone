@@ -26,6 +26,16 @@ $applications = [
             'certificateUrl' => '#'
         ],
     ],
+    [
+        'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        'name' => 'John Doe','date' => 'September 2025',
+        'details' => [
+            'student' => [ 'name' => 'John Doe','number' => '2022-08960-MN-0','email' => 'John@iskolarngbayan.pup.edu.ph','homeAddress' => '','campus' => 'PUP Sta. Mesa, Manila','department' => 'DIT','college' => 'CCIS','program' => 'Bachelor of Science In Information Technology' ],
+            'document' => [ 'title' => 'Magna aliqua.','author' => 'John Doe','dateAccomplished' => '2025-09-18','applicationDate' => '2025-09-18' ],
+            'files' => [ ['label' => 'Record Copyright Application','url' => '#'],['label' => 'Journal Publication Format','url' => '#'],['label' => 'Notarized Copyright Application','url' => '#'],['label' => 'Receipt of Payment','url' => '#'],['label' => 'Full Manuscript','url' => '#'],['label' => 'Approval Sheet','url' => '#'],['label' => 'Notarized Co-Authorship','url' => '#'] ],
+            'certificateUrl' => '#'
+        ],
+    ],
 ];
 ?>
 <!DOCTYPE html>
@@ -37,12 +47,13 @@ $applications = [
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/completed_applications.css?v=4">
+    <link rel="stylesheet" href="../css/admin-navbar.css?v=1">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Completed Applications</title>
 </head>
 <body>
     <div id="dropdown-backdrop" class="dropdown-backdrop"></div>
-    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>">
+     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -54,16 +65,17 @@ $applications = [
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                            <li class="nav-item"><a class="nav-link" href="admin.php">Dashboard</a></li>
-                            <li class="nav-item"><a class="nav-link fw-bold" href="#">Completed Applications</a></li>
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center w-100">
+                            <li class="nav-item ms-auto"><a class="nav-link "  href="admin.php">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="completed_applications.php">Completed Applications</a></li>
                             <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
-                            <button type="button" class="btn btn-outline-secondary px-3 me-2" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                            <form method="POST" action="../logout.php" class="d-inline">
-                                <?php csrf_input(); ?>
-                                <button type="submit" class="btn btn-logout px-4">Logout</button>
-                            </form>
+                            <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
+                                <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
+                                <form method="POST" action="../logout.php" class="d-inline ms-2">
+                                    <?php csrf_input(); ?>
+                                    <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
+                                </form>
                             </li>
                         </ul>
                     </div>
@@ -82,20 +94,23 @@ $applications = [
             </form>
             <div class="ipapp-header-options">
                 <button type="button" class="ipapp-dropdown" id="othersBtn">Others ▼</button>
-                <button type="button" class="ipapp-dropdown" id="allTimeBtn">All time ▼</button>
-                <a href="#" class="ipapp-download-btn">Download Summary</a>
+                <div class="ipapp-alltime-wrapper">
+                    <button type="button" class="ipapp-dropdown" id="allTimeBtn" aria-haspopup="true" aria-expanded="false">All time ▼</button>
+                    <div id="allTimeDropdownMenu" class="ipapp-alltime-menu" role="menu" aria-labelledby="allTimeBtn">
+                        <button class="dropdown-item" type="button" data-range="all">All time</button>
+                        <button class="dropdown-item" type="button" data-range="today">Today</button>
+                        <button class="dropdown-item" type="button" data-range="thismonth">This Month</button>
+                        <button class="dropdown-item" type="button" data-range="thisyear">This Year</button>
+                        <button class="dropdown-item" type="button" data-range="custom">Custom</button>
+                    </div>
+                </div>
+                <a href="#" class="ipapp-download-btn" id="openDownloadSummaryModal" data-bs-toggle="modal" data-bs-target="#downloadSummaryModal">Download Summary</a>
             </div>
         </header>
-        <div id="allTimeDropdownMenu" style="display:none; position:absolute; background:#fff; border:1px solid #ddd; border-radius:6px; min-width:140px; z-index:10; margin-top:2px;">
-            <button class="dropdown-item" type="button" data-range="today">Today</button>
-            <button class="dropdown-item" type="button" data-range="thismonth">This Month</button>
-            <button class="dropdown-item" type="button" data-range="thisyear">This Year</button>
-            <button class="dropdown-item" type="button" data-range="custom">Custom</button>
-        </div>
         <div id="calendarSection" style="display:none; margin-top:10px;">
             <label>Start Date: <input type="date" id="startDate"></label>
             <label style="margin-left:10px;">End Date: <input type="date" id="endDate"></label>
-            <button type="button" class="ipapp-download-btn" style="margin-left:10px;">Apply</button>
+            <button type="button" class="ipapp-apply-btn">Apply</button>
         </div>
         <hr class="ipapp-divider">
         <div id="filtersBar" class="ipapp-filters-bar" style="display:none;">
@@ -104,43 +119,132 @@ $applications = [
                 <div class="ipapp-mini-menu" id="campusMenu">
                     <button class="dropdown-item" type="button">All</button>
                     <button class="dropdown-item" type="button">Main</button>
-                    <button class="dropdown-item" type="button">San Juan</button>
-                    <button class="dropdown-item" type="button">Sta. Mesa</button>
                 </div>
             </div>
             <div class="ipapp-mini-dropdown">
                 <button class="ipapp-mini-btn" data-target="collegeMenu">College<span>▼</span></button>
                 <div class="ipapp-mini-menu" id="collegeMenu">
                     <button class="dropdown-item" type="button">All</button>
-                    <button class="dropdown-item" type="button">COE</button>
-                    <button class="dropdown-item" type="button">CBA</button>
-                    <button class="dropdown-item" type="button">CSSD</button>
+                    <button class="dropdown-item" type="button">CAF - College of Accountancy and Finance</button>
+                    <button class="dropdown-item" type="button">CADBE - College of Architecture, Design and the Built Environment</button>
+                    <button class="dropdown-item" type="button">CAL - College of Arts and Letters</button>
+                    <button class="dropdown-item" type="button">CBA - College of Business Administration</button>
+                    <button class="dropdown-item" type="button">COC - College of Communication</button>
+                    <button class="dropdown-item" type="button">CCIS - College of Computer and Information Sciences</button>
+                    <button class="dropdown-item" type="button">COED - College of Education</button>
+                    <button class="dropdown-item" type="button">CE - College of Engineering</button>
+                    <button class="dropdown-item" type="button">CHK - College of Human Kinetics</button>
+                    <button class="dropdown-item" type="button">CL - College of Law</button>
+                    <button class="dropdown-item" type="button">CPSPA - College of Political Science and Public Administration</button>
+                    <button class="dropdown-item" type="button">CSSD - College of Social Sciences and Development</button>
+                    <button class="dropdown-item" type="button">CS - College of Science</button>
+                    <button class="dropdown-item" type="button">CTHTM - College of Tourism, Hospitality and Transportation Management</button>
                 </div>
             </div>
             <div class="ipapp-mini-dropdown" style="position:relative;">
                 <button class="ipapp-mini-btn" data-target="departmentMenu">Department<span>▼</span></button>
                 <div class="ipapp-mini-menu" id="departmentMenu">
                     <button class="dropdown-item" type="button">All</button>
-                    <button class="dropdown-item" type="button">IT</button>
-                    <button class="dropdown-item" type="button">CS</button>
-                    <button class="dropdown-item" type="button">ECE</button>
                 </div>
             </div>
             <div class="ipapp-mini-dropdown" style="position:relative;">
                 <button class="ipapp-mini-btn" data-target="programMenu">Program<span>▼</span></button>
                 <div class="ipapp-mini-menu" id="programMenu">
                     <button class="dropdown-item" type="button">All</button>
-                    <button class="dropdown-item" type="button">BSIT</button>
-                    <button class="dropdown-item" type="button">BSCS</button>
-                    <button class="dropdown-item" type="button">BSECE</button>
+                    <!-- CAF -->
+                    <button class="dropdown-item" type="button">Bachelor of Science in Accountancy (BSA)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Management Accounting (BSMA)</button>
+                    <button class="dropdown-item" type="button">BSBA Major in Financial Management (BSBAFM)</button>
+                    <!-- CADBE -->
+                    <button class="dropdown-item" type="button">Bachelor of Science in Architecture (BS-ARCH)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Interior Design (BSID)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Environmental Planning (BSEP)</button>
+                    <!-- CAL -->
+                    <button class="dropdown-item" type="button">BA in English Language Studies (ABELS)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in Filipinology (ABF)</button>
+                    <button class="dropdown-item" type="button">BA in Literary and Cultural Studies (ABLCS)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in Philosophy (AB-PHILO)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Performing Arts major in Theater Arts (BPEA)</button>
+                    <!-- CBA -->
+                    <button class="dropdown-item" type="button">Doctor in Business Administration (DBA)</button>
+                    <button class="dropdown-item" type="button">Master in Business Administration (MBA)</button>
+                    <button class="dropdown-item" type="button">BSBA major in Human Resource Management (BSBAHRM)</button>
+                    <button class="dropdown-item" type="button">BSBA major in Marketing Management (BSBA-MM)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Entrepreneurship (BSENTREP)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Office Administration (BSOA)</button>
+                    <!-- COC -->
+                    <button class="dropdown-item" type="button">Bachelor in Advertising and Public Relations (BADPR)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in Broadcasting</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in Communication Research (BACR)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in Journalism (BAJ)</button>
+                    <!-- CCIS -->
+                    <button class="dropdown-item" type="button">Bachelor of Science in Computer Science (BSCS)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Information Technology (BSIT)</button>
+                    <!-- COED (abbreviated majors) -->
+                    <button class="dropdown-item" type="button">Doctor of Philosophy in Education Management (PhDEM)</button>
+                    <button class="dropdown-item" type="button">Master of Arts in Education Management (MAEM)</button>
+                    <button class="dropdown-item" type="button">Master in Business Education (MBE)</button>
+                    <button class="dropdown-item" type="button">Master in Library and Information Science (MLIS)</button>
+                    <button class="dropdown-item" type="button">MA in English Language Teaching (MAELT)</button>
+                    <button class="dropdown-item" type="button">MA in Education major in Mathematics Education (MAEd-ME)</button>
+                    <button class="dropdown-item" type="button">MA in Physical Education and Sports (MAPES)</button>
+                    <button class="dropdown-item" type="button">MA in Education major in Teaching in the Challenged Areas (MAED-TCA)</button>
+                    <button class="dropdown-item" type="button">Post-Baccalaureate Diploma in Education (PBDE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Technology and Livelihood Education (BTLEd)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Library and Information Science (BLIS)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Secondary Education (BSEd)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Elementary Education (BEEd)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Early Childhood Education (BECEd)</button>
+                    <!-- CE -->
+                    <button class="dropdown-item" type="button">Bachelor of Science in Civil Engineering (BSCE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Computer Engineering (BSCpE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Electrical Engineering (BSEE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Electronics Engineering (BSECE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Industrial Engineering (BSIE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Mechanical Engineering (BSME)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Railway Engineering (BSRE)</button>
+                    <!-- CHK -->
+                    <button class="dropdown-item" type="button">Bachelor of Physical Education (BPE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Exercises and Sports (BSESS)</button>
+                    <!-- CL -->
+                    <button class="dropdown-item" type="button">Juris Doctor (JD)</button>
+                    <!-- CPSPA -->
+                    <button class="dropdown-item" type="button">Doctor in Public Administration (DPA)</button>
+                    <button class="dropdown-item" type="button">Master in Public Administration (MPA)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Public Administration (BPA)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in International Studies (BAIS)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in Political Economy (BAPE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in Political Science (BAPS)</button>
+                    <!-- CSSD -->
+                    <button class="dropdown-item" type="button">Bachelor of Arts in History (BAH)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Arts in Sociology (BAS)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Cooperatives (BSC)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Economics (BSE)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Psychology (BSPSY)</button>
+                    <!-- CS -->
+                    <button class="dropdown-item" type="button">Bachelor of Science in Food Technology (BSFT)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Applied Mathematics (BSAPMATH)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Biology (BSBIO)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Chemistry (BSCHEM)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Mathematics (BSMATH)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Nutrition and Dietetics (BSND)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Physics (BSPHY)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Statistics (BSSTAT)</button>
+                    <!-- CTHTM -->
+                    <button class="dropdown-item" type="button">Bachelor of Science in Hospitality Management (BSHM)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Tourism Management (BSTM)</button>
+                    <button class="dropdown-item" type="button">Bachelor of Science in Transportation Management (BSTRM)</button>
                 </div>
             </div>
             <div class="ipapp-mini-dropdown" style="position:relative;">
                 <button class="ipapp-mini-btn" data-target="typesMenu">Types<span>▼</span></button>
                 <div class="ipapp-mini-menu" id="typesMenu">
                     <button class="dropdown-item" type="button">All</button>
+                    <button class="dropdown-item" type="button">Ethics Clearance</button>
                     <button class="dropdown-item" type="button">Patent</button>
+                    <button class="dropdown-item" type="button">Industrial Design</button>
                     <button class="dropdown-item" type="button">Utility Model</button>
+                    <button class="dropdown-item" type="button">Trademark</button>
                     <button class="dropdown-item" type="button">Copyright</button>
                 </div>
             </div>
@@ -148,9 +252,8 @@ $applications = [
                 <button class="ipapp-mini-btn" data-target="groupMenu">Group<span>▼</span></button>
                 <div class="ipapp-mini-menu" id="groupMenu">
                     <button class="dropdown-item" type="button">All</button>
-                    <button class="dropdown-item" type="button">Faculty</button>
+                    <button class="dropdown-item" type="button">Employee</button>
                     <button class="dropdown-item" type="button">Student</button>
-                    <button class="dropdown-item" type="button">External</button>
                 </div>
             </div>
             <button class="ipapp-go-btn">Go</button>
@@ -169,6 +272,32 @@ $applications = [
             <?php endforeach; ?>
         </main>
     </div>
+
+    <!-- Download Summary Modal -->
+    <div class="modal fade" id="downloadSummaryModal" tabindex="-1" aria-labelledby="downloadSummaryLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="downloadSummaryLabel">Download Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Choose where the summary is for:</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="summaryType" id="summaryTypeNational" value="national" checked>
+                        <label class="form-check-label" for="summaryTypeNational">National Library</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="summaryType" id="summaryTypeRmipo" value="rmipo">
+                        <label class="form-check-label" for="summaryTypeRmipo">RMIPO</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dl-summary" id="confirmDownloadSummaryBtn">Download Summary</button>
+                </div>
+            </div>
+        </div>
+        </div>
 
     <div class="modal fade" id="detailsGModal" tabindex="-1" aria-labelledby="detailsGModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -202,7 +331,7 @@ $applications = [
         </div>
     </div>
 
-<script src="../javascript/admin-completed-applications.js"></script>
+<script src="../javascript/admin-completed-applications.js?v=5"></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
 
 <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileLabel" aria-hidden="true">
