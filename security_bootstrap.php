@@ -64,14 +64,16 @@ if (!function_exists('secure_bootstrap')) {
         $now = time();
         if (isset($_SESSION['session_created_at']) && ($now - (int)$_SESSION['session_created_at']) > SESSION_ABSOLUTE_LIFETIME) {
             session_unset(); session_destroy();
-            header('Location: login.php'); exit();
+            if (function_exists('redirect')) { redirect('User/Beforelogin/login.php'); }
+            header('Location: User/Beforelogin/login.php'); exit();
         }
         if (!isset($_SESSION['session_created_at'])) {
             $_SESSION['session_created_at'] = $now;
         }
         if (isset($_SESSION['last_activity']) && ($now - (int)$_SESSION['last_activity']) > SESSION_IDLE_TIMEOUT) {
             session_unset(); session_destroy();
-            header('Location: login.php'); exit();
+            if (function_exists('redirect')) { redirect('User/Beforelogin/login.php'); }
+            header('Location: User/Beforelogin/login.php'); exit();
         }
         $_SESSION['last_activity'] = $now;
     }
@@ -84,7 +86,8 @@ if (!function_exists('require_admin')) {
             // Redirect to login from both root and /admin context
             $script = $_SERVER['SCRIPT_NAME'] ?? '';
             $inAdmin = strpos($script, '/admin/') !== false || basename(dirname($script)) === 'admin';
-            $location = $inAdmin ? '../login.php' : 'login.php';
+            $location = $inAdmin ? '../User/Beforelogin/login.php' : 'User/Beforelogin/login.php';
+            if (function_exists('redirect')) { redirect($location); }
             header('Location: ' . $location);
             exit();
         }

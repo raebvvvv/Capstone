@@ -1,3 +1,4 @@
+<?php require __DIR__ . '/../../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Registration | PUP e-IPMO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/register-student-custom.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="stylesheet" href="../../css/register-student-custom.css">
+  <link rel="stylesheet" href="../../css/main.css">
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
   <nav class="navbar navbar-expand-lg bg-white border-bottom">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="index.php">
-  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -21,7 +22,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
         </ul>
       </div>
@@ -90,7 +91,7 @@
         </form>
       </div>
       <div class="register-side-custom">
-  <img src="Photos/account-registration-side (1).png" alt="Account Registration Design" />
+  <img src="<?php echo asset_url('Photos/account-registration-side (1).png'); ?>" alt="Account Registration Design" />
       </div>
     </div>
   </main>

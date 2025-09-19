@@ -1,3 +1,4 @@
+<?php require __DIR__ . '/../../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,15 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/forms.css">
+  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/forms.css'); ?>">
 </head>
 <body>
   <!-- Navbar -->
 <nav class="navbar navbar-expand-lg bg-white border-bottom">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -312,97 +313,9 @@
       <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none">Privacy Statement</a>
     </div>
   </footer>
- 
-  <script>
-    // Terms & Conditions gating (NEW)
-    (function(){
-      const gate = document.getElementById('termsGate');
-      const formSection = document.getElementById('formSection');
-      const chk = document.getElementById('termsAgree');
-      const nextBtn = document.getElementById('termsNext');
-      const acceptedInput = document.getElementById('accepted_terms');
-
-      chk.addEventListener('change', ()=> {
-        nextBtn.disabled = !chk.checked;
-      });
-
-      nextBtn.addEventListener('click', ()=> {
-        if(!chk.checked) return;
-        acceptedInput.value = '1';
-        gate.classList.add('d-none');
-        formSection.classList.remove('d-none');
-        // smooth scroll to top of form
-        formSection.scrollIntoView({behavior:'smooth', block:'start'});
-      });
-    })();
-  </script>
-  <script>
-    (function(){
-      let authorIndex = 0;
-      const authorForm = document.getElementById('authorForm');
-      const authorsList = document.getElementById('authorsList');
-      const authorsHidden = document.getElementById('authorsHidden');
-      const saveBtn = document.getElementById('saveAuthorBtn');
-      const modalEl = document.getElementById('authorModal');
-      const modal = new bootstrap.Modal(modalEl);
-
-      function renderPlaceholder(){
-        if(!authorsHidden.children.length){
-          authorsList.innerHTML = 'No authors added yet.';
-        }
-      }
-
-      function makePill(data, idx){
-        const div = document.createElement('div');
-        div.className = 'author-pill';
-        div.dataset.idx = idx;
-        div.innerHTML = `
-          <span class="fw-semibold">${data.first_name} ${data.middle_initial ? data.middle_initial+'. ' : ''}${data.last_name}</span>
-          <small class="text-muted ms-2">${data.program || ''}</small>
-        `;
-        authorsList.appendChild(div);
-      }
-
-      function addHiddenInputs(data, idx){
-        const wrapper = document.createElement('div');
-        wrapper.id = 'author-hidden-' + idx;
-        for(const key in data){
-          const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `authors[${idx}][${key}]`;
-            input.value = data[key];
-            wrapper.appendChild(input);
-        }
-        authorsHidden.appendChild(wrapper);
-      }
-
-      saveBtn.addEventListener('click', function(){
-        const formData = new FormData(authorForm);
-        const first = (formData.get('first_name')||'').trim();
-        const last = (formData.get('last_name')||'').trim();
-        if(!first || !last){
-          saveBtn.disabled = false;
-          authorForm.querySelector('[name="first_name"]').focus();
-          return;
-        }
-        const data = {};
-        formData.forEach((v,k)=>{ data[k]= (v||'').toString().trim(); });
-        addHiddenInputs(data, authorIndex);
-        if(authorsList.innerHTML.includes('No authors')) authorsList.innerHTML = '';
-        makePill(data, authorIndex);
-        authorIndex++;
-        authorForm.reset();
-        modal.hide();
-        renderPlaceholder();
-      });
-
-      modalEl.addEventListener('shown.bs.modal', ()=> {
-        authorForm.querySelector('[name="first_name"]').focus();
-      });
-
-      renderPlaceholder();
-    })();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+ <!-- Load external JS files compliant with Content Security Policy -->
+ <script src="<?php echo asset_url('javascript/forms/terms-gating.js'); ?>"></script>
+ <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

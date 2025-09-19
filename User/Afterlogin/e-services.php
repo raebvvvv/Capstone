@@ -1,3 +1,4 @@
+<?php require __DIR__ . '/../../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,14 +8,14 @@
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/e-services.css">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/e-services.css'); ?>">
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -32,9 +33,7 @@
     </div>
   </nav>
   <div class="container d-flex justify-content-end mt-3 mb-2">
-    <a href="#" onclick="window.history.back()" class="back-btn-content text-dark fs-5 text-decoration-none">
-      &#x21B6; Back
-    </a>
+    <?php if (function_exists('render_back_link')) { render_back_link('User/Afterlogin/after-landing.php'); } ?>
   </div>
   <main class="container py-4">
     <h2 class="text-center mb-2"><strong>Instructions</strong> are provided in each e-Service.</h2>
@@ -45,34 +44,34 @@
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="Photos/Icons/Originality-icon.png" alt="Originality Check" class="mb-2" width="60">
+            <img src="<?php echo asset_url('Photos/Icons/Originality-icon.png'); ?>" alt="Originality Check" class="mb-2" width="60">
             <h5 class="card-title">Originality Check</h5>
             <p class="card-text">
               PUP IPMO offers Originality Checking through <strong>Turnit-in</strong>.<br>
               <span class="text-danger oc-rule-small"><b>15% - Graduate School (Doctorate and Masterals)</b></span><br>
               <span class="text-danger oc-rule-small"><b>20% and below - Undergraduate Degree</b></span>
             </p>
-            <button class="btn btn-success" onclick="window.location.href='after-originality-check.php'">Apply</button>
+            <a href="after-originality-check.php"><button class="btn btn-success">Apply</button></a>
           </div>
         </div>
       </div>
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="Photos/Icons/Copyright-icon.png" alt="Copyright" class="mb-2" width="60">
+            <img src="<?php echo asset_url('Photos/Icons/Copyright-icon.png'); ?>" alt="Copyright" class="mb-2" width="60">
             <h5 class="card-title">Copyright</h5>
             <p class="card-text">
               Copyright is the legal protection extended to the owner of the rights in an original work, such as <b>intellectual creations in the
               literary, scientific and artistic domain.</b>
             </p>
-            <button class="btn btn-success" onclick="window.location.href='copyright-application.php'">Apply</button>
+           <a href="student-copyright-forms.php"><button class="btn btn-success">Apply</button></a>
           </div>
         </div>
       </div>
       <div class="col-md-8">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="Photos/Icons/Patent-icon.png" alt="Patent" class="mb-2" width="60">
+            <img src="<?php echo asset_url('Photos/Icons/Patent-icon.png'); ?>" alt="Patent" class="mb-2" width="60">
             <h5 class="card-title">Patent | Trademark | Utility Model | Industrial Design</h5>
             <p class="card-text">
               All four are subject to a government grant giving an inventor exclusive rights to a product or process that solves a technical problem in any human activity field.<br>
@@ -100,6 +99,6 @@
 
   <!-- Bootstrap JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="javascript/e-services.js"></script>
+  <script src="<?php echo asset_url('javascript/e-services.js'); ?>"></script>
 </body>
 </html>

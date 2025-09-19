@@ -1,4 +1,5 @@
 <?php
 // Convenience: /admin -> /admin/admin.php
-header('Location: admin.php');
+require __DIR__ . '/../config.php';
+redirect('admin/admin.php');
 exit;

@@ -1,8 +1,8 @@
 <?php
 // Admin dashboard (moved under /admin)
-require __DIR__ . '/../security_bootstrap.php';
-secure_bootstrap();
-require __DIR__ . '/../conn.php';
+require __DIR__ . '/../config.php';
+require app_path('conn.php');
+if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
 // Helper: Check if table exists (returns bool)
@@ -77,8 +77,8 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="../css/admin.css?v=2">
-    <link rel="stylesheet" href="../css/admin-navbar.css">
+    <link rel="stylesheet" href="<?php echo asset_url('css/admin.css?v=2'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/admin-navbar.css'); ?>">
 </head>
 <body>
     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
@@ -86,7 +86,7 @@ if (isset($_SESSION['user_id'])) {
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
                     <a class="navbar-brand d-flex align-items-center" href="#">
-                        <img src="../images/puplogo.png" alt="Logo" class="center-img" style="height: 30px; margin-right: 10px;">
+                        <img src="<?php echo asset_url('images/puplogo.png'); ?>" alt="Logo" class="center-img" style="height: 30px; margin-right: 10px;">
                         <span class="fw-bold">PUP e-IPMO [Admin.]</span>
                     </a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,7 +100,7 @@ if (isset($_SESSION['user_id'])) {
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
                             <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
                                 <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                                <form method="POST" action="../logout.php" class="d-inline ms-2">
+                                <form method="POST" action="../User/Beforelogin/logout.php" class="d-inline ms-2">
                                     <?php csrf_input(); ?>
                                     <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
                                 </form>

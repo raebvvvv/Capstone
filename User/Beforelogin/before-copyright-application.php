@@ -1,3 +1,4 @@
+<?php require __DIR__ . '/../../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/before-copyright-application.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/before-copyright-application.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-          <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+          <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -32,9 +33,7 @@
 
     <!-- Back Button Below Navbar, scrolls with content, transparent background -->
     <div class="container d-flex justify-content-end mt-3 mb-2">
-        <a href="#" onclick="window.history.back()" class="back-btn-content text-dark fs-5 text-decoration-none">
-          &#x21B6; Back
-        </a>
+        <?php if (function_exists('render_back_link')) { render_back_link('index.php'); } ?>
       </div>
 
   <main class="container py-4">
@@ -52,7 +51,7 @@
       </li>
       <li class="mb-4">
         Once printed and accomplished, you may proceed to the <strong>submission form.</strong><br>
-        <a href="student-copyright-forms.php" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a>
+        <a href="login.php" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a>
       </li>
     </ol>
     <p class="text-muted mb-3" style="font-size:0.95em;">
@@ -76,7 +75,7 @@
           <span style="font-size:0.95em;">For Multiple or Single Authorship</span>
         </div>
         <div class="file-actions">
-          <a href="#" class="btn view-btn btn-sm mb-1">View File</a>
+          <a href="#" class="btn btn-warning btn-sm mb-1">View File</a>
           <a href="#" class="btn download-btn btn-sm mb-1">Download as PDF</a>
         </div>
       </div>

@@ -1,3 +1,4 @@
+<?php require __DIR__ . '/../../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,9 +6,9 @@
   <title>How do I apply for IP? | PUP e-IPMO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/ip-application.css">
+  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/ip-application.css'); ?>">
 
 </head>
 <body>
@@ -15,7 +16,7 @@
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -32,7 +33,7 @@
   <!-- Main Content -->
   <main class="container py-4">
     <div class="d-flex justify-content-end mb-2">
-      <a href="#" onclick="window.history.back()" class="text-dark fs-5 text-decoration-none back-btn-content"><span>&#x21B6;</span> Back</a>
+  <?php if (function_exists('render_back_link')) { render_back_link('index.php', '↶ Back', 'text-dark fs-5 text-decoration-none back-btn-content'); } ?>
     </div>
     <h2 class="fw-bold mb-2" style="font-size:2rem;">How do I apply for IP?</h2>
     <h5 class="fw-normal mb-4">Below is the IP Application Guide:</h5>
@@ -41,7 +42,7 @@
       <!-- Step 1 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/security.png" alt="Register Icon" class="img-fluid">
+          <img src="<?php echo asset_url('Photos/Icons/security.png'); ?>" alt="Register Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1 d-flex flex-column flex-md-row w-100">
           <div class="card-desc flex-grow-1">
@@ -65,7 +66,7 @@
       <!-- Step 2 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/choice.png" alt="Choose Service Icon" class="img-fluid">
+          <img src="<?php echo asset_url('Photos/Icons/choice.png'); ?>" alt="Choose Service Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1 d-flex flex-column flex-md-row w-100">
           <div class="card-desc flex-grow-1">
@@ -87,7 +88,7 @@
       <!-- Step 3 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/online-library.png" alt="Read Guide Icon" class="img-fluid">
+          <img src="<?php echo asset_url('Photos/Icons/online-library.png'); ?>" alt="Read Guide Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -103,7 +104,7 @@
       <!-- Step 4 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/attachment.png" alt="Download Forms Icon" class="img-fluid">
+          <img src="<?php echo asset_url('Photos/Icons/attachment.png'); ?>" alt="Download Forms Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -119,7 +120,7 @@
       <!-- Step 5 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/online.png" alt="Submission Form Icon" class="img-fluid">
+          <img src="<?php echo asset_url('Photos/Icons/online.png'); ?>" alt="Submission Form Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -135,7 +136,7 @@
       <!-- Step 6 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/complaint.png" alt="Evaluation Icon" class="img-fluid">
+          <img src="<?php echo asset_url('Photos/Icons/complaint.png'); ?>" alt="Evaluation Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -176,6 +177,6 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="javascript/ip-application.js"></script>
+  <script src="<?php echo asset_url('javascript/ip-application.js'); ?>"></script>
 </body>
 </html>

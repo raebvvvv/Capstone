@@ -1,3 +1,4 @@
+<?php require __DIR__ . '/../../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,15 +8,15 @@
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/copyright-application.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="<?php echo asset_url('css/copyright-application.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-          <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+          <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -35,9 +36,7 @@
    
   <!-- Back Button Below Navbar, scrolls with content, transparent background -->
     <div class="container d-flex justify-content-end mt-3 mb-2">
-        <a href="#" onclick="window.history.back()" class="back-btn-content text-dark fs-5 text-decoration-none">
-          &#x21B6; Back
-        </a>
+        <?php if (function_exists('render_back_link')) { render_back_link('User/Afterlogin/e-services.php'); } ?>
       </div>
 
   <main class="container py-4">

@@ -1,3 +1,4 @@
+<?php require __DIR__ . '/../../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +7,16 @@
     <title>My Profile | PUP e-IPMO</title>
     <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/student-profile.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/student-profile.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
 </head>
 <body>
   <!-- Navbar (uniform across project) -->
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -123,42 +124,12 @@
     </div>
   </footer>
 
-  <!-- Bootstrap JS -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-document.getElementById('signOutBtn').addEventListener('click', function() {
-  window.location.href = 'index.php';
-});
-document.addEventListener('DOMContentLoaded', function() {
-  const editBtn = document.getElementById('editProfileBtn');
-  const saveBtn = document.getElementById('saveProfileBtn');
-  const cancelBtn = document.getElementById('cancelEditBtn');
-  const form = document.getElementById('profileForm');
-  const inputs = form.querySelectorAll('input:not([id="webmail"])');
-
-  editBtn.addEventListener('click', function() {
-    inputs.forEach(input => input.disabled = false);
-    saveBtn.style.display = 'inline-block';
-    cancelBtn.style.display = 'inline-block';
-    editBtn.disabled = true; // Disable the button and keep it visible
-  });
-
-  cancelBtn.addEventListener('click', function() {
-    inputs.forEach(input => input.disabled = true);
-    saveBtn.style.display = 'none';
-    cancelBtn.style.display = 'none';
-    editBtn.disabled = false; // Enable the button again
-    // Optionally reset fields to original values here
-  });
-
-  saveBtn.addEventListener('click', function() {
-    inputs.forEach(input => input.disabled = true);
-    saveBtn.style.display = 'none';
-    cancelBtn.style.display = 'none';
-    editBtn.disabled = false; // Enable the button again
-    // Optionally add save logic here
-  });
-});
-</script>
+    // Make CSRF token available to JavaScript (more secure than window variable)
+    const csrfToken = '<?php echo csrf_token(); ?>';
+  </script>
+  <script src="<?php echo asset_url('javascript/student-profile.js'); ?>"></script>
 </body>
 </html>

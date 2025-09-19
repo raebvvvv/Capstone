@@ -1,3 +1,4 @@
+<?php require __DIR__ . '/../../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/e-services.css">
+  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/e-services.css'); ?>">
 </head>
 <body>
   <!-- Navbar copied from index.php -->
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
-  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+      <a class="navbar-brand d-flex align-items-center" href="../../index.php">
+  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -38,34 +39,34 @@
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="Photos/Icons/Originality-icon.png" alt="Originality Check" class="mb-2" width="60">
+            <img src="<?php echo asset_url('Photos/Icons/Originality-icon.png'); ?>" alt="Originality Check" class="mb-2" width="60">
             <h5 class="card-title">Originality Check</h5>
             <p class="card-text">
               PUP IPMO offers Originality Checking through <strong>Turnit-in</strong>.<br>
               <span class="text-danger oc-rule-small"><b>15% - Graduate School (Doctorate and Masterals)</b></span><br>
               <span class="text-danger oc-rule-small"><b>20% and below - Undergraduate Degree</b></span>
             </p>
-            <button class="btn btn-warning fw-bold text-dark" onclick="window.location.href='before-originality-check.php'">Guide</button>
+            <a href="before-originality-check.php"><button class="btn btn-warning fw-bold text-dark">Guide</button></a>
           </div>
         </div>
       </div>
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="Photos/Icons/Copyright-icon.png" alt="Copyright" class="mb-2" width="60">
+            <img src="<?php echo asset_url('Photos/Icons/Copyright-icon.png'); ?>" alt="Copyright" class="mb-2" width="60">
             <h5 class="card-title">Copyright</h5>
             <p class="card-text">
               Copyright is the legal protection extended to the owner of the rights in an original work, such as <b>intellectual creations in the
               literary, scientific and artistic domain.</b>
             </p>
-            <button class="btn btn-warning fw-bold text-dark" onclick="window.location.href='before-copyright-application.php'">Guide</button>
+            <a href="before-copyright-application.php"><button class="btn btn-warning fw-bold text-dark">Guide</button></a>
           </div>
         </div>
       </div>
       <div class="col-md-8">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="Photos/Icons/Patent-icon.png" alt="Patent" class="mb-2" width="60">
+            <img src="<?php echo asset_url('Photos/Icons/Patent-icon.png'); ?>" alt="Patent" class="mb-2" width="60">
             <h5 class="card-title">Patent | Trademark | Utility Model | Industrial Design</h5>
             <p class="card-text">
               All four are subject to a government grant giving an inventor exclusive rights to a product or process that solves a technical problem in any human activity field.<br>
@@ -79,10 +80,10 @@
           <p class="contact-info-small mb-0">
             For any questions or concerns, feel free to contact us via:<br>
             <span class="me-3">
-              <img src="Photos/Icons/Email-icon.png" alt="email" class="icon-sm align-text-bottom" style="width:20px;height:20px;"> ipmo@pup.edu.ph
+              <img src="<?php echo asset_url('Photos/Icons/Email-icon.png'); ?>" alt="email" class="icon-sm align-text-bottom" style="width:20px;height:20px;"> ipmo@pup.edu.ph
             </span>
             <span>
-              <img src="Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm align-text-bottom" style="width:20px;height:20px;"> (+632) 5335-1787
+              <img src="<?php echo asset_url('Photos/Icons/Landline-icon.png'); ?>" alt="phone" class="icon-sm align-text-bottom" style="width:20px;height:20px;"> (+632) 5335-1787
             </span>
           </p>
         </div>

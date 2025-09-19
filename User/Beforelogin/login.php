@@ -1,6 +1,10 @@
 <?php
-session_start();
-require 'conn.php'; // Include your database connection file
+// Unified bootstrap: loads config (paths), security (session hardening), DB connection
+require __DIR__ . '/../../config.php';
+require app_path('conn.php');
+// secure_bootstrap already invoked inside config.php if available.
+// If not for some reason, call conditionally:
+if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $student_number = trim(htmlspecialchars($_POST['student_number']));
@@ -27,9 +31,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['is_admin'] = $user['is_admin']; // Set admin status
 
                 if ($user['is_admin']) {
-                    header("Location: admin/admin.php"); // Redirect to admin dashboard inside admin folder
+                    // Redirect administrators to the admin dashboard
+                    redirect('admin/admin.php');
                 } else {
-                    header("Location: after-landing.php"); // Redirect to user landing page (root file)
+                    // Redirect regular users to their landing page
+                    redirect('User/Afterlogin/after-landing.php');
                 }
                 exit();
             }
@@ -50,16 +56,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Login - PUP e-IPMO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/login.css">
+    <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/login.css'); ?>">
 </head>
 <body>
     <!-- Navbar (matches index.php) -->
         <nav class="navbar navbar-expand-lg bg-white border-bottom w-100">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="index.php">
-                    <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+                <a class="navbar-brand d-flex align-items-center" href="<?php echo asset_url('index.php'); ?>">
+                    <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
                     <span>PUP e-IPMO</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -67,8 +73,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Beforelogin/about.php'); ?>">About Us</a></li>
                     </ul>
                 </div>
             </div>
@@ -77,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 70px);">
         <div class="card shadow-sm p-4 login-card-custom">
             <div class="text-center mb-3">
-                <img src="Photos/pup-logo.png" alt="PUP Logo" class="login-logo">
+                <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" class="login-logo">
             </div>
             <div class="text-center mb-3">
                 <span class="fw-normal student-login-text">Student Login.</span>
@@ -85,10 +91,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger py-2 mb-3"><?php echo $error; ?></div>
             <?php endif; ?>
-            <form method="POST" action="login.php">
+            <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
                 <div class="mb-3 position-relative">
                     <input type="text" class="form-control rounded-pill ps-4" id="student_number" name="student_number" placeholder="Webmail" required style="border: 2px solid #222;">
-                    <span class="position-absolute top-50 end-0 translate-middle-y pe-3 text-secondary"><i class="fa fa-user-o"></i></span>
+                    <span class="position-absolute top-50 end-0 translate-middle-y pe-3 text-secondary"><i class="fa fa-user"></i></span>
                 </div>
                 <div class="mb-2 position-relative">
                     <input type="password" class="form-control rounded-pill ps-4" id="password" name="password" placeholder="Password" required style="border: 2px solid #222;">
@@ -99,9 +105,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <button type="submit" class="btn w-100 login-btn-custom">Login</button>
             </form>
-            <a href="register-student-v2.php" class="w-100 d-block"><button class="btn w-100 mt-1 register-btn-custom">Register</button></a>
+            <a href="<?php echo asset_url('User/Beforelogin/register-student-v2.php'); ?>" class="w-100 d-block"><button class="btn w-100 mt-1 register-btn-custom" type="button">Register</button></a>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+   script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>
