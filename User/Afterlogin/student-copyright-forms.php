@@ -128,37 +128,42 @@
               <fieldset>
                 <legend>Academic Affiliation</legend>
                 <div class="row g-3">
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <label class="form-label required">Campus</label>
-                    <select name="campus" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
-                      <option>PUP Main</option>
-                      <option>CEA</option>
+                    <select name="campus" id="campus" class="form-select" required>
+                      <option value="PUP Main (Sta. Mesa, Manila)" selected>PUP Main (Sta. Mesa, Manila)</option>
                     </select>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
+                    <label class="form-label required">Academic Level</label>
+                    <select name="academicLevel" id="academicLevel" class="form-select" required>
+                      <option value="" disabled selected>Choose...</option>
+                      <!-- Will be populated from JS -->
+                    </select>
+                  </div>
+                  <div class="col-md-4">
                     <label class="form-label required">College</label>
-                    <select name="college" class="form-select" required>
+                    <select name="college" id="college" class="form-select" required>
                       <option value="" disabled selected>Choose...</option>
-                      <option>CCIS</option>
-                      <option>CAF</option>
+                      <!-- Will be populated from JS -->
                     </select>
                   </div>
-                  <div class="col-md-3">
-                    <label class="form-label required">Department</label>
-                    <select name="department" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
-                      <option>DIT</option>
-                      <option>DCS</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3">
+                </div>
+                <div class="row g-3 mt-2">
+                  <div class="col-md-6">
                     <label class="form-label required">Program</label>
-                    <select name="program" class="form-select" required>
+                    <select name="program" id="program" class="form-select" required>
                       <option value="" disabled selected>Choose...</option>
-                      <option>BSIT</option>
-                      <option>N/A</option>
+                      <!-- Will be populated from JS -->
                     </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label required">Work Classification</label>
+                    <select name="workClassification" id="workClassification" class="form-select" required>
+                      <option value="" disabled selected>Choose...</option>
+                      <!-- Will be populated from JS -->
+                    </select>
+                    <small class="text-muted">Type O (Original), Type A (Adaptation), Type B (Based on Public Domain)</small>
                   </div>
                 </div>
               </fieldset>
@@ -181,6 +186,12 @@
                   <div class="col-md-3">
                     <label class="form-label">Adviser</label>
                     <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser" required>
+                    <div class="form-check mt-2">
+                      <input class="form-check-input" type="checkbox" name="adviser_coauthor" id="adviserCoauthor">
+                      <label class="form-check-label" for="adviserCoauthor">
+                        Adviser is a Co-author
+                      </label>
+                    </div>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Date Accomplished</label>
@@ -257,32 +268,8 @@
                 <input type="text" name="middle_initial" maxlength="1" class="form-control text-uppercase">
               </div>
               <div class="col-md-4">
-                <label class="form-label required">Student ID</label>
+                <label class="form-label required">PUP ID Number</label>
                 <input type="text" name="student_id" class="form-control">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">Campus</label>
-                <select name="campus" class="form-select">
-                  <option value="">Campus</option>
-                  <option>PUP MAIN</option>
-                  <option>CEA</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">College</label>
-                <select name="college" class="form-select">
-                  <option value="">College</option>
-                  <option>CCIS</option>
-                  <option>CAF</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">Program</label>
-                <input type="text" name="program" class="form-control" placeholder="e.g. BSIT">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">Department</label>
-                <input type="text" name="department" class="form-control" placeholder="Dept.">
               </div>
               <div class="col-md-4">
                 <label class="form-label required">Mobile Number</label>
@@ -316,6 +303,8 @@
  <!-- Load external JS files compliant with Content Security Policy -->
  <script src="<?php echo asset_url('javascript/forms/terms-gating.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
+ <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>"></script>
+ <script src="<?php echo asset_url('javascript/forms/adviser-coauthor.js'); ?>"></script>
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
