@@ -38,3 +38,125 @@ fieldset legend {
 .author-pill:hover { background:#ececef; }
 #authorModal .form-label { font-size:.65rem; font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
 #authorModal input, #authorModal select { font-size:.8rem; padding:.4rem .55rem; }
+
+/* Page layout and footer positioning for forms */
+html, body {
+  height: 100% !important;
+}
+
+body.forms-page {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+}
+
+body.forms-page main {
+  flex: 1 !important;
+}
+
+body.forms-page footer.standard-footer {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+}
+
+/* Form scaling - bigger size for Terms & Conditions only */
+body.forms-page #termsGate {
+  transform: scale(1.1); /* Scale up the Terms & Conditions card by 10% */
+  transform-origin: center top; /* Scale from center-top to maintain alignment */
+  margin-bottom: 2rem; /* Add extra margin to account for scaling */
+}
+
+/* Change Terms & Conditions header color to match student button */
+body.forms-page #termsGate .card-header.bg-primary {
+  background-color: #900c0c !important; /* Same maroon as register button */
+}
+
+/* Change Next button color to match maroon theme - ONLY for Terms & Conditions */
+body.forms-page #termsGate .btn-primary {
+  background-color: #900c0c !important;
+  border-color: #900c0c !important;
+}
+
+body.forms-page #termsGate .btn-primary:hover,
+body.forms-page #termsGate .btn-primary:focus {
+  background-color: #b02a37 !important;
+  border-color: #b02a37 !important;
+}
+
+/* Make ONLY the submission form wider - not Terms & Conditions */
+body.forms-page #formSection {
+  width: 180% !important; /* Make submission form 80% wider */
+  margin-left: -40% !important; /* Center it by offsetting half the extra width */
+  max-width: none !important; /* Remove any max-width constraints */
+}
+
+/* Make "Choose file" buttons match maroon theme */
+body.forms-page input[type="file"] {
+  color: #900c0c !important;
+}
+
+body.forms-page input[type="file"]::-webkit-file-upload-button {
+  background-color: #900c0c !important;
+  color: white !important;
+  border: 1px solid #900c0c !important;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+body.forms-page input[type="file"]::-webkit-file-upload-button:hover {
+  background-color: #b02a37 !important;
+  border-color: #b02a37 !important;
+}
+
+/* Make dropdown "Choose..." text bigger */
+body.forms-page .form-select {
+  font-size: 1rem !important; /* Increased from default 0.875rem */
+}
+
+body.forms-page .form-select option {
+  font-size: 1rem !important;
+}
+
+/* Make Add Author button maroon to match theme */
+body.forms-page #addAuthorBtn {
+  background-color: #900c0c !important;
+  border-color: #900c0c !important;
+  color: white !important;
+}
+
+body.forms-page #addAuthorBtn:hover,
+body.forms-page #addAuthorBtn:focus {
+  background-color: #b02a37 !important;
+  border-color: #b02a37 !important;
+  color: white !important;
+}
+
+/* Reset any global scaling that shouldn't apply to submission form */
+
+/* Font size improvements for Terms & Conditions only */
+body.forms-page #termsGate .card-body {
+  font-size: 0.95rem; /* Increased from small class default */
+}
+
+body.forms-page #termsGate .form-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+body.forms-page #termsGate .form-control {
+  font-size: 0.9rem;
+}
+
+body.forms-page #termsGate .btn {
+  font-size: 0.95rem;
+}
+
+/* Keep original sizes for the actual submission form */
+body.forms-page #copyrightForm fieldset legend {
+  font-size: 0.9rem; /* Original size */
+}
+
+body.forms-page #copyrightForm .section-heading {
+  font-size: 1rem; /* Original size */
+}

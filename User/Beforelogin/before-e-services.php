@@ -76,7 +76,7 @@
           </div>
         </div>
       </div>
-        <div class="text-center mt-5">
+        <!-- <div class="text-center mt-5">
           <p class="contact-info-small mb-0">
             For any questions or concerns, feel free to contact us via:<br>
             <span class="me-3">
@@ -86,18 +86,13 @@
               <img src="<?php echo asset_url('Photos/Icons/Landline-icon.png'); ?>" alt="phone" class="icon-sm align-text-bottom" style="width:20px;height:20px;"> (+632) 5335-1787
             </span>
           </p>
-        </div>
+        </div> -->
+        
     </div>
   </main>
 
     <!-- Footer -->
-  <footer class="bg-white border-top py-3 mt-4">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-    </div>
-  </footer> 
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?> 
 
 
 

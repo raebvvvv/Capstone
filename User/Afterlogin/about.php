@@ -96,13 +96,9 @@ require __DIR__ . '/../../auth_check.php';
     </section>
   </section>
 
-  <footer class="bg-white border-top py-3 mt-4">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-    </div>
-  </footer>
+  <!-- Footer -->
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

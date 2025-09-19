@@ -96,16 +96,9 @@
         <p>The University Board of Regents approved the PUP Intellectual Property Policy on April 19, 2007. The monitoring and implementation of the said IP Policy was delegated to the University Legal Office. In October 2012, President Emanuel C. De Guzman issued a Special Order creating the Intellectual Property and Commercialization Office with Prof. Elmer G. De Jose as its first chief, in concurrent capacity as Chief of the Graduate School Research, Development and Production Center.</p>
       </section>
   </section>
-  </main>
 
   <!-- Footer -->
-  <footer class="bg-white border-top py-3 mt-4">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-    </div>
-  </footer>
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>

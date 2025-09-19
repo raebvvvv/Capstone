@@ -288,13 +288,9 @@
       </div>
     </div>
   </div>
- <footer class="bg-white border-top py-3 mt-4">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none">Privacy Statement</a>
-    </div>
-  </footer>
+  
+  <!-- Footer -->
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
  
   <script>
     // Terms & Conditions gating (NEW)

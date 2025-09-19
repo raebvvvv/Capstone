@@ -54,14 +54,14 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
   <div class="row g-5 align-items-start">
     <div class="d-flex flex-row justify-content-between align-items-start w-100 flex-wrap main-intro-row">
       <div class="d-flex flex-row justify-content-between align-items-start w-100 flex-wrap">
-        <div class="flex-grow-1" style="max-width: 60%;">
+        <div class="flex-grow-1" style="max-width: 40%;">
           <h1 class="fw-bold mb-2">e-IPMO Services</h1>
           <p class="fs-5 mb-3"><span class="fw-bold">e-IPMO</span> is an online system for students to easily register, submit, and track IP applications in one secure platform. Start your application process smoothly and efficiently.</p>
           <p class="mb-2">
             <span class="me-3"><img src="<?php echo asset_url('Photos/Icons/Email-icon.png'); ?>" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
             <span><img src="<?php echo asset_url('Photos/Icons/Landline-icon.png'); ?>" alt="phone" class="icon-sm"> (+632) 5335-1787</span>
           </p>
-          <p class="ip-purpose">The purpose of IP is to protect works   from misuse or theft. Click <a href="https://www.wto.org/english/tratop_e/trips_e/intel1_e.htm" class="fw-bold text-primary" target="_blank">here</a> to read about Intellectual Property Rights.</p>
+          <p class="ip-purpose">The purpose of IP is to protect works from misuse or theft. Click <a href="https://www.wto.org/english/tratop_e/trips_e/intel1_e.htm" class="fw-bold text-primary" target="_blank">here</a> to read about Intellectual Property Rights.</p>
         </div>
         <div class="ms-5">  
           <h2 class="fw-bold">Office Hours</h2>
@@ -90,6 +90,29 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
         </div>
         <div class="card shadow-sm h-100">
           <div class="card-body text-center">
+            <img src="<?php echo asset_url('Photos/Icons/what-ip.png'); ?>" alt="types" class="mb-3 mx-auto d-block" style="height:40px;">
+            <h5 class="fw-bold mb-2">What types of IP can I protect?</h5>
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <button class="btn btn-warning fw-bold w-100">Copyright</button>
+              </div>
+              <div class="col-6">
+                <button class="btn btn-warning fw-bold w-100">Patent</button>
+              </div>
+              <div class="col-6">
+                <button class="btn btn-warning fw-bold w-100">Utility Model</button>
+              </div>
+              <div class="col-6">
+                <button class="btn btn-warning fw-bold w-100">Trademark</button>
+              </div>
+              <div class="col-12">
+                <button class="btn btn-warning fw-bold w-100">Industrial Design</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card shadow-sm h-100">
+          <div class="card-body text-center">
             <img src="<?php echo asset_url('Photos/Icons/how-apply.png'); ?>" alt="apply" class="mb-3 mx-auto d-block" style="height:40px;">
             <h5 class="fw-bold mb-2">How do I apply for IP?</h5>
             <div class="d-flex justify-content-center gap-2 mb-2">
@@ -103,13 +126,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
             </div>
           </div>
         </div>
-        <div class="card shadow-sm h-100">
-          <div class="card-body text-center">
-            <img src="<?php echo asset_url('Photos/Icons/what-ip.png'); ?>" alt="types" class="mb-3 mx-auto d-block" style="height:40px;">
-            <h5 class="fw-bold mb-2">What types of IP can I apply for?</h5>
-            <p class="mb-0">Patent, Utility Model, Copyright, Industrial Design, and Trademark.</p>
-          </div>
-        </div>
+
       </div>
       
       <?php if (!$isLoggedIn): ?>
@@ -210,13 +227,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
   </section>
 
   <!-- Footer -->
-  <footer class="bg-white border-top py-3 mt-4">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-    </div>
-  </footer>
+  <?php include __DIR__ . '/partials/standard_footer.php'; ?>
 
   <!-- Bootstrap JS + Icons -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>

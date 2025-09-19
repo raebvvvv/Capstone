@@ -5,8 +5,8 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
-// Helper: Check if table exists (returns bool)
-function table_exists(mysqli $conn, string $table): bool {
+// Helper: Check if table exists (returns bo      <!-- Footer -->
+  <?php include __DIR__ . '/../partials/standard_footer.php'; ?>ction table_exists(mysqli $conn, string $table): bool {
     $stmt = $conn->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1");
     if (!$stmt) { return false; }
     $stmt->bind_param('s', $table);

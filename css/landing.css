@@ -124,8 +124,10 @@ h1, h2, h5 {
 }
 
 .cards-center-row .card {
-  min-width: 340px;
-  max-width: 380px;
+  width: 360px;
+  min-width: 360px;
+  max-width: 360px;
+  flex: 0 0 360px;
   margin: 0;
 }
 

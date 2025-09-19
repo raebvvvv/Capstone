@@ -74,8 +74,8 @@ require_once __DIR__ . '/../../auth_check.php';
       </div>
     </section>
   </main>
-  <p class="text-center text-muted" style="font-size:0.9em;">Questions? Email ipmo@pup.edu.ph or call (+632) 5335-1787</p>
-  <?php include __DIR__ . '/../../partials/footer_fallback.php'; ?>
+
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="<?php echo asset_url('javascript/after-originality-check.js'); ?>"></script>
 </body>

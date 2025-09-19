@@ -91,7 +91,7 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth
       </div>
     </section>
   </main>
-  <?php include __DIR__ . '/../../partials/footer_fallback.php'; ?>
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="<?php echo asset_url('javascript/after-ip-application.js'); ?>"></script>
 </body>

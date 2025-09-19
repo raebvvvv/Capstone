@@ -9,6 +9,30 @@ footer.footer-minimal a {
   color: #0d6efd !important;
   text-decoration: underline;
 }
+
+/* Standard footer styling */
+footer.standard-footer {
+  background: white !important;
+  border-top: 1px solid #dee2e6 !important;
+  padding: 1rem 0 !important;
+  margin-top: 2rem !important;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+footer.standard-footer .container {
+  text-align: center;
+}
+
+footer.standard-footer a {
+  color: #0d6efd !important;
+  text-decoration: none;
+}
+
+footer.standard-footer a:hover {
+  color: #0a58ca !important;
+  text-decoration: underline;
+}
 .nav-link.active, .nav-link.active.maroon-underline {
   border-bottom: 3px solid #800000;
 }
@@ -103,6 +127,15 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 2px;
 }
 
+/* Login section styling */
+.login-section-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem !important;
+  margin-bottom: 32px;
+}
+
 
 
 
@@ -129,8 +162,60 @@ h1, h2, h3, h4, h5, h6 {
   body {
     font-size: 0.95rem;
   }
-  footer {
-    font-size: 0.9em;
-    padding: 0.5em 0;
-  }
+/* Login section styling */
+.login-section-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem !important;
+  margin-bottom: 32px;
+  text-align: center;
+  width: 100%;
+}
+
+.login-section-center h5 {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.login-section-center .d-flex {
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+}
+
+/* Cards centering enhancement */
+.cards-center-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 32px !important;
+  margin-bottom: 32px !important;
+  width: 100% !important;
+}
+
+/* Force all cards to have equal width - override landing.css */
+.cards-center-row .card.shadow-sm.h-100 {
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  flex: 0 0 360px !important;
+  margin: 0 !important;
+}
+
+.cards-center-row .card {
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  flex: 0 0 360px !important;
+  margin: 0 !important;
+}
+
+/* Page content centering */
+.container {
+  margin: 0 auto !important;
+  text-align: center !important;
+}
 }

@@ -8,9 +8,11 @@
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/forms.css'); ?>">
+
 </head>
-<body>
+<body class="forms-page">
   <!-- Navbar -->
 <nav class="navbar navbar-expand-lg bg-white border-bottom">
     <div class="container">
@@ -34,8 +36,10 @@
 
   <main class="py-4">
     <div class="container">
-      <!-- Terms & Conditions -->
-      <div id="termsGate" class="card shadow-sm mb-4">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+          <!-- Terms & Conditions -->
+          <div id="termsGate" class="card shadow-sm mb-4">
         <div class="card-header bg-primary text-white py-2">
           <strong>Terms &amp; Conditions</strong>
         </div>
@@ -241,6 +245,7 @@
             </form>
           </div>
         </div>
+        </div>
       </div>
     </div>
   </main>
@@ -294,13 +299,10 @@
       </div>
     </div>
   </div>
- <footer class="bg-white border-top py-3 mt-4">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none">Privacy Statement</a>
-    </div>
-  </footer>
+  
+  <!-- Footer -->
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
+  
  <!-- Load external JS files compliant with Content Security Policy -->
  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>

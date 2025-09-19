@@ -15,6 +15,31 @@
   border-radius: 12px;
 }
 
+/* Login container height adjustment to prevent scrolling */
+.login-container {
+  min-height: calc(100vh - 120px) !important;
+}
+
+/* Login page specific footer positioning */
+.login-page-body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.login-page-body .login-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-page-body footer.standard-footer {
+  margin-top: auto !important;
+  margin-bottom: 35px !important;
+}
+
 .login-logo {
   width: 90px;
   height: 90px;
