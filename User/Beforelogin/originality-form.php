@@ -15,7 +15,7 @@
   <!-- Navbar (copied from index.php) -->
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
+  <a class="navbar-brand d-flex align-items-center" href="../../index.php">
   <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
@@ -24,7 +24,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active" aria-current="page" href="index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="../../index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
         </ul>
       </div>
@@ -32,7 +32,7 @@
   </nav>
 
   <div class="container d-flex justify-content-end mt-3 mb-2">
-    <?php if (function_exists('render_back_link')) { render_back_link('User/Beforelogin/index.php'); } ?>
+  <?php if (function_exists('render_back_link')) { render_back_link('index.php'); } ?>
   </div>
 
   <div class="container py-4">

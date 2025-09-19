@@ -23,8 +23,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link " href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
@@ -83,6 +83,7 @@
           <div class="card-body">
             <!-- Student Information  -->
             <form id="submissionForm" class="mt-2" method="post" action="submit-form.php" enctype="multipart/form-data">
+              <?php if (function_exists('csrf_input')) { csrf_input(); } ?>
               <!-- NEW hidden acceptance flag -->
               <input type="hidden" name="accepted_terms" id="accepted_terms" value="">
               <h2 class="section-heading mb-3">Student Information</h2>
@@ -301,7 +302,7 @@
     </div>
   </footer>
  <!-- Load external JS files compliant with Content Security Policy -->
- <script src="<?php echo asset_url('javascript/forms/terms-gating.js'); ?>"></script>
+ <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/adviser-coauthor.js'); ?>"></script>

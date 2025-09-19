@@ -1,4 +1,9 @@
-<?php require __DIR__ . '/../../config.php'; ?>
+<?php require __DIR__ . '/../../config.php'; 
+// Ensure we have a simple logged-in flag to avoid undefined variable notice
+if (!isset($isLoggedIn)) {
+  $isLoggedIn = isset($_SESSION['user_id']);
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,8 +29,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link active" href="student-profile.php">My Profile</a></li>
         </ul>
@@ -46,9 +51,12 @@
           Edit Profile
         </button>           
       </div>
-      <button id="signOutBtn" type="button" class="btn btn-danger btn-sm px-4">
-        Sign Out
-      </button>
+  <?php if ($isLoggedIn): ?>
+          <form method="POST" action="<?php echo asset_url('User/Beforelogin/logout.php'); ?>" class="d-inline ms-2">
+            <?php csrf_input(); ?>
+            <button type="submit" class="btn btn-danger">Logout</button>
+          </form>
+        <?php endif; ?>
     </div>
     <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p>
     <div class="bg-white rounded-3 shadow-sm p-4 mx-auto" style="max-width: 1100px;">
@@ -125,11 +133,12 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Make CSRF token available to JavaScript (more secure than window variable)
     const csrfToken = '<?php echo csrf_token(); ?>';
   </script>
+  
   <script src="<?php echo asset_url('javascript/student-profile.js'); ?>"></script>
 </body>
 </html>

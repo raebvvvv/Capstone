@@ -1,4 +1,5 @@
 <?php require __DIR__ . '/../../config.php'; ?>
+<?php require __DIR__ . '/../../auth_check.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,8 +15,8 @@
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+      <a class="navbar-brand d-flex align-items-center" href="../../index.php">
+        <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -23,8 +24,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
@@ -33,7 +34,7 @@
     </div>
   </nav>
   <div class="container d-flex justify-content-end mt-3 mb-2">
-    <?php if (function_exists('render_back_link')) { render_back_link('User/Afterlogin/after-landing.php'); } ?>
+  <?php if (function_exists('render_back_link')) { render_back_link('index.php'); } ?>
   </div>
   <main class="container py-4">
     <h2 class="text-center mb-2"><strong>Instructions</strong> are provided in each e-Service.</h2>
@@ -51,7 +52,7 @@
               <span class="text-danger oc-rule-small"><b>15% - Graduate School (Doctorate and Masterals)</b></span><br>
               <span class="text-danger oc-rule-small"><b>20% and below - Undergraduate Degree</b></span>
             </p>
-            <a href="after-originality-check.php"><button class="btn btn-success">Apply</button></a>
+            <a href="originality-check.php"><button class="btn btn-success">Apply</button></a>
           </div>
         </div>
       </div>

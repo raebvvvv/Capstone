@@ -34,8 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     // Redirect administrators to the admin dashboard
                     redirect('admin/admin.php');
                 } else {
-                    // Redirect regular users to their landing page
-                    redirect('User/Afterlogin/after-landing.php');
+                    // Redirect regular users to unified index page (dynamic content based on session)
+                    redirect('index.php');
                 }
                 exit();
             }

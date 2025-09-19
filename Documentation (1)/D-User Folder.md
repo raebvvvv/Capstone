@@ -24,15 +24,16 @@ This structure ensures a clear separation between public and authenticated user 
 - **login.php**: Login form for students and employees.
 
 ### `User/AfterLogin/`
-- **after-landing.php**: Dashboard landing page after login.
-- **after-about.php**: About page for logged-in users.
-- **after-ip-application.php**: IP application guide for authenticated users.
-- **after-originality-check.php**: Originality check guide for authenticated users.
-- **after-originality-form.php**: View/download originality check form (authenticated).
-- **copyright-application.php**: Copyright application and download forms.
-- **e-services.php**: Main e-services dashboard (choose service to apply for).
-- **student-application.php**: View and track user's IP applications.
-- **student-profile.php**: User profile page (view/edit personal info).
+Canonical (active) authenticated pages:
+- **index.php (root)**: Unified guest + authenticated dashboard (replaces `after-landing.php`).
+- **about.php (root)**: Unified About page (replaces `after-about.php`).
+- **ip-application.php**: IP application guide (replaces `after-ip-application.php`).
+- **originality-check.php**: Originality check guide (replaces `after-originality-check.php`).
+- **originality-form.php**: Originality check form view (replaces `after-originality-form.php`).
+- **copyright-application.php**: Copyright application & forms.
+- **e-services.php**: Service selection dashboard.
+- **student-application.php**: Track user's IP applications.
+- **student-profile.php**: View / edit user profile.
 
 ---
 
@@ -69,9 +70,37 @@ This structure ensures a clear separation between public and authenticated user 
 ---
 
 ## Example Usage
-1. User visits `User/BeforeLogin/index.php` to learn about the system or register.
-2. After login, user is redirected to `User/AfterLogin/after-landing.php`.
-3. User can access e-services, view applications, or edit their profile from the AfterLogin dashboard.
+1. User visits `index.php` (root) and sees the public landing experience (guest view).
+2. User logs in via `login.php`; upon success they are redirected back to the same `index.php`, which now renders the authenticated dashboard (no separate after-landing URL).
+3. User navigates to `about.php`, `e-services.php`, or application-related pages. Logout returns them to the guest view on `index.php`.
+
+---
+
+## Deprecations & Redirects
+| Legacy File | Status | Replacement | Notes |
+|-------------|--------|-------------|-------|
+| `User/AfterLogin/after-landing.php` | Stub redirect | `index.php` | Will be removable after external links updated; upgrade to 301 when stable. |
+| `User/AfterLogin/after-about.php` | Stub redirect | `about.php` | Safe to delete after redirect grace period. |
+| `User/AfterLogin/after-ip-application.php` | Stub redirect | `ip-application.php` | New canonical page adds auth gate. |
+| `User/AfterLogin/after-originality-check.php` | Stub redirect | `originality-check.php` | Content migrated. |
+| `User/AfterLogin/after-originality-form.php` | Stub redirect | `originality-form.php` | Form view migrated. |
+
+All legacy stubs emit `Cache-Control: no-store` and temporary (302) redirects. After monitoring (e.g., access logs show no hits for 2+ weeks), switch to 301 and optionally remove the stub files.
+
+### Redirect Strategy
+- Current stubs issue 302 (temporary) until confident all references are updated; then switch to 301 (permanent) and schedule deletion after a grace period.
+- Stubs send `Cache-Control: no-store` to prevent browsers caching obsolete HTML.
+
+### Validation Checklist
+- Searching for `after-ip-application.php`, `after-originality-check.php`, `after-originality-form.php` returns only stub redirect files + documentation.
+- Buttons and nav links now point to `ip-application.php`, `originality-check.php`, `originality-form.php`.
+- Accessing any legacy URL results in a 302 to the canonical page with no-store headers.
+
+---
+
+## Session & Cache Notes
+- Authenticated pages include headers to prevent back/forward cache (BFCache) serving logged-in views after logout (`Cache-Control: no-store, no-cache, must-revalidate`).
+- Redirect stubs also emit no-store headers for consistency.
 
 ---
 

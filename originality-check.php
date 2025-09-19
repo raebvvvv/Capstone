@@ -23,8 +23,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link nav-bold" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="User/Afterlogin/about.php">About Us</a></li>
           <li class="nav-item"><a class="nav-link nav-bold" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link nav-bold" href="student-profile.php">My Profile</a></li>
         </ul>

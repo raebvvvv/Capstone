@@ -1,4 +1,9 @@
-<?php require __DIR__ . '/config.php'; ?>
+<?php 
+require __DIR__ . '/config.php'; 
+
+// Check if the user is logged in
+$isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +21,7 @@
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+        <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -25,8 +30,20 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link active maroon-underline" aria-current="page" href="index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="User/Beforelogin/about.php">About Us</a></li>
+          <?php if ($isLoggedIn): ?>
+            <!-- Logged in navigation -->
+            <li class="nav-item"><a class="nav-link" href="User/Afterlogin/about.php">About Us</a></li>
+            <li class="nav-item"><a class="nav-link" href="User/Afterlogin/student-application.php">My Application</a></li>
+            <li class="nav-item"><a class="nav-link" href="User/Afterlogin/student-profile.php">My Profile</a></li>
+          
+          <?php else: ?>
+            <!-- Not logged in navigation -->
+            <li class="nav-item"><a class="nav-link" href="User/Beforelogin/about.php">About Us</a></li>
+          <?php endif; ?>
         </ul>
+        <?php if ($isLoggedIn): ?>
+          <a href="User/Afterlogin/e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+        <?php endif; ?>
       </div>
     </div>
   </nav>
@@ -76,8 +93,13 @@
             <img src="<?php echo asset_url('Photos/Icons/how-apply.png'); ?>" alt="apply" class="mb-3 mx-auto d-block" style="height:40px;">
             <h5 class="fw-bold mb-2">How do I apply for IP?</h5>
             <div class="d-flex justify-content-center gap-2 mb-2">
-              <a href="User/Beforelogin/ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
-              <a href="User/Beforelogin/before-originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
+              <?php if ($isLoggedIn): ?>
+                <a href="User/Afterlogin/ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
+                <a href="User/Afterlogin/originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
+              <?php else: ?>
+                <a href="User/Beforelogin/ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
+                <a href="User/Beforelogin/before-originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
+              <?php endif; ?>
             </div>
           </div>
         </div>
@@ -89,6 +111,8 @@
           </div>
         </div>
       </div>
+      
+      <?php if (!$isLoggedIn): ?>
       <div class="login-section-center">
         <h5 class="fw-bold mb-3">Register or Login here!</h5>
         <div class="d-flex">
@@ -96,6 +120,7 @@
           <a href="User/Beforelogin/login.php" class="btn btn-login fw-bold px-5 py-2">EMPLOYEE</a>
         </div>
       </div>
+      <?php endif; ?>
     </div>
   </section>
 
@@ -195,6 +220,10 @@
 
   <!-- Bootstrap JS + Icons -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <?php if ($isLoggedIn): ?>
+  <script src="<?php echo asset_url('javascript/after-landing.js'); ?>"></script>
+  <?php else: ?>
   <script src="<?php echo asset_url('javascript/landing.js'); ?>"></script>
+  <?php endif; ?>
 </body>
 </html>

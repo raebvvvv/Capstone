@@ -22,28 +22,15 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="after-landing.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link " href="after-about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="User/Afterlogin/about.php">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
       </div>
     </div>
   </nav>
-
-  <main class="py-4">
-    <div class="container">
-      <!-- Terms & Conditions -->
-      <div id="termsGate" class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white py-2">
-          <strong>Terms &amp; Conditions</strong>
-        </div>
-        <div class="card-body small">
-          <p class="mb-2">By filling in this form, you agree to the following:</p>
-          <ol class="mb-3 ps-3">
-            <li class="mb-2">
-              <strong>Purpose</strong><br>
-              This form is for disclosing inventions, creative works, or other intellectual property created by students, faculty, staff, or collaborators of the Polytechnic University of the Philippines.
+ <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
             </li>
             <li class="mb-2">
               <strong>Accuracy</strong><br>
