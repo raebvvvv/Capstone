@@ -1,3 +1,4 @@
+<?php require_once dirname(__DIR__, 2) . '/public_bootstrap.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/before-copyright-application.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/png" href="<?= APP_BASE_URL ?>/Photos/pup-logo.png">
+  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/css/before-copyright-application.css">
+  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/css/main.css">
   
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-          <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <a class="navbar-brand d-flex align-items-center" href="<?= APP_BASE_URL ?>/index.php">
+      <img src="<?= APP_BASE_URL ?>/Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -23,8 +24,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= APP_BASE_URL ?>/index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= APP_BASE_URL ?>/user/BeforeLogin/about.php">About Us</a></li>
         </ul>
       </div>
     </div>
@@ -76,7 +77,7 @@
           <span style="font-size:0.95em;">For Multiple or Single Authorship</span>
         </div>
         <div class="file-actions">
-          <a href="#" class="btn view-btn btn-sm mb-1">View File</a>
+          <a href="#" class="btn btn-warning btn-sm mb-1">View File</a>
           <a href="#" class="btn download-btn btn-sm mb-1">Download as PDF</a>
         </div>
       </div>

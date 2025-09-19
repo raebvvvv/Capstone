@@ -1,3 +1,4 @@
+<?php require_once dirname(__DIR__, 2) . '/public_bootstrap.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,15 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/originality-check-before.css?v=5">
-  <link rel="stylesheet" href="css/main.css?v=5">
+  <link rel="icon" type="image/png" href="<?= APP_BASE_URL ?>/Photos/pup-logo.png">
+  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/css/originality-check-before.css?v=5">
+  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/css/main.css?v=5">
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <a class="navbar-brand d-flex align-items-center" href="<?= APP_BASE_URL ?>/index.php">
+  <img src="<?= APP_BASE_URL ?>/Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -22,8 +23,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= APP_BASE_URL ?>/index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= APP_BASE_URL ?>/user/BeforeLogin/about.php">About Us</a></li>
         </ul>
       </div>
     </div>
@@ -41,7 +42,7 @@
     <p class="fs-5 mb-2">
       IPMO offers Originality Checking through 
       <a href="https://www.turnitin.com/" target="_blank">
-  <img src="Photos/Icons/turnitin-icon.png" alt="Turnitin" class="turnitin-logo">
+  <img src="<?= APP_BASE_URL ?>/Photos/Icons/turnitin-icon.png" alt="Turnitin" class="turnitin-logo">
       </a>
     </p>
     <h4 class="fw-bold mb-3">FAQs and Guide:</h4>
@@ -49,7 +50,7 @@
     <!-- FAQ Card -->
     <section class="card shadow-sm guide-card mb-4">
       <div class="card-body d-flex align-items-center flex-wrap">
-  <img src="Photos/Icons/requirement-icon.png" alt="FAQ Icon" class="step-icon me-3">
+  <img src="<?= APP_BASE_URL ?>/Photos/Icons/requirement-icon.png" alt="FAQ Icon" class="step-icon me-3">
         <div>
           <h5 class="fw-bold mb-2">Is acquiring an Originality Check Certificate through IPMO mandatory?</h5>
           <p class="mb-0">Acquiring an Originality Check Certificate from IPMO is not required/optional, except for PUP Graduate School. Below are the similarity percentage required for the Originality Check Certificate:</p>
@@ -64,7 +65,7 @@
     <!-- Process Section -->
     <section class="card shadow-sm guide-card mb-4">
       <div class="card-body d-flex align-items-center flex-wrap pb-0">
-  <img src="Photos/Icons/desk-icon.png" alt="Submission to Adviser" class="step-icon me-3">
+  <img src="<?= APP_BASE_URL ?>/Photos/Icons/desk-icon.png" alt="Submission to Adviser" class="step-icon me-3">
         <div>
           <h5 class="fw-bold mb-2">How does the Originality Checking Process work?</h5>
           <div class="step-box mt-3 mb-3">
@@ -76,7 +77,7 @@
               <div class="step-title fw-bold mb-1"><span class="step-number">2.</span> Adviser Conducts Originality Check</div>
               <div class="step-desc">
                 Using <strong>Turnitin</strong>, a plagiarism detection software, the adviser reviews the document and records the results in the Originality Check Form.<br>
-                <a href="originality-form.php" class="btn btn-originality btn-sm mt-2">Originality Check Form</a>
+                <a href="<?= APP_BASE_URL ?>/user/BeforeLogin/originality-form.php" class="btn btn-originality btn-sm mt-2">Originality Check Form</a>
               </div>
             </div>
             <div class="step-item mb-3">
@@ -129,6 +130,6 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="javascript/originality-check.js"></script>
+  <script src="<?= APP_BASE_URL ?>/javascript/originality-check.js"></script>
 </body>
 </html>

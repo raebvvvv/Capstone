@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/public_bootstrap.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +7,16 @@
   <title>PUP e-IPMO</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/landing.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/png" href="<?= APP_BASE_URL ?>/Photos/pup-logo.png">
+  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/css/landing.css">
+  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/css/main.css">
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+      <a class="navbar-brand d-flex align-items-center" href="<?= APP_BASE_URL ?>/index.php">
+        <img src="<?= APP_BASE_URL ?>/Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -23,8 +24,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active maroon-underline" aria-current="page" href="index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link active maroon-underline" aria-current="page" href="<?= APP_BASE_URL ?>/index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= APP_BASE_URL ?>/user/BeforeLogin/about.php">About Us</a></li>
         </ul>
       </div>
     </div>
@@ -40,8 +41,8 @@
           <h1 class="fw-bold mb-2">e-IPMO Services</h1>
           <p class="fs-5 mb-3"><span class="fw-bold">e-IPMO</span> is an online system for students to easily register, submit, and track IP applications in one secure platform. Start your application process smoothly and efficiently.</p>
           <p class="mb-2">
-            <span class="me-3"><img src="Photos/Icons/Email-icon.png" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
-            <span><img src="Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm"> (+632) 5335-1787</span>
+            <span class="me-3"><img src="<?= APP_BASE_URL ?>/Photos/Icons/Email-icon.png" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
+            <span><img src="<?= APP_BASE_URL ?>/Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm"> (+632) 5335-1787</span>
           </p>
           <p class="ip-purpose">The purpose of IP is to protect works   from misuse or theft. Click <a href="https://www.wto.org/english/tratop_e/trips_e/intel1_e.htm" class="fw-bold text-primary" target="_blank">here</a> to read about Intellectual Property Rights.</p>
         </div>
@@ -65,24 +66,24 @@
       <div class="cards-center-row">
         <div class="card shadow-sm h-100">
           <div class="card-body text-center">
-            <img src="Photos/Icons/who.png" alt="users" class="mb-3 mx-auto d-block" style="height:40px;">
+            <img src="<?= APP_BASE_URL ?>/Photos/Icons/who.png" alt="users" class="mb-3 mx-auto d-block" style="height:40px;">
             <h5 class="fw-bold mb-2">Who can use e-IPMO?</h5>
             <p class="mb-0">Bonafide students and Non-students (Faculty and Staff) of all PUP branches.</p>
           </div>
         </div>
         <div class="card shadow-sm h-100">
           <div class="card-body text-center">
-            <img src="Photos/Icons/how-apply.png" alt="apply" class="mb-3 mx-auto d-block" style="height:40px;">
+            <img src="<?= APP_BASE_URL ?>/Photos/Icons/how-apply.png" alt="apply" class="mb-3 mx-auto d-block" style="height:40px;">
             <h5 class="fw-bold mb-2">How do I apply for IP?</h5>
             <div class="d-flex justify-content-center gap-2 mb-2">
-              <a href="ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
-              <a href="before-originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
+              <a href="<?= APP_BASE_URL ?>/user/BeforeLogin/ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
+              <a href="<?= APP_BASE_URL ?>/user/BeforeLogin/before-originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
             </div>
           </div>
         </div>
         <div class="card shadow-sm h-100">
           <div class="card-body text-center">
-            <img src="Photos/Icons/what-ip.png" alt="types" class="mb-3 mx-auto d-block" style="height:40px;">
+            <img src="<?= APP_BASE_URL ?>/Photos/Icons/what-ip.png" alt="types" class="mb-3 mx-auto d-block" style="height:40px;">
             <h5 class="fw-bold mb-2">What types of IP can I apply for?</h5>
             <p class="mb-0">Patent, Utility Model, Copyright, Industrial Design, and Trademark.</p>
           </div>
@@ -91,8 +92,8 @@
       <div class="login-section-center">
         <h5 class="fw-bold mb-3">Register or Login here!</h5>
         <div class="d-flex">
-          <a href="login.php" class="btn btn-login fw-bold px-5 py-2">STUDENT</a>
-          <a href="login.php" class="btn btn-login fw-bold px-5 py-2">EMPLOYEE</a>
+          <a href="<?= APP_BASE_URL ?>/user/BeforeLogin/login.php" class="btn btn-login fw-bold px-5 py-2">STUDENT</a>
+          <a href="<?= APP_BASE_URL ?>/user/BeforeLogin/login.php" class="btn btn-login fw-bold px-5 py-2">EMPLOYEE</a>
         </div>
       </div>
     </div>
@@ -105,32 +106,32 @@
     <div class="row g-4">
       <div class="col-md-4">
         <div class="card announcement-card">
-          <img src="Photos/hiring.jpg" class="announcement-img" alt="Hiring Announcement">
+          <img src="<?= APP_BASE_URL ?>/Photos/hiring.jpg" class="announcement-img" alt="Hiring Announcement">
         </div>
       </div>
       <div class="col-md-4">
         <div class="card announcement-card">
-          <img src="Photos/hiring2.jpg" class="announcement-img" alt="Application Process">
+          <img src="<?= APP_BASE_URL ?>/Photos/hiring2.jpg" class="announcement-img" alt="Application Process">
         </div>
       </div>
       <div class="col-md-4">
         <div class="card announcement-card">
-          <img src="Photos/hiring3.jpg" class="announcement-img" alt="Technical Assistant I">
+          <img src="<?= APP_BASE_URL ?>/Photos/hiring3.jpg" class="announcement-img" alt="Technical Assistant I">
         </div>
       </div>
       <div class="col-md-4">
         <div class="card announcement-card">
-          <img src="Photos/hiring4.jpg" class="announcement-img" alt="Technical Assistant III">
+          <img src="<?= APP_BASE_URL ?>/Photos/hiring4.jpg" class="announcement-img" alt="Technical Assistant III">
         </div>
       </div>
       <div class="col-md-4">
         <div class="card announcement-card">
-          <img src="Photos/hiring5.jpg" class="announcement-img" alt="Technical Expert">
+          <img src="<?= APP_BASE_URL ?>/Photos/hiring5.jpg" class="announcement-img" alt="Technical Expert">
         </div>
       </div>
       <div class="col-md-4">
         <div class="card announcement-card">
-          <img src="Photos/hirinh6.jpg" class="announcement-img" alt="Technical Expert">
+          <img src="<?= APP_BASE_URL ?>/Photos/hirinh6.jpg" class="announcement-img" alt="Technical Expert">
         </div>
       </div>
     </div>
@@ -144,10 +145,10 @@
     <h5 class="fw-bold mt-4 mb-3">MEMORANDUM ORDER<br>No. 031, Series of 2013</h5>
     <div class="row g-3">
       <div class="col-md-6">
-  <img src="Photos/memo 1.png" class="img-fluid rounded shadow-sm" alt="Memo 1">
+  <img src="<?= APP_BASE_URL ?>/Photos/memo 1.png" class="img-fluid rounded shadow-sm" alt="Memo 1">
       </div>
       <div class="col-md-6">
-  <img src="Photos/memo 2.png" class="img-fluid rounded shadow-sm" alt="Memo 2">
+  <img src="<?= APP_BASE_URL ?>/Photos/memo 2.png" class="img-fluid rounded shadow-sm" alt="Memo 2">
       </div>
     </div>
   </section>
@@ -158,7 +159,7 @@
     <div class="row g-4">
       <div class="col-md-4">
         <div class="card shadow-sm h-100">
-          <img src="Photos/article 1.png" class="card-img-top" alt="Article 1">
+          <img src="<?= APP_BASE_URL ?>/Photos/article 1.png" class="card-img-top" alt="Article 1">
           <div class="card-body">
             <p class="fw-bold mb-0">IPMO holds 2nd APEAR to facilitate student innovation</p>
           </div>
@@ -166,7 +167,7 @@
       </div>
       <div class="col-md-4">
         <div class="card shadow-sm h-100">
-          <img src="Photos/article 2.png" class="card-img-top" alt="Article 2">
+          <img src="<?= APP_BASE_URL ?>/Photos/article 2.png" class="card-img-top" alt="Article 2">
           <div class="card-body">
             <p class="fw-bold mb-0">Entrep seminar for students organized</p>
           </div>
@@ -174,7 +175,7 @@
       </div>
       <div class="col-md-4">
         <div class="card shadow-sm h-100">
-          <img src="Photos/article 3.png" class="card-img-top" alt="Article 3">
+          <img src="<?= APP_BASE_URL ?>/Photos/article 3.png" class="card-img-top" alt="Article 3">
           <div class="card-body">
             <p class="fw-bold mb-0">Jewelry-Making and Basic Marketing Strategies discussed by CTTED</p>
           </div>
@@ -194,6 +195,6 @@
 
   <!-- Bootstrap JS + Icons -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="javascript/landing.js"></script>
+  <script src="<?= APP_BASE_URL ?>/javascript/landing.js"></script>
 </body>
 </html>

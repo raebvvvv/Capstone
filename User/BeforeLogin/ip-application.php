@@ -1,3 +1,4 @@
+<?php require_once dirname(__DIR__, 2) . '/public_bootstrap.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,17 +6,17 @@
   <title>How do I apply for IP? | PUP e-IPMO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/ip-application.css">
+  <link rel="icon" type="image/png" href="<?= APP_BASE_URL ?>/Photos/pup-logo.png">
+  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/css/main.css">
+  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/css/ip-application.css">
 
 </head>
 <body>
   <!-- Navbar (matches index.php) -->
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+  <a class="navbar-brand d-flex align-items-center" href="<?= APP_BASE_URL ?>/index.php">
+  <img src="<?= APP_BASE_URL ?>/Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -23,8 +24,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= APP_BASE_URL ?>/index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= APP_BASE_URL ?>/user/BeforeLogin/about.php">About Us</a></li>
         </ul>
       </div>
     </div>
@@ -41,7 +42,7 @@
       <!-- Step 1 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/security.png" alt="Register Icon" class="img-fluid">
+          <img src="<?= APP_BASE_URL ?>/Photos/Icons/security.png" alt="Register Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1 d-flex flex-column flex-md-row w-100">
           <div class="card-desc flex-grow-1">
@@ -50,14 +51,14 @@
               <span class="step-title fw-bold">Register or Login</span>
             </div>
             <div class="step-desc mb-1">
-              To get started, please <b>create an account</b> or <b>login</b> with your existing one. Choose whether you are a <a href="#" class="text-dark text-decoration-underline fw-bold">Student</a> or <a href="#" class="text-dark text-decoration-underline fw-bold">Non-student</a>.
+              To get started, please <b>create an account</b> or <b>login</b> with your existing one. Choose whether you are a <a href="#" class="text-dark text-decoration-underline fw-bold">Student</a> or <a href="#" class="text-dark text-decoration-underline fw-bold">Employee</a>.
             </div>
           </div>
           <div class="step-actions d-flex flex-column justify-content-center align-items-md-end align-items-start ms-md-3 mt-3 mt-md-0">
             <div class="mb-2 small text-center">Click here to go to the Registration/Login form.</div>
             <div class="d-flex gap-2">
-              <a href="login.php" class="btn btn-danger btn-sm fw-bold px-4">STUDENT</a>
-              <a href="login.php" class="btn btn-danger btn-sm fw-bold px-4">EMPLOYEE</a>
+              <a href="<?= APP_BASE_URL ?>/login.php" class="btn btn-danger btn-sm fw-bold px-4">STUDENT</a>
+              <a href="<?= APP_BASE_URL ?>/login.php" class="btn btn-danger btn-sm fw-bold px-4">EMPLOYEE</a>
             </div>
           </div>
         </div>
@@ -65,7 +66,7 @@
       <!-- Step 2 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/choice.png" alt="Choose Service Icon" class="img-fluid">
+          <img src="<?= APP_BASE_URL ?>/Photos/Icons/choice.png" alt="Choose Service Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1 d-flex flex-column flex-md-row w-100">
           <div class="card-desc flex-grow-1">
@@ -80,14 +81,14 @@
           </div>
           <div class="step-actions d-flex flex-column justify-content-center align-items-md-end align-items-start ms-md-3 mt-3 mt-md-0">
             <div class="mb-2 small text-center">Click here for a preview of the IP Application forms.</div>
-            <a href="before-e-services.php" class="btn btn-warning btn-sm fw-bold px-4">Go to e-Services</a>
+            <a href="<?= APP_BASE_URL ?>/user/BeforeLogin/before-e-services.php" class="btn btn-warning btn-sm fw-bold px-4">Go to e-Services</a>
           </div>
         </div>
       </div>
       <!-- Step 3 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/online-library.png" alt="Read Guide Icon" class="img-fluid">
+          <img src="<?= APP_BASE_URL ?>/Photos/Icons/online-library.png" alt="Read Guide Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -103,7 +104,7 @@
       <!-- Step 4 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/attachment.png" alt="Download Forms Icon" class="img-fluid">
+          <img src="<?= APP_BASE_URL ?>/Photos/Icons/attachment.png" alt="Download Forms Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -119,7 +120,7 @@
       <!-- Step 5 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/online.png" alt="Submission Form Icon" class="img-fluid">
+          <img src="<?= APP_BASE_URL ?>/Photos/Icons/online.png" alt="Submission Form Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -135,7 +136,7 @@
       <!-- Step 6 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="Photos/Icons/complaint.png" alt="Evaluation Icon" class="img-fluid">
+          <img src="<?= APP_BASE_URL ?>/Photos/Icons/complaint.png" alt="Evaluation Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -176,6 +177,6 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="javascript/ip-application.js"></script>
+  <script src="<?= APP_BASE_URL ?>/javascript/ip-application.js"></script>
 </body>
 </html>
