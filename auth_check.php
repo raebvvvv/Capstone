@@ -8,13 +8,15 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
-    header('Location: login.php');
+    // When included from a page inside User/Afterlogin/, redirect to sibling 404 page.
+    // Use relative '404.php' so we don't duplicate directory segments.
+    header('Location: 404.php');
     exit();
 }
 
 if (!empty($requireAdmin)) {
     if (!isset($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
-        header('Location: login.php');
+        header('Location: 404.php');
         exit();
     }
 }

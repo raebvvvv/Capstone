@@ -1,8 +1,8 @@
-<?php require __DIR__ . '/../../config.php'; 
-// Ensure we have a simple logged-in flag to avoid undefined variable notice
-if (!isset($isLoggedIn)) {
-  $isLoggedIn = isset($_SESSION['user_id']);
-}
+<?php 
+require __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../auth_check.php'; // enforce auth & no-store headers
+// $isLoggedIn already implied true here; keep flag for template compatibility
+$isLoggedIn = true;
 ?>
 <!DOCTYPE html>
 <html lang="en">

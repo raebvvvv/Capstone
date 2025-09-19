@@ -1,4 +1,7 @@
-<?php require __DIR__ . '/../../config.php'; ?>
+<?php 
+require __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache headers
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
