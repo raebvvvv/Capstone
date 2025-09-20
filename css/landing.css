@@ -131,6 +131,14 @@ h1, h2, h5 {
   margin: 0;
 }
 
+/* Make the second card (IP types) wider */
+.cards-center-row .card:nth-child(2) {
+  width: 420px;
+  min-width: 420px;
+  max-width: 420px;
+  flex: 0 0 420px;
+}
+
 .login-section-center {
   display: flex;
   flex-direction: column;
@@ -158,6 +166,11 @@ h1, h2, h5 {
   .cards-center-row .card {
     min-width: 260px;
     max-width: 350px;
+  }
+  /* Make the second card slightly wider on medium screens */
+  .cards-center-row .card:nth-child(2) {
+    min-width: 300px;
+    max-width: 380px;
   }
 }
 

@@ -34,7 +34,7 @@ $isLoggedIn = true;
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link active" href="student-profile.php">My Profile</a></li>
         </ul>
-        <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+        <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
       </div>
     </div>
   </nav>

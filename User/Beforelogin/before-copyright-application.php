@@ -24,7 +24,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
         </ul>
       </div>
@@ -33,7 +33,7 @@
 
     <!-- Back Button Below Navbar, scrolls with content, transparent background -->
     <div class="container d-flex justify-content-end mt-3 mb-2">
-        <?php if (function_exists('render_back_link')) { render_back_link('index.php'); } ?>
+        <?php if (function_exists('render_back_link')) { render_back_link('User/Beforelogin/before-e-services.php'); } ?>
       </div>
 
   <main class="container py-4">
@@ -47,7 +47,7 @@
       <li class="mb-4">
         This ZIP file contains clean copies of all the files listed below.<br>
         Files <strong>required</strong> to be printed have <span class="text-success fw-bold">'[Print]'</span> in their filenames.<br>
-        <a href="#" class="btn btn-primary mt-2 mb-2" style="width:180px;">Copyright.zip</a>
+        <a href="#" class="btn btn-primary mt-2 mb-2" style="width:180px; background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Copyright.zip</a>
       </li>
       <li class="mb-4">
         Once printed and accomplished, you may proceed to the <strong>submission form.</strong><br>
@@ -103,10 +103,7 @@
       </div>
     </div>
   </main>
-   <p me-3-3 class="text-center text-muted" style="font-size:0.9em;">
-      For any questions or concerns, feel free to contact us via:<br>
-      📧 ipmo@pup.edu.ph &nbsp; 📞 (+632) 5335-1787
-    </p>
+
     <!-- Footer -->
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?> 
 

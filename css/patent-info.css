@@ -1,0 +1,218 @@
+/* Patent Information Page Styles */
+
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  background: #f7f7f7;
+  color: #212121;
+}
+
+main.container {
+  max-width: 1400px;
+  padding-top: 40px !important;
+  padding-bottom: 40px !important;
+}
+
+.sidebar-toc {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.sidebar-toc h5 {
+  color: #900c0c;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-list li {
+  margin-bottom: 0.5rem;
+}
+
+.toc-link {
+  color: #495057;
+  text-decoration: none;
+  font-size: 0.875rem;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.toc-link:hover {
+  background: rgba(144, 12, 12, 0.08);
+  color: #900c0c;
+  border-left-color: #900c0c;
+}
+
+.toc-link.active {
+  background: rgba(144, 12, 12, 0.1);
+  color: #900c0c;
+  font-weight: 600;
+  border-left-color: #900c0c;
+}
+
+/* Main Content Styling */
+.section-title {
+  color: #900c0c;
+  border-bottom: 2px solid #900c0c;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Info Cards */
+.info-card {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.info-card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+/* Content Sections */
+.content-section {
+  scroll-margin-top: 2rem;
+}
+
+/* Highlight Boxes */
+.highlight-box {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid #900c0c;
+}
+
+.pup-highlight {
+  background: linear-gradient(135deg, #900c0c 0%, #b91c1c 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.pup-highlight h5 {
+  color: #ffd700;
+  margin-bottom: 0.75rem;
+}
+
+/* Feature Lists */
+.feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #198754;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Table Styles */
+.info-table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.info-table thead {
+  background: #900c0c;
+  color: white;
+}
+
+.info-table th {
+  border: none;
+  padding: 1rem;
+  font-weight: 600;
+}
+
+.info-table td {
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
+  vertical-align: middle;
+}
+
+.info-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+  .sidebar-toc {
+    position: static;
+    margin-bottom: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .info-card {
+    margin-bottom: 1.5rem;
+  }
+  
+  .feature-list li {
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .feature-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    margin-right: 0.5rem;
+  }
+  
+  .highlight-box, .pup-highlight {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .info-table th,
+  .info-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Patent-specific styling */
+.patent-highlight {
+  background: #d4edda !important;
+  border-color: #c3e6cb !important;
+}

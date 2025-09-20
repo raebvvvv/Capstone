@@ -18,7 +18,7 @@ require_once __DIR__ . '/../../auth_check.php';
   <div class="container d-flex justify-content-end mt-3 mb-2">
     <?php if (function_exists('render_back_link')) { render_back_link('index.php'); } ?>
   </div>
-  <main class="container pb-5">
+  <main class="container py-4">
     <h2 class="fw-bold mt-2 mb-3">How to get Originality Check Certificate?</h2>
     <p class="fs-5 mb-2">
       IPMO offers Originality Checking through 
