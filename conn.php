@@ -1,17 +1,20 @@
 <?php
-$servername = "localhost";
-$username = "root";   // Use your database username
-$password = "";       // Use your database password
-$dbname = "hasmin_users"; // Replace with your database name
-$port=3306;
+$host = 'localhost';
+$db   = 'ipmo_users'; // your database name
+$user = 'root';       // your database username
+$pass = '';           // your database password
+$charset = 'utf8mb4';
 
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
 
-// Create connection
-$conn = @new mysqli($servername, $username, $password, $dbname, $port);
-if ($conn->connect_error) {
-    // Generic message (avoid leaking internal details). Log internally if logger loaded later.
-    error_log('DB connection failed');
-    // Provide minimal stub object so includes can continue (pages should handle missing data gracefully)
-    die('Service temporarily unavailable. Please try again later.');
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    exit('Database connection failed: ' . $e->getMessage());
 }
 ?>

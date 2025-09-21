@@ -11,12 +11,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     if (!empty($student_number) && !empty($password)) {
-        $query = "SELECT user_id, username, student_number, email, password, is_admin, status FROM users WHERE student_number = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("s", $student_number);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
+        $query = "SELECT user_id, student_number, email, password, role, status FROM users WHERE student_number = ?";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$student_number]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password'])) {
             if ($user['status'] == 'pending' && !$user['is_admin']) {

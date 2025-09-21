@@ -82,3 +82,22 @@ if (file_exists(__DIR__ . '/security_bootstrap.php')) {
         secure_bootstrap();
     }
 }
+
+$host = 'localhost';
+$db   = 'ipmo_users';
+$user = 'root';
+$pass = ''; // or your MySQL password
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+}
