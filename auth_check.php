@@ -7,24 +7,45 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
-    // When included from a page inside User/Afterlogin/, redirect to sibling 404 page.
-    // Use relative '404.php' so we don't duplicate directory segments.
-    header('Location: 404.php');
+// Check for valid session with user_id
+if (!isset($_SESSION['user_id'])) {
+    // Use absolute paths from document root
+    header('Location: /Capstone/User/Beforelogin/login.php');
     exit();
 }
 
-if (!empty($requireAdmin)) {
-    if (!isset($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
-        header('Location: 404.php');
-        exit();
-    }
+// Validate user exists in database (prevents session fixation)
+require_once __DIR__ . '/config.php';
+$stmt = $pdo->prepare("SELECT status FROM users WHERE user_id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$user = $stmt->fetch();
+
+if (!$user || $user['status'] !== 'active') {
+    session_destroy();
+    header('Location: /Capstone/User/Beforelogin/login.php');
+    exit();
 }
 
-// Enforce no-store on authenticated pages to mitigate browser back caching after logout
+// Admin check if required
+if (!empty($requireAdmin) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')) {
+    header('Location: /Capstone/User/Beforelogin/404.php');
+    exit();
+}
+
+// Set security headers
 if (!headers_sent()) {
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Cache-Control: post-check=0, pre-check=0', false);
     header('Pragma: no-cache');
     header('Expires: 0');
+    
+    // Additional security headers
+    header('X-Frame-Options: DENY');
+    header('X-XSS-Protection: 1; mode=block');
+    header('X-Content-Type-Options: nosniff');
+}
+
+// Generate CSRF token if not exists
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }

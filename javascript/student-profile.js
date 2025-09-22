@@ -29,6 +29,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!form || !editBtn || !saveBtn || !cancelBtn) return;
 
+  // Check edit restrictions
+  if (typeof nextEditAllowed !== 'undefined' && nextEditAllowed) {
+    const now = new Date();
+    const nextDate = new Date(nextEditAllowed);
+
+    if (now < nextDate) {
+      // Disable editing if not yet allowed
+      editBtn.disabled = true;
+      
+      // Add subtle tooltip using Bootstrap
+      const tooltip = new bootstrap.Tooltip(editBtn, {
+        title: `Profile editing available after ${nextDate.toLocaleDateString()}`,
+        placement: 'right'
+      });
+    }
+  }
+
   // Select all inputs EXCEPT those with class 'lock'
   const editableInputs = form.querySelectorAll('input:not(.lock)');
   let originalValues = {};
@@ -56,6 +73,15 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelBtn.style.display = 'none';
     editBtn.style.display = 'inline-block';
   });
+
+  // If editing is locked, add tooltip
+  if (editBtn.disabled) {
+    const tooltip = new bootstrap.Tooltip(editBtn, {
+      title: 'Profile can only be edited once every 30 days',
+      placement: 'bottom'
+    });
+  }
+
 
   // Helper to clear previous error messages
   function clearErrors() {

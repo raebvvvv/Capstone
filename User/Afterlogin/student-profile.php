@@ -21,6 +21,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
     $errors = [];
 
+    // Check last update timestamp
+    $stmt = $pdo->prepare("SELECT last_updated_at FROM student_profiles WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $lastUpdate = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($lastUpdate && $lastUpdate['last_updated_at']) {
+        $lastUpdateDate = new DateTime($lastUpdate['last_updated_at']);
+        $now = new DateTime();
+        $diff = $lastUpdateDate->diff($now)->days;
+
+        if ($diff < 30) {
+            $daysLeft = 30 - $diff;
+            $errors[] = "Profile can only be updated once every 30 days. Please wait {$daysLeft} more days.";
+        }
+    }
+
     // Validation logic
     if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $firstName)) {
         $errors[] = "First name should only contain letters and single spaces between words";
@@ -59,7 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $stmt = $pdo->prepare("UPDATE student_profiles SET 
             last_name=?, first_name=?, middle_initial=?, suffix=?, 
             home_address=?, mobile_number=?, campus=?, college=?, 
-            department=?, program=? WHERE user_id=?");
+            department=?, program=?, last_updated_at=NOW()
+            WHERE user_id=?");
+        
         $stmt->execute([
             $lastName, $firstName, $middleInitial, $suffix,
             $homeAddress, $mobileNumber, $campus, $college,
@@ -77,6 +95,15 @@ $stmt = $pdo->prepare("SELECT u.email, u.student_number, sp.* FROM users u
     JOIN student_profiles sp ON u.user_id = sp.user_id WHERE u.user_id = ?");
 $stmt->execute([$user_id]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Calculate next edit date
+$nextEditAllowed = null;
+if (!empty($profile['last_updated_at'])) {
+    $lastUpdate = new DateTime($profile['last_updated_at']);
+    $nextEditAllowed = $lastUpdate->modify('+30 days');
+    $now = new DateTime();
+    $daysUntilEdit = $now->diff($nextEditAllowed)->days;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -132,29 +159,52 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   <!-- Main content -->
   <main class="container py-4">
     &nbsp;
-    <div class="d-flex align-items-center justify-content-between mb-2">
-      <div class="d-flex align-items-center">
-        <h1 class="fw-bold mb-0" style="font-size:2.5rem;">My Profile</h1>
-        <button id="editProfileBtn" type="button" class="btn btn-primary btn-sm ms-3" style="background-color:#3b36ff;">
-          Edit Profile
-        </button>           
-      </div>
-  <?php if ($isLoggedIn): ?>
-          <form method="POST" action="<?php echo asset_url('User/Beforelogin/logout.php'); ?>" class="d-inline ms-2">
-            <?php csrf_input(); ?>
-            <button type="submit" class="btn btn-danger">Logout</button>
-          </form>
-        <?php endif; ?>
-    </div>
+    <div class="d-flex align-items-center mb-3">
+    <h1 class="fw-bold mb-0" style="font-size:2.5rem;">My Profile</h1>
+    <button id="editProfileBtn" type="button" class="btn btn-primary btn-sm ms-3" 
+            <?php echo ($now < $nextEditAllowed) ? 'disabled' : ''; ?>>
+        Edit Profile
+    </button>
+    <?php if ($now < $nextEditAllowed): ?>
+        <small class="text-muted ms-2">
+            Available for editing in <?php echo $daysUntilEdit; ?> days
+        </small>
+    <?php endif; ?>
+</div>
     <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p>
-    <?php if (!empty($success) || !empty($error)): ?>
-    <div class="small mb-2">
-        <?php if (!empty($success)): ?>
-            <span class="badge bg-success">✓ Profile updated</span>
-        <?php endif; ?>
-        <?php if (!empty($error)): ?>
-            <span class="badge bg-danger">Please fix the errors</span>
-        <?php endif; ?>
+    <?php if (!empty($success)): ?>
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> Profile updated successfully!
+    </div>
+<?php endif; ?>
+
+<?php 
+// Check for 30-day restriction error specifically
+$hasRestrictionError = false;
+if (!empty($errors)) {
+    foreach ($errors as $err) {
+        if (strpos($err, '30 days') !== false) {
+            $hasRestrictionError = true;
+            ?>
+            <div class="alert alert-warning">
+                <i class="fas fa-clock"></i> <?php echo $err; ?>
+            </div>
+            <?php
+            break;
+        }
+    }
+}
+// Show other validation errors if any
+if (!empty($errors) && !$hasRestrictionError): ?>
+    <div class="alert alert-danger">
+        Please fix the following errors:
+        <ul class="mb-0">
+            <?php foreach ($errors as $err): ?>
+                <?php if (strpos($err, '30 days') === false): ?>
+                    <li><?php echo $err; ?></li>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </ul>
     </div>
 <?php endif; ?>
     <div class="bg-white rounded-3 shadow-sm p-4 mx-auto" style="max-width: 1100px;">
@@ -320,6 +370,9 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   
 <script src="<?php echo asset_url('javascript/student-profile.js'); ?>"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const nextEditAllowed = <?php echo $nextEditAllowed ? "'".$nextEditAllowed->format('Y-m-d H:i:s')."'" : 'null'; ?>;
+</script>
 </body>
 </html>
 
