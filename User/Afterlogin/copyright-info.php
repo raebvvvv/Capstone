@@ -12,7 +12,7 @@
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+ <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="../../index.php">
         <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
@@ -25,7 +25,10 @@
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
+        <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
       </div>
     </div>
   </nav>
@@ -33,7 +36,8 @@
   <!-- Back Button Below Navbar, scrolls with content, transparent background -->
   <div class="container d-flex justify-content-end mt-3 mb-2">
     <?php if (function_exists('render_back_link')) { 
-      render_back_link('../../index.php'); 
+      // Requirement: after-login back button should fallback to public index
+      render_back_link('index.php'); 
     } ?>
   </div>
 

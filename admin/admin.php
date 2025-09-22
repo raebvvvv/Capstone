@@ -5,8 +5,8 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
-// Helper: Check if table exists (returns bo      <!-- Footer -->
-  <?php include __DIR__ . '/../partials/standard_footer.php'; ?>ction table_exists(mysqli $conn, string $table): bool {
+// Helper: Check if table exists (returns bool)
+function table_exists(mysqli $conn, string $table): bool {
     $stmt = $conn->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1");
     if (!$stmt) { return false; }
     $stmt->bind_param('s', $table);
@@ -100,7 +100,7 @@ if (isset($_SESSION['user_id'])) {
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
                             <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
                                 <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                                <form method="POST" action="../User/Beforelogin/logout.php" class="d-inline ms-2">
+                                <form method="POST" action="../logout.php" class="d-inline ms-2">
                                     <?php csrf_input(); ?>
                                     <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
                                 </form>
@@ -244,13 +244,6 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
     </div>
-      <!-- Footer -->
-  <footer class="bg-white border-top py-3 mt-4">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-    </div>
-  </footer>
+    <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
 </body>
 </html>
