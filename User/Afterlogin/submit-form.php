@@ -26,7 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Required scalar fields
 $requiredFields = [
     'first_name','last_name','student_number','home_address','mobile_number','webmail',
-    'campus','academicLevel','college','program','workClassification','title','date_accomplished'
+    'campus','academicLevel','program','workClassification','title','date_accomplished'
+    // 'college' is handled separately below
 ];
 $errors = [];
 $data = [];
@@ -39,9 +40,24 @@ foreach ($requiredFields as $f) {
     }
 }
 
+// Special handling for college
+$academicLevel = $_POST['academicLevel'] ?? '';
+$college = trim($_POST['college'] ?? '');
+
+if ($academicLevel === 'Undergraduate') {
+    if ($college === '' || $college === 'N/A') {
+        $errors[] = "Missing required field: college";
+    } else {
+        $data['college'] = $college;
+    }
+} else {
+    // For Masters, Doctorate, Open University, accept "N/A" as valid
+    $data['college'] = $college !== '' ? $college : 'N/A';
+}
+
 // Adviser / authors handling
 $data['adviser'] = trim($_POST['adviser'] ?? '');
-$data['adviser_coauthor'] = isset($_POST['adviser_coauthor']);
+$data['adviser_Coauthor'] = isset($_POST['adviser_Coauthor']);
 $data['accepted_terms'] = (($_POST['accepted_terms'] ?? '') === 'yes') || (isset($_POST['termsAgree']) && ($_POST['termsAgree'] === 'on' || $_POST['termsAgree'] === 'yes' || $_POST['termsAgree'] === '1'));
 if (!$data['accepted_terms']) {
     $errors[] = 'Terms not accepted.';
@@ -112,22 +128,37 @@ if (empty($errors)) {
     try {
         $pdo->beginTransaction();
 
+        // --- Adviser handling: insert/get adviser_id ---
+        $adviserFullName = trim($_POST['adviser'] ?? '');
+        $nameParts = preg_split('/\s+/', $adviserFullName);
+        $firstName = $nameParts[0] ?? '';
+        $lastName = count($nameParts) > 1 ? array_pop($nameParts) : '';
+        $middleName = count($nameParts) > 1 ? implode(' ', $nameParts) : '';
+
+        $adviserStmt = $pdo->prepare("SELECT adviser_id FROM advisers WHERE first_name = ? AND last_name = ? AND middle_name = ?");
+        $adviserStmt->execute([$firstName, $lastName, $middleName]);
+        $adviser_id = $adviserStmt->fetchColumn();
+
+        if (!$adviser_id) {
+            $insertAdviser = $pdo->prepare("INSERT INTO advisers (first_name, middle_name, last_name) VALUES (?, ?, ?)");
+            $insertAdviser->execute([$firstName, $middleName, $lastName]);
+            $adviser_id = $pdo->lastInsertId();
+        }
+
         // Insert main submission
         $stmt = $pdo->prepare("
             INSERT INTO submissions (
                 user_id, first_name, middle_name, last_name, 
                 student_number, home_address, mobile_number, 
                 webmail, campus, academic_level, college, 
-                program, work_classification, title, adviser,
-                adviser_coauthor, date_accomplished, accepted_terms,
-                status
+                program, work_classification, title, adviser_id,
+                date_accomplished, accepted_terms, status
             ) VALUES (
                 :user_id, :first_name, :middle_name, :last_name,
                 :student_number, :home_address, :mobile_number,
                 :webmail, :campus, :academic_level, :college,
-                :program, :work_classification, :title, :adviser,
-                :adviser_coauthor, :date_accomplished, :accepted_terms,
-                'pending_review'
+                :program, :work_classification, :title, :adviser_id,
+                :date_accomplished, :accepted_terms, 'pending_review'
             )
         ");
 
@@ -146,13 +177,28 @@ if (empty($errors)) {
             'program' => $data['program'],
             'work_classification' => $data['workClassification'],
             'title' => $data['title'],
-            'adviser' => $data['adviser'],
-            'adviser_coauthor' => $data['adviser_coauthor'] ? 1 : 0,
+            'adviser_id' => $adviser_id,
             'date_accomplished' => $data['date_accomplished'],
             'accepted_terms' => $data['accepted_terms'] ? 1 : 0
         ]);
 
         $submission_id = $pdo->lastInsertId();
+
+        // Insert adviser as co-author if checkbox is checked
+        if (isset($_POST['adviser_Coauthor']) && $adviser_id) {
+            $authorStmt = $pdo->prepare("
+                INSERT INTO submission_authors (
+                    submission_id, adviser_id, first_name, middle_name, last_name, is_adviser, role
+                ) VALUES (?, ?, ?, ?, ?, 1, 'Adviser')
+            ");
+            $authorStmt->execute([
+                $submission_id,
+                $adviser_id,
+                $firstName,
+                $middleName,
+                $lastName
+            ]);
+        }
 
         // Insert documents
         $docStmt = $pdo->prepare("
@@ -194,7 +240,7 @@ if (empty($errors)) {
                     $authorStmt->execute([
                         $submission_id,
                         $author['first_name'],
-                        $author['middle_initial'],
+                        $author['middle_name'], // <-- use middle_name
                         $author['last_name'],
                         $author['student_id'],
                         $author['mobile'],
@@ -212,25 +258,39 @@ if (empty($errors)) {
         }
 
         // Handle coauthors
+        // Get adviser name parts for comparison
+        $adviserFirstName = $firstName;
+        $adviserMiddleName = $middleName;
+        $adviserLastName = $lastName;
+
         if (!empty($_POST['coauthors'])) {
             $authorStmt = $pdo->prepare("
                 INSERT INTO submission_authors (
-                    submission_id, first_name, last_name,
+                    submission_id, first_name, middle_name, last_name,
                     student_id, mobile, home_address, webmail,
                     is_adviser
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             foreach ($_POST['coauthors'] as $coauthor) {
+                // Skip if this coauthor is the adviser (already inserted as adviser)
+                if (
+                    trim(strtolower($coauthor['first_name'])) === trim(strtolower($adviserFirstName)) &&
+                    trim(strtolower($coauthor['middle_name'])) === trim(strtolower($adviserMiddleName)) &&
+                    trim(strtolower($coauthor['last_name'])) === trim(strtolower($adviserLastName))
+                ) {
+                    continue;
+                }
                 $authorStmt->execute([
                     $submission_id,
                     $coauthor['first_name'],
+                    $coauthor['middle_name'],
                     $coauthor['last_name'],
                     $coauthor['student_id'],
                     $coauthor['mobile'],
                     $coauthor['home_address'],
                     $coauthor['webmail'],
-                    $coauthor['is_adviser'] ? 1 : 0
+                    $coauthor['is_adviser'] ? 0 : 1
                 ]);
             }
         }
@@ -251,12 +311,8 @@ if (empty($errors)) {
     } catch (Exception $e) {
         $pdo->rollBack();
         error_log($e->getMessage());
-        $errors[] = "Submission failed: Database error";
-        
-        // Cleanup uploaded files on error
-        foreach ($storedFiles as $file) {
-            @unlink($uploadDir . DIRECTORY_SEPARATOR . $file);
-        }
+        echo '<pre>' . htmlspecialchars($e->getMessage()) . '</pre>';
+        exit;
     }
 }
 

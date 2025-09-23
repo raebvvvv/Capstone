@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password'])) {
-            if ($user['status'] == 'pending' && !$user['is_admin']) {
+            if ($user['status'] == 'pending' && $user['role'] !== 'admin') {
                 $error = "Please wait for the confirmation of your account.";
             } else {
                 session_regenerate_id(true); // Security: Prevent session fixation attacks
@@ -26,9 +26,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['student_number'] = $user['student_number'];
                 $_SESSION['email'] = $user['email'];
-                $_SESSION['is_admin'] = $user['is_admin']; // Set admin status
+                $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0; // Set admin status
 
-                if ($user['is_admin']) {
+                if ($user['role'] === 'admin') {
                     // Redirect administrators to the admin dashboard
                     redirect('admin/admin.php');
                 } else {

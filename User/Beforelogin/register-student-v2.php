@@ -13,10 +13,10 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get and sanitize inputs
-    $lastName      = trim($_POST['lastName']);
-    $firstName     = trim($_POST['firstName']);
-    $middleInitial = trim($_POST['middleInitial']);
-    $suffix        = trim($_POST['suffix']);
+    $lastName      = ucwords(strtolower(trim($_POST['lastName'])));
+    $firstName     = ucwords(strtolower(trim($_POST['firstName'])));
+    $middleName    = ucwords(strtolower(trim($_POST['middleName'])));
+    $suffix        = ucwords(strtolower(trim($_POST['suffix'])));
     $homeAddress   = trim($_POST['homeAddress']);
     $studentNumber = trim($_POST['studentNumber']);
     $mobileNumber  = trim($_POST['mobileNumber']);
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Basic validation
     if (
-        !$lastName || !$firstName || !$middleInitial || !$homeAddress ||
+        !$lastName || !$firstName || !$middleName|| !$homeAddress ||
         !$studentNumber || !$mobileNumber || !$campus || !$college ||
         !$department || !$program || !$email || !$password || !$repassword
     ) {
@@ -61,12 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user_id = $pdo->lastInsertId();
 
             // Insert into student_profiles table
-            $stmt = $pdo->prepare("INSERT INTO student_profiles (user_id, last_name, first_name, middle_initial, suffix, home_address, mobile_number, campus, college, department, program) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO student_profiles (user_id, last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department, program) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $user_id,
                 $lastName,
                 $firstName,
-                $middleInitial,
+                $middleName,
                 $suffix,
                 $homeAddress,
                 $mobileNumber,
@@ -159,8 +159,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="invalid-feedback">Please fill in this field.</div>
             </div>
             <div class="col-md-2">
-              <label for="middleInitial" class="form-label">Middle Initial <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="middleInitial" name="middleInitial" maxlength="2" required pattern="[A-Za-z\-.]+" title="Only letters, hyphens (-), and dot (.) allowed">
+              <label for="middleName" class="form-label">Middle Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="middleName" name="middleName"  required pattern="[A-Za-z\-.]+" title="Only letters, hyphens (-), and dot (.) allowed">
               <div class="invalid-feedback">Please fill in this field.</div>
             </div>
             <div class="col-md-2">
@@ -294,6 +294,19 @@ form.addEventListener('submit', function (event) {
     form.classList.add('was-validated');
 });
 
+function capitalizeWords(str) {
+    return str.replace(/\b\w/g, c => c.toUpperCase()).replace(/\B\w/g, c => c.toLowerCase());
+}
+
+document.getElementById('firstName').addEventListener('blur', function() {
+    this.value = capitalizeWords(this.value);
+});
+document.getElementById('lastName').addEventListener('blur', function() {
+    this.value = capitalizeWords(this.value);
+});
+document.getElementById('middleName').addEventListener('blur', function() {
+    this.value = capitalizeWords(this.value);
+});
 </script>
 </body>
 </html>

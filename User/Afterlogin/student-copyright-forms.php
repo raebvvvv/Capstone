@@ -113,9 +113,9 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                    value="<?php echo htmlspecialchars($profile['first_name']); ?>" readonly>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label">Middle Initial</label>
+                    <label class="form-label">Middle Name</label>
                     <input type="text" name="middle_name" class="form-control" 
-                   value="<?php echo htmlspecialchars($profile['middle_initial']); ?>" readonly>
+                   value="<?php echo htmlspecialchars($profile['middle_name']); ?>" readonly>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Last name</label>
@@ -216,15 +216,15 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                     <label class="form-label">Adviser</label>
                     <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser" required>
                     <div class="form-check mt-2">
-                      <input class="form-check-input" type="checkbox" name="adviser_coauthor" id="adviserCoauthor">
-                      <label class="form-check-label" for="adviserCoauthor">
+                      <input class="form-check-input" type="checkbox" name="adviser_Coauthor" id="adviser_Coauthor">
+                      <label class="form-check-label" for="adviser_Coauthor">
                         Adviser is a Co-author
                       </label>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Date Accomplished</label>
-                    <input type="date" name="date_accomplished" class="form-control" required>
+                    <input type="date" name="date_accomplished" class="form-control" required max="<?php echo date('Y-m-d'); ?>">
                     <small class="text-muted">Finalization date.</small>
                   </div>
                 </div>
@@ -275,61 +275,65 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   </main>
 
   <!-- Author Modal -->
-  <div class="modal fade" id="authorModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Co-Author</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <div class="modal fade" id="authorModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Co-Author</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="authorForm" class="needs-validation" novalidate>
+          <!-- Name Fields -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label required">First Name</label>
+              <input type="text" name="first_name" class="form-control" required>
             </div>
-            <div class="modal-body">
-                <form id="authorForm" class="needs-validation" novalidate>
-                    <!-- Name Fields -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">First Name</label>
-                            <input type="text" name="first_name" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Last Name</label>
-                            <input type="text" name="last_name" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <!-- Student Number -->
-                    <div class="mb-3">
-                        <label class="form-label required">Student Number</label>
-                        <input type="text" name="student_id" class="form-control" required
-                               pattern="\d{4}-\d{5}-[A-Z]{2}-\d{1}">
-                        <div class="form-text">Format: YYYY-XXXXX-XX-X</div>
-                    </div>
-
-                    <!-- Contact Details -->
-                    <div class="mb-3">
-                        <label class="form-label required">Mobile Number</label>
-                        <input type="tel" name="mobile" class="form-control" required
-                               pattern="^09\d{9}$">
-                        <div class="form-text">Format: 09XXXXXXXXX</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label required">Home Address</label>
-                        <input type="text" name="home_address" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label required">PUP Webmail</label>
-                        <input type="email" name="webmail" class="form-control" required>
-                        <div class="form-text">Format: YYYY-XXXXX-XX-X@iskolar.pup.edu.ph</div>
-                    </div>
-                </form>
+            <div class="col-md-4">
+              <label class="form-label">Middle Name</label>
+              <input type="text" name="middle_name" class="form-control" maxlength="50">
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveAuthorBtn">Add Author</button>
+            <div class="col-md-4">
+              <label class="form-label required">Last Name</label>
+              <input type="text" name="last_name" class="form-control" required>
             </div>
-        </div>
+          </div>
+
+          <!-- Student Number -->
+          <div class="mb-3">
+            <label class="form-label required">Student Number</label>
+            <input type="text" name="student_id" class="form-control" required
+                   pattern="\d{4}-\d{5}-[A-Z]{2}-\d{1}">
+            <div class="form-text">Format: YYYY-XXXXX-MN-0</div>
+          </div>
+
+          <!-- Contact Details -->
+          <div class="mb-3">
+            <label class="form-label required">Mobile Number</label>
+            <input type="tel" name="mobile" class="form-control" required
+                   pattern="^09\d{9}$">
+            <div class="form-text">Format: 09XXXXXXXXX</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label required">Home Address</label>
+            <input type="text" name="home_address" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label required">PUP Webmail</label>
+            <input type="email" name="webmail" class="form-control" required>
+            <div class="form-text">Format: firstnamelastname@iskolarngbayan.pup.edu.ph</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveAuthorBtn">Add Author</button>
+      </div>
     </div>
+  </div>
 </div>
 
 
@@ -342,7 +346,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>"></script>
- <script src="<?php echo asset_url('javascript/forms/adviser-coauthor.js'); ?>"></script>
- 
+ <script>
+
 </body>
 </html>

@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     // Get and trim inputs once
     $lastName      = trim($_POST['last_name'] ?? '');
     $firstName     = trim($_POST['first_name'] ?? '');
-    $middleInitial = trim($_POST['middle_initial'] ?? '');
+    $middleName    = trim($_POST['middle_name'] ?? '');
     $suffix        = trim($_POST['suffix'] ?? '');
     $homeAddress   = trim($_POST['home_address'] ?? '');
     $mobileNumber  = trim($_POST['mobile_number'] ?? '');
@@ -46,8 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     }
 
     // Validate middle initial (single uppercase letter, optional)
-    if ($middleInitial && !preg_match('/^[A-Z]$/', $middleInitial)) {
-        $errors[] = "Middle initial must be a single uppercase letter";
+    if ($middleName && !preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $middleName)) {
+        $errors[] = "Middle initial should only contain letters and single spaces between words";
     }
 
     // Validate suffix (optional, but must be valid if provided)
@@ -70,16 +70,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $errors[] = "All fields except suffix and middle initial are required";
     }
 
+    // Fetch current profile data
+    $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department, program FROM student_profiles WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $current = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Compare new data with current data
+    $hasChanges = (
+        $lastName      !== $current['last_name'] ||
+        $firstName     !== $current['first_name'] ||
+        $middleName    !== $current['middle_name'] ||
+        $suffix        !== $current['suffix'] ||
+        $homeAddress   !== $current['home_address'] ||
+        $mobileNumber  !== $current['mobile_number'] ||
+        $campus        !== $current['campus'] ||
+        $college       !== $current['college'] ||
+        $department    !== $current['department'] ||
+        $program       !== $current['program']
+    );
+
+    if (!$hasChanges) {
+        $errors[] = "No changes detected in your profile. Please modify at least one field before saving.";
+    }
+
     if (empty($errors)) {
         // Proceed with update
         $stmt = $pdo->prepare("UPDATE student_profiles SET 
-            last_name=?, first_name=?, middle_initial=?, suffix=?, 
+            last_name=?, first_name=?, middle_name=?, suffix=?, 
             home_address=?, mobile_number=?, campus=?, college=?, 
             department=?, program=?, last_updated_at=NOW()
             WHERE user_id=?");
         
         $stmt->execute([
-            $lastName, $firstName, $middleInitial, $suffix,
+            $lastName, $firstName, $middleName, $suffix,
             $homeAddress, $mobileNumber, $campus, $college,
             $department, $program, $user_id
         ]);
@@ -96,12 +119,13 @@ $stmt = $pdo->prepare("SELECT u.email, u.student_number, sp.* FROM users u
 $stmt->execute([$user_id]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
+$now = new DateTime(); // Add this line before any use of $now
+
 // Calculate next edit date
 $nextEditAllowed = null;
 if (!empty($profile['last_updated_at'])) {
     $lastUpdate = new DateTime($profile['last_updated_at']);
     $nextEditAllowed = $lastUpdate->modify('+30 days');
-    $now = new DateTime();
     $daysUntilEdit = $now->diff($nextEditAllowed)->days;
 }
 ?>
@@ -191,8 +215,8 @@ if (!empty($errors)) {
         if (strpos($err, '30 days') !== false) {
             $hasRestrictionError = true;
             ?>
-            <div class="alert alert-warning">
-                <i class="fas fa-clock"></i> <?php echo $err; ?>
+            <div class="alert alert-warning py-1 px-2 small border-0 d-inline-block" style="background-color: #fffbe6; color: #856404; font-size: 0.95rem;">
+                <i class="fas fa-clock me-1"></i> <?php echo $err; ?>
             </div>
             <?php
             break;
@@ -201,7 +225,7 @@ if (!empty($errors)) {
 }
 // Show other validation errors if any
 if (!empty($errors) && !$hasRestrictionError): ?>
-    <div class="alert alert-danger">
+    <div class="alert alert-danger py-1 px-2 small border-0" style="background-color: #f8d7da; color: #721c24; font-size: 0.95rem;">
         Please fix the following errors:
         <ul class="mb-0">
             <?php foreach ($errors as $err): ?>
@@ -241,14 +265,14 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   </div>
 
   <div class="col-md-4">
-    <label class="form-label">Middle Initial</label>
+    <label class="form-label">Middle Name</label>
     <input type="text" 
-           class="form-control <?php echo isset($errors['middle_initial']) ? 'is-invalid' : ''; ?>" 
-           name="middle_initial" id="middleInitial" 
-           value="<?php echo htmlspecialchars($profile['middle_initial'] ?? ''); ?>" 
+           class="form-control <?php echo isset($errors['middle_name']) ? 'is-invalid' : ''; ?>" 
+           name="middle_name" id="middleName" 
+           value="<?php echo htmlspecialchars($profile['middle_name'] ?? ''); ?>" 
            readonly>
-    <?php if (isset($errors['middle_initial'])): ?>
-      <div class="invalid-feedback"><?php echo $errors['middle_initial']; ?></div>
+    <?php if (isset($errors['middle_name'])): ?>
+      <div class="invalid-feedback"><?php echo $errors['middle_name']; ?></div>
     <?php endif; ?>
   </div>
 </div>
@@ -373,11 +397,11 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 
   <!-- Scripts -->
   
-<script src="<?php echo asset_url('javascript/student-profile.js'); ?>"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    const nextEditAllowed = <?php echo $nextEditAllowed ? "'".$nextEditAllowed->format('Y-m-d H:i:s')."'" : 'null'; ?>;
-</script>
+<script src="<?php echo asset_url('javascript/student-profile.js'); ?>"></script>
+<script src="<?php echo asset_url('javascript/date-limit.js'); ?>"></script>
+<script src="<?php echo asset_url('javascript/student-profile-inline.js'); ?>"></script>
 </body>
 </html>
 
