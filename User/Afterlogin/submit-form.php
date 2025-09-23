@@ -1,6 +1,17 @@
 <?php
 require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php';
+require_once __DIR__ . '/../../includes/debug_helpers.php';
+
+// Setup error logging
+setupErrorLogging();
+
+// Log form submission
+logDebug('Form submitted', [
+    'POST' => $_POST,
+    'FILES' => $_FILES,
+    'SESSION' => $_SESSION
+]);
 
 // Basic CSRF protection if helper exists
 // Enforce CSRF via existing helper (defined in security_bootstrap)
@@ -96,6 +107,158 @@ $logLine = date('c') . ' | SUBMISSION | ' . json_encode([
     'files' => $storedFiles
 ]) . PHP_EOL;
 file_put_contents(app_path('audit.log'), $logLine, FILE_APPEND);
+
+if (empty($errors)) {
+    try {
+        $pdo->beginTransaction();
+
+        // Insert main submission
+        $stmt = $pdo->prepare("
+            INSERT INTO submissions (
+                user_id, first_name, middle_name, last_name, 
+                student_number, home_address, mobile_number, 
+                webmail, campus, academic_level, college, 
+                program, work_classification, title, adviser,
+                adviser_coauthor, date_accomplished, accepted_terms,
+                status
+            ) VALUES (
+                :user_id, :first_name, :middle_name, :last_name,
+                :student_number, :home_address, :mobile_number,
+                :webmail, :campus, :academic_level, :college,
+                :program, :work_classification, :title, :adviser,
+                :adviser_coauthor, :date_accomplished, :accepted_terms,
+                'pending_review'
+            )
+        ");
+
+        $stmt->execute([
+            'user_id' => $_SESSION['user_id'],
+            'first_name' => $data['first_name'],
+            'middle_name' => $_POST['middle_name'] ?? '',
+            'last_name' => $data['last_name'],
+            'student_number' => $data['student_number'],
+            'home_address' => $data['home_address'],
+            'mobile_number' => $data['mobile_number'],
+            'webmail' => $data['webmail'],
+            'campus' => $data['campus'],
+            'academic_level' => $data['academicLevel'],
+            'college' => $data['college'],
+            'program' => $data['program'],
+            'work_classification' => $data['workClassification'],
+            'title' => $data['title'],
+            'adviser' => $data['adviser'],
+            'adviser_coauthor' => $data['adviser_coauthor'] ? 1 : 0,
+            'date_accomplished' => $data['date_accomplished'],
+            'accepted_terms' => $data['accepted_terms'] ? 1 : 0
+        ]);
+
+        $submission_id = $pdo->lastInsertId();
+
+        // Insert documents
+        $docStmt = $pdo->prepare("
+            INSERT INTO submission_documents (
+                submission_id, doc_type, file_path,
+                file_size, mime_type
+            ) VALUES (?, ?, ?, ?, ?)
+        ");
+
+        foreach ($storedFiles as $type => $filename) {
+            $filepath = $uploadDir . DIRECTORY_SEPARATOR . $filename;
+            $docStmt->execute([
+                $submission_id,
+                $type,
+                $filename,
+                filesize($filepath),
+                mime_content_type($filepath)
+            ]);
+        }
+
+        // Handle authors if present
+        // Debug authors data
+        error_log('POST data: ' . print_r($_POST, true));
+
+        if (!empty($_POST['authors']) && is_array($_POST['authors'])) {
+            error_log('Processing authors array: ' . count($_POST['authors']));
+            
+            $authorStmt = $pdo->prepare("
+                INSERT INTO submission_authors (
+                    submission_id, first_name, middle_name, last_name,
+                    student_id, mobile, home_address, webmail
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+
+            foreach ($_POST['authors'] as $author) {
+                error_log('Processing author: ' . print_r($author, true));
+                
+                try {
+                    $authorStmt->execute([
+                        $submission_id,
+                        $author['first_name'],
+                        $author['middle_initial'],
+                        $author['last_name'],
+                        $author['student_id'],
+                        $author['mobile'],
+                        $author['home_address'],
+                        $author['webmail']
+                    ]);
+                    error_log('Author inserted successfully');
+                } catch (PDOException $e) {
+                    error_log('Author insertion failed: ' . $e->getMessage());
+                    throw $e;
+                }
+            }
+        } else {
+            error_log('No authors data found in POST');
+        }
+
+        // Handle coauthors
+        if (!empty($_POST['coauthors'])) {
+            $authorStmt = $pdo->prepare("
+                INSERT INTO submission_authors (
+                    submission_id, first_name, last_name,
+                    student_id, mobile, home_address, webmail,
+                    is_adviser
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+
+            foreach ($_POST['coauthors'] as $coauthor) {
+                $authorStmt->execute([
+                    $submission_id,
+                    $coauthor['first_name'],
+                    $coauthor['last_name'],
+                    $coauthor['student_id'],
+                    $coauthor['mobile'],
+                    $coauthor['home_address'],
+                    $coauthor['webmail'],
+                    $coauthor['is_adviser'] ? 1 : 0
+                ]);
+            }
+        }
+
+        // Log the complete submission data
+        $logData = [
+            'user_id' => $_SESSION['user_id'],
+            'data' => $_POST,
+            'coauthors' => $_POST['coauthors'] ?? [],
+            'files' => $storedFiles
+        ];
+        error_log(date('Y-m-d\TH:i:sP') . ' | SUBMISSION | ' . json_encode($logData));
+
+        $pdo->commit();
+        header('Location: student-application.php?status=success');
+        exit;
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        error_log($e->getMessage());
+        $errors[] = "Submission failed: Database error";
+        
+        // Cleanup uploaded files on error
+        foreach ($storedFiles as $file) {
+            @unlink($uploadDir . DIRECTORY_SEPARATOR . $file);
+        }
+    }
+}
 
 // Minimal success page
 ?>

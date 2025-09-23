@@ -1,4 +1,17 @@
-<?php require __DIR__ . '/../../config.php'; ?>
+<?php
+require __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../auth_check.php';
+
+// Fetch user profile data
+$stmt = $pdo->prepare("
+    SELECT sp.*, u.student_number, u.email
+    FROM student_profiles sp 
+    JOIN users u ON sp.user_id = u.user_id 
+    WHERE sp.user_id = ?
+");
+$stmt->execute([$_SESSION['user_id']]);
+$profile = $stmt->fetch(PDO::FETCH_ASSOC);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,7 +99,7 @@
         <div class="card shadow-sm">
           <div class="card-body">
             <!-- Student Information  -->
-            <form id="submissionForm" class="mt-2" method="post" action="submit-form.php" enctype="multipart/form-data">
+            <form id="submissionForm" method="POST" action="submit-form.php" enctype="multipart/form-data">
               <?php if (function_exists('csrf_input')) { csrf_input(); } ?>
               <!-- NEW hidden acceptance flag -->
               <input type="hidden" name="accepted_terms" id="accepted_terms" value="">
@@ -96,37 +109,48 @@
                 <div class="row g-3">
                   <div class="col-md-3">
                     <label class="form-label required">First name</label>
-                    <input type="text" name="first_name" class="form-control" required>
+                    <input type="text" name="first_name" class="form-control" 
+                   value="<?php echo htmlspecialchars($profile['first_name']); ?>" readonly>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label">Middle name</label>
-                    <input type="text" name="middle_name" class="form-control">
+                    <label class="form-label">Middle Initial</label>
+                    <input type="text" name="middle_name" class="form-control" 
+                   value="<?php echo htmlspecialchars($profile['middle_initial']); ?>" readonly>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Last name</label>
-                    <input type="text" name="last_name" class="form-control" required>
+                    <input type="text" name="last_name" class="form-control" 
+                   value="<?php echo htmlspecialchars($profile['last_name']); ?>" readonly>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Student Number</label>
-                    <input type="text" name="student_number" class="form-control" placeholder="20XX-XXXXX-MN-0" required>
-                    <small class="text-muted">Format: YYYY-#####-AA-#</small>
+                    <input type="text" name="student_number" class="form-control" 
+                   value="<?php echo htmlspecialchars($profile['student_number']); ?>" readonly>
                   </div>
                 </div>
+                
               </fieldset>
               <fieldset>
                 <legend>Contact</legend>
                 <div class="row g-3">
                   <div class="col-md-4">
                     <label class="form-label required">Home Address</label>
-                    <input type="text" name="home_address" class="form-control" required>
+                    <input type="text" name="home_address" class="form-control" 
+                   value="<?php echo htmlspecialchars($profile['home_address']); ?>" readonly>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label required">Mobile Number</label>
-                    <input type="tel" name="mobile_number" class="form-control" required>
+                    <input type="tel" name="mobile_number" class="form-control" 
+                   value="<?php echo htmlspecialchars($profile['mobile_number']); ?>" readonly>
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label required">Webmail Address</label>
-                    <input type="email" name="webmail" class="form-control" required>
+                    <label class="form-label required">PUP Webmail</label>
+                    <input type="email" name="webmail" class="form-control" 
+                           value="<?php echo htmlspecialchars($profile['email']); ?>" readonly>
+                    <small class="form-text text-muted">
+                        Students: 2020-00000-XX-0@iskolar.pup.edu.ph<br>
+                        Faculty: firstname.lastname@pup.edu.ph
+                    </small>
                   </div>
                 </div>
               </fieldset>
@@ -251,63 +275,74 @@
   </main>
 
   <!-- Author Modal -->
-  <div class="modal fade" id="authorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header py-2">
-          <h5 class="modal-title">Author Information</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="authorForm">
-            <div class="row g-3">
-              <div class="col-md-3">
-                <label class="form-label required">First name</label>
-                <input type="text" name="first_name" class="form-control" required>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">Last name</label>
-                <input type="text" name="last_name" class="form-control" required>
-              </div>
-              <div class="col-md-2">
-                <label class="form-label required">Middle Initial</label>
-                <input type="text" name="middle_initial" maxlength="1" class="form-control text-uppercase">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label required">PUP ID Number</label>
-                <input type="text" name="student_id" class="form-control">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label required">Mobile Number</label>
-                <input type="text" name="mobile" class="form-control">
-              </div>
-              <div class="col-md-8">
-                <label class="form-label required">Home Address</label>
-                <input type="text" name="home_address" class="form-control">
-              </div>
-              <div class="col-12">
-                <label class="form-label required">Webmail Address</label>
-                <input type="email" name="webmail" class="form-control" placeholder="email@domain.com">
-              </div>
+  <div class="modal fade" id="authorModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Co-Author</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-          </form>
+            <div class="modal-body">
+                <form id="authorForm" class="needs-validation" novalidate>
+                    <!-- Name Fields -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label required">First Name</label>
+                            <input type="text" name="first_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- Student Number -->
+                    <div class="mb-3">
+                        <label class="form-label required">Student Number</label>
+                        <input type="text" name="student_id" class="form-control" required
+                               pattern="\d{4}-\d{5}-[A-Z]{2}-\d{1}">
+                        <div class="form-text">Format: YYYY-XXXXX-XX-X</div>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div class="mb-3">
+                        <label class="form-label required">Mobile Number</label>
+                        <input type="tel" name="mobile" class="form-control" required
+                               pattern="^09\d{9}$">
+                        <div class="form-text">Format: 09XXXXXXXXX</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label required">Home Address</label>
+                        <input type="text" name="home_address" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label required">PUP Webmail</label>
+                        <input type="email" name="webmail" class="form-control" required>
+                        <div class="form-text">Format: YYYY-XXXXX-XX-X@iskolar.pup.edu.ph</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveAuthorBtn">Add Author</button>
+            </div>
         </div>
-        <div class="modal-footer py-2">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-          <button type="button" id="saveAuthorBtn" class="btn btn-primary btn-sm">Add Author</button>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
+
+
   
   <!-- Footer -->
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
   
  <!-- Load external JS files compliant with Content Security Policy -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/adviser-coauthor.js'); ?>"></script>
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+ 
 </body>
 </html>

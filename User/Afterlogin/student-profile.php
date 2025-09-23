@@ -150,7 +150,12 @@ if (!empty($profile['last_updated_at'])) {
           <li class="nav-item"><a class="nav-link active" href="student-profile.php">My Profile</a></li>
         </ul>
         <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+        <form method="POST" action="<?php echo asset_url('User/Beforelogin/logout.php'); ?>" class="d-inline">
+                <?php csrf_input(); ?>
+                <button type="submit" class="btn btn-danger ms-2">Logout</button>
+            </form>
       </div>
+      
     </div>
   </nav>
 
