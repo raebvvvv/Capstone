@@ -67,17 +67,60 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
                 <th>Request ID</th>
                 <th>Student Number / Employee ID</th>
                 <th>Title of Work</th>
+                <th>Classification</th>
+                <th>Status</th>
                 <th>Remarks</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td colspan="5" class="text-center text-muted py-5">
-                  You have not applied for anything yet.
-                </td>
-              </tr>
-            </tbody>
+<?php
+$user_id = $_SESSION['user_id'] ?? 0;
+
+// Fetch submissions for this user
+$stmt = $pdo->prepare("
+    SELECT 
+        s.submission_id,
+        s.student_number,
+        s.title,
+        s.work_classification,
+        s.status,
+        s.remarks
+    FROM submissions s
+    WHERE s.user_id = ? AND s.status = 'pending'
+    ORDER BY s.created_at DESC
+");
+$stmt->execute([$user_id]);
+$pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+<?php if (count($pending_submissions) === 0): ?>
+  <tr>
+    <td colspan="5" class="text-center text-muted py-5">
+      You have not applied for anything yet.
+    </td>
+  </tr>
+<?php else: ?>
+  <?php foreach ($pending_submissions as $row): ?>
+    <tr>
+      <td><?php echo htmlspecialchars($row['submission_id']); ?></td>
+      <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+      <td><?php echo htmlspecialchars($row['title']); ?></td>
+      <td><?php echo htmlspecialchars($row['work_classification']); ?></td>
+      <td><?php echo htmlspecialchars($row['status']); ?></td>
+      <td><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
+      
+      <td>
+        <!-- Example action: View details -->
+        <a href="#" 
+           class="btn btn-success btn-sm view-details-btn" 
+           data-id="<?php echo htmlspecialchars($row['submission_id']); ?>">
+           View Details
+        </a>
+      </td>
+    </tr>
+  <?php endforeach; ?>
+<?php endif; ?>
+</tbody>
           </table>
         </div>
       </div>
@@ -91,6 +134,7 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
                 <th>Student Number / Employee ID</th>
                 <th>Title of Work</th>
                 <th>Remarks</th>
+                <th> </th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -114,6 +158,7 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
                 <th>Student Number / Employee ID</th>
                 <th>Title of Work</th>
                 <th>Remarks</th>
+                <th> </th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -133,29 +178,28 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
   <!-- Footer -->
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
+
+<div class="modal fade" id="submissionDetailsModal" tabindex="-1" aria-labelledby="submissionDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="submissionDetailsModalLabel">Submission Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="submissionDetailsContent" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const categoryBtns = document.querySelectorAll('.category-btn');
-      const categoryContents = document.querySelectorAll('.category-content');
-
-      categoryBtns.forEach((btn, idx) => {
-        btn.addEventListener('click', function() {
-          // Remove active from all buttons
-          categoryBtns.forEach(b => b.classList.remove('active'));
-          // Add active to clicked button
-          btn.classList.add('active');
-          // Hide all category contents
-          categoryContents.forEach(c => c.style.display = 'none');
-          // Show the selected category content
-          categoryContents[idx].style.display = 'block';
-        });
-      });
-
-      // Show only the first category by default
-      categoryContents.forEach((c, i) => c.style.display = i === 0 ? 'block' : 'none');
-    });
-  </script>
+  <script src="<?php echo asset_url('javascript/student-application.js'); ?>"></script>
+  
 </body>
 </html>

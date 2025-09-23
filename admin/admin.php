@@ -5,64 +5,46 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
-// Helper: Check if table exists (returns bo      <!-- Footer -->
-  <?php include __DIR__ . '/../partials/standard_footer.php'; ?>ction table_exists(mysqli $conn, string $table): bool {
-    $stmt = $conn->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1");
-    if (!$stmt) { return false; }
-    $stmt->bind_param('s', $table);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    return (bool)$res->fetch_row();
+// Helper: Check if table exists (returns bool)
+function table_exists(PDO $pdo, string $table): bool {
+    $stmt = $pdo->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1");
+    $stmt->execute([$table]);
+    return (bool)$stmt->fetchColumn();
 }
 
 // Helper: Secure count query with graceful fallback if table dropped
-function getCount($conn, $table, $where = '', $params = []) {
-    if (!table_exists($conn, $table)) {
+function getCount($pdo, $table, $where = '', $params = []) {
+    if (!table_exists($pdo, $table)) {
         if (function_exists('log_event')) { log_event('DB_WARN', 'Table missing for count', ['table' => $table]); }
         return 0;
     }
     $sql = "SELECT COUNT(*) as count FROM `$table`";
     if ($where) { $sql .= " WHERE $where"; }
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        if (function_exists('log_event')) { log_event('DB_ERROR', 'Prepare failed in getCount', ['table' => $table, 'error' => $conn->error]); }
-        return 0;
-    }
-    if ($params) {
-        $types = str_repeat('s', count($params));
-        $stmt->bind_param($types, ...$params);
-    }
-    if (!$stmt->execute()) {
-        if (function_exists('log_event')) { log_event('DB_ERROR', 'Execute failed in getCount', ['table' => $table, 'error' => $stmt->error]); }
-        return 0;
-    }
-    $result = $stmt->get_result();
-    $row = $result ? $result->fetch_assoc() : null;
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $row = $stmt->fetch();
     return $row ? (int)$row['count'] : 0;
 }
 
 // Dashboard counts
-$total_users = getCount($conn, 'users', 'status = ?', ['approved']);
-$total_applications = getCount($conn, 'rental_requests');
-$pending_applications = getCount($conn, 'rental_requests', 'status = ?', ['Pending']);
-$approved_applications = getCount($conn, 'rental_requests', 'status = ?', ['Approved']);
-$completed_applications = getCount($conn, 'rental_requests', 'status = ?', ['Completed']);
+$total_users = getCount($pdo, 'users', "role IN ('student','employee') AND status = ?", ['active']);
+$total_applications = getCount($pdo, 'submissions');
+$pending_applications = getCount($pdo, 'submissions', "status = ?", ['pending_review']);
+$approved_applications = getCount($pdo, 'submissions', "status = ?", ['approved']);
+$completed_applications = getCount($pdo, 'submissions', "status = ?", ['completed']);
 
-// Example chart values
-$undergrad = 120;
-$grad = 45;
-$open = 30;
+// Example chart values (replace with real queries as needed)
+$undergrad = getCount($pdo, 'submissions', "academic_level = ?", ['Undergraduate']);
+$grad = getCount($pdo, 'submissions', "academic_level = ?", ['Masters']);
+$open = getCount($pdo, 'submissions', "academic_level = ?", ['Open University']);
 $total_applications_chart = $undergrad + $grad + $open;
 
 // Fetch admin data
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
-    $query = "SELECT username, email FROM users WHERE user_id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $admin = $result->fetch_assoc();
+    $stmt = $pdo->prepare("SELECT email FROM users WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $admin = $stmt->fetch();
     if (!$admin) { echo "Admin not found."; exit(); }
 } else {
     echo "User ID not set in session."; exit();
@@ -81,7 +63,7 @@ if (isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="<?php echo asset_url('css/admin-navbar.css'); ?>">
 </head>
 <body>
-    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
+    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -206,12 +188,8 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                         <form id="profileInfoForm">
                             <div class="mb-3">
-                                <label for="profileAdminName" class="form-label fw-semibold">Name</label>
-                                <input type="text" class="form-control" id="profileAdminName" required disabled>
-                            </div>
-                            <div class="mb-3">
                                 <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
-                                <input type="email" class="form-control" id="profileAdminEmail" required disabled>
+                                <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email']); ?>" required disabled>
                             </div>
                             <div class="d-flex justify-content-end">
                                 <button type="submit" class="btn btn-primary d-none" id="profileSaveBtn">Save Changes</button>
@@ -244,7 +222,6 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
     </div>
-      <!-- Footer -->
   <footer class="bg-white border-top py-3 mt-4">
     <div class="container text-center small">
       © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
