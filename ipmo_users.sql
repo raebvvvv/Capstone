@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 24, 2025 at 10:31 AM
+-- Generation Time: Sep 24, 2025 at 12:33 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,7 +43,8 @@ CREATE TABLE `advisers` (
 --
 
 INSERT INTO `advisers` (`adviser_id`, `first_name`, `middle_name`, `last_name`, `email`, `department`, `contact_number`, `created_at`) VALUES
-(11, 'Hella', '', 'Deola', NULL, NULL, NULL, '2025-09-24 15:47:37');
+(11, 'Hella', '', 'Deola', NULL, NULL, NULL, '2025-09-24 15:47:37'),
+(12, 'Avada', '', 'kadavra', NULL, NULL, NULL, '2025-09-24 17:43:05');
 
 -- --------------------------------------------------------
 
@@ -72,7 +73,9 @@ CREATE TABLE `student_profiles` (
 --
 
 INSERT INTO `student_profiles` (`profile_id`, `user_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `home_address`, `mobile_number`, `campus`, `college`, `department`, `program`, `last_updated_at`) VALUES
-(8, 19, 'Dela Cruz', 'Juan', 'Malinaw', '', '123 Sampaguita St., Manila City', '09171234567', 'PUP Main', 'College of Engineering', 'Computer Engineering', 'BS Computer Engineering', NULL);
+(8, 19, 'Dela Cruz', 'Juan', 'Malinaw', '', '123 Sampaguita St., Manila City', '09171234567', 'PUP Main', 'College of Engineering', 'Computer Engineering', 'BS Computer Engineering', NULL),
+(9, 20, 'Sinyales', 'Sandra', 'Halima', '', '23 Sampaguita St., Manila City', '09171234569', 'PUP Main', 'College of Engineering', 'Computer Engineering', 'BS Computer Engineering', NULL),
+(10, 21, 'Xander', 'Limo', 'Hixa', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234566', 'PUP Main', 'College of Engineering', 'Computer Engineering', 'BS Computer Engineering', NULL);
 
 -- --------------------------------------------------------
 
@@ -117,7 +120,9 @@ CREATE TABLE `submissions` (
 --
 
 INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first_name`, `middle_name`, `last_name`, `student_number`, `home_address`, `mobile_number`, `webmail`, `campus`, `academic_level`, `college`, `program`, `work_classification`, `title`, `date_accomplished`, `accepted_terms`, `status`, `status_updated_at`, `remarks`, `version`, `is_latest`, `submission_type`, `created_at`, `updated_at`, `reviewer_id`, `reviewed_at`, `adviser_id`) VALUES
-(24, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12345-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Computer Engineering (MSCpE)', '(k) Photographic works including works produced by a process analogous to photography', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-12', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-09-24 15:57:34', '2025-09-24 16:00:27', NULL, NULL, 11);
+(27, 'SRID-2025-20250924-3', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Information Technology (MSIT)', '(m) Pictorial illustrations and advertisements', 'eqweq', '2025-09-24', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-09-24 17:33:20', '2025-09-24 17:36:41', NULL, NULL, 11),
+(29, 'SRID-2025-20250924-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', 'Bachelor of Science in Chemistry (BSCHEM)', '(n) Computer Programs', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-16', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-09-24 17:45:57', '2025-09-24 17:47:05', NULL, NULL, 12),
+(31, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(e) Dramatic or dramatic-musical compositions; choreographic works', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-22', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-09-24 17:55:30', '2025-09-24 17:59:42', NULL, NULL, 11);
 
 -- --------------------------------------------------------
 
@@ -146,7 +151,12 @@ CREATE TABLE `submission_authors` (
 --
 
 INSERT INTO `submission_authors` (`author_id`, `submission_id`, `first_name`, `middle_name`, `last_name`, `student_id`, `mobile`, `home_address`, `webmail`, `role`, `is_adviser`, `created_at`, `adviser_id`) VALUES
-(31, 24, 'Janella', 'Malinaw', 'Salvador', '2023-12345-MN-0', '09171234567', '123 Sampaguita St., Manila City', 'juandelacruz@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-09-24 15:57:34', NULL);
+(35, 27, 'Hella', '', 'Deola', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-24 17:33:20', 11),
+(36, 27, 'eqwe', 'eqweq', 'Garcia', '2023-12335-MN-0', '09171234567', '123 Sampaguita St., Manila City', 'juandelacruz@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-09-24 17:33:20', NULL),
+(39, 29, 'Avada', '', 'kadavra', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-24 17:45:57', 12),
+(40, 29, 'Juan', 'Malinaw', 'Dela', '2023-12335-MN-0', '09171234567', '123 Sampaguita St., Manila City', 'juandelacruz@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-09-24 17:45:57', NULL),
+(43, 31, 'Hella', '', 'Deola', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-24 17:55:30', 11),
+(44, 31, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '09171234567', '123 Sampaguita St., Manila City', 'juandelacruz@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-09-24 17:55:30', NULL);
 
 -- --------------------------------------------------------
 
@@ -172,13 +182,27 @@ CREATE TABLE `submission_documents` (
 --
 
 INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, `file_path`, `uploaded_at`, `file_size`, `mime_type`, `verified`, `verified_by`, `verified_at`) VALUES
-(162, 24, 'journal_publication_format', 'journal_publication_format_1758700654_b4e33b42.pdf', '2025-09-24 15:57:34', 1748, 'application/pdf', 0, NULL, NULL),
-(163, 24, 'notarized_copyright', 'notarized_copyright_1758700654_18d48f6d.pdf', '2025-09-24 15:57:34', 1748, 'application/pdf', 0, NULL, NULL),
-(164, 24, 'receipt_payment', 'receipt_payment_1758700654_87b0d0c4.pdf', '2025-09-24 15:57:34', 1747, 'application/pdf', 0, NULL, NULL),
-(165, 24, 'full_manuscript', 'full_manuscript_1758700654_bb820f0c.pdf', '2025-09-24 15:57:34', 1747, 'application/pdf', 0, NULL, NULL),
-(166, 24, 'notarized_coauthorship', 'notarized_coauthorship_1758700654_b824f5f6.pdf', '2025-09-24 15:57:34', 1747, 'application/pdf', 0, NULL, NULL),
-(167, 24, 'approval_sheet', 'approval_sheet_1758700654_9f363355.pdf', '2025-09-24 15:57:34', 1757, 'application/pdf', 0, NULL, NULL),
-(168, 24, 'record_copyright', 'record_copyright_1758700654_c390d101.pdf', '2025-09-24 15:57:34', 1761, 'application/pdf', 0, NULL, NULL);
+(183, 27, 'journal_publication_format', 'journal_publication_format_1758706400_c1409241.pdf', '2025-09-24 17:33:20', 1757, 'application/pdf', 0, NULL, NULL),
+(184, 27, 'notarized_copyright', 'notarized_copyright_1758706400_ab8726a7.pdf', '2025-09-24 17:33:20', 1757, 'application/pdf', 0, NULL, NULL),
+(185, 27, 'receipt_payment', 'receipt_payment_1758706400_2397ed93.pdf', '2025-09-24 17:33:20', 1747, 'application/pdf', 0, NULL, NULL),
+(186, 27, 'full_manuscript', 'full_manuscript_1758706400_923aa16d.pdf', '2025-09-24 17:33:20', 1761, 'application/pdf', 0, NULL, NULL),
+(187, 27, 'notarized_coauthorship', 'notarized_coauthorship_1758706400_bbb442ce.pdf', '2025-09-24 17:33:20', 1747, 'application/pdf', 0, NULL, NULL),
+(188, 27, 'approval_sheet', 'approval_sheet_1758706400_a02e33e5.pdf', '2025-09-24 17:33:20', 1757, 'application/pdf', 0, NULL, NULL),
+(189, 27, 'record_copyright', 'record_copyright_1758706400_d0f68b4c.pdf', '2025-09-24 17:33:20', 1767, 'application/pdf', 0, NULL, NULL),
+(197, 29, 'journal_publication_format', 'journal_publication_format_1758707157_27772190.pdf', '2025-09-24 17:45:57', 1757, 'application/pdf', 0, NULL, NULL),
+(198, 29, 'notarized_copyright', 'notarized_copyright_1758707157_ee33b3ab.pdf', '2025-09-24 17:45:57', 1767, 'application/pdf', 0, NULL, NULL),
+(199, 29, 'receipt_payment', 'receipt_payment_1758707157_80d62120.pdf', '2025-09-24 17:45:57', 1747, 'application/pdf', 0, NULL, NULL),
+(200, 29, 'full_manuscript', 'full_manuscript_1758707157_e53f2d10.pdf', '2025-09-24 17:45:57', 1748, 'application/pdf', 0, NULL, NULL),
+(201, 29, 'notarized_coauthorship', 'notarized_coauthorship_1758707157_9ed516fb.pdf', '2025-09-24 17:45:57', 1757, 'application/pdf', 0, NULL, NULL),
+(202, 29, 'approval_sheet', 'approval_sheet_1758707157_a0c9cd1a.pdf', '2025-09-24 17:45:57', 1757, 'application/pdf', 0, NULL, NULL),
+(203, 29, 'record_copyright', 'record_copyright_1758707157_cade18a0.pdf', '2025-09-24 17:45:57', 1761, 'application/pdf', 0, NULL, NULL),
+(211, 31, 'journal_publication_format', 'journal_publication_format_1758707730_cdfae69d.pdf', '2025-09-24 17:55:30', 1748, 'application/pdf', 0, NULL, NULL),
+(212, 31, 'notarized_copyright', 'notarized_copyright_1758707730_bc2d2dd4.pdf', '2025-09-24 17:55:30', 1748, 'application/pdf', 0, NULL, NULL),
+(213, 31, 'receipt_payment', 'receipt_payment_1758707730_369693c8.pdf', '2025-09-24 17:55:30', 1757, 'application/pdf', 0, NULL, NULL),
+(214, 31, 'full_manuscript', 'full_manuscript_1758707730_6b4ecd09.pdf', '2025-09-24 17:55:30', 1757, 'application/pdf', 0, NULL, NULL),
+(215, 31, 'notarized_coauthorship', 'notarized_coauthorship_1758707730_b9d498fe.pdf', '2025-09-24 17:55:30', 1761, 'application/pdf', 0, NULL, NULL),
+(216, 31, 'approval_sheet', 'approval_sheet_1758707730_0c70b636.pdf', '2025-09-24 17:55:30', 1747, 'application/pdf', 0, NULL, NULL),
+(217, 31, 'record_copyright', 'record_copyright_1758707730_c796a47d.pdf', '2025-09-24 17:55:30', 1747, 'application/pdf', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -205,7 +229,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `student_number`, `email`, `password`, `role`, `status`, `verification_code`, `code_expires_at`, `email_verified_at`, `created_at`) VALUES
 (18, '2020-12345-MN-0', 'admin@ipmo.local', '$2y$10$KLqtU38o9d2UNOL5rrxU7.SnM6d3gL1PxxtqltKwbb6NnuJdBcR3W', 'admin', 'active', NULL, NULL, NULL, '2025-09-23 21:52:32'),
-(19, '2023-12335-MN-0', 'hellohihihi1234567890@gmail.com', '$2y$10$.O0EiMRNxmuVXLUaleq6zeFYyTziPjpyO3Ixf4IWcY24moWKwJdsS', 'student', 'active', NULL, NULL, '2025-09-24 15:35:59', '2025-09-24 15:35:48');
+(19, '2023-12335-MN-0', 'hellohihihi1234567890@gmail.com', '$2y$10$.O0EiMRNxmuVXLUaleq6zeFYyTziPjpyO3Ixf4IWcY24moWKwJdsS', 'student', 'active', NULL, NULL, '2025-09-24 15:35:59', '2025-09-24 15:35:48'),
+(20, '2023-12345-MN-0', 'aceplanetary0@gmail.com', '$2y$10$.dyFX21SHVFX9cVsiIJ18O3jEA9PtXmZpvtI65RxasxVFOnpnMT8q', 'student', 'active', NULL, NULL, '2025-09-24 18:22:51', '2025-09-24 18:22:40'),
+(21, '2023-12355-MN-0', 'errorloading19990@gmail.com', '$2y$10$KeO9PfVxlab10fBUfbafZ.cFcwBhxr8xKoLNvBQuPl.rwrsrq4AHi', 'student', 'pending', '19a79347aa094355', '2025-09-25 12:26:02', NULL, '2025-09-24 18:26:02');
 
 --
 -- Indexes for dumped tables
@@ -268,37 +294,37 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `advisers`
 --
 ALTER TABLE `advisers`
-  MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `submission_documents`
 --
 ALTER TABLE `submission_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=169;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=218;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables
