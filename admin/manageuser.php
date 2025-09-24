@@ -1,7 +1,8 @@
 <?php
-require __DIR__ . '/../security_bootstrap.php';
-secure_bootstrap();
-require __DIR__ . '/../conn.php';
+// Standard admin bootstrap: config -> conn -> secure_bootstrap -> require_admin
+require __DIR__ . '/../config.php';
+require app_path('conn.php');
+if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
 // Fetch admin data

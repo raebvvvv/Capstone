@@ -8,15 +8,15 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
-    // When included from a page inside User/Afterlogin/, redirect to sibling 404 page.
-    // Use relative '404.php' so we don't duplicate directory segments.
-    header('Location: 404.php');
+    // Send to a friendly root 404 page (works from any directory)
+    $target = '/404.php';
+    if (function_exists('header')) { header('Location: ' . $target); }
     exit();
 }
 
 if (!empty($requireAdmin)) {
     if (!isset($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
-        header('Location: 404.php');
+        header('Location: /404.php');
         exit();
     }
 }
