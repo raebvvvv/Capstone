@@ -71,7 +71,27 @@ if (!function_exists('back_href')) {
 // Renderer for a standardized back link (optional use in templates)
 if (!function_exists('render_back_link')) {
     function render_back_link(string $fallbackRelative = 'index.php', string $label = '↶ Back', string $classes = 'back-btn-content text-dark fs-5 text-decoration-none'): void {
-        echo '<a href="' . back_href($fallbackRelative) . '" class="' . htmlspecialchars($classes, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</a>';
+            echo '<a href="' . back_href($fallbackRelative) . '" class="' . htmlspecialchars($classes, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</a>';
+    }
+
+    // Database connection
+    $host = 'localhost';
+    $db   = 'ipmo_users';
+    $user = 'root';
+    $pass = ''; // or your MySQL password
+    $charset = 'utf8mb4';
+
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+
+    try {
+        $pdo = new PDO($dsn, $user, $pass, $options);
+    } catch (\PDOException $e) {
+        throw new \PDOException($e->getMessage(), (int)$e->getCode());
     }
 }
 

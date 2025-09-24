@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Select all inputs EXCEPT those with class 'lock'
-  const editableInputs = form.querySelectorAll('input:not(.lock)');
+  // Only allow editing Home Address and Mobile Number
+  const editableInputs = form.querySelectorAll('#homeAddress, #mobileNumber');
   let originalValues = {};
 
   // Enable edit mode
@@ -55,6 +55,16 @@ document.addEventListener('DOMContentLoaded', () => {
     editableInputs.forEach(input => {
       originalValues[input.name] = input.value;
       input.readOnly = false;
+      try { input.removeAttribute('readonly'); } catch (_) {}
+      input.classList.remove('bg-light');
+    });
+
+    // Ensure all other inputs remain readOnly and gray
+    form.querySelectorAll('input').forEach(input => {
+      if (![...editableInputs].includes(input)) {
+        input.readOnly = true;
+        input.classList.add('bg-light');
+      }
     });
 
     editBtn.style.display = 'none';
@@ -67,6 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
     editableInputs.forEach(input => {
       input.value = originalValues[input.name] || '';
       input.readOnly = true;
+      try { input.setAttribute('readonly', 'readonly'); } catch (_) {}
+      input.classList.add('bg-light');
     });
 
     saveBtn.style.display = 'none';
@@ -115,32 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let isValid = true;
 
     const mobile = document.getElementById('mobileNumber');
-    const firstName = document.getElementById('firstName');
-    const lastName = document.getElementById('lastName');
-    const middleInitial = document.getElementById('middleInitial');
-    const suffix = document.getElementById('suffix');
-
-    const nameRegex = /^[A-Za-z\s]+$/;
+    const home = document.getElementById('homeAddress');
     const mobileRegex = /^09\d{9}$/; // PH format
-    const validSuffixes = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
-
-    if (!nameRegex.test(firstName.value.trim())) {
-      showError(firstName, 'First name should only contain letters.');
-      isValid = false;
-    }
-
-    if (!nameRegex.test(lastName.value.trim())) {
-      showError(lastName, 'Last name should only contain letters.');
-      isValid = false;
-    }
-
-    if (middleInitial.value && !/^[A-Z]$/.test(middleInitial.value.trim())) {
-      showError(middleInitial, 'Middle initial must be a single uppercase letter.');
-      isValid = false;
-    }
-
-    if (suffix.value && !validSuffixes.includes(suffix.value.trim())) {
-      showError(suffix, 'Valid suffix: Jr., Sr., I, II, III, IV, V or leave blank.');
+    
+    if (!home.value.trim()) {
+      showError(home, 'Home address is required.');
       isValid = false;
     }
 

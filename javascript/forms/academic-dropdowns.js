@@ -249,7 +249,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const programSelect = document.getElementById('program');
   
   // When academic level changes
-  academicLevelSelect.addEventListener('change', function() {
+  if (academicLevelSelect && collegeSelect && programSelect) {
+    academicLevelSelect.addEventListener('change', function() {
     const selectedLevel = this.value;
     
     if (selectedLevel === 'Masters' || selectedLevel === 'Doctorate' || selectedLevel === 'Open University') {
@@ -275,10 +276,12 @@ document.addEventListener('DOMContentLoaded', function() {
       // Reset program dropdown
       populateDropdown(programSelect, academicData.program.default);
     }
-  });
+    });
+  }
   
   // When college selection changes, update programs
-  collegeSelect.addEventListener('change', function() {
+  if (collegeSelect && programSelect) {
+    collegeSelect.addEventListener('change', function() {
     const selectedCollege = this.value;
     
     // Update programs dropdown
@@ -286,7 +289,8 @@ document.addEventListener('DOMContentLoaded', function() {
       programSelect,
       academicData.program[selectedCollege] || academicData.program.default
     );
-  });
+    });
+  }
   
   // Helper function to populate dropdowns
   function populateDropdown(selectElement, options) {
@@ -314,9 +318,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const campusSelect = document.getElementById('campus');
   const workClassificationSelect = document.getElementById('workClassification');
   
-  populateDropdown(campusSelect, academicData.campus);
-  populateDropdown(academicLevelSelect, academicData.academicLevel);
-  populateDropdown(collegeSelect, academicData.college);
-  populateDropdown(programSelect, academicData.program.default);
-  populateDropdown(workClassificationSelect, academicData.workClassification);
+  if (campusSelect) populateDropdown(campusSelect, academicData.campus);
+  if (academicLevelSelect) populateDropdown(academicLevelSelect, academicData.academicLevel);
+  if (collegeSelect) populateDropdown(collegeSelect, academicData.college);
+  if (programSelect) populateDropdown(programSelect, academicData.program.default);
+  if (workClassificationSelect) populateDropdown(workClassificationSelect, academicData.workClassification);
 });

@@ -16,7 +16,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Validate user exists in database (prevents session fixation)
 require_once __DIR__ . '/config.php';
-$stmt = $pdo->prepare("SELECT status, role, is_admin FROM users WHERE user_id = ?");
+$stmt = $pdo->prepare("SELECT status, role FROM users WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
 

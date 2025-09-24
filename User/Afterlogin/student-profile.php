@@ -19,7 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $mobileNumber  = trim($_POST['mobile_number'] ?? '');
     $campus        = trim($_POST['campus'] ?? '');
     $college       = trim($_POST['college'] ?? '');
-    $department    = trim($_POST['department'] ?? '');
+  // Department removed from profile editing
+  $department    = '';
     $program       = trim($_POST['program'] ?? '');
 
   // reset errors for this POST
@@ -68,14 +69,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     }
 
     // Required fields (suffix & middle initial optional)
-    if (empty($firstName) || empty($lastName) || empty($homeAddress) ||
-        empty($mobileNumber) || empty($campus) || empty($college) ||
-        empty($department) || empty($program)) {
-        $errors[] = "All fields except suffix and middle initial are required";
-    }
+  if (empty($firstName) || empty($lastName) || empty($homeAddress) ||
+    empty($mobileNumber) || empty($campus) || empty($college) ||
+    empty($program)) {
+    $errors[] = "All fields except suffix and middle name are required";
+  }
 
     // Fetch current profile data
-    $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department, program FROM student_profiles WHERE user_id = ?");
+  $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, program FROM student_profiles WHERE user_id = ?");
     $stmt->execute([$user_id]);
     $current = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -87,10 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $suffix        !== $current['suffix'] ||
         $homeAddress   !== $current['home_address'] ||
         $mobileNumber  !== $current['mobile_number'] ||
-        $campus        !== $current['campus'] ||
-        $college       !== $current['college'] ||
-        $department    !== $current['department'] ||
-        $program       !== $current['program']
+    $campus        !== $current['campus'] ||
+    $college       !== $current['college'] ||
+    $program       !== $current['program']
     );
 
     if (!$hasChanges) {
@@ -99,17 +99,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
     if (empty($errors)) {
         // Proceed with update
-        $stmt = $pdo->prepare("UPDATE student_profiles SET 
-            last_name=?, first_name=?, middle_name=?, suffix=?, 
-            home_address=?, mobile_number=?, campus=?, college=?, 
-            department=?, program=?, last_updated_at=NOW()
-            WHERE user_id=?");
+    // Only allow updating home address and mobile number; keep others unchanged
+    $stmt = $pdo->prepare("UPDATE student_profiles SET 
+      home_address=?, mobile_number=?, last_updated_at=NOW()
+      WHERE user_id=?");
         
-        $stmt->execute([
-            $lastName, $firstName, $middleName, $suffix,
-            $homeAddress, $mobileNumber, $campus, $college,
-            $department, $program, $user_id
-        ]);
+    $stmt->execute([
+      $homeAddress, $mobileNumber, $user_id
+    ]);
         $success = "✅ Profile updated successfully!";
     } else {
         // Show errors as list
@@ -247,7 +244,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">Last Name</label>
     <input type="text" 
-           class="form-control <?php echo isset($errors['last_name']) ? 'is-invalid' : ''; ?>" 
+           class="form-control bg-light lock <?php echo isset($errors['last_name']) ? 'is-invalid' : ''; ?>" 
            name="last_name" id="lastName" 
            value="<?php echo htmlspecialchars($profile['last_name'] ?? ''); ?>" 
            readonly>
@@ -259,7 +256,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">First Name</label>
     <input type="text" 
-           class="form-control <?php echo isset($errors['first_name']) ? 'is-invalid' : ''; ?>" 
+           class="form-control bg-light lock <?php echo isset($errors['first_name']) ? 'is-invalid' : ''; ?>" 
            name="first_name" id="firstName" 
            value="<?php echo htmlspecialchars($profile['first_name'] ?? ''); ?>" 
            readonly>
@@ -271,7 +268,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">Middle Name</label>
     <input type="text" 
-           class="form-control <?php echo isset($errors['middle_name']) ? 'is-invalid' : ''; ?>" 
+           class="form-control bg-light lock <?php echo isset($errors['middle_name']) ? 'is-invalid' : ''; ?>" 
            name="middle_name" id="middleName" 
            value="<?php echo htmlspecialchars($profile['middle_name'] ?? ''); ?>" 
            readonly>
@@ -285,7 +282,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">Suffix</label>
     <input type="text" 
-           class="form-control <?php echo isset($errors['suffix']) ? 'is-invalid' : ''; ?>" 
+           class="form-control bg-light lock <?php echo isset($errors['suffix']) ? 'is-invalid' : ''; ?>" 
            name="suffix" id="suffix" 
            value="<?php echo htmlspecialchars($profile['suffix'] ?? ''); ?>" 
            readonly>
@@ -310,7 +307,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 <div class="row mb-3">
   <div class="col-md-6">
     <label class="form-label fw-bold">Student ID/Number <span class="text-danger">*</span></label>
-    <input type="text" class="form-control lock" 
+    <input type="text" class="form-control lock bg-light" 
            id="studentId" 
            value="<?php echo htmlspecialchars($profile['student_number'] ?? ''); ?>" 
            readonly>
@@ -330,10 +327,10 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 </div>
 
 <div class="row mb-3">
-  <div class="col-md-3">
+  <div class="col-md-4">
     <label class="form-label">Campus</label>
     <input type="text" 
-           class="form-control <?php echo isset($errors['campus']) ? 'is-invalid' : ''; ?>" 
+           class="form-control bg-light lock <?php echo isset($errors['campus']) ? 'is-invalid' : ''; ?>" 
            name="campus" id="campus" 
            value="<?php echo htmlspecialchars($profile['campus'] ?? ''); ?>" 
            readonly>
@@ -342,10 +339,10 @@ if (!empty($errors) && !$hasRestrictionError): ?>
     <?php endif; ?>
   </div>
 
-  <div class="col-md-3">
+  <div class="col-md-4">
     <label class="form-label">College</label>
     <input type="text" 
-           class="form-control <?php echo isset($errors['college']) ? 'is-invalid' : ''; ?>" 
+           class="form-control bg-light lock <?php echo isset($errors['college']) ? 'is-invalid' : ''; ?>" 
            name="college" id="college" 
            value="<?php echo htmlspecialchars($profile['college'] ?? ''); ?>" 
            readonly>
@@ -354,22 +351,10 @@ if (!empty($errors) && !$hasRestrictionError): ?>
     <?php endif; ?>
   </div>
 
-  <div class="col-md-3">
-    <label class="form-label">Department</label>
-    <input type="text" 
-           class="form-control <?php echo isset($errors['department']) ? 'is-invalid' : ''; ?>" 
-           name="department" id="department" 
-           value="<?php echo htmlspecialchars($profile['department'] ?? ''); ?>" 
-           readonly>
-    <?php if (isset($errors['department'])): ?>
-      <div class="invalid-feedback"><?php echo $errors['department']; ?></div>
-    <?php endif; ?>
-  </div>
-
-  <div class="col-md-3">
+  <div class="col-md-4">
     <label class="form-label">Program</label>
     <input type="text" 
-           class="form-control <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
+           class="form-control bg-light lock <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
            name="program" id="program" 
            value="<?php echo htmlspecialchars($profile['program'] ?? ''); ?>" 
            readonly>
@@ -381,7 +366,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 
         <div class="mb-3">
           <label class="form-label fw-bold">Webmail <span class="text-danger">*</span></label>
-          <input type="email" class="form-control lock" id="webmail" 
+          <input type="email" class="bg-light lock form-control lock" id="webmail" 
     value="<?php echo htmlspecialchars($profile['email'] ?? ''); ?>" readonly>
         </div>
         <div class="mt-4">

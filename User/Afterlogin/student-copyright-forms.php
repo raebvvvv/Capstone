@@ -346,7 +346,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>"></script>
- <script>
+ 
 
 </body>
 </html>

@@ -5,82 +5,125 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
-$status_labels = [
-    'draft'           => 'Draft',
-    'pending_review'  => 'Pending',
-    'under_review'    => 'Under Review',
-    'revision_needed' => 'Revision Needed',
-    'approved'        => 'Approved',
-    'rejected'        => 'Rejected',
-];
+// Handle actions (server-side fallback when JS is disabled)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (function_exists('verify_csrf_post')) { verify_csrf_post(); }
+    try {
+        // Helper to resolve identifier column
+        $resolveIdColumn = function (string $id): string {
+            $id = trim($id);
+            return ctype_digit($id) ? 'submission_id' : 'submission_code';
+        };
 
-// Get filter values from GET
-$filters = [
-    'submission_id' => isset($_GET['submission_id']) ? trim($_GET['submission_id']) : '',
-    'student_number' => isset($_GET['student_number']) ? trim($_GET['student_number']) : '',
-    'name' => isset($_GET['name']) ? trim($_GET['name']) : '',
-    'title' => isset($_GET['title']) ? trim($_GET['title']) : '',
-    'work_classification' => isset($_GET['work_classification']) ? trim($_GET['work_classification']) : '',
-    'program' => isset($_GET['program']) ? trim($_GET['program']) : '',
-    'created_at' => isset($_GET['created_at']) ? trim($_GET['created_at']) : '',
-    'status' => isset($_GET['status']) ? trim($_GET['status']) : '',
-    'remarks' => isset($_GET['remarks']) ? trim($_GET['remarks']) : '',
-];
-
-// Build WHERE clause
-$where = [];
-$params = [];
-if ($filters['submission_id'] !== '') {
-    $where[] = 'submission_id LIKE :submission_id';
-    $params['submission_id'] = '%' . $filters['submission_id'] . '%';
+        if (!empty($_POST['approve_ticket_id'])) {
+            $approveId = trim((string)$_POST['approve_ticket_id']);
+            $remark = trim((string)($_POST['remark'] ?? ''));
+            if (strlen($remark) > 1000) { $remark = substr($remark, 0, 1000); }
+            if ($approveId !== '') {
+                $col = $resolveIdColumn($approveId);
+                $sql = "UPDATE submissions
+                        SET status = 'approved',
+                            remarks = CASE WHEN :remark <> '' THEN :remark ELSE remarks END,
+                            reviewer_id = :rid,
+                            reviewed_at = NOW(),
+                            status_updated_at = NOW()
+                        WHERE $col = :id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    ':remark' => $remark,
+                    ':rid' => (int)($_SESSION['user_id'] ?? 0),
+                    ':id' => ctype_digit($approveId) ? (int)$approveId : $approveId,
+                ]);
+            }
+        } elseif (!empty($_POST['complete_ticket_id'])) {
+            $completeId = trim((string)$_POST['complete_ticket_id']);
+            $remark = trim((string)($_POST['remark'] ?? ''));
+            if (strlen($remark) > 1000) { $remark = substr($remark, 0, 1000); }
+            if ($completeId !== '') {
+                $col = $resolveIdColumn($completeId);
+                $sql = "UPDATE submissions
+                        SET status = 'completed',
+                            remarks = CASE WHEN :remark <> '' THEN :remark ELSE remarks END,
+                            status_updated_at = NOW()
+                        WHERE $col = :id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    ':remark' => $remark,
+                    ':id' => ctype_digit($completeId) ? (int)$completeId : $completeId,
+                ]);
+            }
+        }
+    } catch (Throwable $e) {
+        if (function_exists('log_event')) { log_event('DB_ERROR', 'Ticket action failed', ['err' => $e->getMessage()]); }
+    }
+    // Post/Redirect/Get
+    redirect('admin/ticket.php');
 }
-if ($filters['student_number'] !== '') {
-    $where[] = 'student_number LIKE :student_number';
-    $params['student_number'] = '%' . $filters['student_number'] . '%';
-}
-if ($filters['name'] !== '') {
-    $where[] = "(first_name LIKE :name OR last_name LIKE :name OR middle_name LIKE :name OR last_name LIKE :name)";
-    $params['name'] = '%' . $filters['name'] . '%';
-}
-if ($filters['title'] !== '') {
-    $where[] = 'title LIKE :title';
-    $params['title'] = '%' . $filters['title'] . '%';
-}
-if ($filters['work_classification'] !== '') {
-    $where[] = 'work_classification LIKE :work_classification';
-    $params['work_classification'] = '%' . $filters['work_classification'] . '%';
-}
-if ($filters['program'] !== '') {
-    $where[] = 'program LIKE :program';
-    $params['program'] = '%' . $filters['program'] . '%';
-}
-if ($filters['created_at'] !== '') {
-    $where[] = 'DATE(created_at) = :created_at';
-    $params['created_at'] = $filters['created_at'];
-}
-if ($filters['status'] !== '') {
-    $where[] = 'status = :status';
-    $params['status'] = $filters['status'];
-}
-if ($filters['remarks'] !== '') {
-    $where[] = 'remarks LIKE :remarks';
-    $params['remarks'] = '%' . $filters['remarks'] . '%';
-}
-
-$where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-$sql = "SELECT * FROM submissions $where_sql ORDER BY created_at DESC";
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$submissions = $stmt->fetchAll();
 
 // Fetch admin data
 if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
+    $user_id = (int)$_SESSION['user_id'];
     $stmt = $pdo->prepare("SELECT email FROM users WHERE user_id = ?");
     $stmt->execute([$user_id]);
-    $admin = $stmt->fetch();
-    if (!$admin) { echo "Admin not found."; exit(); }
+    $row = $stmt->fetch() ?: [];
+    $admin = [
+        'email' => $row['email'] ?? '',
+        'username' => ''
+    ];
 } else { echo "User ID not set in session."; exit(); }
+
+// Search filter
+$search_query = isset($_GET['search']) ? trim((string)$_GET['search']) : '';
+$where = '';
+$params = [];
+if ($search_query !== '') {
+    // Search by student name, student number, submission code, or title
+    $where = " WHERE (
+        CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) LIKE :q
+        OR s.student_number LIKE :q
+        OR s.submission_code LIKE :q
+        OR s.title LIKE :q
+    )";
+    $params[':q'] = "%$search_query%";
+}
+
+// Load requests from submissions (ipmo_users.sql)
+$rows = [];
+try {
+    $sql = "SELECT 
+                s.submission_id,
+                s.submission_code AS request_id,
+                s.student_number AS student_id,
+                CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) AS student_name,
+                s.academic_level AS user_classification,
+                s.program,
+                s.created_at AS request_date,
+                s.status,
+                s.remarks AS remark,
+                s.reviewed_at AS approved_timestamp,
+                s.status_updated_at AS completed_timestamp
+            FROM submissions s
+            $where
+            ORDER BY s.created_at DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll();
+} catch (Throwable $e) {
+    if (function_exists('log_event')) { log_event('DB_ERROR', 'Query submissions failed', ['err' => $e->getMessage()]); }
+    $rows = [];
+}
+
+// Split by status for tabs
+$pending = [];
+$approved = [];
+$completed = [];
+foreach ($rows as $r) {
+    $st = strtolower((string)($r['status'] ?? ''));
+    // Normalize statuses from submissions table
+    if ($st === 'pending' || $st === 'pending_review') { $pending[] = $r; }
+    elseif ($st === 'approved') { $approved[] = $r; }
+    elseif ($st === 'completed') { $completed[] = $r; }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,18 +133,18 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../css/ticket.css?v=5">
     <link rel="stylesheet" href="../css/admin-navbar.css">
-    <!-- Add your page-specific CSS after this -->
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
-    <title>Manage Applications</title>
+    <title>Manage Requests</title>
 </head>
 <body>
-<header class="bg-light border-bottom py-3 shadow-sm" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
+<header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>">
     <div class="container">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
                 <a class="navbar-brand d-flex align-items-center" href="#">
-                    <img src="../images/puplogo.png" alt="Logo" class="center-img" style="height: 30px; margin-right: 10px;">
+                    <img src="<?php echo asset_url('images/puplogo.png'); ?>" alt="Logo" class="center-img" style="height: 30px; margin-right: 10px;">
                     <span class="fw-bold">PUP e-IPMO [Admin.]</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,11 +154,11 @@ if (isset($_SESSION['user_id'])) {
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center w-100">
                         <li class="nav-item ms-auto"><a class="nav-link" href="admin.php">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
-                        <li class="nav-item"><a class="nav-link <?php if(basename($_SERVER['PHP_SELF'])=='manageuser.php') echo 'fw-bold'; ?>" href="manageuser.php">Manage Users</a></li>
-                        <li class="nav-item"><a class="nav-link <?php if(basename($_SERVER['PHP_SELF'])=='ticket.php') echo 'fw-bold'; ?>" href="ticket.php">Applications</a></li>
+                        <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
+                        <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="ticket.php">Applications</a></li>
                         <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
                             <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                            <form method="POST" action="logout.php" class="d-inline ms-2">
+                            <form method="POST" action="../logout.php" class="d-inline ms-2">
                                 <?php csrf_input(); ?>
                                 <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
                             </form>
@@ -184,88 +227,352 @@ if (isset($_SESSION['user_id'])) {
     </div>
 </div>
 
-<div class="container mt-5">
-    <h1 class="text-center mb-4" style="font-size:2rem;">Manage Applications</h1>
-    <form method="get" class="mb-3">
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle">
-                <thead>
-                    <tr>
-                        <th>Submission ID</th>
-                        <th>Student Number</th>
-                        <th>Name</th>
-                        <th>Title</th>
-                        <th>Classification</th>
-                        <th>Program</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
-                    </tr>
-                    <tr>
-                        <th><input type="text" name="submission_id" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['submission_id']); ?>"></th>
-                        <th><input type="text" name="student_number" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['student_number']); ?>"></th>
-                        <th><input type="text" name="name" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['name']); ?>"></th>
-                        <th><input type="text" name="title" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['title']); ?>"></th>
-                        <th><input type="text" name="work_classification" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['work_classification']); ?>"></th>
-                        <th><input type="text" name="program" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['program']); ?>"></th>
-                        <th><input type="date" name="created_at" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['created_at']); ?>"></th>
-                        <th>
-                            <select name="status" class="form-control form-control-sm">
-                                <option value="">All</option>
-                                <?php foreach ($status_labels as $key => $label): ?>
-                                    <option value="<?php echo $key; ?>" <?php if ($filters['status'] === $key) echo 'selected'; ?>><?php echo $label; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </th>
-                        <th><input type="text" name="remarks" class="form-control form-control-sm" value="<?php echo htmlspecialchars($filters['remarks']); ?>"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($submissions as $row): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
-                            <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-                            <td><?php echo htmlspecialchars($row['last_name'] . ', ' . $row['first_name'] . ' ' . $row['middle_name']); ?></td>
-                            <td><?php echo htmlspecialchars($row['title']); ?></td>
-                            <td><?php echo htmlspecialchars($row['work_classification']); ?></td>
-                            <td><?php echo htmlspecialchars($row['program']); ?></td>
-                            <td><?php echo htmlspecialchars($row['created_at']); ?></td>
-                            <td><?php echo $status_labels[$row['status']] ?? htmlspecialchars($row['status']); ?></td>
-                            <td><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                    <?php if (empty($submissions)): ?>
-                        <tr><td colspan="9" class="text-center">No records found.</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4" style="font-size:2rem;">Manage Applications</h1>
+        <div class="d-flex justify-content-center mb-3">
+            <form method="get" class="input-group search-bar" style="max-width:400px;">
+                <input class="form-control rounded-pill ps-4" type="search" name="search" placeholder="Search" aria-label="Search" value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius: 50px;">
+                <span class="input-group-text bg-white border-0" style="border-radius: 50px; margin-left:-40px;"><i class="bi bi-search"></i></span>
+            </form>
         </div>
-        <div class="text-end">
-            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-            <a href="ticket.php" class="btn btn-secondary btn-sm">Reset</a>
+        <div class="d-flex justify-content-center mb-3 gap-2">
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm" type="button">Ethics Clearance</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm" type="button">Patent</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm" type="button">Industrial Design</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm" type="button">Utility Model</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm" type="button">Trademark</button></a>
+            <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm" type="button">Copyright</button></a>
         </div>
-    </form>
-</div>
-<footer class="bg-white border-top py-3 mt-5">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-    </div>
-</footer>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var searchInput = document.querySelector('input[name="search"]');
-    var form = searchInput && searchInput.form;
-    if (searchInput && form) {
-        searchInput.addEventListener('input', function() {
-            if (searchInput.value === '') {
-                form.submit();
-            }
-        });
-    }
-});
-</script>
+        <ul class="nav nav-tabs mb-3" id="requestTabs">
+            <li class="nav-item"><a class="nav-link active fw-semibold" data-bs-toggle="tab" href="#pending" style="color:#222;">Pending</a></li>
+            <li class="nav-item"><a class="nav-link fw-semibold" data-bs-toggle="tab" href="#approved" style="color:#222;">Approved</a></li>
+            <li class="nav-item"><a class="nav-link fw-semibold" data-bs-toggle="tab" href="#completed" style="color:#222;">Complete</a></li>
+        </ul>
+        <div class="tab-content mt-3">
+            <div class="tab-pane fade show active" id="pending">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Student Number / Employee ID</th>
+                                <th>Name</th>
+                                <th>Classification</th>
+                                <th>Program</th>
+                                <th>Request Date</th>
+                                <th>Remarks</th>
+                                <th class="action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($pending)): ?>
+                                <tr><td colspan="8" class="text-center">No pending requests.</td></tr>
+                            <?php else: foreach ($pending as $ticket): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($ticket['request_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['student_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['user_classification']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['program']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['remark'] ?? 'For Evaluation'); ?></td>
+                                    <td>
+                                        <div class="action-btn-group">
+                                            <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
+                                            <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
+                                            <form method="post" style="display:inline;">
+                                                <?php csrf_input(); ?>
+                                                <input type="hidden" name="approve_ticket_id" value="<?php echo htmlspecialchars($ticket['request_id']); ?>">
+                                                <button type="submit" class="btn btn-approve btn-sm rounded-pill px-3">Approve</button>
+                                            </form>
+                                            <span class="btn btn-incomplete btn-sm rounded-pill px-3">Incomplete</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
+            <div class="tab-pane fade" id="approved">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Student Number / Employee ID</th>
+                                <th>Name</th>
+                                <th>Classification</th>
+                                <th>Program</th>
+                                <th>Request Date</th>
+                                <th>Status</th>
+                                <th class="action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($approved)): ?>
+                                <tr><td colspan="8" class="text-center">No approved requests.</td></tr>
+                            <?php else: foreach ($approved as $ticket): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($ticket['request_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['student_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['user_classification']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['program']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
+                                    <td>In-review</td>
+                                    <td>
+                                        <div class="action-btn-group">
+                                            <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
+                                            <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
+                                            <button class="btn btn-success btn-sm rounded-pill px-3 me-1 btn-complete" data-request-id="<?php echo htmlspecialchars($ticket['request_id']); ?>">Complete</button>
+                                            <span class="btn btn-incomplete btn-incomplete-active btn-sm rounded-pill px-3">Incomplete</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="completed">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Student Number / Employee ID</th>
+                                <th>Name</th>
+                                <th>Classification</th>
+                                <th>Program</th>
+                                <th>Request Date</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                                <th class="action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($completed)): ?>
+                                <tr><td colspan="9" class="text-center">No completed requests.</td></tr>
+                            <?php else: foreach ($completed as $ticket): ?>
+                                <tr>
+                                    <td><span style="font-weight:600;"><?php echo htmlspecialchars($ticket['request_id']); ?></span></td>
+                                    <td><?php echo htmlspecialchars($ticket['student_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['user_classification']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['program']); ?></td>
+                                    <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
+                                    <td>Completed</td>
+                                    <td><?php echo htmlspecialchars($ticket['remark'] ?? ''); ?></td>
+                                    <td>
+                                        <div class="action-btn-group">
+                                            <a href="#" class="btn btn-success btn-sm rounded-pill px-3 btn-view-certificate" data-cert-url="#">View Certificate</a>
+                                            <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
+                                            <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="certificateModal" tabindex="-1" aria-labelledby="certificateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="certificateModalLabel">Certificate of Copyright Application</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-close-certificate" data-bs-dismiss="modal">Close</button>
+                    <a id="downloadCertificateBtn" href="#" class="btn btn-download-pdf" download>Download as PDF</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="completeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post">
+                    <?php csrf_input(); ?>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="completeModalLabel">Complete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="complete_comments" class="form-label mb-2">Comments:</label>
+                        <textarea class="form-control" id="complete_comments" name="remark" rows="7" placeholder="Add your Comments here..." style="resize:none;"></textarea>
+                        <input type="hidden" name="complete_ticket_id" id="complete_ticket_id">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background:#6c757d;">Close</button>
+                        <button type="submit" class="btn" style="background:#7c3aed; color:#fff;">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="incompleteModal" tabindex="-1" aria-labelledby="incompleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content incomplete-modal-content">
+                <div class="modal-header d-flex align-items-center justify-content-between pb-2 border-0">
+                    <h5 class="modal-title fw-bold mb-0" id="incompleteModalLabel">Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pb-0">
+                    <div class="d-flex gap-3 align-items-center mb-3">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-remarks-modal dropdown-toggle" type="button" id="remarksDropdown" data-bs-toggle="dropdown" aria-expanded="false">Remarks</button>
+                            <ul class="dropdown-menu" aria-labelledby="remarksDropdown">
+                                <li><a class="dropdown-item remark-choice" href="#" data-remark="Incorrect Document/Upload">Incorrect Document/Upload</a></li>
+                                <li><a class="dropdown-item remark-choice" href="#" data-remark="Error in Document/Upload">Error in Document/Upload</a></li>
+                            </ul>
+                        </div>
+                        <br><span><strong>Comments:</strong></span>
+                    </div>
+                    <textarea id="incompleteTextarea" rows="7" class="form-control mb-2" style="resize:none; border:1px solid #555;"></textarea>
+                </div>
+                <div class="modal-footer border-0 pt-3">
+                    <button type="button" class="btn btn-close-modal" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="confirmIncompleteBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="incompleteActiveModal" tabindex="-1" aria-labelledby="incompleteActiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content incomplete-modal-content">
+                <div class="modal-header d-flex align-items-center justify-content-between pb-2 border-0">
+                    <h5 class="modal-title fw-bold mb-0" id="incompleteActiveModalLabel">Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pb-0">
+                    <div class="d-flex gap-3 align-items-center mb-3">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-remarks-modal dropdown-toggle" type="button" id="remarksDropdownActive" data-bs-toggle="dropdown" aria-expanded="false">Remarks</button>
+                            <ul class="dropdown-menu" aria-labelledby="remarksDropdownActive">
+                                <li><a class="dropdown-item remark-choice-active" href="#" data-remark="Missing Document">Missing Document</a></li>
+                                <li><a class="dropdown-item remark-choice-active" href="#" data-remark="Error in Document">Error in Document</a></li>
+                                <li><a class="dropdown-item remark-choice-active" href="#" data-remark="Documents don’t match">Documents don’t match</a></li>
+                            </ul>
+                        </div>
+                        <span><strong>Comments:</strong></span>
+                    </div>
+                    <textarea id="incompleteTextareaActive" rows="7" class="form-control mb-2" style="resize:none; border:1px solid #555;"></textarea>
+                </div>
+                <div class="modal-footer border-0 pt-3">
+                    <button type="button" class="btn btn-close-modal" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-confirm-modal" id="confirmIncompleteActiveBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content details-modal-content">
+                <div class="modal-header d-flex align-items-center justify-content-between pb-2 border-0">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="modal-title fw-bold mb-0" id="detailsModalLabel">Request Details</h5>
+                        <button type="button" class="btn btn-sm btn-edit-modal" id="editDetailsBtn">Edit</button>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <hr class="m-0 mb-3">
+                <div class="modal-body" id="detailsModalBody"></div>
+                <div class="modal-footer border-0 pt-3">
+                    <button type="button" class="btn btn-save-modal" id="saveDetailsBtn" style="display:none;">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="../javascript/admin-ticket.js?v=2" defer></script>
+<script src="../javascript/admin-profile.js?v=2" defer></script>
+
+<div class="modal fade" id="authorInfoModal" tabindex="-1" aria-labelledby="authorInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content details-modal-content">
+            <div class="modal-header d-flex align-items-center justify-content-between pb-2 border-0">
+                <h5 class="modal-title fw-bold mb-0" id="authorInfoModalLabel">Author’s Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="authorInfoBody"></div>
+            <div class="modal-footer border-0 pt-3">
+                <button type="button" class="btn btn-edit-modal" id="authorEditBtn">EDIT</button>
+                <button type="button" class="btn btn-save-modal" id="authorSaveBtn" style="display:none;">SAVE</button>
+            </div>  
+        </div>
+    </div>
+    </div>
+
+    <div class="modal fade" id="approveCommentModal" tabindex="-1" aria-labelledby="approveCommentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approveCommentModalLabel">Approve Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="approveRequestId" />
+                    <label for="approveCommentText" class="form-label">Comment (optional)</label>
+                    <textarea class="form-control" id="approveCommentText" rows="5" placeholder="Enter approval comment..." style="resize:none;"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="approveCommentConfirmBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Success</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-success fw-bold mb-0">The request has been approved.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="comment_text" class="form-label">Comments:</label>
+                    <textarea readonly class="form-control" id="comment_text" rows="5" placeholder="Please reupload your documents" style="resize:none;"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-top py-3">
+        <div class="container text-center small">
+        © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
+        <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
+        <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
+        </div>
+    </footer>
 </body>
 </html>
