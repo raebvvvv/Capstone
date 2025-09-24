@@ -73,12 +73,13 @@
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
             <img src="<?php echo asset_url('Photos/Icons/Patent-icon.png'); ?>" alt="Patent" class="mb-2" width="60">
-            <h5 class="card-title">Patent | Trademark | Utility Model | Industrial Design</h5>
+            <h5 class="card-title">Industrial Property</h5>
+            <h6> <i>Patent | Trademark | Utility Model | Industrial Design</i></h6>
             <p class="card-text">
               All four are subject to a government grant giving an inventor exclusive rights to a product or process that solves a technical problem in any human activity field.<br>
               <strong>They must be new, inventive, and industrially applicable.</strong>
             </p>
-            <button class="btn btn-success" onclick="apply('patent')" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Apply</button>
+            <a href="industrial-property-application.php" style="text-decoration: none !important;"><button class="btn btn-success" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Apply</button></a>
           </div>
         </div>
       </div>

@@ -39,7 +39,7 @@
   <main class="container py-4">
 
     <div class=" justify-content-between mb-4">
-      <h2 class="fw-bold mb-0">Copyright Application</h2>
+      <h2 class="fw-bold mb-0">Industrial Property Application</h2>
 
     </div>
 
@@ -47,7 +47,7 @@
       <li class="mb-4">
         This ZIP file contains clean copies of all the files listed below.<br>
         Files <strong>required</strong> to be printed have <span class="text-success fw-bold">'[Print]'</span> in their filenames.<br>
-        <a href="https://drive.google.com/uc?export=download&id=1njbAmgm2LrUSm2I5NPM9sFgPLbwnP_UH" class="btn btn-primary mt-2 mb-2" style="width:180px; background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Copyright.zip</a>
+        <a href="https://drive.google.com/uc?export=download&id=1njbAmgm2LrUSm2I5NPM9sFgPLbwnP_UH" class="btn btn-primary mt-2 mb-2" style="width:180px; background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Industrial-Property.zip</a>
       </li>
       <li class="mb-4">
         Once printed and accomplished, you may proceed to the <strong>submission form.</strong><br> 
@@ -61,7 +61,7 @@
       <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">1. Copyright Application and Procedures</span>
+          <span class="fw-bold">1. Industrial Property Application and Procedures</span>
         </div>
         <div class="file-actions">
           <a href="https://drive.google.com/file/d/11KW9MmxtVCzsfsWa1r9ifg-0RBFP-hG-/view?usp=sharing" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
@@ -71,7 +71,7 @@
       <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">2. Copyright Application Form <span class="text-success">[Print]</span></span><br>
+          <span class="fw-bold">2. Industrial Property Application Form <span class="text-success">[Print]</span></span><br>
           <span style="font-size:0.95em;">For Multiple or Single Authorship</span>
         </div>
         <div class="file-actions">
@@ -82,29 +82,17 @@
       <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">3. Copyright Co-Authorship Agreement <span class="text-success">[Print]</span></span>
+          <span class="fw-bold">3. Industrial Property Co-Authorship Agreement <span class="text-success">[Print]</span></span>
         </div>
         <div class="file-actions">
           <a href="https://docs.google.com/document/d/11K-MlpSodpghHhPiB_q5YUpXlSdb_vgb/edit?usp=drive_link&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
           <a href="https://docs.google.com/document/d/11K-MlpSodpghHhPiB_q5YUpXlSdb_vgb/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
         </div>
       </div>
-      <div class="file-card">
-        <div class="file-icon">&#128196;</div>
-        <div class="file-info">
-          <span class="fw-bold">4. Memorandum Order</span><br>
-          <span style="font-size:0.95em;">No. 031, Series of 2013</span><br>
-          <span style="font-size:0.95em;">Policy on Copyright Registration of Undergraduate and Graduate Academic Works</span>
-        </div>
-        <div class="file-actions">
-          <a href="https://drive.google.com/file/d/1FQVXIxyHQtpAp0dYZwxp5Rop850XRrIW/view?usp=drive_link" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
-          <a href="https://drive.google.com/uc?export=download&id=1FQVXIxyHQtpAp0dYZwxp5Rop850XRrIW" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
-        </div>
-      </div>
         <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">5. Flash Drive Label  <span class="text-success">[Print]</span></span><br>
+          <span class="fw-bold">4. Flash Drive Label  <span class="text-success">[Print]</span></span><br>
         </div>
         <div class="file-actions">
           <a href="https://docs.google.com/document/d/18Eq88--hxUbixZWGvd3LdEl6BzszfG0S/edit?usp=drive_link&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
