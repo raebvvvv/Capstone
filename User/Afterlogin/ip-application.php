@@ -48,8 +48,8 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth
             <div class="step-desc mb-1">In the dashboard, choose an e-Service to apply for.</div>
           </div>
           <div class="step-actions d-flex flex-column justify-content-center align-items-md-end align-items-start ms-md-3 mt-3 mt-md-0">
-            <div class="mb-2 small text-center">Proceed when ready.</div>
-            <a href="e-services.php" class="btn btn-warning btn-sm fw-bold px-4">Go to e-Services</a>
+            <div class="mb-2 small text-center">Only proceed when you have read all the guidelines.</div>
+            <button class="btn btn-secondary btn-sm fw-bold px-4" disabled>Go to e-Services</button>
           </div>
         </div>
       </div>
@@ -80,13 +80,35 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth
           <div class="step-desc mb-1">Fill in required information and attach all PDF files.</div>
         </div>
       </div>
+      <!-- Step 6 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
           <img src="<?php echo asset_url('Photos/Icons/complaint.png'); ?>" alt="Evaluation Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
-          <div><span class="step-number">6.</span> <span class="step-title fw-bold">Application evaluation</span></div>
-          <div class="step-desc mb-1">Your submission will be evaluated; address remarks if flagged Incomplete; Approved applications proceed to physical submission of required hardcopies.</div>
+          <div>
+            <span class="step-number">6.</span>
+            <span class="step-title fw-bold">Application will be subject to evaluation</span>
+          </div>
+          <div class="step-desc mb-1">
+            Upon submission, your application will be subject for evaluation.
+            <div class="mt-2 ms-1">
+              <div class="fw-bold">6.1 Remarks: <span class="text-danger">Incomplete</span></div>
+              <div class="small">
+                Read comments regarding your application.<br>
+                <span class="fw-bold">"Incomplete"</span> can vary from <span class="fw-bold">typographical errors or missing/incorrect information or document, etc.</span>
+              </div>
+              <div class="fw-bold mt-2">6.2 Remarks: <span class="text-success">Approved</span></div>
+              <div class="small">
+                Approved applications may proceed to submission of hardcopy:<br>
+                <b>Envelope</b> (in your department's designated color) inside the envelope are:
+                <ul class="mb-1">
+                  <li>2 copies of application forms with 1 document stamp</li>
+                  <li>2 pieces of flashdrives containing the theses</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

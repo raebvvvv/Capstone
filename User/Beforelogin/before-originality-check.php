@@ -33,7 +33,7 @@
   <!-- Back Button Below Navbar, scrolls with content, transparent background -->
   <div class="container d-flex justify-content-end mt-3 mb-2">
     <?php if (function_exists('render_back_link')) { 
-      render_back_link('index.php'); 
+      render_back_link('User/Beforelogin/before-e-services.php'); 
     } ?>
   </div>
 

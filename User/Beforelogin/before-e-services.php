@@ -24,7 +24,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
         </ul>
       </div>
@@ -67,13 +67,13 @@
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
             <img src="<?php echo asset_url('Photos/Icons/Patent-icon.png'); ?>" alt="Patent" class="mb-2" width="60">
-            <h5 class="card-title">Patent | Trademark | Utility Model | Industrial Design</h5>
+            <h5 class="card-title">Industrial Property</h5>
+            <h6> <i>Patent | Trademark | Utility Model | Industrial Design</i></h6>
             <p class="card-text">
               All four are subject to a government grant giving an inventor exclusive rights to a product or process that solves a technical problem in any human activity field.<br>
               <strong>They must be new, inventive, and industrially applicable.</strong>
             </p>
-            <button class="btn btn-warning fw-bold text-dark" onclick="apply('patent')">Guide</button>
-          </div>
+            <a href="before-industrial-application.php"><button class="btn btn-warning fw-bold text-dark">Guide</button></a>
         </div>
       </div>
         <!-- <div class="text-center mt-5">

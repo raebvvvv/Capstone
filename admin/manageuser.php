@@ -1,23 +1,8 @@
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Ensure session is started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Redirect to login if not logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login.php');
-    exit();
-}
-
-require __DIR__ . '/../security_bootstrap.php';
-secure_bootstrap();
-require __DIR__ . '/../conn.php';
+// Standard admin bootstrap: config -> conn -> secure_bootstrap -> require_admin
+require __DIR__ . '/../config.php';
+require app_path('conn.php');
+if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
 // Fetch admin data for navbar/profile
@@ -79,7 +64,7 @@ $result_pending = $stmt_pending->fetchAll();
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
                     <a class="navbar-brand d-flex align-items-center" href="#">
-                        <img src="../images/puplogo.png" alt="Logo" class="center-img" style="height: 30px; margin-right: 10px;">
+                        <img src="<?php echo asset_url('images/puplogo.png'); ?>" alt="Logo" class="center-img" style="height: 30px; margin-right: 10px;">
                         <span class="fw-bold">PUP e-IPMO [Admin.]</span>
                     </a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,7 +78,7 @@ $result_pending = $stmt_pending->fetchAll();
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
                             <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
                                 <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                                <form method="POST" action="logout.php" class="d-inline ms-2">
+                                <form method="POST" action="../logout.php" class="d-inline ms-2">
                                     <?php csrf_input(); ?>
                                     <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
                                 </form>
@@ -277,26 +262,7 @@ $result_pending = $stmt_pending->fetchAll();
         </div>
     </div>
     <script src="../javascript/admin-profile.js?v=2" defer></script>
-      <!-- Footer -->
-  <footer class="bg-white border-top py-3">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-    </div>
-  </footer>
-  <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var searchInput = document.querySelector('input[name="search"]');
-    var form = searchInput && searchInput.form;
-    if (searchInput && form) {
-        searchInput.addEventListener('input', function() {
-            if (searchInput.value === '') {
-                form.submit();
-            }
-        });
-    }
-});
-</script>
+            <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
+            <script src="../javascript/admin-manageuser.js" defer></script>
 </body>
 </html>

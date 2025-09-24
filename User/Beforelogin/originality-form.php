@@ -32,7 +32,7 @@
   </nav>
 
   <div class="container d-flex justify-content-end mt-3 mb-2">
-  <?php if (function_exists('render_back_link')) { render_back_link('index.php'); } ?>
+  <?php if (function_exists('render_back_link')) { render_back_link('User/Beforelogin/before-originality-check.php'); } ?>
   </div>
 
   <div class="container py-4">

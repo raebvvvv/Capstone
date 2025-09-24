@@ -1,0 +1,14 @@
+RewriteEngine On
+# Ensure the base is the capstone folder
+RewriteBase /capstone/
+
+# Serve existing files and directories directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Map public-friendly root URLs to User/Beforelogin scripts
+RewriteRule ^industrial-property-info\.php$ User/Beforelogin/industrial-property-info.php [L,NC]
+RewriteRule ^copyright-info\.php$ User/Beforelogin/copyright-info.php [L,NC]
+
+# (Optional placeholder) Additional mappings can be added below.

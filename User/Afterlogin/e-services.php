@@ -29,7 +29,7 @@
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
-        <a href="#" class="btn btn-success ms-3 disabled-btn">You are in e-Services</a>
+        <a href="#" class="btn btn-success ms-3 disabled-btn" style="background-color: #B8464A !important; border-color: #B8464A !important; color: #fff !important; cursor: not-allowed; pointer-events: none;">You are in e-Services</a>
       </div>
     </div>
   </nav>
@@ -52,7 +52,7 @@
               <span class="text-danger oc-rule-small"><b>15% - Graduate School (Doctorate and Masterals)</b></span><br>
               <span class="text-danger oc-rule-small"><b>20% and below - Undergraduate Degree</b></span>
             </p>
-            <a href="originality-check.php"><button class="btn btn-success">Apply</button></a>
+            <a href="originality-check.php" style="text-decoration: none !important;"><button class="btn btn-success" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Apply</button></a>
           </div>
         </div>
       </div>
@@ -65,7 +65,7 @@
               Copyright is the legal protection extended to the owner of the rights in an original work, such as <b>intellectual creations in the
               literary, scientific and artistic domain.</b>
             </p>
-           <a href="student-copyright-forms.php"><button class="btn btn-success">Apply</button></a>
+           <a href="copyright-application.php" style="text-decoration: none !important;"><button class="btn btn-success" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Apply</button></a>
           </div>
         </div>
       </div>
@@ -73,12 +73,13 @@
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
             <img src="<?php echo asset_url('Photos/Icons/Patent-icon.png'); ?>" alt="Patent" class="mb-2" width="60">
-            <h5 class="card-title">Patent | Trademark | Utility Model | Industrial Design</h5>
+            <h5 class="card-title">Industrial Property</h5>
+            <h6> <i>Patent | Trademark | Utility Model | Industrial Design</i></h6>
             <p class="card-text">
               All four are subject to a government grant giving an inventor exclusive rights to a product or process that solves a technical problem in any human activity field.<br>
               <strong>They must be new, inventive, and industrially applicable.</strong>
             </p>
-            <button class="btn btn-success" onclick="apply('patent')">Apply</button>
+            <a href="industrial-property-application.php" style="text-decoration: none !important;"><button class="btn btn-success" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Apply</button></a>
           </div>
         </div>
       </div>

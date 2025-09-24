@@ -30,11 +30,7 @@
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
-          <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
-          <form method="POST" action="<?php echo asset_url('User/Beforelogin/logout.php'); ?>" class="d-inline ms-2">
-            <?php if (function_exists('csrf_input')) { csrf_input(); } ?>
-            <button type="submit" class="btn btn-danger">Logout</button>
-          </form>
+          <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
       </div>
     </div>
   </nav>
@@ -55,10 +51,10 @@
       <li class="mb-4">
         This ZIP file contains clean copies of all the files listed below.<br>
         Files <strong>required</strong> to be printed have <span class="text-success fw-bold">'[Print]'</span> in their filenames.<br>
-        <a href="#" class="btn btn-primary mt-2 mb-2" style="width:180px;">Copyright.zip</a>
+        <a href="https://drive.google.com/uc?export=download&id=1njbAmgm2LrUSm2I5NPM9sFgPLbwnP_UH" class="btn btn-primary mt-2 mb-2" style="width:180px; background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Copyright.zip</a>
       </li>
       <li class="mb-4">
-        Once printed and accomplished, you may proceed to the <strong>submission form.</strong><br>
+        Once printed and accomplished, you may proceed to the <strong>submission form.</strong><br> 
         <a href="student-copyright-forms.php" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a>
       </li>
     </ol>
@@ -69,11 +65,11 @@
       <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">1. Copyright Procedure</span>
+          <span class="fw-bold">1. Copyright Application and Procedures</span>
         </div>
         <div class="file-actions">
-          <a href="#" class="btn btn-warning btn-sm mb-1">View File</a>
-          <a href="#" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+          <a href="https://drive.google.com/file/d/11KW9MmxtVCzsfsWa1r9ifg-0RBFP-hG-/view?usp=sharing" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://drive.google.com/uc?export=download&id=11KW9MmxtVCzsfsWa1r9ifg-0RBFP-hG-" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
         </div>
       </div>
       <div class="file-card">
@@ -83,8 +79,8 @@
           <span style="font-size:0.95em;">For Multiple or Single Authorship</span>
         </div>
         <div class="file-actions">
-          <a href="#" class="btn view-btn btn-sm mb-1">View File</a>
-          <a href="#" class="btn download-btn btn-sm mb-1">Download as PDF</a>
+          <a href="https://docs.google.com/document/d/1py-jLmvd_jbNyk4fCUZkwBVq28C6F4l6/edit?usp=sharing&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://docs.google.com/document/d/1py-jLmvd_jbNyk4fCUZkwBVq28C6F4l6/export?format=docx" download class="btn download-btn btn-sm mb-1">Download as PDF</a>
         </div>
       </div>
       <div class="file-card">
@@ -93,8 +89,8 @@
           <span class="fw-bold">3. Copyright Co-Authorship Agreement <span class="text-success">[Print]</span></span>
         </div>
         <div class="file-actions">
-          <a href="#" class="btn btn-warning btn-sm mb-1">View File</a>
-          <a href="#" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+          <a href="https://docs.google.com/document/d/11K-MlpSodpghHhPiB_q5YUpXlSdb_vgb/edit?usp=drive_link&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://docs.google.com/document/d/11K-MlpSodpghHhPiB_q5YUpXlSdb_vgb/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
         </div>
       </div>
       <div class="file-card">
@@ -105,16 +101,23 @@
           <span style="font-size:0.95em;">Policy on Copyright Registration of Undergraduate and Graduate Academic Works</span>
         </div>
         <div class="file-actions">
-          <a href="#" class="btn btn-warning btn-sm mb-1">View File</a>
-          <a href="#" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+          <a href="https://drive.google.com/file/d/1FQVXIxyHQtpAp0dYZwxp5Rop850XRrIW/view?usp=drive_link" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://drive.google.com/uc?export=download&id=1FQVXIxyHQtpAp0dYZwxp5Rop850XRrIW" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+        </div>
+      </div>
+        <div class="file-card">
+        <div class="file-icon">&#128196;</div>
+        <div class="file-info">
+          <span class="fw-bold">5. Flash Drive Label  <span class="text-success">[Print]</span></span><br>
+        </div>
+        <div class="file-actions">
+          <a href="https://docs.google.com/document/d/18Eq88--hxUbixZWGvd3LdEl6BzszfG0S/edit?usp=drive_link&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://docs.google.com/document/d/18Eq88--hxUbixZWGvd3LdEl6BzszfG0S/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
         </div>
       </div>
     </div>
   </main>
-   <p me-3-3 class="text-center text-muted" style="font-size:0.9em;">
-      For any questions or concerns, feel free to contact us via:<br>
-      📧 ipmo@pup.edu.ph &nbsp; 📞 (+632) 5335-1787
-    </p>
+
     
     <!-- Footer -->
     <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>

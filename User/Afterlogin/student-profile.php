@@ -4,6 +4,9 @@ require_once __DIR__ . '/../../auth_check.php';
 $isLoggedIn = true;
 
 $user_id = $_SESSION['user_id'];
+// Initialize common vars to avoid notices
+$errors = [];
+$success = '';
 
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
@@ -19,7 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $department    = trim($_POST['department'] ?? '');
     $program       = trim($_POST['program'] ?? '');
 
-    $errors = [];
+  // reset errors for this POST
+  $errors = [];
 
     // Check last update timestamp
     $stmt = $pdo->prepare("SELECT last_updated_at FROM student_profiles WHERE user_id = ?");
@@ -168,16 +172,16 @@ if (!empty($profile['last_updated_at'])) {
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link active" href="student-profile.php">My Profile</a></li>
         </ul>
-        <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
-        <form method="POST" action="<?php echo asset_url('User/Beforelogin/logout.php'); ?>" class="d-inline">
-                <?php csrf_input(); ?>
-                <button type="submit" class="btn btn-danger ms-2">Logout</button>
-            </form>
+        <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
+        <form method="POST" action="<?php echo asset_url('logout.php'); ?>" class="d-inline">
+          <?php csrf_input(); ?>
+          <button type="submit" class="btn btn-danger ms-2">Logout</button>
+        </form>
       </div>
       
     </div>

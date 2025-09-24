@@ -83,12 +83,14 @@ if (!function_exists('secure_bootstrap')) {
 if (!function_exists('require_admin')) {
     function require_admin(): void {
         if (empty($_SESSION['user_logged_in']) || empty($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
-            // Redirect to login from both root and /admin context
-            $script = $_SERVER['SCRIPT_NAME'] ?? '';
-            $inAdmin = strpos($script, '/admin/') !== false || basename(dirname($script)) === 'admin';
-            $location = $inAdmin ? '../User/Beforelogin/login.php' : 'User/Beforelogin/login.php';
-            if (function_exists('redirect')) { redirect($location); }
-            header('Location: ' . $location);
+            // Redirect to a friendly 404 page instead of server "Not Found"
+            // Use a root-level 404.php to avoid relative path issues from /admin
+            $location = '404.php';
+            if (function_exists('redirect')) {
+                redirect($location);
+            }
+            $abs = (defined('BASE_URL') ? BASE_URL : '/') . ltrim($location, '/');
+            header('Location: ' . $abs);
             exit();
         }
     }

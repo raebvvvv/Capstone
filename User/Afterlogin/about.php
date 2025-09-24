@@ -30,7 +30,7 @@ require __DIR__ . '/../../auth_check.php';
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
         </ul>
-        <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+        <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
       </div>
     </div>
   </nav>
@@ -52,12 +52,12 @@ require __DIR__ . '/../../auth_check.php';
           <div class="ms-5">
             <h2 class="fw-bold">Office Hours</h2>
             <div class="mb-2">
-              <div>Monday - Friday<br>8:00 AM - 8:00 PM</div>
+              <div>Monday - Friday<br>8:00 AM - 7:30 PM</div>
               <div class="text-danger fw-bold mt-1">NO SATURDAY SERVICES.</div>
             </div>
             <div class="mt-3">
               <div><span class="fw-bold">Location:</span></div>
-              <div>PUP Main Building<br>S407, South Wing, 4th Floor<br>Anonas St. Sta. Mesa, Manila</div>
+              <div>PUP Main Building<br>S423, South Wing, 4th Floor<br>Anonas St. Sta. Mesa, Manila</div>
             </div>
           </div>
         </div>

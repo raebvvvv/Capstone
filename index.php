@@ -42,7 +42,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
           <?php endif; ?>
         </ul>
         <?php if ($isLoggedIn): ?>
-          <a href="User/Afterlogin/e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
+          <a href="User/Afterlogin/e-services.php" class="btn ms-3" style="background: #900c0c; color: #fff; border: none;">Proceed to e-Services</a>
         <?php endif; ?>
       </div>
     </div>
@@ -56,7 +56,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
       <div class="d-flex flex-row justify-content-between align-items-start w-100 flex-wrap">
         <div class="flex-grow-1" style="max-width: 40%;">
           <h1 class="fw-bold mb-2">e-IPMO Services</h1>
-          <p class="fs-5 mb-3"><span class="fw-bold">e-IPMO</span> is an online system for students to easily register, submit, and track IP applications in one secure platform. Start your application process smoothly and efficiently.</p>
+          <p class="fs-5 mb-3"><span class="fw-bold">e-IPMO</span> is an online system for students to easily register, submit, and track <strong> Intellectual Property </strong> applications in one secure platform. Start your application process smoothly and efficiently.</p>
           <p class="mb-2">
             <span class="me-3"><img src="<?php echo asset_url('Photos/Icons/Email-icon.png'); ?>" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
             <span><img src="<?php echo asset_url('Photos/Icons/Landline-icon.png'); ?>" alt="phone" class="icon-sm"> (+632) 5335-1787</span>
@@ -66,12 +66,12 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
         <div class="ms-5">  
           <h2 class="fw-bold">Office Hours</h2>
           <div class="mb-2">
-            <div>Monday - Friday<br>8:00 AM - 8:00 PM</div>
+            <div>Monday - Friday<br>8:00 AM - 7:30 PM</div>
             <div class="text-danger fw-bold mt-1">NO SATURDAY SERVICES.</div>
           </div>
           <div class="mt-3">
             <div><span class="fw-bold">Location:</span></div>
-            <div>PUP Main Building<br>S407, South Wing, 4th Floor<br>Anonas St. Sta. Mesa, Manila</div>
+            <div>PUP Main Building<br>S423, South Wing, 4th Floor<br>Anonas St. Sta. Mesa, Manila</div>
           </div>
         </div>
       </div>
@@ -94,19 +94,20 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
             <h5 class="fw-bold mb-2">What types of IP can I protect?</h5>
             <div class="row g-2 mb-2">
               <div class="col-6">
-                <button class="btn btn-warning fw-bold w-100">Copyright</button>
+                <?php if ($isLoggedIn): ?>
+                  <a href="User/Afterlogin/copyright-info.php" class="btn btn-warning fw-bold w-100" style="text-decoration: none;">Copyright</a>
+                <?php else: ?>
+                  <a href="User/Beforelogin/copyright-info.php" class="btn btn-warning fw-bold w-100" style="text-decoration: none;">Copyright</a>
+                <?php endif; ?>
+                <small class="d-block text-muted mt-1" style="font-size: 0.7rem;">Artistic & Literary Property</small>
               </div>
               <div class="col-6">
-                <button class="btn btn-warning fw-bold w-100">Patent</button>
-              </div>
-              <div class="col-6">
-                <button class="btn btn-warning fw-bold w-100">Utility Model</button>
-              </div>
-              <div class="col-6">
-                <button class="btn btn-warning fw-bold w-100">Trademark</button>
-              </div>
-              <div class="col-12">
-                <button class="btn btn-warning fw-bold w-100">Industrial Design</button>
+                <?php if ($isLoggedIn): ?>
+                  <a href="User/Afterlogin/industrial-property-info.php" class="btn btn-warning fw-bold w-100" style="text-decoration: none;">Industrial Property</a>
+                <?php else: ?>
+                  <a href="User/Beforelogin/industrial-property-info.php" class="btn btn-warning fw-bold w-100" style="text-decoration: none;">Industrial Property</a>
+                <?php endif; ?>
+                <small class="d-block text-muted mt-1" style="font-size: 0.7rem;">Technical & Commercial Property</small>
               </div>
             </div>
           </div>
@@ -114,14 +115,12 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
         <div class="card shadow-sm h-100">
           <div class="card-body text-center">
             <img src="<?php echo asset_url('Photos/Icons/how-apply.png'); ?>" alt="apply" class="mb-3 mx-auto d-block" style="height:40px;">
-            <h5 class="fw-bold mb-2">How do I apply for IP?</h5>
+            <h5 class="fw-bold mb-2">How do I apply for protection?</h5>
             <div class="d-flex justify-content-center gap-2 mb-2">
               <?php if ($isLoggedIn): ?>
-                <a href="User/Afterlogin/ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
-                <a href="User/Afterlogin/originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
+                <a href="User/Afterlogin/ip-application.php" class="btn btn-warning fw-bold">Protect your IP now!</a>
               <?php else: ?>
-                <a href="User/Beforelogin/ip-application.php" class="btn btn-warning fw-bold">IP Application</a>
-                <a href="User/Beforelogin/before-originality-check.php" class="btn btn-warning fw-bold">Originality Check</a>
+                <a href="User/Beforelogin/ip-application.php" class="btn btn-warning fw-bold">Protect your IP now!</a>
               <?php endif; ?>
             </div>
           </div>
