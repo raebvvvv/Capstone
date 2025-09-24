@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
 
-        const submissionId = btn.getAttribute('data-id');
-        if (!submissionId) return;
+        const submissionCode = btn.getAttribute('data-id');
+        if (!submissionCode) return;
 
         const modal = bootstrap.Modal.getOrCreateInstance(detailsModalEl);
 
@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         modal.show();
 
-        fetch('view-submission.php?id=' + encodeURIComponent(submissionId) + '&modal=1')
+        // Use 'code' instead of 'id'
+        fetch('view-submission.php?code=' + encodeURIComponent(submissionCode) + '&modal=1')
           .then((response) => response.text())
           .then((html) => {
             detailsContent.innerHTML = html;

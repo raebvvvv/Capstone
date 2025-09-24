@@ -68,7 +68,6 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
                 <th>Student Number / Employee ID</th>
                 <th>Title of Work</th>
                 <th>Classification</th>
-                <th>Status</th>
                 <th>Remarks</th>
                 <th>Action</th>
               </tr>
@@ -76,18 +75,25 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
             <tbody>
 <?php
 $user_id = $_SESSION['user_id'] ?? 0;
-
+  $status_labels = [
+    'pending_review'   => 'Pending',
+    'under_review'     => 'Under Review',
+    'revision_needed'  => 'Revision Needed',
+    'approved'         => 'Approved',
+    'rejected'         => 'Rejected',
+    'completed'        => 'Completed',
+    // add more as needed
+];
 // Fetch submissions for this user
 $stmt = $pdo->prepare("
     SELECT 
-        s.submission_id,
+        s.submission_code,
         s.student_number,
         s.title,
         s.work_classification,
-        s.status,
         s.remarks
     FROM submissions s
-    WHERE s.user_id = ? AND s.status = 'pending'
+    WHERE s.user_id = ? AND s.status = 'pending_review'
     ORDER BY s.created_at DESC
 ");
 $stmt->execute([$user_id]);
@@ -98,26 +104,26 @@ $pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <td colspan="5" class="text-center text-muted py-5">
       You have not applied for anything yet.
     </td>
+
+    
   </tr>
 <?php else: ?>
   <?php foreach ($pending_submissions as $row): ?>
-    <tr>
-      <td><?php echo htmlspecialchars($row['submission_id']); ?></td>
-      <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-      <td><?php echo htmlspecialchars($row['title']); ?></td>
-      <td><?php echo htmlspecialchars($row['work_classification']); ?></td>
-      <td><?php echo htmlspecialchars($row['status']); ?></td>
-      <td><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
-      
-      <td>
-        <!-- Example action: View details -->
-        <a href="#" 
-           class="btn btn-success btn-sm view-details-btn" 
-           data-id="<?php echo htmlspecialchars($row['submission_id']); ?>">
-           View Details
-        </a>
-      </td>
-    </tr>
+<tr>
+  <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
+  <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+  <td><?php echo htmlspecialchars($row['title']); ?></td>
+  <td><?php echo htmlspecialchars($row['work_classification']); ?></td>
+  <td><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
+  <td>
+    <!-- Example action: View details -->
+    <a href="#" 
+       class="btn btn-success btn-sm view-details-btn" 
+       data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">
+       View Details
+    </a>
+  </td>
+</tr>
   <?php endforeach; ?>
 <?php endif; ?>
 </tbody>
@@ -203,3 +209,4 @@ $pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
   
 </body>
 </html>
+

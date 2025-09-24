@@ -145,41 +145,53 @@ if (empty($errors)) {
             $adviser_id = $pdo->lastInsertId();
         }
 
+        // --- MOVE THIS BLOCK HERE ---
+        // Generate submission_code
+        $today = date('Y-m-d');
+        $today_code = date('Ymd');
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM submissions WHERE DATE(created_at) = ?");
+        $stmt->execute([$today]);
+        $count_today = $stmt->fetchColumn();
+        $next_count = $count_today + 1;
+        $submission_code = sprintf('SRID-%s-%d', date('Y').'-'.$today_code, $next_count);
+        // --- END MOVE ---
+
         // Insert main submission
         $stmt = $pdo->prepare("
             INSERT INTO submissions (
-                user_id, first_name, middle_name, last_name, 
+                submission_code, user_id, first_name, middle_name, last_name, 
                 student_number, home_address, mobile_number, 
                 webmail, campus, academic_level, college, 
                 program, work_classification, title, adviser_id,
                 date_accomplished, accepted_terms, status
             ) VALUES (
-                :user_id, :first_name, :middle_name, :last_name,
-                :student_number, :home_address, :mobile_number,
-                :webmail, :campus, :academic_level, :college,
-                :program, :work_classification, :title, :adviser_id,
-                :date_accomplished, :accepted_terms, 'pending_review'
+                ?, ?, ?, ?, ?,
+                ?, ?, ?,
+                ?, ?, ?, ?,
+                ?, ?, ?, ?,
+                ?, ?, 'pending_review'
             )
         ");
 
         $stmt->execute([
-            'user_id' => $_SESSION['user_id'],
-            'first_name' => $data['first_name'],
-            'middle_name' => $_POST['middle_name'] ?? '',
-            'last_name' => $data['last_name'],
-            'student_number' => $data['student_number'],
-            'home_address' => $data['home_address'],
-            'mobile_number' => $data['mobile_number'],
-            'webmail' => $data['webmail'],
-            'campus' => $data['campus'],
-            'academic_level' => $data['academicLevel'],
-            'college' => $data['college'],
-            'program' => $data['program'],
-            'work_classification' => $data['workClassification'],
-            'title' => $data['title'],
-            'adviser_id' => $adviser_id,
-            'date_accomplished' => $data['date_accomplished'],
-            'accepted_terms' => $data['accepted_terms'] ? 1 : 0
+            $submission_code,
+            $_SESSION['user_id'],
+            $data['first_name'],
+            $_POST['middle_name'] ?? '',
+            $data['last_name'],
+            $data['student_number'],
+            $data['home_address'],
+            $data['mobile_number'],
+            $data['webmail'],
+            $data['campus'],
+            $data['academicLevel'],
+            $data['college'],
+            $data['program'],
+            $data['workClassification'],
+            $data['title'],
+            $adviser_id,
+            $data['date_accomplished'],
+            $data['accepted_terms'] ? 1 : 0
         ]);
 
         $submission_id = $pdo->lastInsertId();

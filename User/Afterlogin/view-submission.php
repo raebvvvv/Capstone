@@ -3,13 +3,13 @@
 require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php';
 
-$submission_id = $_GET['id'] ?? 0;
+$submission_code = $_GET['code'] ?? '';
 $user_id = $_SESSION['user_id'] ?? 0;
 $isModal = isset($_GET['modal']) && $_GET['modal'] == 1;
 
-// Check if the submission belongs to the logged-in user
-$stmt = $pdo->prepare("SELECT * FROM submissions WHERE submission_id = ? AND user_id = ?");
-$stmt->execute([$submission_id, $user_id]);
+// Fetch the submission using submission_code
+$stmt = $pdo->prepare("SELECT * FROM submissions WHERE submission_code = ? AND user_id = ?");
+$stmt->execute([$submission_code, $user_id]);
 $submission = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$submission) {
@@ -22,15 +22,18 @@ if (!$submission) {
     }
 }
 
+// Now use the found submission_id for authors/files
+$submission_id = $submission['submission_id'];
+
 // Fetch authors
-$authors = $pdo->prepare("SELECT * FROM submission_authors WHERE submission_id = ?");
-$authors->execute([$submission_id]);
-$authors = $authors->fetchAll(PDO::FETCH_ASSOC);
+$authors_stmt = $pdo->prepare("SELECT * FROM submission_authors WHERE submission_id = ?");
+$authors_stmt->execute([$submission_id]);
+$authors = $authors_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch files
-$files = $pdo->prepare("SELECT * FROM submission_documents WHERE submission_id = ?");
-$files->execute([$submission_id]);
-$files = $files->fetchAll(PDO::FETCH_ASSOC);
+$files_stmt = $pdo->prepare("SELECT * FROM submission_documents WHERE submission_id = ?");
+$files_stmt->execute([$submission_id]);
+$files = $files_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 function pup_modal_body($submission, $authors, $files) {
 ?>
@@ -64,6 +67,7 @@ function pup_modal_body($submission, $authors, $files) {
         <dd class="col-sm-7 mb-2"><?php echo htmlspecialchars($submission['date_accomplished']); ?></dd>
       </dl>
     </div>
+    
   </div>
   <div class="mb-4">
     <h5 class="text-center text-primary fw-bold mb-3">Authors</h5>
@@ -123,6 +127,7 @@ if ($isModal) {
     pup_modal_body($submission, $authors, $files);
     exit;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -162,6 +167,7 @@ if ($isModal) {
     </div>
   </div>
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 <script src="javascript/student-application.js"></script>

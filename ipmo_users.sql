@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 23, 2025 at 09:04 AM
+-- Generation Time: Sep 24, 2025 at 10:31 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -38,6 +38,13 @@ CREATE TABLE `advisers` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `advisers`
+--
+
+INSERT INTO `advisers` (`adviser_id`, `first_name`, `middle_name`, `last_name`, `email`, `department`, `contact_number`, `created_at`) VALUES
+(11, 'Hella', '', 'Deola', NULL, NULL, NULL, '2025-09-24 15:47:37');
+
 -- --------------------------------------------------------
 
 --
@@ -65,7 +72,7 @@ CREATE TABLE `student_profiles` (
 --
 
 INSERT INTO `student_profiles` (`profile_id`, `user_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `home_address`, `mobile_number`, `campus`, `college`, `department`, `program`, `last_updated_at`) VALUES
-(5, 12, 'Dela', 'Juan', 'Malinaw', '', '123 Sampaguita St., Manila City', '09171234567', 'PUP Main', 'College of Engineering', 'Computer Engineering', 'BS Computer Engineering', '2025-09-23 13:50:23');
+(8, 19, 'Dela Cruz', 'Juan', 'Malinaw', '', '123 Sampaguita St., Manila City', '09171234567', 'PUP Main', 'College of Engineering', 'Computer Engineering', 'BS Computer Engineering', NULL);
 
 -- --------------------------------------------------------
 
@@ -75,6 +82,7 @@ INSERT INTO `student_profiles` (`profile_id`, `user_id`, `last_name`, `first_nam
 
 CREATE TABLE `submissions` (
   `submission_id` int(11) NOT NULL,
+  `submission_code` varchar(30) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
   `first_name` varchar(50) NOT NULL,
   `middle_name` varchar(50) DEFAULT NULL,
@@ -91,9 +99,9 @@ CREATE TABLE `submissions` (
   `title` varchar(255) NOT NULL,
   `date_accomplished` date NOT NULL,
   `accepted_terms` tinyint(1) DEFAULT 0,
-  `status` enum('draft','pending_review','under_review','revision_needed','approved','rejected') DEFAULT 'draft',
+  `status` varchar(50) NOT NULL DEFAULT 'pending',
   `status_updated_at` datetime DEFAULT NULL,
-  `remarks` text DEFAULT NULL,
+  `remarks` text DEFAULT 'for evaluation',
   `version` int(11) DEFAULT 1,
   `is_latest` tinyint(1) DEFAULT 1,
   `submission_type` varchar(50) NOT NULL DEFAULT 'copyright',
@@ -103,6 +111,13 @@ CREATE TABLE `submissions` (
   `reviewed_at` datetime DEFAULT NULL,
   `adviser_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `submissions`
+--
+
+INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first_name`, `middle_name`, `last_name`, `student_number`, `home_address`, `mobile_number`, `webmail`, `campus`, `academic_level`, `college`, `program`, `work_classification`, `title`, `date_accomplished`, `accepted_terms`, `status`, `status_updated_at`, `remarks`, `version`, `is_latest`, `submission_type`, `created_at`, `updated_at`, `reviewer_id`, `reviewed_at`, `adviser_id`) VALUES
+(24, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12345-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Computer Engineering (MSCpE)', '(k) Photographic works including works produced by a process analogous to photography', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-12', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-09-24 15:57:34', '2025-09-24 16:00:27', NULL, NULL, 11);
 
 -- --------------------------------------------------------
 
@@ -126,6 +141,13 @@ CREATE TABLE `submission_authors` (
   `adviser_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `submission_authors`
+--
+
+INSERT INTO `submission_authors` (`author_id`, `submission_id`, `first_name`, `middle_name`, `last_name`, `student_id`, `mobile`, `home_address`, `webmail`, `role`, `is_adviser`, `created_at`, `adviser_id`) VALUES
+(31, 24, 'Janella', 'Malinaw', 'Salvador', '2023-12345-MN-0', '09171234567', '123 Sampaguita St., Manila City', 'juandelacruz@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-09-24 15:57:34', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -144,6 +166,19 @@ CREATE TABLE `submission_documents` (
   `verified_by` int(11) DEFAULT NULL,
   `verified_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `submission_documents`
+--
+
+INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, `file_path`, `uploaded_at`, `file_size`, `mime_type`, `verified`, `verified_by`, `verified_at`) VALUES
+(162, 24, 'journal_publication_format', 'journal_publication_format_1758700654_b4e33b42.pdf', '2025-09-24 15:57:34', 1748, 'application/pdf', 0, NULL, NULL),
+(163, 24, 'notarized_copyright', 'notarized_copyright_1758700654_18d48f6d.pdf', '2025-09-24 15:57:34', 1748, 'application/pdf', 0, NULL, NULL),
+(164, 24, 'receipt_payment', 'receipt_payment_1758700654_87b0d0c4.pdf', '2025-09-24 15:57:34', 1747, 'application/pdf', 0, NULL, NULL),
+(165, 24, 'full_manuscript', 'full_manuscript_1758700654_bb820f0c.pdf', '2025-09-24 15:57:34', 1747, 'application/pdf', 0, NULL, NULL),
+(166, 24, 'notarized_coauthorship', 'notarized_coauthorship_1758700654_b824f5f6.pdf', '2025-09-24 15:57:34', 1747, 'application/pdf', 0, NULL, NULL),
+(167, 24, 'approval_sheet', 'approval_sheet_1758700654_9f363355.pdf', '2025-09-24 15:57:34', 1757, 'application/pdf', 0, NULL, NULL),
+(168, 24, 'record_copyright', 'record_copyright_1758700654_c390d101.pdf', '2025-09-24 15:57:34', 1761, 'application/pdf', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -169,7 +204,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `student_number`, `email`, `password`, `role`, `status`, `verification_code`, `code_expires_at`, `email_verified_at`, `created_at`) VALUES
-(12, '2023-12345-MN-0', 'markreinier.garcia@gmail.com', '$2y$10$pL/cePqhTWRIDIIdjxXVgOP578fZ0nlgaJJozi0rwpNxUD02dx8u6', 'student', 'active', NULL, NULL, '2025-09-23 13:41:36', '2025-09-23 12:55:18');
+(18, '2020-12345-MN-0', 'admin@ipmo.local', '$2y$10$KLqtU38o9d2UNOL5rrxU7.SnM6d3gL1PxxtqltKwbb6NnuJdBcR3W', 'admin', 'active', NULL, NULL, NULL, '2025-09-23 21:52:32'),
+(19, '2023-12335-MN-0', 'hellohihihi1234567890@gmail.com', '$2y$10$.O0EiMRNxmuVXLUaleq6zeFYyTziPjpyO3Ixf4IWcY24moWKwJdsS', 'student', 'active', NULL, NULL, '2025-09-24 15:35:59', '2025-09-24 15:35:48');
 
 --
 -- Indexes for dumped tables
@@ -193,6 +229,7 @@ ALTER TABLE `student_profiles`
 --
 ALTER TABLE `submissions`
   ADD PRIMARY KEY (`submission_id`),
+  ADD UNIQUE KEY `submission_code` (`submission_code`),
   ADD KEY `idx_user_status` (`user_id`,`status`),
   ADD KEY `idx_student_number` (`student_number`),
   ADD KEY `idx_submission_date` (`created_at`),
@@ -231,37 +268,37 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `advisers`
 --
 ALTER TABLE `advisers`
-  MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `submission_documents`
 --
 ALTER TABLE `submission_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=169;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Constraints for dumped tables

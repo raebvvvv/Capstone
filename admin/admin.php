@@ -82,7 +82,7 @@ if (isset($_SESSION['user_id'])) {
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
                             <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
                                 <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
-                                <form method="POST" action="../User/Beforelogin/logout.php" class="d-inline ms-2">
+                                <form method="POST" action="logout.php" class="d-inline ms-2">
                                     <?php csrf_input(); ?>
                                     <button type="submit" class="btn btn-logout btn-logout-nav">Logout</button>
                                 </form>

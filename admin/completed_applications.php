@@ -6,14 +6,9 @@ require_admin();
 // Fetch admin for profile modal
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
-    $stmt = $conn->prepare("SELECT username, email FROM users WHERE user_id = ?");
-    if ($stmt) {
-        $stmt->bind_param('i', $user_id);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $admin = $res->fetch_assoc();
-        $stmt->close();
-    }
+    $stmt = $pdo->prepare("SELECT student_number, email FROM users WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 $applications = [
     [
@@ -53,12 +48,12 @@ $applications = [
 </head>
 <body>
     <div id="dropdown-backdrop" class="dropdown-backdrop"></div>
-     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
+     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['student_number']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
                     <a class="navbar-brand d-flex align-items-center" href="#">
-                        <img src="<?php echo asset_url('images/puplogo.png'); ?>" alt="Logo" class="center-img" style="height: 30px; margin-right: 10px;">
+                        <img src="../images/puplogo.png" alt="Logo" class="center-img" style="height: 30px; margin-right: 10px;">
                         <span class="fw-bold">PUP e-IPMO [Admin.]</span>
                     </a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
