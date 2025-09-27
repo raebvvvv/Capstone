@@ -80,18 +80,22 @@
   function renderDetails(details, editMode){
     editMode = !!editMode;
     const v = (x,d='') => (x===undefined||x===null?d:x);
-    const files = details.files || {};
-    const items = [
-      ['Record of Copyright Application', files.recordOfCopyrightApplication || ''],
-      ['Journal Publication Format', files.journalPublicationFormat || ''],
-      ['Notarized Copyright Application Form', files.notarizedCopyrightApplicationForm || ''],
-      ['Receipt of Payment', files.receiptOfPayment || ''],
-      ['Full Manuscript', files.fullManuscript || ''],
-      ['Approval Sheet', files.approvalSheet || ''],
-      ['Notarized Co-Authorship', files.notarizedCoAuthorship || ''],
-    ];
-    const attachRow = (label,url)=>{ const hasUrl=!!url; const safeUrl=hasUrl?url:'#'; const disabledAttrs=hasUrl?'class=""':'class="disabled" aria-disabled="true" tabindex="-1"'; return `<li class="d-flex justify-content-between align-items-center mb-2"><span>${label}</span><div class="d-flex gap-2"><a class="btn btn-download btn-sm" href="${safeUrl}" ${hasUrl? 'download': disabledAttrs}>Download File</a><a class="btn btn-view-file btn-sm" href="${safeUrl}" target="_blank" rel="noopener" ${hasUrl? '' : disabledAttrs}>View File</a></div></li>`; };
-    const attachmentsHTML = `<ul class="list-unstyled mb-0">${items.map(i=>attachRow(i[0],i[1])).join('')}</ul>`;
+    // File attachments (prefer detailed list if provided)
+    const detailedList = Array.isArray(details.files_list) ? details.files_list : [];
+    const legacyMap = details.files || {};
+    function formatSize(bytes){ if(!bytes && bytes!==0) return ''; const units=['B','KB','MB','GB']; let i=0; let v=bytes; while(v>=1024 && i<units.length-1){ v/=1024; i++; } return v.toFixed(v>=10||i===0?0:1)+' '+units[i]; }
+    const rows = (detailedList.length ? detailedList : Object.keys(legacyMap).map(k=>({ label: k.replace(/[-_]/g,' ').replace(/\b\w/g,c=>c.toUpperCase()), url: legacyMap[k], type:k })))
+      .map(file=>{
+        const hasUrl = !!file.url;
+        const safeUrl = hasUrl ? file.url : '#';
+        const disabledAttrs = hasUrl ? '' : 'class="disabled" aria-disabled="true" tabindex="-1"';
+        const sizePart = file.size ? `<span class="text-muted ms-2 small">${formatSize(file.size)}</span>` : '';
+  // Show a badge only when verified; omit badge entirely if unverified
+  const verifiedBadge = (file.verified===1 || file.verified===true) ? `<span class="badge bg-success ms-2">Verified</span>` : '';
+        const label = escapeHTML(file.label || file.type || 'File');
+        return `<li class="d-flex justify-content-between align-items-center mb-2 flex-wrap"><div><span>${label}</span>${sizePart}${verifiedBadge}</div><div class="d-flex gap-2 mt-2 mt-sm-0"><a class="btn btn-download btn-sm" href="${safeUrl}" ${hasUrl? 'download': disabledAttrs}>Download File</a><a class="btn btn-view-file btn-sm" href="${safeUrl}" target="_blank" rel="noopener" ${disabledAttrs}>View File</a></div></li>`;
+      }).join('');
+    const attachmentsHTML = `<ul class="list-unstyled mb-0">${rows || '<li class="text-muted fst-italic">No files uploaded.</li>'}</ul>`;
 
     if(!Array.isArray(details.additionalAuthors)){
       const raw=(details.authorName||'').trim();

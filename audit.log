@@ -168,3 +168,4 @@
 {"ts":"2025-09-27T18:35:51+02:00","type":"DB_ERROR","user_id":18,"ip":"127.0.0.1","msg":"Complete exception","ctx":{"err":"SQLSTATE[HY093]: Invalid parameter number","request_id":"SRID-2025-20250927-2"}}
 {"ts":"2025-09-27T18:37:01+02:00","type":"COMPLETE_REQUEST","user_id":18,"ip":"127.0.0.1","msg":"Request completed","ctx":{"request_id":"SRID-2025-20250927-2","rows":1,"id_column":"submission_code","comment_set":false}}
 {"ts":"2025-09-27T18:44:48+02:00","type":"COMPLETE_REQUEST","user_id":18,"ip":"127.0.0.1","msg":"Request completed","ctx":{"request_id":"SRID-2025-20250927-3","rows":1,"id_column":"submission_code","comment_set":false}}
+{"ts":"2025-09-27T19:42:01+02:00","type":"COMPLETE_REQUEST","user_id":18,"ip":"127.0.0.1","msg":"Request completed","ctx":{"request_id":"SRID-2025-20250927-1","rows":1,"id_column":"submission_code","comment_set":true}}

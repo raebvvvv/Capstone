@@ -28,12 +28,29 @@ try {
     $sub = $stmt->fetch(PDO::FETCH_ASSOC);
     if(!$sub) { echo json_encode(['success'=>false,'error'=>'Submission not found']); exit; }
     $sid = (int)$sub['submission_id'];
-    // Fetch documents
-    $filesStmt = $pdo->prepare("SELECT document_id, doc_type, file_path, file_size, mime_type, verified FROM submission_documents WHERE submission_id = ?");
+    // Fetch documents with richer metadata
+    $filesStmt = $pdo->prepare("SELECT document_id, doc_type, file_path, file_size, mime_type, verified FROM submission_documents WHERE submission_id = ? ORDER BY doc_type ASC");
     $filesStmt->execute([$sid]);
     $docs = $filesStmt->fetchAll(PDO::FETCH_ASSOC);
-    $filesMap = [];
-    foreach($docs as $d){ $filesMap[$d['doc_type']] = asset_url('uploads/'.$d['file_path']); }
+    $filesMap = []; // legacy simple map doc_type => absolute URL (kept for backward compatibility)
+    $filesDetailed = [];
+    foreach($docs as $d){
+        $docType = $d['doc_type'];
+        $publicUrl = asset_url('uploads/'.$d['file_path']);
+        $filesMap[$docType] = $publicUrl;
+        // Human readable label (basic normalization; can be extended)
+        $label = ucwords(str_replace(['_','-'],' ', $docType));
+        $filesDetailed[] = [
+            'document_id' => (int)$d['document_id'],
+            'type'        => $docType,
+            'label'       => $label,
+            'url'         => $publicUrl,
+            'file_path'   => $d['file_path'],
+            'size'        => isset($d['file_size']) ? (int)$d['file_size'] : null,
+            'mime_type'   => $d['mime_type'] ?? null,
+            'verified'    => isset($d['verified']) ? (int)$d['verified'] : 0
+        ];
+    }
     // Fetch authors
     $authStmt = $pdo->prepare("SELECT first_name, last_name, student_id, mobile, home_address, webmail, is_adviser FROM submission_authors WHERE submission_id = ? ORDER BY is_adviser DESC, first_name ASC");
     $authStmt->execute([$sid]);
@@ -63,7 +80,8 @@ try {
         'program' => $sub['program'] ?? '',
         'documentTitle' => $sub['title'] ?? '',
         'accomplishmentDate' => $sub['date_accomplished'] ?? '',
-        'files' => $filesMap,
+        'files' => $filesMap,            // simple map kept for existing JS code
+        'files_list' => $filesDetailed,  // new richer list for enhanced UI
         'additionalAuthors' => $additionalAuthors
     ];
     echo json_encode($response);
