@@ -52,7 +52,7 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
     <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Copyright</button></a>
 
   </div>
-    <ul class="nav nav-tabs mb-3" id="applicationTabs">
+  <ul class="nav nav-tabs mb-3" id="applicationTabs">
       <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#pending">Pending</a></li>
       <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#approved">Approved</a></li>
       <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#completed">Completed</a></li>
@@ -74,32 +74,35 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
             </thead>
             <tbody>
 <?php
-$user_id = $_SESSION['user_id'] ?? 0;
-  $status_labels = [
-    'pending_review'   => 'Pending',
-    'under_review'     => 'Under Review',
-    'revision_needed'  => 'Revision Needed',
-    'approved'         => 'Approved',
-    'rejected'         => 'Rejected',
-    'completed'        => 'Completed',
-    // add more as needed
-];
-// Fetch submissions for this user
-$stmt = $pdo->prepare("
-    SELECT 
-        s.submission_code,
-        s.student_number,
-        s.title,
-        s.work_classification,
-        s.remarks
-    FROM submissions s
-    WHERE s.user_id = ? AND s.status = 'pending_review'
-    ORDER BY s.created_at DESC
-");
-$stmt->execute([$user_id]);
-$pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Unified fetch for all statuses including approved admin comment so Completed tab mirrors admin view
+$user_id = (int)($_SESSION['user_id'] ?? 0);
+$pendingRows = $approvedRows = $completedRows = [];
+try {
+    $sql = "SELECT 
+            s.submission_id,
+            s.submission_code,
+            s.student_number,
+            s.title,
+            s.work_classification,
+            s.status,
+            s.remarks,
+            ma.admin_comment AS approved_admin_comment
+        FROM submissions s
+        LEFT JOIN submission_incomplete_meta ma ON ma.submission_id = s.submission_id AND ma.scope='approved'
+        WHERE s.user_id = ?
+        ORDER BY s.created_at DESC";
+    $stAll = $pdo->prepare($sql);
+    $stAll->execute([$user_id]);
+    $all = $stAll->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    foreach($all as $r){
+        $st = strtolower((string)$r['status']);
+        if(in_array($st,['pending','pending_review','under_review','revision_needed'])){ $pendingRows[] = $r; }
+        elseif($st==='approved'){ $approvedRows[] = $r; }
+        elseif($st==='completed'){ $completedRows[] = $r; }
+    }
+} catch(Throwable $e){ $pendingRows = $approvedRows = $completedRows = []; }
 ?>
-<?php if (count($pending_submissions) === 0): ?>
+<?php if (count($pendingRows) === 0): ?>
   <tr>
     <td colspan="5" class="text-center text-muted py-5">
       You have not applied for anything yet.
@@ -108,7 +111,7 @@ $pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
   </tr>
 <?php else: ?>
-  <?php foreach ($pending_submissions as $row): ?>
+  <?php foreach ($pendingRows as $row): ?>
 <tr>
   <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
   <td><?php echo htmlspecialchars($row['student_number']); ?></td>
@@ -120,7 +123,7 @@ $pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <a href="#" 
        class="btn btn-success btn-sm view-details-btn" 
        data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">
-       View Details
+      View Details
     </a>
   </td>
 </tr>
@@ -145,11 +148,23 @@ $pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
               </tr>
             </thead>
             <tbody>
+            <?php if(count($approvedRows)===0): ?>
+              <tr><td colspan="6" class="text-center text-muted py-5">No approved applications.</td></tr>
+            <?php else: foreach($approvedRows as $row): ?>
               <tr>
-                <td colspan="5" class="text-center text-muted py-5">
-                  You have not applied for anything yet.
+                <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
+                <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+                <td><?php echo htmlspecialchars($row['title']); ?></td>
+                <td><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
+                <td></td>
+                <td>
+                  <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
+                  <?php if(!empty($row['approved_admin_comment'])): ?>
+                    <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($row['approved_admin_comment'], ENT_QUOTES); ?>">Comments</a>
+                  <?php endif; ?>
                 </td>
               </tr>
+            <?php endforeach; endif; ?>
             </tbody>
           </table>
         </div>
@@ -169,11 +184,23 @@ $pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td colspan="5" class="text-center text-muted py-5">
-                  You have not applied for anything yet.
+            <?php if(count($completedRows)===0): ?>
+              <tr><td colspan="6" class="text-center text-muted py-5">No completed applications.</td></tr>
+            <?php else: foreach($completedRows as $row): ?>
+              <tr<?php if(!empty($row['approved_admin_comment'])) echo ' data-admin-comment="'.htmlspecialchars($row['approved_admin_comment'], ENT_QUOTES).'"'; ?>>
+                <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
+                <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+                <td><?php echo htmlspecialchars($row['title']); ?></td>
+                <td>Complete</td>
+                <td></td>
+                <td>
+                  <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
+                  <?php if(!empty($row['approved_admin_comment'])): ?>
+                    <a href="#" class="btn btn-outline-secondary btn-sm btn-comments">Comments</a>
+                  <?php endif; ?>
                 </td>
               </tr>
+            <?php endforeach; endif; ?>
             </tbody>
           </table>
         </div>
@@ -201,6 +228,67 @@ $pending_submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
       </div>
     </div>
   </div>
+  <!-- Comments Modal -->
+  <div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Comments</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <textarea id="comment_text" class="form-control" rows="6" readonly style="resize:none;"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.btn-comments');
+    if(!btn) return;
+    e.preventDefault();
+    const tr = btn.closest('tr');
+    let comment = btn.getAttribute('data-admin-comment') || (tr ? tr.getAttribute('data-admin-comment') : '') || '';
+    document.getElementById('comment_text').value = comment || 'No comment available.';
+    if(window.bootstrap){ new bootstrap.Modal(document.getElementById('commentModal')).show(); }
+    else { document.getElementById('commentModal').style.display='block'; }
+  });
+  </script>
+  <!-- Simple Comments Modal -->
+  <div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Comments</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <textarea id="comment_text" class="form-control" rows="6" readonly style="resize:none;"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener('click', function(e){
+    const cBtn = e.target.closest('.btn-comments');
+    if(!cBtn) return;
+    e.preventDefault();
+    let comment = cBtn.getAttribute('data-admin-comment');
+    if(!comment){
+      const tr = cBtn.closest('tr');
+      comment = tr ? tr.getAttribute('data-admin-comment') : '';
+    }
+    document.getElementById('comment_text').value = comment || 'No comment available.';
+    if(window.bootstrap){
+      const m = new bootstrap.Modal(document.getElementById('commentModal'));
+      m.show();
+    } else {
+      document.getElementById('commentModal').style.display='block';
+    }
+  });
+  </script>
 </div>
 
   <!-- Bootstrap JS -->

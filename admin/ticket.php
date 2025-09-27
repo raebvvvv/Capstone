@@ -428,7 +428,7 @@ foreach ($rows as $r) {
                             <?php if (empty($completed)): ?>
                                 <tr><td colspan="9" class="text-center">No completed requests.</td></tr>
                             <?php else: foreach ($completed as $ticket): ?>
-                                <tr<?php if(!empty($ticket['remark'])) echo ' data-admin-comment="'.htmlspecialchars($ticket['remark'], ENT_QUOTES).'"'; ?>>
+                                <tr<?php if(!empty($ticket['approved_admin_comment'])) echo ' data-admin-comment="'.htmlspecialchars($ticket['approved_admin_comment'], ENT_QUOTES).'"'; ?>>
                                     <td><span style="font-weight:600;"><?php echo htmlspecialchars($ticket['request_id']); ?></span></td>
                                     <td><?php echo htmlspecialchars($ticket['student_id']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
