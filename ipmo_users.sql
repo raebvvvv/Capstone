@@ -104,7 +104,7 @@ CREATE TABLE `submissions` (
   `accepted_terms` tinyint(1) DEFAULT 0,
   `status` varchar(50) NOT NULL DEFAULT 'pending',
   `status_updated_at` datetime DEFAULT NULL,
-  `remarks` text DEFAULT 'for evaluation',
+  `remarks` text DEFAULT 'For sevaluation',
   `version` int(11) DEFAULT 1,
   `is_latest` tinyint(1) DEFAULT 1,
   `submission_type` varchar(50) NOT NULL DEFAULT 'copyright',
@@ -120,9 +120,9 @@ CREATE TABLE `submissions` (
 --
 
 INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first_name`, `middle_name`, `last_name`, `student_number`, `home_address`, `mobile_number`, `webmail`, `campus`, `academic_level`, `college`, `program`, `work_classification`, `title`, `date_accomplished`, `accepted_terms`, `status`, `status_updated_at`, `remarks`, `version`, `is_latest`, `submission_type`, `created_at`, `updated_at`, `reviewer_id`, `reviewed_at`, `adviser_id`) VALUES
-(27, 'SRID-2025-20250924-3', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Information Technology (MSIT)', '(m) Pictorial illustrations and advertisements', 'eqweq', '2025-09-24', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-09-24 17:33:20', '2025-09-24 17:36:41', NULL, NULL, 11),
-(29, 'SRID-2025-20250924-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', 'Bachelor of Science in Chemistry (BSCHEM)', '(n) Computer Programs', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-16', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-09-24 17:45:57', '2025-09-24 17:47:05', NULL, NULL, 12),
-(31, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(e) Dramatic or dramatic-musical compositions; choreographic works', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-22', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-09-24 17:55:30', '2025-09-24 17:59:42', NULL, NULL, 11);
+(27, 'SRID-2025-20250924-3', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Information Technology (MSIT)', '(m) Pictorial illustrations and advertisements', 'eqweq', '2025-09-24', 1, 'pending', NULL, 'For evaluation', 1, 1, 'copyright', '2025-09-24 17:33:20', '2025-09-24 17:36:41', NULL, NULL, 11),
+(29, 'SRID-2025-20250924-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', 'Bachelor of Science in Chemistry (BSCHEM)', '(n) Computer Programs', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-16', 1, 'pending_review', NULL, 'For evaluation', 1, 1, 'copyright', '2025-09-24 17:45:57', '2025-09-24 17:47:05', NULL, NULL, 12),
+(31, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(e) Dramatic or dramatic-musical compositions; choreographic works', 'A Mathematical Model For Predicting the Diffusion of  Information in Social Networks', '2025-09-22', 1, 'pending_review', NULL, 'For evaluation', 1, 1, 'copyright', '2025-09-24 17:55:30', '2025-09-24 17:59:42', NULL, NULL, 11);
 
 -- --------------------------------------------------------
 

@@ -29,7 +29,8 @@ function getCount($pdo, $table, $where = '', $params = []) {
 // Dashboard counts
 $total_users = getCount($pdo, 'users', "role IN ('student','employee') AND status = ?", ['active']);
 $total_applications = getCount($pdo, 'submissions');
-$pending_applications = getCount($pdo, 'submissions', "status = ?", ['pending_review']);
+// Pending should include both brand-new (status='pending') and legacy/alternate flag (status='pending_review')
+$pending_applications = getCount($pdo, 'submissions', "status IN ('pending','pending_review')");
 $approved_applications = getCount($pdo, 'submissions', "status = ?", ['approved']);
 $completed_applications = getCount($pdo, 'submissions', "status = ?", ['completed']);
 

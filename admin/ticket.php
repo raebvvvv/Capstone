@@ -90,6 +90,23 @@ if ($search_query !== '') {
 // Load requests from submissions (ipmo_users.sql)
 $rows = [];
 try {
+    // Ensure meta table exists (lean persistence) so LEFT JOIN never errors on fresh DB
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
+            submission_id INT NOT NULL,
+            scope ENUM('pending','approved') NOT NULL,
+            issue_label VARCHAR(150) DEFAULT NULL,
+            admin_comment TEXT NULL,
+            affected_doc_types TEXT NULL,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (submission_id, scope),
+            CONSTRAINT fk_sim_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    } catch (Throwable $eCreate) {
+        if (function_exists('log_event')) { log_event('DB_ERROR', 'Failed ensuring submission_incomplete_meta', ['err' => $eCreate->getMessage()]); }
+        // continue; LEFT JOIN will fail only if table truly absent, but we attempted creation.
+    }
     $sql = "SELECT 
                 s.submission_id,
                 s.submission_code AS request_id,
@@ -101,8 +118,16 @@ try {
                 s.status,
                 s.remarks AS remark,
                 s.reviewed_at AS approved_timestamp,
-                s.status_updated_at AS completed_timestamp
+                s.status_updated_at AS completed_timestamp,
+                mp.issue_label   AS pending_issue_label,
+                mp.admin_comment AS pending_admin_comment,
+                mp.affected_doc_types AS pending_affected_doc_types,
+                ma.issue_label   AS approved_issue_label,
+                ma.admin_comment AS approved_admin_comment,
+                ma.affected_doc_types AS approved_affected_doc_types
             FROM submissions s
+            LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope = 'pending'
+            LEFT JOIN submission_incomplete_meta ma ON ma.submission_id = s.submission_id AND ma.scope = 'approved'
             $where
             ORDER BY s.created_at DESC";
     $stmt = $pdo->prepare($sql);
@@ -268,18 +293,41 @@ foreach ($rows as $r) {
                             <?php if (empty($pending)): ?>
                                 <tr><td colspan="8" class="text-center">No pending requests.</td></tr>
                             <?php else: foreach ($pending as $ticket): ?>
-                                <tr>
+                                <?php
+                                    $pIssue = trim((string)($ticket['pending_issue_label'] ?? ''));
+                                    $pComment = trim((string)($ticket['pending_admin_comment'] ?? ''));
+                                    $pAffected = trim((string)($ticket['pending_affected_doc_types'] ?? ''));
+                                    $pendingAttrs = '';
+                                    if($pIssue !== '') { $pendingAttrs .= ' data-incomplete-remark="'.htmlspecialchars($pIssue, ENT_QUOTES).'"'; }
+                                    if($pComment !== '') { $pendingAttrs .= ' data-admin-comment="'.htmlspecialchars($pComment, ENT_QUOTES).'"'; }
+                                    if($pAffected !== '') { $pendingAttrs .= ' data-resubmit-files="'.htmlspecialchars($pAffected, ENT_QUOTES).'"'; }
+                                    // Normalize default pending remark capitalization
+                                    if(($ticket['remark'] ?? '') !== '') {
+                                        $rawPendingRemark = trim((string)$ticket['remark']);
+                                        if(preg_match('/^for evaluation$/i', $rawPendingRemark)) {
+                                            $rawPendingRemark = 'For Evaluation';
+                                        } elseif(preg_match('/^awaiting review$/i', $rawPendingRemark)) {
+                                            $rawPendingRemark = 'Awaiting Review';
+                                        }
+                                        $pendingDisplayRemark = $rawPendingRemark;
+                                    } else {
+                                        $pendingDisplayRemark = $pIssue !== '' ? 'Awaiting Review' : 'For Evaluation';
+                                    }
+                                ?>
+                                <tr<?php echo $pendingAttrs; ?>>
                                     <td><?php echo htmlspecialchars($ticket['request_id']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['student_id']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['user_classification']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['program']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
-                                    <td><?php echo htmlspecialchars($ticket['remark'] ?? 'For Evaluation'); ?></td>
+                                    <td><?php echo htmlspecialchars($pendingDisplayRemark); ?></td>
                                     <td>
                                         <div class="action-btn-group">
                                             <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
-                                            <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
+                                            <?php if($pIssue !== '' || $pComment !== '' || $pAffected !== ''): ?>
+                                                <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
+                                            <?php endif; ?>
                                             <form method="post" style="display:inline;">
                                                 <?php csrf_input(); ?>
                                                 <input type="hidden" name="approve_ticket_id" value="<?php echo htmlspecialchars($ticket['request_id']); ?>">
@@ -314,18 +362,41 @@ foreach ($rows as $r) {
                             <?php if (empty($approved)): ?>
                                 <tr><td colspan="8" class="text-center">No approved requests.</td></tr>
                             <?php else: foreach ($approved as $ticket): ?>
-                                <tr>
+                                <?php
+                                    $aIssue = trim((string)($ticket['approved_issue_label'] ?? ''));
+                                    $aComment = trim((string)($ticket['approved_admin_comment'] ?? ''));
+                                    $aAffected = trim((string)($ticket['approved_affected_doc_types'] ?? ''));
+                                    $rawRemark = trim((string)($ticket['remark'] ?? ''));
+                                    $approvedStatusLabel = '';
+                                    if ($aIssue !== '') {
+                                        $approvedStatusLabel = $aIssue;
+                                    } else {
+                                        if ($rawRemark === '' || preg_match('/^(for evaluation|awaiting review)$/i', $rawRemark)) {
+                                            $approvedStatusLabel = 'In-Review';
+                                        } else {
+                                            $approvedStatusLabel = $rawRemark;
+                                        }
+                                    }
+                                    $approvedAttrs = '';
+                                    if($aIssue !== '') { $approvedAttrs .= ' data-incomplete-remark="'.htmlspecialchars($aIssue, ENT_QUOTES).'"'; }
+                                    if($aComment !== '') { $approvedAttrs .= ' data-admin-comment="'.htmlspecialchars($aComment, ENT_QUOTES).'"'; }
+                                    if($aAffected !== '') { $approvedAttrs .= ' data-resubmit-files="'.htmlspecialchars($aAffected, ENT_QUOTES).'"'; }
+                                    $showComments = ($aIssue !== '' || $aComment !== '' || $aAffected !== '');
+                                ?>
+                                <tr<?php echo $approvedAttrs; ?>>
                                     <td><?php echo htmlspecialchars($ticket['request_id']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['student_id']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['user_classification']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['program']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
-                                    <td>In-review</td>
+                                    <td><?php echo htmlspecialchars($approvedStatusLabel); ?></td>
                                     <td>
                                         <div class="action-btn-group">
                                             <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
-                                            <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
+                                            <?php if($showComments): ?>
+                                                <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
+                                            <?php endif; ?>
                                             <button class="btn btn-success btn-sm rounded-pill px-3 me-1 btn-complete" data-request-id="<?php echo htmlspecialchars($ticket['request_id']); ?>">Complete</button>
                                             <span class="btn btn-incomplete btn-incomplete-active btn-sm rounded-pill px-3">Incomplete</span>
                                         </div>
@@ -357,7 +428,7 @@ foreach ($rows as $r) {
                             <?php if (empty($completed)): ?>
                                 <tr><td colspan="9" class="text-center">No completed requests.</td></tr>
                             <?php else: foreach ($completed as $ticket): ?>
-                                <tr>
+                                <tr<?php if(!empty($ticket['remark'])) echo ' data-admin-comment="'.htmlspecialchars($ticket['remark'], ENT_QUOTES).'"'; ?>>
                                     <td><span style="font-weight:600;"><?php echo htmlspecialchars($ticket['request_id']); ?></span></td>
                                     <td><?php echo htmlspecialchars($ticket['student_id']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['student_name']); ?></td>
@@ -365,7 +436,7 @@ foreach ($rows as $r) {
                                     <td><?php echo htmlspecialchars($ticket['program']); ?></td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
                                     <td>Completed</td>
-                                    <td><?php echo htmlspecialchars($ticket['remark'] ?? ''); ?></td>
+                                    <td>Complete</td>
                                     <td>
                                         <div class="action-btn-group">
                                             <a href="#" class="btn btn-success btn-sm rounded-pill px-3 btn-view-certificate" data-cert-url="#">View Certificate</a>
@@ -440,6 +511,18 @@ foreach ($rows as $r) {
                         <br><span><strong>Comments:</strong></span>
                     </div>
                     <textarea id="incompleteTextarea" rows="7" class="form-control mb-2" style="resize:none; border:1px solid #555;"></textarea>
+                    <div id="incompletePendingFilesSection" class="mt-3 d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="small mb-0">Select affected document(s)</strong>
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="checkbox" id="incompletePendingSelectAll">
+                                <label class="form-check-label small" for="incompletePendingSelectAll">All</label>
+                            </div>
+                        </div>
+                        <div id="incompletePendingFileList" class="border rounded p-2 small" style="max-height:180px; overflow:auto;">
+                            <div class="text-muted fst-italic">Loading documents...</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer border-0 pt-3">
                     <button type="button" class="btn btn-close-modal" data-bs-dismiss="modal">Close</button>
@@ -469,10 +552,72 @@ foreach ($rows as $r) {
                         <span><strong>Comments:</strong></span>
                     </div>
                     <textarea id="incompleteTextareaActive" rows="7" class="form-control mb-2" style="resize:none; border:1px solid #555;"></textarea>
+                    <div id="incompleteActiveFilesSection" class="mt-3 d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="small mb-0">Select affected document(s)</strong>
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="checkbox" id="incompleteActiveSelectAll">
+                                <label class="form-check-label small" for="incompleteActiveSelectAll">All</label>
+                            </div>
+                        </div>
+                        <div id="incompleteActiveFileList" class="border rounded p-2 small" style="max-height:180px; overflow:auto;">
+                            <div class="text-muted fst-italic">Loading documents...</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer border-0 pt-3">
                     <button type="button" class="btn btn-close-modal" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-confirm-modal" id="confirmIncompleteActiveBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: File Selection Modal (choose which files to unlock) -->
+    <div class="modal fade" id="incompleteFileSelectModal" tabindex="-1" aria-labelledby="incompleteFileSelectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content incomplete-modal-content">
+                <div class="modal-header d-flex align-items-center justify-content-between pb-2 border-0">
+                    <h5 class="modal-title fw-bold mb-0" id="incompleteFileSelectModalLabel">Select Files to Unlock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="incompleteFileListWrapper">
+                    <div class="small text-muted mb-2">Select the file(s) that the user will be allowed to re-upload.</div>
+                    <div id="incompleteFileList" class="mb-2">
+                        <div class="text-center py-3" id="incompleteFileLoading">Loading files...</div>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" value="" id="incompleteSelectAll">
+                        <label class="form-check-label" for="incompleteSelectAll">Select / Deselect All</label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success btn-sm" id="incompleteFileSelectNextBtn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Confirmation Modal (save changes) -->
+    <div class="modal fade" id="incompleteSaveConfirmModal" tabindex="-1" aria-labelledby="incompleteSaveConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content incomplete-modal-content">
+                <div class="modal-header d-flex align-items-center justify-content-between pb-2 border-0">
+                    <h5 class="modal-title fw-bold mb-0" id="incompleteSaveConfirmModalLabel">Confirm Changes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">You are about to mark this request as <strong>Incomplete</strong>.</p>
+                    <p class="mb-2">The following file(s) will be unlocked for resubmission:</p>
+                    <ul id="incompleteSummaryFiles" class="mb-3 small"></ul>
+                    <div class="mb-2"><strong>Remarks:</strong> <span id="incompleteSummaryRemark" class="small"></span></div>
+                    <div class="mb-2"><strong>Comments:</strong> <span id="incompleteSummaryComment" class="small"></span></div>
+                    <div class="alert alert-warning py-2 px-3 small mb-0">Proceed and save these changes?</div>
+                </div>
+                <div class="modal-footer border-0 pt-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="incompleteSaveConfirmBtn">Save Changes</button>
                 </div>
             </div>
         </div>
