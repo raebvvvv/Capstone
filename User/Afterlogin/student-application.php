@@ -9,11 +9,10 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Application | PUP e-IPMO</title>
     <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
-  <link rel="stylesheet" href="<?php echo asset_url('css/student-application.css'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
+    <link rel="stylesheet" href="<?php echo asset_url('css/student-application.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
 </head>
 <body>
   <!-- Navbar (uniform across project) -->
@@ -91,6 +90,7 @@ try {
       s.work_classification,
       s.status,
       s.remarks,
+    s.created_at,
   mp.admin_comment AS pending_admin_comment,
   mp.issue_label   AS pending_issue_label,
   mp.affected_doc_types AS pending_affected_doc_types,
@@ -195,6 +195,17 @@ try {
             <?php if(count($approvedRows)===0): ?>
               <tr><td colspan="6" class="text-center text-muted py-5">No approved applications.</td></tr>
             <?php else: foreach($approvedRows as $row): ?>
+              <?php
+                // Attempt to fetch/display student's name (join can be added if needed; fallback to session fields if present)
+                $studentName = '';
+                if(isset($_SESSION['first_name'])){
+                  $studentName = trim($_SESSION['first_name'].' '.($_SESSION['last_name'] ?? ''));
+                }
+                $reqDate = '';
+                if(!empty($row['created_at'])){
+                  try { $reqDate = date('F d, Y', strtotime($row['created_at'])); } catch(Throwable $e){ $reqDate=''; }
+                }
+              ?>
               <tr>
                 <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
                 <td><?php echo htmlspecialchars($row['student_number']); ?></td>
@@ -203,6 +214,10 @@ try {
                 <td></td>
                 <td>
                   <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
+                  <!-- View Remarks button (uses existing delegated handler for data-remarks-btn) -->
+                  <button type="button" class="btn btn-outline-primary btn-sm" data-remarks-btn data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? '', ENT_QUOTES); ?>">View Remarks</button>
+                  <!-- Request ID modal trigger button -->
+                  <button type="button" class="btn btn-outline-dark btn-sm btn-request-id" data-request-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-request-date="<?php echo htmlspecialchars($reqDate); ?>" data-student-name="<?php echo htmlspecialchars($studentName); ?>">Request ID</button>
                   <?php if(!empty($row['approved_admin_comment'])): ?>
                     <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($row['approved_admin_comment'], ENT_QUOTES); ?>">Comments</a>
                   <?php endif; ?>
@@ -288,12 +303,36 @@ try {
   </div>
 </div>
 
+<!-- Request ID Modal -->
+<div class="modal fade" id="requestIdModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Request ID</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="requestIdCard" class="border p-3" style="font-size:0.95rem;">
+          <h6 class="text-center fw-bold mb-3">REQUEST ID</h6>
+          <p class="mb-1"><strong>Request ID:</strong> <span id="rid_value"></span></p>
+          <p class="mb-1"><strong>Name:</strong> <span id="rid_name"></span></p>
+          <p class="mb-0"><strong>Date:</strong> <span id="rid_date"></span></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="downloadRequestIdBtn" style="background:#6f42c1;border-color:#6f42c1;">Download as PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- JS handlers moved to external student-application.js to satisfy CSP (no inline scripts). -->
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   <script src="<?php echo asset_url('javascript/student-application.js'); ?>"></script>
-  
 </body>
 </html>
 

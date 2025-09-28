@@ -126,17 +126,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
               // Build reupload controls if container present
               if(controlHost && parts && parts.length){
-                // Determine existing state and show banner if already locked for this signature
-                let state = window._reuploadState[submissionCode];
-                if(state && state.locked && state.sig === signature){
-                  controlHost.innerHTML = `<div class="card border-success"><div class="card-body p-2 d-flex align-items-center gap-2">
-                    <span class="badge bg-success">✓</span>
-                    <span class="small">All requested corrections were submitted. Awaiting review.</span>
-                  </div></div>`;
-                  return; // no form needed
-                }
-                // Otherwise start a fresh cycle (reset state)
-                state = { locked:false, done:new Set(), sig: signature };
+                // Always treat presence of resubmitRaw as a NEW cycle even if signature matches previous.
+                let state = { locked:false, done:new Set(), sig: signature };
                 window._reuploadState[submissionCode] = state;
                 persistState();
                 const friendly = (t)=> t.replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
@@ -392,6 +383,46 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.textContent = isShown ? 'Show Details' : 'Hide Details';
       }
     }
+  });
+
+  // --- Request ID modal logic ---
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.btn-request-id');
+    if(!btn) return;
+    e.preventDefault();
+    const rid = btn.getAttribute('data-request-id') || '';
+    const rname = btn.getAttribute('data-student-name') || '';
+    const rdate = btn.getAttribute('data-request-date') || '';
+    const ridModal = document.getElementById('requestIdModal');
+    if(!ridModal){ console.warn('requestIdModal not found'); return; }
+    const valEl = document.getElementById('rid_value');
+    const nameEl = document.getElementById('rid_name');
+    const dateEl = document.getElementById('rid_date');
+    if(valEl) valEl.textContent = rid;
+    if(nameEl) nameEl.textContent = rname || '—';
+    if(dateEl) dateEl.textContent = rdate || '—';
+    try {
+      const m = bootstrap.Modal.getOrCreateInstance(ridModal);
+      m.show();
+    } catch(err){
+      ridModal.style.display='block';
+    }
+  });
+
+  // Download as PDF (print) handler
+  document.addEventListener('click', function(e){
+    const dlBtn = e.target.closest('#downloadRequestIdBtn');
+    if(!dlBtn) return;
+    e.preventDefault();
+    const card = document.getElementById('requestIdCard');
+    if(!card) return;
+    // Simple print: open new window with minimal styles
+    const html = `<!DOCTYPE html><html><head><title>Request ID</title><style>body{font-family:Arial,Helvetica,sans-serif;margin:40px;} .card{border:1px solid #000;padding:16px;max-width:480px;} h1{font-size:18px;text-align:center;margin:0 0 12px;} p{margin:4px 0;font-size:14px;} </style></head><body><div class="card">` + card.innerHTML + `</div><script>window.print();setTimeout(()=>window.close(),300);<\/script></body></html>`;
+    const w = window.open('', '_blank','noopener');
+    if(!w){ alert('Popup blocked. Please allow popups to download.'); return; }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
   });
 
 });
