@@ -106,17 +106,21 @@ function pup_modal_body($submission, $authors, $files) {
     <h5 class="text-center text-primary fw-bold mb-3">Files</h5>
     <div class="d-flex flex-column align-items-center">
       <ul class="list-unstyled w-75">
-        <?php foreach ($files as $file): ?>
-          <li class="mb-2">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="fw-semibold text-capitalize"><?php echo htmlspecialchars(str_replace('_', ' ', $file['doc_type'])); ?></span>
-              <a href="<?php echo asset_url('uploads/' . $file['file_path']); ?>" target="_blank" class="btn btn-outline-primary btn-sm">
-                Download File
-              </a>
+        <?php foreach ($files as $file): 
+          $fileUrl = asset_url('uploads/' . $file['file_path']);
+        ?>
+          <li class="mb-2" data-doc-type="<?php echo htmlspecialchars($file['doc_type']); ?>">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <span class="fw-semibold text-capitalize flex-grow-1"><?php echo htmlspecialchars(str_replace('_', ' ', $file['doc_type'])); ?></span>
+              <div class="btn-group btn-group-sm" role="group" aria-label="File actions">
+                <a href="<?php echo $fileUrl; ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary" title="Open file in a new tab">View File</a>
+                <a href="<?php echo $fileUrl; ?>" download class="btn btn-outline-primary" title="Download this file">Download File</a>
+              </div>
             </div>
           </li>
         <?php endforeach; ?>
       </ul>
+      <div id="reuploadControls" class="w-75 mt-3"></div>
     </div>
   </div>
 </div>

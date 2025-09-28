@@ -262,6 +262,7 @@ $result_pending = $stmt_pending->fetchAll();
         </div>
     </div>
     <script src="../javascript/admin-profile.js?v=2" defer></script>
+     <script src="../javascript/admin-notifications.js?v=1" defer></script>
             <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
             <script src="../javascript/admin-manageuser.js" defer></script>
 </body>

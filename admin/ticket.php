@@ -301,18 +301,29 @@ foreach ($rows as $r) {
                                     if($pIssue !== '') { $pendingAttrs .= ' data-incomplete-remark="'.htmlspecialchars($pIssue, ENT_QUOTES).'"'; }
                                     if($pComment !== '') { $pendingAttrs .= ' data-admin-comment="'.htmlspecialchars($pComment, ENT_QUOTES).'"'; }
                                     if($pAffected !== '') { $pendingAttrs .= ' data-resubmit-files="'.htmlspecialchars($pAffected, ENT_QUOTES).'"'; }
-                                    // Normalize default pending remark capitalization
-                                    if(($ticket['remark'] ?? '') !== '') {
-                                        $rawPendingRemark = trim((string)$ticket['remark']);
-                                        if(preg_match('/^for evaluation$/i', $rawPendingRemark)) {
-                                            $rawPendingRemark = 'For Evaluation';
-                                        } elseif(preg_match('/^awaiting review$/i', $rawPendingRemark)) {
-                                            $rawPendingRemark = 'Awaiting Review';
-                                        }
-                                        $pendingDisplayRemark = $rawPendingRemark;
-                                    } else {
-                                        $pendingDisplayRemark = $pIssue !== '' ? 'Awaiting Review' : 'For Evaluation';
+                                    // Map any stored remark + issue label into one of the allowed display values
+                                    // Allowed: "Error in Document", "Incorrect Document/Upload", default "For Evaluation"
+                                    $rawPendingRemark = trim((string)($ticket['remark'] ?? ''));
+                                    $lowerIssue = strtolower($pIssue);
+                                    $mapped = '';
+                                    if($lowerIssue !== '') {
+                                        if(str_contains($lowerIssue,'error')) { $mapped = 'Error in Document'; }
+                                        elseif(str_contains($lowerIssue,'incorrect')) { $mapped = 'Incorrect Document/Upload'; }
+                                        elseif(str_contains($lowerIssue,'upload')) { $mapped = 'Incorrect Document/Upload'; }
                                     }
+                                    if($mapped === '') {
+                                        // Fall back to stored remark heuristic
+                                        $lr = strtolower($rawPendingRemark);
+                                        if($lr === 'for evaluation') { $mapped = 'For Evaluation'; }
+                                        elseif(str_contains($lr,'error')) { $mapped = 'Error in Document'; }
+                                        elseif(str_contains($lr,'incorrect') || str_contains($lr,'upload')) { $mapped = 'Incorrect Document/Upload'; }
+                                    }
+                                    if($mapped === '') { $mapped = 'For Evaluation'; }
+                                    // If meta (issue/comment) exists but still For Evaluation, force 'Error in Document' for visibility
+                                    if($mapped === 'For Evaluation' && ($pIssue !== '' || $pComment !== '' || $pAffected !== '')) {
+                                        $mapped = 'Error in Document';
+                                    }
+                                    $pendingDisplayRemark = $mapped;
                                 ?>
                                 <tr<?php echo $pendingAttrs; ?>>
                                     <td><?php echo htmlspecialchars($ticket['request_id']); ?></td>
@@ -371,7 +382,7 @@ foreach ($rows as $r) {
                                     if ($aIssue !== '') {
                                         $approvedStatusLabel = $aIssue;
                                     } else {
-                                        if ($rawRemark === '' || preg_match('/^(for evaluation|awaiting review)$/i', $rawRemark)) {
+                                        if ($rawRemark === '' || preg_match('/^(for evaluation)$/i', $rawRemark)) {
                                             $approvedStatusLabel = 'In-Review';
                                         } else {
                                             $approvedStatusLabel = $rawRemark;
@@ -644,6 +655,7 @@ foreach ($rows as $r) {
 
 <script src="../javascript/admin-ticket.js?v=2" defer></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
+ <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
 <div class="modal fade" id="authorInfoModal" tabindex="-1" aria-labelledby="authorInfoModalLabel" aria-hidden="true">
     <div class="modal-dialog">

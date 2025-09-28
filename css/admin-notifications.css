@@ -1,0 +1,33 @@
+/* admin-notifications.css */
+.notif-bell-btn { 
+    display:inline-flex; align-items:center; gap:4px; position:relative; 
+}
+.notif-bell-icon svg { 
+    display:block; width:18px; height:18px; 
+}
+#adminNotifWrapper { 
+    display:flex; 
+    align-items:center; 
+}
+#adminNotifWrapper #notifDropdown {
+    min-width:300px;
+    max-width:360px;
+    max-height:420px;
+    overflow:hidden;
+}
+#adminNotifWrapper #notifDropdown .card-header,
+#adminNotifWrapper #notifDropdown .card-footer {
+    flex-shrink:0;
+}
+#adminNotifWrapper #notifDropdown .list-group {
+    overflow-y:auto;
+    max-height:320px;
+}
+#adminNotifWrapper #notifList li { 
+    cursor:default;
+}
+#adminNotifWrapper #notifList li .mark-read-btn { 
+    white-space:nowrap; 
+    font-size:0.875rem; 
+    padding:2px 6px;    
+    border-radius:4px;}

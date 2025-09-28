@@ -170,6 +170,7 @@ if (isset($_SESSION['user_id'])) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
     <script src="../javascript/admin-dashboard.js?v=2" defer></script>
     <script src="../javascript/admin-profile.js?v=2" defer></script>
+    <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
     <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileLabel" aria-hidden="true">
         <div class="modal-dialog">

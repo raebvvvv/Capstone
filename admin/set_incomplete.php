@@ -77,8 +77,8 @@ try {
         $internalNote = $comment;
     }
 
-    // Display remark for user interface requirement: always show 'Awaiting Review' after marking incomplete
-    $displayRemark = 'Awaiting Review';
+    // Display remark for user interface requirement: standardized default pending text
+    $displayRemark = 'For Evaluation';
 
     $upd = $pdo->prepare("UPDATE submissions SET status = 'pending', remarks = ?, status_updated_at = NOW() WHERE submission_id = ?");
     $upd->execute([$displayRemark, $sid]);
