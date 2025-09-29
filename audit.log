@@ -174,3 +174,4 @@
 {"ts":"2025-09-27T20:17:29+02:00","type":"APPROVE_REQUEST","user_id":18,"ip":"127.0.0.1","msg":"Request approved","ctx":{"request_id":"SRID-2025-20250927-5","rows":1,"id_column":"submission_code","comment_set":true}}
 {"ts":"2025-09-27T20:27:57+02:00","type":"COMPLETE_REQUEST","user_id":18,"ip":"127.0.0.1","msg":"Request completed","ctx":{"request_id":"SRID-2025-20250927-5","rows":1,"id_column":"submission_code","comment_set":true}}
 {"ts":"2025-09-28T18:45:15+02:00","type":"APPROVE_REQUEST","user_id":18,"ip":"127.0.0.1","msg":"Request approved","ctx":{"request_id":"SRID-2025-20250924-3","rows":1,"id_column":"submission_code","comment_set":true}}
+{"ts":"2025-09-29T13:31:08+02:00","type":"APPROVE_REQUEST","user_id":18,"ip":"127.0.0.1","msg":"Request approved","ctx":{"request_id":"SRID-2025-20250924-2","rows":1,"id_column":"submission_code","comment_set":true}}
