@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', function () {
             detailsContent.innerHTML = html;
             const controlHost = detailsContent.querySelector('#reuploadControls');
             const cachedState = window._reuploadState[submissionCode];
+
+            // If server indicates resubmission is needed, always unlock and show upload controls (new cycle)
             if(resubmitRaw){
               // affected_doc_types stored pipe-separated (type identifiers)
               const parts = resubmitRaw.split('|').map(p=>p.trim()).filter(Boolean);
@@ -250,6 +252,24 @@ document.addEventListener('DOMContentLoaded', function () {
                             setTimeout(()=>{ row.classList.remove('table-success'); }, 1800);
                           }
                         } catch(err){ console.warn('Row update failed', err); }
+
+                        // Also clear the resubmit hint on the triggering button so reopening shows only the success banner
+                        try {
+                          if (btn && btn.hasAttribute('data-resubmit-files')) {
+                            btn.removeAttribute('data-resubmit-files');
+                          }
+                        } catch(_) { /* ignore */ }
+
+                        // Close modal and reload the page to reflect latest status everywhere
+                        setTimeout(() => {
+                          try {
+                            if (window.bootstrap && window.bootstrap.Modal && detailsModalEl) {
+                              const m = window.bootstrap.Modal.getInstance(detailsModalEl) || window.bootstrap.Modal.getOrCreateInstance(detailsModalEl);
+                              m.hide();
+                            }
+                          } catch(_) { /* ignore */ }
+                          window.location.reload();
+                        }, 1200);
                       } else {
                         // Re-enable submit if there were failures allowing retry of failed ones
                         btnSubmit.disabled = false;
@@ -310,9 +330,8 @@ document.addEventListener('DOMContentLoaded', function () {
                   uploadNext(0);
                 });
               }
-            }
-            // Even if no resubmitRaw (attribute removed after backend update), show locked notice if previously completed
-            if(controlHost && (!resubmitRaw) && cachedState && cachedState.locked){
+            } else if (controlHost && cachedState && cachedState.locked) {
+              // No active resubmission request; if previously locked, show success-only banner
               controlHost.innerHTML = `<div class="card border-success"><div class="card-body p-2 d-flex align-items-center gap-2">
                 <span class="badge bg-success">✓</span>
                 <span class="small">All requested corrections were submitted. Awaiting review.</span>

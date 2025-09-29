@@ -302,29 +302,11 @@ foreach ($rows as $r) {
                                     if($pIssue !== '') { $pendingAttrs .= ' data-incomplete-remark="'.htmlspecialchars($pIssue, ENT_QUOTES).'"'; }
                                     if($pComment !== '') { $pendingAttrs .= ' data-admin-comment="'.htmlspecialchars($pComment, ENT_QUOTES).'"'; }
                                     if($pAffected !== '') { $pendingAttrs .= ' data-resubmit-files="'.htmlspecialchars($pAffected, ENT_QUOTES).'"'; }
-                                    // Map any stored remark + issue label into one of the allowed display values
-                                    // Allowed: "Error in Document", "Incorrect Document/Upload", default "For Evaluation"
-                                    $rawPendingRemark = trim((string)($ticket['remark'] ?? ''));
-                                    $lowerIssue = strtolower($pIssue);
-                                    $mapped = '';
-                                    if($lowerIssue !== '') {
-                                        if(str_contains($lowerIssue,'error')) { $mapped = 'Error in Document'; }
-                                        elseif(str_contains($lowerIssue,'incorrect')) { $mapped = 'Incorrect Document/Upload'; }
-                                        elseif(str_contains($lowerIssue,'upload')) { $mapped = 'Incorrect Document/Upload'; }
-                                    }
-                                    if($mapped === '') {
-                                        // Fall back to stored remark heuristic
-                                        $lr = strtolower($rawPendingRemark);
-                                        if($lr === 'for evaluation') { $mapped = 'For Evaluation'; }
-                                        elseif(str_contains($lr,'error')) { $mapped = 'Error in Document'; }
-                                        elseif(str_contains($lr,'incorrect') || str_contains($lr,'upload')) { $mapped = 'Incorrect Document/Upload'; }
-                                    }
-                                    if($mapped === '') { $mapped = 'For Evaluation'; }
-                                    // If meta (issue/comment) exists but still For Evaluation, force 'Error in Document' for visibility
-                                    if($mapped === 'For Evaluation' && ($pIssue !== '' || $pComment !== '' || $pAffected !== '')) {
-                                        $mapped = 'Error in Document';
-                                    }
-                                    $pendingDisplayRemark = $mapped;
+                                    // Remarks rules for Pending tab:
+                                    // - Default: "For Evaluation"
+                                    // - If admin marked Incomplete and selected files to resubmit (pAffected non-empty): "Awaiting Review"
+                                    // - After user successfully resubmits all requested files (pAffected becomes empty): back to "For Evaluation"
+                                    $pendingDisplayRemark = ($pAffected !== '') ? 'Awaiting Review' : 'For Evaluation';
                                 ?>
                                 <tr<?php echo $pendingAttrs; ?>>
                                     <td><?php echo htmlspecialchars($ticket['request_id']); ?></td>
