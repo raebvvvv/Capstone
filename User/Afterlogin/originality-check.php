@@ -23,7 +23,8 @@ require_once __DIR__ . '/../../auth_check.php';
     <p class="fs-5 mb-2">
       IPMO offers Originality Checking through 
       <a href="https://www.turnitin.com/" target="_blank">
-        <img src="<?php echo asset_url('Photos/Icons/turnitin-icon.png'); ?>" alt="Turnitin" class="turnitin-logo" />
+        <img src="<?php echo asset_url('Photos/Ico
+        ns/turnitin-icon.png'); ?>" alt="Turnitin" class="turnitin-logo" />
       </a>
     </p>
     <h4 class="fw-bold mb-3">FAQs and Guide:</h4>

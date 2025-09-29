@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 29, 2025 at 01:11 PM
+-- Generation Time: Sep 29, 2025 at 02:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.4.12
 
@@ -76,7 +76,12 @@ INSERT INTO `admin_notifications` (`id`, `submission_id`, `submission_code`, `us
 (31, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-28 16:18:28', 1),
 (32, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-28 16:32:44', 1),
 (33, 27, 'SRID-2025-20250924-3', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250924-3)', '2025-09-28 16:39:16', 1),
-(34, 27, 'SRID-2025-20250924-3', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250924-3)', '2025-09-28 16:44:17', 1);
+(34, 27, 'SRID-2025-20250924-3', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250924-3)', '2025-09-28 16:44:17', 1),
+(35, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 11:19:42', 1),
+(36, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 11:21:38', 1),
+(37, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 11:25:12', 1),
+(38, 37, 'SRID-2025-20250927-4', 19, 'full_manuscript', 'User #19 re-uploaded full manuscript (SRID-2025-20250927-4)', '2025-09-29 11:25:12', 1),
+(39, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 11:33:44', 1);
 
 -- --------------------------------------------------------
 
@@ -182,14 +187,14 @@ CREATE TABLE `submissions` (
 
 INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first_name`, `middle_name`, `last_name`, `student_number`, `home_address`, `mobile_number`, `webmail`, `campus`, `academic_level`, `college`, `program`, `work_classification`, `title`, `date_accomplished`, `accepted_terms`, `status`, `status_updated_at`, `remarks`, `version`, `is_latest`, `submission_type`, `created_at`, `updated_at`, `reviewer_id`, `reviewed_at`, `adviser_id`) VALUES
 (27, 'SRID-2025-20250924-3', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Information Technology (MSIT)', '(m) Pictorial illustrations and advertisements', 'eqweq', '2025-09-24', 1, 'approved', '2025-09-29 00:45:15', 'test', 1, 1, 'copyright', '2025-09-24 17:33:20', '2025-09-29 00:45:15', 18, '2025-09-29 00:45:15', 11),
-(29, 'SRID-2025-20250924-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', 'Bachelor of Science in Chemistry (BSCHEM)', '(n) Computer Programs', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-16', 1, 'pending_review', '2025-09-28 23:39:42', 'For Evaluation', 1, 1, 'copyright', '2025-09-24 17:45:57', '2025-09-28 23:39:48', 18, '2025-09-27 22:38:54', 12),
-(31, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(e) Dramatic or dramatic-musical compositions; choreographic works', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-22', 1, 'approved', '2025-09-27 22:34:43', 'for evaluation', 1, 1, 'copyright', '2025-09-24 17:55:30', '2025-09-27 22:34:43', 18, '2025-09-27 22:34:43', 11),
+(29, 'SRID-2025-20250924-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', 'Bachelor of Science in Chemistry (BSCHEM)', '(n) Computer Programs', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-16', 1, 'approved', '2025-09-29 19:31:08', 'testing', 1, 1, 'copyright', '2025-09-24 17:45:57', '2025-09-29 19:31:08', 18, '2025-09-29 19:31:08', 12),
+(31, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(e) Dramatic or dramatic-musical compositions; choreographic works', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-22', 1, 'approved', '2025-09-29 19:30:41', 'Error in Document', 1, 1, 'copyright', '2025-09-24 17:55:30', '2025-09-29 19:30:41', 18, '2025-09-27 22:34:43', 11),
 (32, 'SRID-2025-20250924-4', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Open University', 'N/A', 'Doctor in Public Administration (DPA)', '(b) Periodicals and newspaper', 'testt', '2025-09-24', 1, 'approved', '2025-09-27 23:38:41', 'Missing Document', 1, 1, 'copyright', '2025-09-24 18:57:04', '2025-09-27 23:38:41', 18, '2025-09-27 22:30:01', 13),
 (33, 'SRID-2025-20250924-5', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(q) Broadcast recordings', 'a', '2025-09-24', 1, 'completed', '2025-09-28 01:49:09', 'LESTGO', 1, 1, 'copyright', '2025-09-24 21:32:32', '2025-09-28 01:49:09', 18, '2025-09-27 22:14:06', 14),
 (34, 'SRID-2025-20250927-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master in Business Administration (MBA)', '(b) Periodicals and newspaper', 'a', '2025-09-27', 1, 'completed', '2025-09-28 01:42:01', 'test', 1, 1, 'copyright', '2025-09-27 21:05:13', '2025-09-28 01:42:01', 22, '2025-09-27 22:01:13', 15),
 (35, 'SRID-2025-20250927-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Mathematics (MSM)', '(p) Sound recordings', 'TEST', '2025-09-27', 1, 'completed', '2025-09-28 00:37:01', 'Error in Document', 1, 1, 'copyright', '2025-09-27 21:17:27', '2025-09-28 00:37:01', 22, '2025-09-27 22:00:19', 15),
 (36, 'SRID-2025-20250927-3', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master in Business Administration (MBA)', '(c) Lectures, sermons, addresses, dissertations for oral delivery', 'HEHE', '2025-09-27', 1, 'completed', '2025-09-28 00:44:48', 'for evaluation', 1, 1, 'copyright', '2025-09-27 23:48:30', '2025-09-28 00:44:48', 18, '2025-09-28 00:35:43', 15),
-(37, 'SRID-2025-20250927-4', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master in Business Administration (MBA)', '(a) Books, Pamphlets, articles and other writings', 'TESTING', '2025-09-27', 1, 'pending_review', '2025-09-29 00:31:13', 'For Evaluation', 1, 1, 'copyright', '2025-09-27 23:54:02', '2025-09-29 00:32:44', NULL, NULL, 15),
+(37, 'SRID-2025-20250927-4', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master in Business Administration (MBA)', '(a) Books, Pamphlets, articles and other writings', 'TESTING', '2025-09-27', 1, 'pending_review', '2025-09-29 19:33:36', 'For Evaluation', 1, 1, 'copyright', '2025-09-27 23:54:02', '2025-09-29 19:33:44', NULL, NULL, 15),
 (38, 'SRID-2025-20250927-5', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Mathematics (MSM)', '(o) Other literary, scholarly, scientific and artistic works', 'a', '2025-09-26', 1, 'completed', '2025-09-28 02:27:57', 'test', 1, 1, 'copyright', '2025-09-28 02:11:50', '2025-09-28 02:27:57', 18, '2025-09-28 02:17:29', 15);
 
 -- --------------------------------------------------------
@@ -316,9 +321,9 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (253, 37, 'journal_publication_format', 'journal_publication_format_1758988442_2ea8d677.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
 (254, 37, 'notarized_copyright', 'notarized_copyright_1758988442_102257d6.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
 (255, 37, 'receipt_payment', 'receipt_payment_1758988442_3328ccda.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
-(256, 37, 'full_manuscript', 'full_manuscript_1759073334_5c22d30a.pdf', '2025-09-28 23:28:54', 355072, 'application/pdf', 0, NULL, NULL),
+(256, 37, 'full_manuscript', 'full_manuscript_1759145112_472bdd43.pdf', '2025-09-29 19:25:12', 171741, 'application/pdf', 0, NULL, NULL),
 (257, 37, 'notarized_coauthorship', 'notarized_coauthorship_1758988442_f754df6e.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
-(258, 37, 'approval_sheet', 'approval_sheet_1759077164_ac4fc943.pdf', '2025-09-29 00:32:44', 171741, 'application/pdf', 0, NULL, NULL),
+(258, 37, 'approval_sheet', 'approval_sheet_1759145624_680fad91.pdf', '2025-09-29 19:33:44', 171741, 'application/pdf', 0, NULL, NULL),
 (259, 37, 'record_copyright', 'record_copyright_1758988442_4120e2ee.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
 (260, 38, 'journal_publication_format', 'journal_publication_format_1758996710_20522c43.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
 (261, 38, 'notarized_copyright', 'notarized_copyright_1758996710_3461e90a.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
@@ -327,20 +332,6 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (264, 38, 'notarized_coauthorship', 'notarized_coauthorship_1758996710_e69df97d.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
 (265, 38, 'approval_sheet', 'approval_sheet_1758996710_8e8360e9.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
 (266, 38, 'record_copyright', 'record_copyright_1758996710_04836bf3.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `submission_incomplete`
---
-
-CREATE TABLE `submission_incomplete` (
-  `id` int(11) NOT NULL,
-  `submission_code` varchar(64) NOT NULL,
-  `comment` text DEFAULT NULL,
-  `unlock_files` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`unlock_files`)),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -367,11 +358,12 @@ CREATE TABLE `submission_incomplete_meta` (
 INSERT INTO `submission_incomplete_meta` (`submission_id`, `scope`, `issue_label`, `admin_comment`, `affected_doc_types`, `updated_at`, `created_at`, `reuploaded_doc_types`, `reupload_locked`) VALUES
 (27, 'pending', 'Error in Document/Upload', 'test', '', '2025-09-29 00:44:17', '2025-09-29 00:39:07', NULL, 0),
 (29, 'pending', 'Error in Document/Upload', 'test', '', '2025-09-28 23:39:48', '2025-09-27 23:31:41', NULL, 0),
+(31, 'approved', 'Error in Document', 'test', 'approval_sheet', '2025-09-29 19:30:41', '2025-09-29 19:30:41', NULL, 0),
 (32, 'approved', 'Missing Document', NULL, 'approval_sheet|full_manuscript|journal_publication_format|notarized_coauthorship|notarized_copyright|receipt_payment|record_copyright', '2025-09-27 23:38:41', '2025-09-27 23:38:41', NULL, 0),
 (33, 'approved', 'Missing Document', 'test', 'approval_sheet', '2025-09-27 23:40:23', '2025-09-27 23:38:31', NULL, 0),
 (34, 'approved', 'Missing Document', 'test', 'approval_sheet', '2025-09-28 00:11:49', '2025-09-27 23:38:15', NULL, 0),
 (35, 'approved', 'Error in Document', 'test', 'approval_sheet', '2025-09-28 00:20:12', '2025-09-27 23:31:49', NULL, 0),
-(37, 'pending', 'Incorrect Document/Upload', 'test', '', '2025-09-29 00:32:44', '2025-09-27 23:57:00', NULL, 0);
+(37, 'pending', 'Incorrect Document/Upload', 'test', '', '2025-09-29 19:33:44', '2025-09-27 23:57:00', NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -458,13 +450,6 @@ ALTER TABLE `submission_documents`
   ADD KEY `idx_submission_doc` (`submission_id`,`doc_type`);
 
 --
--- Indexes for table `submission_incomplete`
---
-ALTER TABLE `submission_incomplete`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uniq_submission_code` (`submission_code`);
-
---
 -- Indexes for table `submission_incomplete_meta`
 --
 ALTER TABLE `submission_incomplete_meta`
@@ -486,7 +471,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `advisers`
@@ -517,12 +502,6 @@ ALTER TABLE `submission_authors`
 --
 ALTER TABLE `submission_documents`
   MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=267;
-
---
--- AUTO_INCREMENT for table `submission_incomplete`
---
-ALTER TABLE `submission_incomplete`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
