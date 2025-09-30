@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // --- Request ID modal logic ---
-  document.addEventListener('click', function(e){
+  document.addEventListener('click', async function(e){
     const btn = e.target.closest('.btn-request-id');
     if(!btn) return;
     e.preventDefault();
@@ -420,6 +420,17 @@ document.addEventListener('DOMContentLoaded', function () {
     if(valEl) valEl.textContent = rid;
     if(nameEl) nameEl.textContent = rname || '—';
     if(dateEl) dateEl.textContent = rdate || '—';
+
+    // Fetch authoritative name from server if missing, then update only the Name field
+    try {
+      if (!rname && nameEl) {
+        const res = await fetch(`get_request_name.php?code=${encodeURIComponent(rid)}`);
+        const data = await res.json();
+        if (data && data.success && typeof data.name === 'string' && data.name.trim() !== '') {
+          nameEl.textContent = data.name.trim();
+        }
+      }
+    } catch(_) { /* Silent: leave fallback */ }
     try {
       const m = bootstrap.Modal.getOrCreateInstance(ridModal);
       m.show();
