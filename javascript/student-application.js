@@ -2,9 +2,8 @@
 // Global delegated handler (CSP-safe) for comments & remarks in case buttons
 // are added after DOMContentLoaded or existing listener misses them.
 document.addEventListener('click', function(e){
-  const remarksBtn = e.target.closest('[data-remarks-btn]');
-  const commentBtn = remarksBtn ? null : e.target.closest('.btn-comments');
-  if(!remarksBtn && !commentBtn) return;
+  const commentBtn = e.target.closest('.btn-comments');
+  if(!commentBtn) return;
   e.preventDefault();
   const modalEl = document.getElementById('commentModal');
   const textarea = document.getElementById('comment_text');
@@ -12,13 +11,8 @@ document.addEventListener('click', function(e){
     console.warn('[student-application] Comment modal elements not found');
     return;
   }
-  let text = '';
-  if(remarksBtn){
-    text = remarksBtn.getAttribute('data-remarks') || '';
-  } else if(commentBtn){
-    const tr = commentBtn.closest('tr');
-    text = commentBtn.getAttribute('data-admin-comment') || (tr ? tr.getAttribute('data-admin-comment') : '') || '';
-  }
+  const tr = commentBtn.closest('tr');
+  const text = commentBtn.getAttribute('data-admin-comment') || (tr ? tr.getAttribute('data-admin-comment') : '') || '';
   console.debug('[student-application] Opening comment modal with text:', text);
   textarea.value = text || 'No comment available.';
   try {

@@ -78,8 +78,18 @@ try {
         'department' => $sub['college'] ?? '',
         'college' => $sub['college'] ?? '',
         'program' => $sub['program'] ?? '',
+    'academicLevel' => $sub['academic_level'] ?? '',
         'documentTitle' => $sub['title'] ?? '',
         'accomplishmentDate' => $sub['date_accomplished'] ?? '',
+        // Application Type (Work Classification)
+        'workClassification' => $sub['work_classification'] ?? '',
+        'workClassificationCode' => (function($wc){
+            if(!$wc) return '';
+            if(preg_match('/\(([^)]+)\)/', (string)$wc, $m)){
+                return strtolower(trim($m[1]));
+            }
+            return '';
+        })($sub['work_classification'] ?? ''),
         'files' => $filesMap,            // simple map kept for existing JS code
         'files_list' => $filesDetailed,  // new richer list for enhanced UI
         'additionalAuthors' => $additionalAuthors

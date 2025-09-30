@@ -1,26 +1,70 @@
 <?php
+// Secure and connect (align with existing admin pages)
 require __DIR__ . '/../security_bootstrap.php';
 secure_bootstrap();
 require __DIR__ . '/../conn.php';
 require_admin();
 
-// Helper to format dates like "May 18, 2025"
+// Helpers
 function fmt_date(string $dateStr): string {
     $ts = strtotime($dateStr);
-    return $ts ? date('F j, Y', $ts) : $dateStr;
+    return $ts ? date('F j, Y', $ts) : trim($dateStr);
 }
 
-// CSV download based on requested type: 'rmipo' or 'national'
+function name_to_author_format(?string $first, ?string $middle, ?string $last): string {
+    $first = trim((string)$first);
+    $middle = trim((string)$middle);
+    $last = trim((string)$last);
+    $mi = '';
+    if ($middle !== '') {
+        // Take first character of middle name as initial if present
+        $c = mb_substr($middle, 0, 1);
+        if ($c !== false && $c !== '') { $mi = ' ' . strtoupper($c) . '.'; }
+    }
+    $firstPart = $first . $mi;
+    $firstPart = trim($firstPart);
+    if ($last === '' && $firstPart === '') return '';
+    if ($last === '') return $firstPart; // fallback when only first present
+    if ($firstPart === '') return $last;  // fallback when only last present
+    return $last . ', ' . $firstPart;
+}
+
+function fetch_submission_people(PDO $pdo, int $sid): array {
+    // Returns ['authors' => [..], 'adviser' => '']
+    // Include adviser(s) in Author/s list as well, to support cases where adviser is also an author.
+    // Note: submission_authors schema observed elsewhere provides first_name, last_name, is_adviser (no middle_name)
+    $stmt = $pdo->prepare("SELECT first_name, last_name, is_adviser FROM submission_authors WHERE submission_id = ? ORDER BY is_adviser DESC, last_name ASC, first_name ASC");
+    $stmt->execute([$sid]);
+    $authors = [];
+    $seen = [];
+    $adviser = '';
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $formatted = name_to_author_format($row['first_name'] ?? '', '', $row['last_name'] ?? '');
+        if ($formatted === '') { continue; }
+        if ((int)($row['is_adviser'] ?? 0) === 1 && $adviser === '') {
+            $adviser = $formatted; // first adviser
+        }
+        // Add to authors list (including advisers) with de-duplication
+        $key = mb_strtolower($formatted);
+        if (!isset($seen[$key])) {
+            $seen[$key] = true;
+            $authors[] = $formatted;
+        }
+    }
+    return ['authors' => $authors, 'adviser' => $adviser];
+}
+
+// Parse inputs
 $type = isset($_GET['type']) ? strtolower(trim($_GET['type'])) : 'national';
 $isRmipo = ($type === 'rmipo');
 $filename = ($isRmipo ? 'summary_rmipo' : 'summary_national') . '_' . date('Ymd_His') . '.csv';
 
-// NOTE: Replace the stubbed rows below with real data/query results.
-// Columns per requirement:
-// - RMIPO: Campus, Program, Author/s, Title, Adviser (if any), Date Accepted, Work Classification ("class O"), Date of Transfer to ITSO (for Evaluation) (blank)
-// - National Library: Title, Program, Author/s, Date, Adviser (if any), Date of Evaluated (blank), Date of Evaluation (blank)
+// Optional date range filter (?start=YYYY-MM-DD&end=YYYY-MM-DD)
+$start = isset($_GET['start']) ? trim($_GET['start']) : '';
+$end   = isset($_GET['end']) ? trim($_GET['end']) : '';
+$hasRange = ($start !== '' && $end !== '' && strtotime($start) && strtotime($end));
 
-// Build header row
+// Build header row per spec
 if ($isRmipo) {
     $headers = [
         'Campus',
@@ -44,120 +88,79 @@ if ($isRmipo) {
     ];
 }
 
-// Example rows (placeholder values). Replace with real records.
-if ($isRmipo) {
-    $dataRows = [
-        [
-            'PUP Sta. Mesa, Manila',     // Campus
-            'BSIT',                       // Program
-            'Doe, Jane; Dela Cruz, Juan P.', // Author/s
-            'A Study on Smart Campus IoT',   // Title
-            'Prof. Maria L. Santos',      // Adviser (if any)
-            fmt_date('2025-05-31'),       // Date Accepted
-            'class O',                    // Work Classification (per requirement)
-            ''                            // Date of Transfer to ITSO (for Evaluation) (blank)
-        ],
-        [
-            'PUP San Juan',               // Campus
-            'BSCS',                       // Program
-            'Reyes, Ana M.; Cruz, Mark T.',
-            'Optimizing Graph Traversals with Heuristics',
-            '',                           // Adviser (none)
-            fmt_date('2025-04-15'),       // Date Accepted
-            'class O',
-            ''
-        ],
-        [
-            'PUP Sta. Rosa',              // Campus
-            'BSECE',                      // Program
-            'Garcia, Pedro L.; Chan, Mei L.; Smith, John',
-            'Low-Power Embedded Vision System for Traffic Monitoring',
-            'Engr. Roberto D. Cruz',      // Adviser
-            fmt_date('2025-03-10'),       // Date Accepted
-            'class O',
-            ''
-        ],
-        [
-            'PUP Sta. Mesa, Manila',
-            'BSCpE',
-            'Santos, Maria L.',
-            'FPGA-Based Accelerator for Matrix Operations',
-            '',                           // Adviser (none)
-            fmt_date('2025-02-20'),
-            'class O',
-            ''
-        ],
-        [
-            'PUP Sta. Mesa, Manila',
-            'BSAIS',
-            'Tan, Carlos M.; Lim, Andrea P.',
-            'AI-Assisted Financial Fraud Detection in SMEs',
-            'Prof. Juan Miguel S. Dizon',
-            fmt_date('2025-01-12'),
-            'class O',
-            ''
-        ]
-    ];
-} else {
-    $dataRows = [
-        [
-            'A Study on Smart Campus IoT',   // Title
-            'BSIT',                          // Program
-            'Doe, Jane; Dela Cruz, Juan P.', // Author/s
-            fmt_date('2025-05-31'),          // Date
-            'Prof. Maria L. Santos',         // Adviser (if any)
-            '',                               // Date of Evaluated (blank)
-            ''                                // Date of Evaluation (blank)
-        ],
-        [
-            'Optimizing Graph Traversals with Heuristics',
-            'BSCS',
-            'Reyes, Ana M.; Cruz, Mark T.',
-            fmt_date('2025-04-15'),
-            '',                               // Adviser (none)
-            '',
-            ''
-        ],
-        [
-            'Low-Power Embedded Vision System for Traffic Monitoring',
-            'BSECE',
-            'Garcia, Pedro L.; Chan, Mei L.; Smith, John',
-            fmt_date('2025-03-10'),
-            'Engr. Roberto D. Cruz',
-            '',
-            ''
-        ],
-        [
-            'FPGA-Based Accelerator for Matrix Operations',
-            'BSCpE',
-            'Santos, Maria L.',
-            fmt_date('2025-02-20'),
-            '',
-            '',
-            ''
-        ],
-        [
-            'AI-Assisted Financial Fraud Detection in SMEs',
-            'BSAIS',
-            'Tan, Carlos M.; Lim, Andrea P.',
-            fmt_date('2025-01-12'),
-            'Prof. Juan Miguel S. Dizon',
-            '',
-            ''
-        ]
-    ];
+// Query completed submissions
+try {
+    $sql = "SELECT submission_id, first_name, middle_name, last_name, campus, program, title, date_accomplished, status_updated_at, created_at FROM submissions WHERE LOWER(status) = 'completed'";
+    $params = [];
+    if ($hasRange) {
+        // Filter by status_updated_at within [start, end]
+        $sql .= " AND DATE(status_updated_at) BETWEEN ? AND ?";
+        $params[] = $start; $params[] = $end;
+    }
+    $sql .= " ORDER BY COALESCE(status_updated_at, created_at) DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=UTF-8');
+    echo 'Failed to build summary: ' . $e->getMessage();
+    exit;
+}
+
+// Build data rows
+$rows = [];
+foreach ($subs as $s) {
+    $sid = (int)$s['submission_id'];
+    $people = fetch_submission_people($pdo, $sid);
+    $authors = $people['authors'];
+    $adviser = $people['adviser'];
+
+    // Fallback to primary submitter if no authors listed
+    if (count($authors) === 0) {
+        $fallback = name_to_author_format($s['first_name'] ?? '', $s['middle_name'] ?? '', $s['last_name'] ?? '');
+        if ($fallback !== '') { $authors[] = $fallback; }
+    }
+    $authorsStr = implode('; ', $authors);
+
+    // Preferred date: date_accomplished -> status_updated_at -> created_at
+    $d = $s['date_accomplished'] ?: ($s['status_updated_at'] ?: $s['created_at']);
+    $datePretty = $d ? fmt_date($d) : '';
+
+    if ($isRmipo) {
+        $rows[] = [
+            (string)($s['campus'] ?? ''),
+            (string)($s['program'] ?? ''),
+            $authorsStr,
+            (string)($s['title'] ?? ''),
+            (string)$adviser,
+            $datePretty,
+            'class O', // per provided format
+            ''         // Date of Transfer to ITSO (for Evaluation)
+        ];
+    } else {
+        $rows[] = [
+            (string)($s['title'] ?? ''),
+            (string)($s['program'] ?? ''),
+            $authorsStr,
+            $datePretty,
+            (string)$adviser,
+            '', // Date of Evaluated
+            ''  // Date of Evaluation
+        ];
+    }
 }
 
 // Output CSV
 header('Content-Type: text/csv; charset=UTF-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-// Optional: add UTF-8 BOM for better Excel compatibility
+// UTF-8 BOM for Excel compatibility
 echo "\xEF\xBB\xBF";
 
 $out = fopen('php://output', 'w');
 fputcsv($out, $headers);
-foreach ($dataRows as $row) {
+foreach ($rows as $row) {
     fputcsv($out, $row);
 }
 fclose($out);

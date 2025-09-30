@@ -214,8 +214,6 @@ try {
                 <td></td>
                 <td>
                   <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
-                  <!-- View Remarks button (uses existing delegated handler for data-remarks-btn) -->
-                  <button type="button" class="btn btn-outline-primary btn-sm" data-remarks-btn data-remarks="<?php echo htmlspecialchars($row['remarks'] ?? '', ENT_QUOTES); ?>">View Remarks</button>
                   <!-- Request ID modal trigger button -->
                   <button type="button" class="btn btn-outline-dark btn-sm btn-request-id" data-request-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-request-date="<?php echo htmlspecialchars($reqDate); ?>" data-student-name="<?php echo htmlspecialchars($studentName); ?>">Request ID</button>
                   <?php if(!empty($row['approved_admin_comment'])): ?>

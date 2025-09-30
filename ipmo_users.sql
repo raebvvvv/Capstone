@@ -24,6 +24,20 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `submission_notes`
+--
+
+CREATE TABLE `submission_notes` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `note` text NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `admin_notifications`
 --
 
@@ -36,6 +50,20 @@ CREATE TABLE `admin_notifications` (
   `message` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `is_read` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_notes_admin_views`
+--
+
+CREATE TABLE `submission_notes_admin_views` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `last_viewed_at` datetime DEFAULT current_timestamp(),
+  UNIQUE KEY `uniq_view` (`submission_id`,`admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -456,6 +484,22 @@ ALTER TABLE `submission_incomplete_meta`
   ADD PRIMARY KEY (`submission_id`,`scope`);
 
 --
+-- Indexes for table `submission_notes`
+--
+ALTER TABLE `submission_notes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_submission_id` (`submission_id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_created_at` (`created_at`);
+
+--
+-- Indexes for table `submission_notes_admin_views`
+--
+ALTER TABLE `submission_notes_admin_views`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_submission_admin` (`submission_id`,`admin_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -504,6 +548,18 @@ ALTER TABLE `submission_documents`
   MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=267;
 
 --
+-- AUTO_INCREMENT for table `submission_notes`
+--
+ALTER TABLE `submission_notes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `submission_notes_admin_views`
+--
+ALTER TABLE `submission_notes_admin_views`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -546,6 +602,17 @@ ALTER TABLE `submission_documents`
 --
 ALTER TABLE `submission_incomplete_meta`
   ADD CONSTRAINT `fk_sim_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`submission_id`) ON DELETE CASCADE;
+--
+-- Constraints for table `submission_notes`
+--
+ALTER TABLE `submission_notes`
+  ADD CONSTRAINT `fk_sn_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`submission_id`) ON DELETE CASCADE;
+--
+-- Constraints for table `submission_notes_admin_views`
+--
+ALTER TABLE `submission_notes_admin_views`
+  ADD CONSTRAINT `fk_snav_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`submission_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_snav_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

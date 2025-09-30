@@ -1,3 +1,48 @@
+/* Compact table improvements */
+.col-program{
+    max-width: 280px;
+}
+.col-program.text-truncate{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.student-subtext{
+    margin-top: 2px;
+}
+
+/* Status badges */
+.status-badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; line-height:1.2; font-weight:600; }
+.status-pending{ background:#eee; color:#444; }
+.status-inreview{ background:#e3f2fd; color:#0d47a1; }
+.status-awaiting{ background:#fff3cd; color:#7a5d00; }
+.status-completed{ background:#e7f8ee; color:#0c6b33; }
+
+/* Sticky header and first column for better scanning */
+.table-responsive{ position: relative; }
+.table thead th{ position: sticky; top: 0; background: #fff; z-index: 2; }
+.table-sticky-first td:first-child, .table-sticky-first th:first-child{ position: sticky; left: 0; background: #fff; z-index: 1; }
+
+/* Density toggle */
+body.density-compact .table td,
+body.density-compact .table th{ padding-top: .35rem; padding-bottom: .35rem; }
+body.density-compact .btn{ padding: .15rem .5rem; font-size: .8rem; }
+body.density-compact .action-btn-group .btn{ margin-right: .25rem; }
+
+/* Responsive hides for less important columns */
+@media (max-width: 992px){
+    .col-classification{ display:none; }
+}
+@media (max-width: 768px){
+    .col-program{ max-width: 180px; }
+    .col-date{ display:none; }
+}
+
+/* Sortable headers */
+th.sortable{ cursor: pointer; user-select: none; }
+th.sortable::after{ content:''; display:inline-block; margin-left:6px; border:4px solid transparent; border-top-color:#999; transform: translateY(2px); }
+th.sortable[aria-sort="asc"]::after{ border-top-color:#333; transform: rotate(180deg) translateY(-2px); }
+th.sortable[aria-sort="desc"]::after{ border-top-color:#333; }
 html, body {
     height: 100%;
 }

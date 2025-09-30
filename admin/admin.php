@@ -40,6 +40,245 @@ $grad = getCount($pdo, 'submissions', "academic_level = ?", ['Masters']);
 $open = getCount($pdo, 'submissions', "academic_level = ?", ['Open University']);
 $total_applications_chart = $undergrad + $grad + $open;
 
+// Build real datasets for charts
+// Optional filters: status and date range (created_at)
+$statusParam = isset($_GET['status']) ? strtolower(trim($_GET['status'])) : 'all';
+if (!in_array($statusParam, ['all','pending','approved','completed','pending_review'], true)) { $statusParam = 'all'; }
+$startParam = isset($_GET['start']) ? trim($_GET['start']) : '';
+$endParam   = isset($_GET['end']) ? trim($_GET['end']) : '';
+$hasStart = preg_match('/^\d{4}-\d{2}-\d{2}$/', $startParam) === 1;
+$hasEnd   = preg_match('/^\d{4}-\d{2}-\d{2}$/', $endParam) === 1;
+
+// Completed Applications-style filters (optional): college code, program, campus, type, group
+$collegeParam = isset($_GET['college']) ? trim($_GET['college']) : 'All';
+$programParam = isset($_GET['program']) ? trim($_GET['program']) : 'All';
+$campusParam  = isset($_GET['campus'])  ? trim($_GET['campus'])  : 'All';
+$typeParam    = isset($_GET['type'])    ? trim($_GET['type'])    : 'All';
+$groupParam   = isset($_GET['group'])   ? trim($_GET['group'])   : 'All';
+
+// WHERE builder
+function build_where(array &$params, string $statusParam, bool $hasStart, string $startParam, bool $hasEnd, string $endParam): string {
+    $clauses = [];
+    if ($statusParam !== 'all') {
+        if ($statusParam === 'pending') { $clauses[] = "status IN ('pending','pending_review')"; }
+        else { $clauses[] = 'status = ?'; $params[] = $statusParam; }
+    }
+    if ($hasStart && $hasEnd) { $clauses[] = 'DATE(created_at) BETWEEN ? AND ?'; $params[] = $startParam; $params[] = $endParam; }
+    elseif ($hasStart) { $clauses[] = 'DATE(created_at) >= ?'; $params[] = $startParam; }
+    elseif ($hasEnd) { $clauses[] = 'DATE(created_at) <= ?'; $params[] = $endParam; }
+    return $clauses ? (' WHERE '.implode(' AND ', $clauses)) : '';
+}
+function normalize_college_label(string $raw): string {
+    $raw = trim($raw);
+    if ($raw === '') return 'Unknown';
+    // Prefer code before " - " if present (e.g., "CCIS - College of Computer and Information Sciences")
+    if (strpos($raw, ' - ') !== false) {
+        return trim(substr($raw, 0, strpos($raw, ' - ')));
+    }
+    // If acronym in parentheses at end, use that (e.g., "College of ... (CAF)")
+    if (preg_match('/\(([^)]+)\)\s*$/', $raw, $m)) {
+        return strtoupper(trim($m[1]));
+    }
+    return $raw;
+}
+
+function level_label(string $raw): string {
+    $t = strtolower(trim($raw));
+    if ($t === '') return 'Undergraduate';
+    if (strpos($t, 'open') !== false) return 'Open University';
+    if (strpos($t, 'master') !== false || strpos($t, 'graduate') !== false || strpos($t, 'grad') !== false) return 'Graduate School';
+    return 'Undergraduate';
+}
+
+// Parse college string into [code, full] where possible
+function parse_college(string $raw): array {
+    $raw = trim($raw);
+    if ($raw === '') return ['', ''];
+    // Case 1: "CCIS - College of ..."
+    if (strpos($raw, ' - ') !== false) {
+        $code = trim(substr($raw, 0, strpos($raw, ' - ')));
+        $full = trim(substr($raw, strpos($raw, ' - ') + 3));
+        return [$code, $full];
+    }
+    // Case 2: "College of ... (CCIS)"
+    if (preg_match('/^(.+?)\s*\(([^)]+)\)\s*$/', $raw, $m)) {
+        $full = trim($m[1]);
+        $code = strtoupper(trim($m[2]));
+        return [$code, $full];
+    }
+    // Case 3: already a code or just a name
+    // Heuristic: short (<=6) and uppercase -> code
+    if (strlen($raw) <= 6 && strtoupper($raw) === $raw) {
+        return [$raw, ''];
+    }
+    return ['', $raw];
+}
+
+// Helper to fold tail into "Others" for scalability
+function fold_others(array $labels, array $values, int $topN = 10): array {
+    $n = count($labels);
+    if ($n <= $topN) return [$labels, $values];
+    $topLabels = array_slice($labels, 0, $topN);
+    $topValues = array_slice($values, 0, $topN);
+    $others = array_sum(array_slice($values, $topN));
+    $topLabels[] = 'Others';
+    $topValues[] = $others;
+    return [$topLabels, $topValues];
+}
+
+// Refresh Academic level donut with filters
+try {
+    $p = [];
+    $where = build_where($p, $statusParam, $hasStart, $startParam, $hasEnd, $endParam);
+    $stmt = $pdo->prepare("SELECT academic_level, COUNT(*) c FROM submissions $where GROUP BY academic_level");
+    $stmt->execute($p);
+    $agg = ['Undergraduate'=>0,'Graduate School'=>0,'Open University'=>0];
+    while ($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $lvl = level_label((string)($r['academic_level'] ?? ''));
+        $agg[$lvl] = ($agg[$lvl] ?? 0) + (int)$r['c'];
+    }
+    $undergrad = $agg['Undergraduate'] ?? 0;
+    $grad = $agg['Graduate School'] ?? 0;
+    $open = $agg['Open University'] ?? 0;
+    $total_applications_chart = $undergrad + $grad + $open;
+} catch (Throwable $e) {
+    if (function_exists('log_event')) { log_event('DB_WARN', 'Overview chart query failed', ['err'=>$e->getMessage()]); }
+}
+
+// Applications by College (top 12) with N/A mapped to academic level labels and filters
+$collegeLabels = [];
+$collegeValues = [];
+try {
+    $p = [];
+    $where = build_where($p, $statusParam, $hasStart, $startParam, $hasEnd, $endParam);
+    // Augment WHERE with Completed Applications-style filters when provided
+    $adv = [];
+    // College filter: accept code (e.g., CCIS). Match when college starts with "CCIS -" or equals code
+    if (strcasecmp($collegeParam, 'All') !== 0 && $collegeParam !== '') {
+        $adv[] = '(LOWER(college) LIKE ? OR LOWER(college) = ?)';
+        $p[] = strtolower($collegeParam) . ' - %';
+        $p[] = strtolower($collegeParam);
+    }
+    // Program filter: exact, case-insensitive match to stored program
+    if (strcasecmp($programParam, 'All') !== 0 && $programParam !== '') {
+        $adv[] = 'LOWER(program) = ?';
+        $p[] = strtolower($programParam);
+    }
+    // Campus filter: exact, case-insensitive
+    if (strcasecmp($campusParam, 'All') !== 0 && $campusParam !== '') {
+        $adv[] = 'LOWER(campus) = ?';
+        $p[] = strtolower($campusParam);
+    }
+    // Type filter: match by work_classification containing the keyword (e.g., "Copyright")
+    if (strcasecmp($typeParam, 'All') !== 0 && $typeParam !== '') {
+        $adv[] = 'LOWER(work_classification) LIKE ?';
+        $p[] = '%' . strtolower($typeParam) . '%';
+    }
+    // Group filter: Employee -> academic_level contains 'employee'; Student -> does not contain 'employee'
+    if (strcasecmp($groupParam, 'All') !== 0 && $groupParam !== '') {
+        if (strcasecmp($groupParam, 'Employee') === 0) {
+            $adv[] = "LOWER(academic_level) LIKE '%employee%'";
+        } elseif (strcasecmp($groupParam, 'Student') === 0) {
+            $adv[] = "LOWER(academic_level) NOT LIKE '%employee%'";
+        }
+    }
+    if ($adv) {
+        $where .= ($where ? ' AND ' : ' WHERE ') . implode(' AND ', $adv);
+    }
+    $stmt = $pdo->prepare("SELECT college, academic_level FROM submissions $where");
+    $stmt->execute($p);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $agg = [];
+    foreach ($rows as $r) {
+        $rawCollege = trim((string)($r['college'] ?? ''));
+        $isNA = ($rawCollege === '' || strcasecmp($rawCollege, 'n/a') === 0 || strcasecmp($rawCollege, 'na') === 0 || stripos($rawCollege, 'unknown') !== false);
+        if ($isNA) {
+            $disp = level_label((string)($r['academic_level'] ?? ''));
+            $key = 'LEVEL:' . strtolower($disp);
+            if (!isset($agg[$key])) { $agg[$key] = ['label' => $disp, 'count' => 0]; }
+            $agg[$key]['count']++;
+        } else {
+            [$code, $full] = parse_college($rawCollege);
+            $code = strtoupper($code);
+            // Build display label: prefer "Full (CODE)" when both available
+            $display = '';
+            if ($full !== '' && $code !== '') { $display = $full . ' (' . $code . ')'; }
+            elseif ($full !== '') { $display = $full; }
+            elseif ($code !== '') { $display = $code; }
+            else { $display = 'Other'; }
+
+            // Grouping key: prefer code when present to consolidate variants
+            $key = $code !== '' ? ('CODE:' . strtolower($code)) : ('FULL:' . strtolower($full));
+            if (!isset($agg[$key])) { $agg[$key] = ['label' => $display, 'count' => 0]; }
+            $agg[$key]['count']++;
+        }
+    }
+    // Sort by count desc
+    uasort($agg, function($a,$b){ return $b['count'] <=> $a['count']; });
+    $lim = 12;
+    foreach ($agg as $entry) {
+        if ($lim-- <= 0) break;
+        $collegeLabels[] = $entry['label'];
+        $collegeValues[] = (int)$entry['count'];
+    }
+    // Fold others for scalability
+    [$collegeLabels, $collegeValues] = fold_others($collegeLabels, $collegeValues, 10);
+} catch (Throwable $e) {
+    if (function_exists('log_event')) { log_event('DB_WARN', 'College chart query failed', ['err' => $e->getMessage()]); }
+}
+
+// Applications by Campus (top 12) with filters and Others
+$campusLabels = [];
+$campusValues = [];
+try {
+    $p = [];
+    $where = build_where($p, $statusParam, $hasStart, $startParam, $hasEnd, $endParam);
+    $stmt = $pdo->prepare("SELECT campus, COUNT(*) c FROM submissions $where GROUP BY campus ORDER BY c DESC");
+    $stmt->execute($p);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $i => $r) {
+        $label = trim((string)($r['campus'] ?? ''));
+        if ($label === '') { $label = 'Unknown'; }
+        $campusLabels[] = $label;
+        $campusValues[] = (int)$r['c'];
+    }
+    // Limit via Others
+    [$campusLabels, $campusValues] = fold_others($campusLabels, $campusValues, 10);
+} catch (Throwable $e) {
+    if (function_exists('log_event')) { log_event('DB_WARN', 'Campus chart query failed', ['err' => $e->getMessage()]); }
+}
+
+// Work Classification distribution (by code letter if available) with filters and Others
+$wcLabels = [];
+$wcValues = [];
+try {
+    $p = [];
+    $where = build_where($p, $statusParam, $hasStart, $startParam, $hasEnd, $endParam);
+    $stmt = $pdo->prepare("SELECT work_classification, COUNT(*) c FROM submissions $where GROUP BY work_classification ORDER BY c DESC");
+    $stmt->execute($p);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $agg = [];
+    foreach ($rows as $r) {
+        $wc = trim((string)($r['work_classification'] ?? ''));
+        $count = (int)$r['c'];
+        $code = '';
+        if ($wc !== '' && preg_match('/\(([^)]+)\)/', $wc, $m)) { $code = strtolower(trim($m[1])); }
+        $label = $code !== '' ? 'Type ' . strtoupper($code) : ($wc !== '' ? $wc : 'Unspecified');
+        $agg[$label] = ($agg[$label] ?? 0) + $count;
+    }
+    // Sort by count desc and limit
+    arsort($agg);
+    $lim = 12;
+    foreach ($agg as $label => $count) {
+        if ($lim-- <= 0) break;
+        $wcLabels[] = $label;
+        $wcValues[] = (int)$count;
+    }
+    [$wcLabels, $wcValues] = fold_others($wcLabels, $wcValues, 10);
+} catch (Throwable $e) {
+    if (function_exists('log_event')) { log_event('DB_WARN', 'Work classification chart query failed', ['err' => $e->getMessage()]); }
+}
+
 // Fetch admin data
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -97,6 +336,29 @@ if (isset($_SESSION['user_id'])) {
     </header>
 
     <div class="container mt-5">
+        <!-- Dashboard Filters -->
+        <form method="get" class="row g-2 align-items-end mb-3">
+            <div class="col-12 col-sm-3">
+                <label class="form-label small fw-semibold">Status</label>
+                <select class="form-select form-select-sm" name="status">
+                    <option value="all" <?php echo $statusParam==='all'?'selected':''; ?>>All</option>
+                    <option value="pending" <?php echo $statusParam==='pending'?'selected':''; ?>>Pending</option>
+                    <option value="approved" <?php echo $statusParam==='approved'?'selected':''; ?>>Approved</option>
+                    <option value="completed" <?php echo $statusParam==='completed'?'selected':''; ?>>Completed</option>
+                </select>
+            </div>
+            <div class="col-6 col-sm-2">
+                <label class="form-label small fw-semibold">Start</label>
+                <input type="date" class="form-control form-control-sm" name="start" value="<?php echo htmlspecialchars($hasStart?$startParam:''); ?>">
+            </div>
+            <div class="col-6 col-sm-2">
+                <label class="form-label small fw-semibold">End</label>
+                <input type="date" class="form-control form-control-sm" name="end" value="<?php echo htmlspecialchars($hasEnd?$endParam:''); ?>">
+            </div>
+            <div class="col-12 col-sm-auto">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Apply</button>
+            </div>
+        </form>
         <div class="row mb-4 justify-content-center">
             <div class="col-lg-2 col-md-4 col-6 mb-3 d-flex justify-content-center">
                 <div class="summary-card users text-center w-100">
@@ -137,7 +399,8 @@ if (isset($_SESSION['user_id'])) {
                     <canvas id="applicationOverviewChart"
                             data-undergrad="<?= (int)$undergrad ?>"
                             data-grad="<?= (int)$grad ?>"
-                            data-open="<?= (int)$open ?>">
+                                data-open="<?= (int)$open ?>"
+                                data-total="<?= (int)$total_applications_chart ?>">
                     </canvas>
                 </div>
                 <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
@@ -151,25 +414,39 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
 
-        <!-- PUP MAIN–Undergraduates Bar Chart -->
+        <!-- Applications by College (Top) -->
         <div class="dashboard-section mb-4">
-            <h5><span class="legend-dot legend-undergrad"></span> Count of Applicant Details/College</h5>
+            <h5><span class="legend-dot legend-undergrad"></span> Applications by College</h5>
             <div class="bar-chart-container">
-                <canvas id="mainUndergradChart"></canvas>
+                <canvas id="mainUndergradChart"
+                    data-labels='<?php echo htmlspecialchars(json_encode($collegeLabels), ENT_QUOTES, 'UTF-8'); ?>'
+                    data-values='<?php echo htmlspecialchars(json_encode($collegeValues), ENT_QUOTES, 'UTF-8'); ?>'></canvas>
             </div>
         </div>
 
-        <!-- Other Branches and Campus Bar Chart -->
+        <!-- Applications by Campus (Top) -->
         <div class="dashboard-section mb-4">
-            <h5><span class="legend-dot legend-grad"></span> Other Campus</h5>
+            <h5><span class="legend-dot legend-grad"></span> Applications by Campus</h5>
             <div class="bar-chart-container">
-                <canvas id="branchesChart"></canvas>
+                <canvas id="branchesChart"
+                    data-labels='<?php echo htmlspecialchars(json_encode($campusLabels), ENT_QUOTES, 'UTF-8'); ?>'
+                    data-values='<?php echo htmlspecialchars(json_encode($campusValues), ENT_QUOTES, 'UTF-8'); ?>'></canvas>
+            </div>
+        </div>
+
+        <!-- Types (Work Classification) Distribution -->
+        <div class="dashboard-section mb-4">
+            <h5><span class="legend-dot legend-open"></span> Types (Work Classification) Distribution</h5>
+            <div class="bar-chart-container">
+                <canvas id="workClassChart"
+                    data-labels='<?php echo htmlspecialchars(json_encode($wcLabels), ENT_QUOTES, 'UTF-8'); ?>'
+                    data-values='<?php echo htmlspecialchars(json_encode($wcValues), ENT_QUOTES, 'UTF-8'); ?>'></canvas>
             </div>
         </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-    <script src="../javascript/admin-dashboard.js?v=2" defer></script>
+    <script src="../javascript/admin-dashboard.js?v=4" defer></script>
     <script src="../javascript/admin-profile.js?v=2" defer></script>
     <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

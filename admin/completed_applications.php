@@ -4,35 +4,117 @@ require __DIR__ . '/../config.php';
 require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
+
 // Fetch admin for profile modal
 if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
+    $user_id = (int)$_SESSION['user_id'];
     $stmt = $pdo->prepare("SELECT student_number, email FROM users WHERE user_id = ?");
     $stmt->execute([$user_id]);
-    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+    $admin = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['student_number' => '', 'email' => ''];
+} else { $admin = ['student_number' => '', 'email' => '']; }
+
+// Load completed applications from DB
+$applications = [];
+try {
+    $sql = "SELECT 
+                s.submission_id,
+                s.submission_code AS request_id,
+                s.student_number,
+                s.webmail,
+                s.home_address,
+                s.campus,
+                s.academic_level,
+                s.college,
+                s.program,
+                s.title,
+                s.date_accomplished,
+                s.status_updated_at,
+                s.created_at,
+                s.work_classification,
+                CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) AS student_name
+            FROM submissions s
+            WHERE LOWER(s.status) = 'completed'
+            ORDER BY s.status_updated_at DESC, s.created_at DESC";
+    $stmt = $pdo->query($sql);
+    $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Preload documents for all submissions
+    $apps = [];
+    $fileStmt = $pdo->prepare("SELECT submission_id, doc_type, file_path FROM submission_documents WHERE submission_id = ? ORDER BY doc_type ASC");
+    foreach ($subs as $s) {
+        $files = [];
+        try {
+            $fileStmt->execute([(int)$s['submission_id']]);
+            $rows = $fileStmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $f) {
+                $label = ucwords(str_replace(['_', '-'], ' ', (string)$f['doc_type']));
+                // File path stored is filename under uploads/; build relative URL from admin/
+                $filename = basename((string)$f['file_path']);
+                $safeFilename = trim(str_replace(["\r","\n"], '', $filename));
+                $url = '../uploads/' . rawurlencode($safeFilename);
+                $fsPath = app_path('uploads/' . $safeFilename);
+                $exists = is_file($fsPath);
+                $files[] = [ 'label' => $label, 'url' => $url, 'name' => $safeFilename, 'exists' => $exists ];
+            }
+        } catch (Throwable $e) { /* ignore per-submission doc errors */ }
+
+        // Build description/name/date expected by the page
+        $desc = (string)($s['title'] ?? 'Untitled');
+        $name = (string)($s['student_name'] ?? '');
+        $completedAt = $s['status_updated_at'] ?: $s['created_at'];
+        $dateLabel = $completedAt ? date('F Y', strtotime($completedAt)) : '';
+        $applicationDateIso = $completedAt ? date('Y-m-d', strtotime($completedAt)) : '';
+
+        // Compute simple group from academic level
+        $rawLevel = (string)($s['academic_level'] ?? '');
+        $group = (stripos($rawLevel, 'employee') !== false) ? 'Employee' : 'Student';
+        $college = (string)($s['college'] ?? '');
+        $collegeCode = $college;
+        if (strpos($college, ' - ') !== false) { $collegeCode = substr($college, 0, strpos($college, ' - ')); }
+
+        $applications[] = [
+            'description' => $desc,
+            'name' => $name,
+            'date' => $dateLabel,
+            'details' => [
+                'requestId' => (string)($s['request_id'] ?? ''),
+                'student' => [
+                    'name' => $name,
+                    'number' => (string)($s['student_number'] ?? ''),
+                    'email' => (string)($s['webmail'] ?? ''),
+                    'homeAddress' => (string)($s['home_address'] ?? ''),
+                    'campus' => (string)($s['campus'] ?? ''),
+                    'department' => '',
+                    'college' => $college,
+                    'program' => (string)($s['program'] ?? ''),
+                    'academicLevel' => (string)($s['academic_level'] ?? ''),
+                ],
+                'document' => [
+                    'title' => $desc,
+                    'author' => $name,
+                    'dateAccomplished' => (string)($s['date_accomplished'] ?? ''),
+                    'applicationDate' => $applicationDateIso,
+                    'workClassification' => (string)($s['work_classification'] ?? ''),
+                ],
+                'files' => $files,
+                // Certificate preview/download may be wired later; keep placeholder for now
+                'certificateUrl' => '#',
+            ],
+            // Flat attributes to support filtering
+            'meta' => [
+                'college' => $college,
+                'college_code' => $collegeCode,
+                'program' => (string)($s['program'] ?? ''),
+                'group' => $group,
+                'type' => 'Copyright',
+                'campus' => (string)($s['campus'] ?? ''),
+            ],
+        ];
+    }
+} catch (Throwable $e) {
+    if (function_exists('log_event')) { log_event('DB_ERROR', 'Query completed applications failed', ['err' => $e->getMessage()]); }
+    $applications = [];
 }
-$applications = [
-    [
-        'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        'name' => 'Jane Doe','date' => 'May 2025',
-        'details' => [
-            'student' => [ 'name' => 'Jane Doe','number' => '2022-08960-MN-0','email' => 'Jane@iskolarngbayan.pup.edu.ph','homeAddress' => '','campus' => 'PUP Sta. Mesa, Manila','department' => 'DIT','college' => 'CCIS','program' => 'Bachelor of Science In Information Technology' ],
-            'document' => [ 'title' => 'Magna aliqua.','author' => 'Jane Doe','dateAccomplished' => '2025-05-01','applicationDate' => '2025-05-31' ],
-            'files' => [ ['label' => 'Record Copyright Application','url' => '#'],['label' => 'Journal Publication Format','url' => '#'],['label' => 'Notarized Copyright Application','url' => '#'],['label' => 'Receipt of Payment','url' => '#'],['label' => 'Full Manuscript','url' => '#'],['label' => 'Approval Sheet','url' => '#'],['label' => 'Notarized Co-Authorship','url' => '#'] ],
-            'certificateUrl' => '#'
-        ],
-    ],
-    [
-        'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        'name' => 'John Doe','date' => 'September 2025',
-        'details' => [
-            'student' => [ 'name' => 'John Doe','number' => '2022-08960-MN-0','email' => 'John@iskolarngbayan.pup.edu.ph','homeAddress' => '','campus' => 'PUP Sta. Mesa, Manila','department' => 'DIT','college' => 'CCIS','program' => 'Bachelor of Science In Information Technology' ],
-            'document' => [ 'title' => 'Magna aliqua.','author' => 'John Doe','dateAccomplished' => '2025-09-18','applicationDate' => '2025-09-18' ],
-            'files' => [ ['label' => 'Record Copyright Application','url' => '#'],['label' => 'Journal Publication Format','url' => '#'],['label' => 'Notarized Copyright Application','url' => '#'],['label' => 'Receipt of Payment','url' => '#'],['label' => 'Full Manuscript','url' => '#'],['label' => 'Approval Sheet','url' => '#'],['label' => 'Notarized Co-Authorship','url' => '#'] ],
-            'certificateUrl' => '#'
-        ],
-    ],
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,7 +125,7 @@ $applications = [
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/completed_applications.css?v=4">
+    <link rel="stylesheet" href="../css/completed_applications.css?v=5">
     <link rel="stylesheet" href="../css/admin-navbar.css?v=1">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Completed Applications</title>
@@ -138,12 +220,7 @@ $applications = [
                     <button class="dropdown-item" type="button">CTHTM - College of Tourism, Hospitality and Transportation Management</button>
                 </div>
             </div>
-            <div class="ipapp-mini-dropdown" style="position:relative;">
-                <button class="ipapp-mini-btn" data-target="departmentMenu">Department<span>▼</span></button>
-                <div class="ipapp-mini-menu" id="departmentMenu">
-                    <button class="dropdown-item" type="button">All</button>
-                </div>
-            </div>
+            
             <div class="ipapp-mini-dropdown" style="position:relative;">
                 <button class="ipapp-mini-btn" data-target="programMenu">Program<span>▼</span></button>
                 <div class="ipapp-mini-menu" id="programMenu">
@@ -257,8 +334,23 @@ $applications = [
         </div>
         <main class="ipapp-list" id="ipappList">
             <?php foreach ($applications as $app): ?>
-                <?php $detailsAttr = isset($app['details']) ? htmlspecialchars(base64_encode(json_encode($app['details'])), ENT_QUOTES, 'UTF-8') : ''; ?>
-                <div class="ipapp-list-item" data-description="<?php echo htmlspecialchars(strtolower($app['description'])); ?>" data-name="<?php echo htmlspecialchars(strtolower($app['name'])); ?>" data-date="<?php echo htmlspecialchars(strtolower($app['date'])); ?>">
+                <?php 
+                    $requestId = isset($app['details']['requestId']) ? (string)$app['details']['requestId'] : '';
+                    $detailsAttr = isset($app['details']) ? htmlspecialchars(base64_encode(json_encode($app['details'])), ENT_QUOTES, 'UTF-8') : '';
+                    $meta = $app['meta'] ?? [];
+                ?>
+                <div class="ipapp-list-item"
+                     data-request-id="<?php echo htmlspecialchars($requestId); ?>"
+                     data-description="<?php echo htmlspecialchars(strtolower($app['description'])); ?>"
+                     data-name="<?php echo htmlspecialchars(strtolower($app['name'])); ?>"
+                     data-date="<?php echo htmlspecialchars(strtolower($app['date'])); ?>"
+                     data-college="<?php echo htmlspecialchars(strtolower($meta['college'] ?? '')); ?>"
+                     data-college-code="<?php echo htmlspecialchars(strtolower($meta['college_code'] ?? '')); ?>"
+                     data-program="<?php echo htmlspecialchars(strtolower($meta['program'] ?? '')); ?>"
+                     data-group="<?php echo htmlspecialchars(strtolower($meta['group'] ?? '')); ?>"
+                     data-type="<?php echo htmlspecialchars(strtolower($meta['type'] ?? '')); ?>"
+                     data-campus="<?php echo htmlspecialchars(strtolower($meta['campus'] ?? '')); ?>"
+                >
                     <a href="#" class="ipapp-desc ipapp-desc-link" data-details="<?php echo $detailsAttr; ?>">
                         <?php echo htmlspecialchars($app['description']); ?>
                     </a>
@@ -328,7 +420,7 @@ $applications = [
         </div>
     </div>
 
-<script src="../javascript/admin-completed-applications.js?v=5"></script>
+<script src="../javascript/admin-completed-applications.js?v=7"></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

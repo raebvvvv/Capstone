@@ -35,7 +35,11 @@ $files_stmt = $pdo->prepare("SELECT * FROM submission_documents WHERE submission
 $files_stmt->execute([$submission_id]);
 $files = $files_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-function pup_modal_body($submission, $authors, $files) {
+// Notes feature disabled on user side: no retrieval or rendering
+$notes = [];
+$noteSaved = null;
+
+function pup_modal_body($submission, $authors, $files, $notes = [], $noteSaved = null) {
 ?>
 <div class="container py-2">
   <div class="mb-4">
@@ -62,6 +66,12 @@ function pup_modal_body($submission, $authors, $files) {
 
         <dt class="col-sm-5 text-end fw-bold">Program :</dt>
         <dd class="col-sm-7 mb-2"><?php echo htmlspecialchars($submission['program']); ?></dd>
+
+  <dt class="col-sm-5 text-end fw-bold">Academic Level :</dt>
+  <dd class="col-sm-7 mb-2"><?php echo htmlspecialchars($submission['academic_level']); ?></dd>
+
+  <dt class="col-sm-5 text-end fw-bold">Type (Work Classification) :</dt>
+  <dd class="col-sm-7 mb-2"><?php echo htmlspecialchars($submission['work_classification'] ?? ''); ?></dd>
 
         <dt class="col-sm-5 text-end fw-bold">Date Accomplished :</dt>
         <dd class="col-sm-7 mb-2"><?php echo htmlspecialchars($submission['date_accomplished']); ?></dd>
@@ -123,12 +133,13 @@ function pup_modal_body($submission, $authors, $files) {
       <div id="reuploadControls" class="w-75 mt-3"></div>
     </div>
   </div>
+  <!-- Note feature removed on user side -->
 </div>
 <?php
 }
 
 if ($isModal) {
-    pup_modal_body($submission, $authors, $files);
+  pup_modal_body($submission, $authors, $files, $notes, $noteSaved);
     exit;
 }
 
@@ -151,7 +162,7 @@ if ($isModal) {
     <h2 class="mb-4">Submission Details</h2>
     <div class="card shadow-sm">
         <div class="card-body">
-            <?php pup_modal_body($submission, $authors, $files); ?>
+            <?php pup_modal_body($submission, $authors, $files, $notes, $noteSaved); ?>
             <a href="student-application.php" class="btn btn-secondary mt-4">Back to My Applications</a>
         </div>
     </div>

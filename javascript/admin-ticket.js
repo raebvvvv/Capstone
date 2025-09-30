@@ -114,7 +114,7 @@
     const modalBody = document.getElementById('detailsModalBody');
     if(!modalBody) return;
 
-    modalBody.innerHTML = `<div><h5>Student Information</h5>`+
+  modalBody.innerHTML = `<div><h5>Student Information</h5>`+
       `<p><strong>Name:</strong> ${editMode? `<input type='text' id='editStudentName' value='${escapeHTML(v(details.studentName,''))}' />` : escapeHTML(v(details.studentName,'—'))}</p>`+
       `<p><strong>Student Number:</strong> ${editMode? `<input type='text' id='editStudentNumber' value='${escapeHTML(v(details.studentNumber,''))}' />` : escapeHTML(v(details.studentNumber,'—'))}</p>`+
       `<p><strong>Email Address:</strong> ${editMode? `<input type='email' id='editEmail' value='${escapeHTML(v(details.email,''))}' />` : escapeHTML(v(details.email,'—'))}</p>`+
@@ -122,8 +122,10 @@
       `<p><strong>Campus:</strong> ${editMode? `<input type='text' id='editCampus' value='${escapeHTML(v(details.campus,''))}' />` : escapeHTML(v(details.campus,'—'))}</p>`+
       `<p><strong>College:</strong> ${editMode? `<input type='text' id='editCollege' value='${escapeHTML(v(details.college,''))}' />` : escapeHTML(v(details.college,'—'))}</p>`+
       `<p><strong>Program:</strong> ${editMode? `<input type='text' id='editProgram' value='${escapeHTML(v(details.program,''))}' />` : escapeHTML(v(details.program,'—'))}</p></div>`+
-      `<div><h5>Document Information</h5>`+
+  `<p><strong>Academic Level:</strong> ${escapeHTML(v(details.academicLevel,'—'))}</p>`+
+  `<div><h5>Document Information</h5>`+
       `<p><strong>Title:</strong> ${editMode? `<input type='text' id='editDocumentTitle' value='${escapeHTML(v(details.documentTitle,''))}' />` : escapeHTML(v(details.documentTitle,'—'))}</p>`+
+  `<p><strong>Type (Work Classification):</strong> ${escapeHTML(v(details.workClassification,'—'))}</p>`+
       `<p><strong>Author/s Full name/s:</strong> ${escapeHTML(v(details.studentName,'—'))}</p>`+
       `${authorsListHTML ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${authorsListHTML}</div>`: ''}`+
       `<p class="mt-2"><strong>Date Accomplished:</strong> ${editMode? `<input type='date' id='editAccomplishmentDate' value='${escapeHTML(v(details.accomplishmentDate,''))}' />` : escapeHTML(v(details.accomplishmentDate,'—'))}</p></div>`+
@@ -193,12 +195,14 @@
   function selectRemarkActive(remark){ const dd=document.getElementById('remarksDropdownActive'); if(dd) dd.textContent=remark; }
 
   document.addEventListener('DOMContentLoaded', function(){
-    // View buttons
+    // Density toggle removed; always use optimized layout
+
+    // Open details by clicking Request ID only
     document.addEventListener('click', async e=>{
-      const viewBtn = e.target.closest('.btn-view');
-      if(viewBtn){
+      const link = e.target.closest('.open-details');
+      if(link){
         e.preventDefault();
-        const tr = viewBtn.closest('tr');
+        const tr = link.closest('tr');
         const reqId = tr?.querySelector('td')?.textContent.trim() || '';
         if(!reqId){ showDetailsModal(tr); return; }
         try {
@@ -368,11 +372,11 @@
           // Capture needed values
             const rowData = {
               requestId: cells[0]?.textContent.trim() || requestId,
-              studentId: cells[1]?.textContent.trim() || '',
-              studentName: cells[2]?.textContent.trim() || '',
-              classification: cells[3]?.textContent.trim() || '',
-              program: cells[4]?.textContent.trim() || '',
-              requestDate: cells[5]?.textContent.trim() || ''
+              studentId: (row.querySelector('.student-subtext')?.textContent.trim()) || '',
+              studentName: (row.querySelector('td:nth-child(2) a.open-details')?.textContent.trim()) || '',
+              classification: cells[3-1]?.textContent.trim() || cells[3]?.textContent.trim() || '',
+              program: (row.querySelector('.col-program')?.textContent.trim()) || '',
+              requestDate: cells[5-1]?.textContent.trim() || cells[5]?.textContent.trim() || ''
             };
           row.remove();
           const completedTbody = document.querySelector('#completed tbody');
@@ -381,20 +385,17 @@
             const placeholder = completedTbody.querySelector('tr td[colspan]');
             if(placeholder && /no completed requests/i.test(placeholder.textContent)){ placeholder.parentElement.remove(); }
             const newRow = document.createElement('tr');
-            const commentsBtnHTML = comment ? '<a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>' : '<a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>';
+            const commentsBtnHTML = comment ? '<a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>' : '';
             newRow.innerHTML = `
-              <td><span style="font-weight:600;">${escapeHTML(rowData.requestId)}</span></td>
-              <td>${escapeHTML(rowData.studentId)}</td>
-              <td>${escapeHTML(rowData.studentName)}</td>
+              <td><a href=\"#\" class=\"open-details\" data-request-id=\"${escapeHTML(rowData.requestId)}\"><span style=\"font-weight:600;\">${escapeHTML(rowData.requestId)}</span></a></td>
+              <td><div><a href=\"#\" class=\"open-details\" data-request-id=\"${escapeHTML(rowData.requestId)}\">${escapeHTML(rowData.studentName)}</a><div class=\"student-subtext text-muted small\">${escapeHTML(rowData.studentId)}</div></div></td>
               <td>${escapeHTML(rowData.classification)}</td>
-              <td>${escapeHTML(rowData.program)}</td>
+              <td class=\"col-program text-truncate\" title=\"${escapeHTML(rowData.program)}\">${escapeHTML(rowData.program)}</td>
               <td>${escapeHTML(rowData.requestDate)}</td>
               <td>Completed</td>
-              <td>Complete</td>
               <td>
                 <div class="action-btn-group">
-                  <a href="#" class="btn btn-success btn-sm rounded-pill px-3 btn-view-certificate" data-cert-url="#">View Certificate</a>
-                  <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
+                  <a href="#" class="btn btn-success btn-sm rounded-pill px-3 btn-view-certificate" data-request-id="${escapeHTML(rowData.requestId)}">View Certificate</a>
                   ${commentsBtnHTML}
                 </div>
               </td>`;
@@ -489,8 +490,41 @@
       } catch(err){ console.error('Approval network/parse error', err); alert('Network error'); }
     }); }
 
-    // Certificate view
-    document.addEventListener('click', e=>{ const trigger = e.target.closest('.btn-view-certificate'); if(!trigger) return; e.preventDefault(); const url = trigger.getAttribute('data-cert-url') || ''; const dl = document.getElementById('downloadCertificateBtn'); if(dl){ if(url){ dl.href = url; dl.setAttribute('download','certificate.pdf'); } else { dl.href='#'; dl.removeAttribute('download'); } } const el = document.getElementById('certificateModal'); if(el) ModalApi.show(el); });
+    // View Certificate from Completed tab
+    document.addEventListener('click', async e=>{
+      const trigger = e.target.closest('.btn-view-certificate');
+      if(!trigger) return;
+      e.preventDefault();
+      const requestId = trigger.getAttribute('data-request-id') || '';
+      const modalEl = document.getElementById('certificateModal');
+      if(!modalEl) return;
+      const body = modalEl.querySelector('.modal-body');
+      if(body) body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+      try {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch('../admin/fetch_submission_details.php', { method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify({ request_id: requestId }) });
+        const data = await res.json();
+        if(!data.success){
+          if(body) body.innerHTML = '<div class="text-danger">Failed to load certificate.</div>';
+        } else {
+          // Render a simple certificate preview: re-use server-side rendering if available or compose HTML
+          const title = (data.documentTitle || data.title || 'Certificate');
+          const owner = data.studentName || '';
+          const code = data.request_id || requestId;
+          const html = `<div class="certificate-preview"><iframe src="completed_applications.php?code=${encodeURIComponent(code)}&preview=1" width="100%" height="500" style="border:none;"></iframe></div>`;
+          if(body) body.innerHTML = html;
+          const dl = modalEl.querySelector('#downloadCertificateBtn');
+          if(dl) dl.href = 'completed_applications.php?code=' + encodeURIComponent(code) + '&download=1';
+        }
+      } catch(err){
+        if(body) body.innerHTML = '<div class="text-danger">Network error.</div>';
+      }
+      try {
+        if(window.bootstrap && window.bootstrap.Modal){
+          window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        }
+      } catch(_){ modalEl.style.display = 'block'; }
+    });
 
     // Incomplete Active (Approved tab) - keep row in Approved, update in place (no resubmission flow)
     let approvedIncompleteTargetRow = null;
@@ -602,10 +636,9 @@
           if(adminComment){ parts.push(`Comment: ${adminComment}`); }
           text = parts.join('\n');
         } else {
-          const tds = Array.from(tr.querySelectorAll('td'));
-          if(tr.closest('#pending')){ text = (tds[6]?.textContent || '').trim(); }
+          if(tr.closest('#pending')){ text = 'For Evaluation'; }
           else if(tr.closest('#approved')){ text = 'No remarks available.'; }
-          else if(tr.closest('#completed')){ text = (tds[7]?.textContent || '').trim(); }
+          else if(tr.closest('#completed')){ text = 'Complete'; }
         }
       }
       if(!text) text = 'No remarks available.';
@@ -613,12 +646,52 @@
       const cm = document.getElementById('commentModal'); if(cm) ModalApi.show(cm);
     });
 
+    // Row expander ('More') removed
+
     // Initialization scan: Add Comments button for any pending rows already in 'Awaiting Review'
     document.querySelectorAll('#pending tbody tr').forEach(tr=>{ const cells = tr.querySelectorAll('td'); const remark = (cells[6]?.textContent || '').trim().toLowerCase(); if(remark === 'awaiting review'){ ensureCommentsButton(tr); } });
     // Optional cleanup: remove/disable stray Comments buttons in Approved tab without a stored comment attribute
     document.querySelectorAll('#approved tbody tr').forEach(tr=>{
       const hasComment = (tr.getAttribute('data-admin-comment')||'').trim() !== '';
       if(!hasComment){ const btn = tr.querySelector('.btn-comments'); if(btn){ btn.remove(); } }
+    });
+
+    // Table sorting
+    function sortTable(tbody, key, dir){
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const idxMap = { request: 0, name: 1, class: 2, program: 3, date: 4, status: 5 };
+      const getVal = (tr)=>{
+        switch(key){
+          case 'request': return (tr.querySelector('td:nth-child(1)')?.textContent||'').trim();
+          case 'name': return (tr.querySelector('td:nth-child(2)')?.textContent||'').trim();
+          case 'class': return (tr.querySelector('td:nth-child(3)')?.textContent||'').trim();
+          case 'program': return (tr.querySelector('.col-program')?.textContent||'').trim();
+          case 'date': return (tr.querySelector('td:nth-child(5)')?.textContent||'').trim();
+          case 'status': return (tr.querySelector('td:nth-child(6)')?.textContent||'').trim();
+          default: return tr.textContent.trim();
+        }
+      };
+      rows.sort((a,b)=>{
+        const va = getVal(a).toLowerCase();
+        const vb = getVal(b).toLowerCase();
+        if(va === vb) return 0;
+        return dir==='asc' ? (va>vb?1:-1) : (va<vb?1:-1);
+      });
+      rows.forEach(r=> tbody.appendChild(r));
+    }
+    document.querySelectorAll('table thead th.sortable').forEach(th=>{
+      th.setAttribute('role','button');
+      th.addEventListener('click', ()=>{
+        const table = th.closest('table');
+        const tbody = table?.querySelector('tbody');
+        const key = th.getAttribute('data-sort')||'';
+        const current = th.getAttribute('aria-sort');
+        const dir = current==='asc' ? 'desc' : 'asc';
+        // reset others
+        th.parentElement.querySelectorAll('th.sortable').forEach(h=> h.removeAttribute('aria-sort'));
+        th.setAttribute('aria-sort', dir);
+        if(tbody && key){ sortTable(tbody, key, dir); }
+      });
     });
   });
 })();

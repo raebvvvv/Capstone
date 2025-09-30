@@ -1,104 +1,49 @@
 // Modal API wrapper: use Bootstrap when present; fallback otherwise
 const ModalApi = (() => {
-  function cleanup() {
-    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-    document.body.classList.remove('modal-open');
-    document.body.style.removeProperty('overflow');
-    document.body.style.removeProperty('padding-right');
-  }
-  function backdrop() {
-    const bd = document.createElement('div');
-    bd.className = 'modal-backdrop fade show';
-    document.body.appendChild(bd);
-    return bd;
-  }
-  function show(el) {
-    try {
-      if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
-        new bootstrap.Modal(el).show();
-        return;
-      }
-    } catch (_) {}
-    // fallback
-    el.style.display = 'block';
-    el.removeAttribute('aria-hidden');
-    el.setAttribute('aria-modal', 'true');
-    el.classList.add('show');
-    backdrop();
-    document.body.classList.add('modal-open');
-    el.querySelectorAll('[data-bs-dismiss="modal"]').forEach(btn => {
-      btn.addEventListener('click', () => hide(el), { once: true });
-    });
-  }
-  function hide(el) {
-    try {
-      if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
-        const inst = bootstrap.Modal.getInstance(el);
-        if (inst) { inst.hide(); return; }
-      }
-    } catch (_) {}
-    el.classList.remove('show');
-    el.style.display = 'none';
-    el.setAttribute('aria-hidden', 'true');
-    cleanup();
-  }
-  return { show, hide };
-})();
-
-function initDownloadSummary() {
-	const openBtn = document.getElementById('openDownloadSummaryModal');
-	const modalEl = document.getElementById('downloadSummaryModal');
-	const confirmBtn = document.getElementById('confirmDownloadSummaryBtn');
-	const headerCloseBtn = modalEl ? modalEl.querySelector('[data-bs-dismiss="modal"]') : null;
-
-	function cleanupModalArtifacts() {
-		// Remove any stray Bootstrap modal backdrops and reset body state
+	function cleanup() {
 		document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
 		document.body.classList.remove('modal-open');
 		document.body.style.removeProperty('overflow');
 		document.body.style.removeProperty('padding-right');
 	}
-
-	// If the trigger already uses Bootstrap data attributes, let Bootstrap handle opening.
-	const usesDataApi = openBtn && openBtn.hasAttribute('data-bs-toggle');
-	if (openBtn && modalEl && !usesDataApi) {
-		openBtn.addEventListener('click', (e) => {
-			e.preventDefault();
-			ModalApi.show(modalEl);
+	function backdrop() {
+		const bd = document.createElement('div');
+		bd.className = 'modal-backdrop fade show';
+		document.body.appendChild(bd);
+		return bd;
+	}
+	function show(el) {
+		try {
+			if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+				new bootstrap.Modal(el).show();
+				return;
+			}
+		} catch (_) {}
+		// fallback
+		el.style.display = 'block';
+		el.removeAttribute('aria-hidden');
+		el.setAttribute('aria-modal', 'true');
+		el.classList.add('show');
+		backdrop();
+		document.body.classList.add('modal-open');
+		el.querySelectorAll('[data-bs-dismiss="modal"]').forEach(btn => {
+			btn.addEventListener('click', () => hide(el), { once: true });
 		});
 	}
-
-	if (confirmBtn) {
-		confirmBtn.addEventListener('click', () => {
-			const selected = document.querySelector('input[name="summaryType"]:checked');
-			const type = selected ? selected.value : 'national';
-			const url = `../admin/download_summary.php?type=${encodeURIComponent(type)}`;
-			window.location.href = url;
-		});
+	function hide(el) {
+		try {
+			if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+				const inst = bootstrap.Modal.getInstance(el);
+				if (inst) { inst.hide(); return; }
+			}
+		} catch (_) {}
+		el.classList.remove('show');
+		el.style.display = 'none';
+		el.setAttribute('aria-hidden', 'true');
+		cleanup();
 	}
-
-		// When modal fully hides, ensure any lingering backdrops are cleaned up
-		if (modalEl) {
-			modalEl.addEventListener('hidden.bs.modal', () => {
-				// Allow Bootstrap to finish cleanup first, then ensure no leftovers
-				setTimeout(cleanupModalArtifacts, 50);
-			});
-		}
-
-		// Also hook the header close as a safety (in case events were wired oddly)
-		if (headerCloseBtn) {
-			headerCloseBtn.addEventListener('click', () => {
-				setTimeout(cleanupModalArtifacts, 100);
-			});
-		}
-}
-
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', initDownloadSummary);
-} else {
-	initDownloadSummary();
-}
-
+	return { show, hide };
+})();
 
 // --- Filters/Search logic (no eval, CSP-safe) ---
 function initCompletedAppsFilters() {
@@ -115,6 +60,7 @@ function initCompletedAppsFilters() {
 	const endDateEl = document.getElementById('endDate');
 	const othersBtn = document.getElementById('othersBtn');
 	const filtersBar = document.getElementById('filtersBar');
+	const dashboardLink = document.querySelector('a.nav-link[href="admin.php"], a.nav-link[href="./admin.php"], a.nav-link[href="/admin/admin.php"]');
 
 	// Dependent dropdowns: College -> Program mapping
 	const COLLEGE_PROGRAMS = {
@@ -231,12 +177,21 @@ function initCompletedAppsFilters() {
 
 	const collegeBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="collegeMenu"]') : null;
 	const programBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="programMenu"]') : null;
-	const departmentBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="departmentMenu"]') : null;
+	// Department filter removed from UI
+	const departmentBtn = null;
+	const campusMenu = document.getElementById('campusMenu');
 	const collegeMenu = document.getElementById('collegeMenu');
 	const programMenu = document.getElementById('programMenu');
-	const departmentMenu = document.getElementById('departmentMenu');
+	const departmentMenu = null;
+	const typesMenu = document.getElementById('typesMenu');
+	const groupMenu = document.getElementById('groupMenu');
 
 	let selectedCollegeCode = 'All';
+	let selectedProgram = 'All';
+	let selectedDepartment = 'All';
+	let selectedCampus = 'All';
+	let selectedType = 'All';
+	let selectedGroup = 'All';
 
 	function getAllPrograms() {
 		const set = new Set();
@@ -244,11 +199,26 @@ function initCompletedAppsFilters() {
 		return Array.from(set);
 	}
 
-	function getAllDepartments() {
-		const set = new Set();
-		Object.values(COLLEGE_DEPARTMENTS).forEach(arr => arr.forEach(d => set.add(d)));
-		return Array.from(set);
-	}
+	// Utility: normalize text for matching
+	function norm(text){ return (text||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+
+	// Build a mapping of lowercase program name -> display (proper case) per college
+	const PROGRAM_DISPLAY_MAP = (()=>{
+		const map = {};
+		Object.keys(COLLEGE_PROGRAMS).forEach(code=>{
+			const entries = COLLEGE_PROGRAMS[code] || [];
+			const m = {};
+			entries.forEach(name=>{ m[norm(name)] = name; });
+			map[code] = m;
+		});
+		// Also create an 'ALL' union map for fallback display across colleges
+		const all = {};
+		Object.values(map).forEach(m=>{ Object.keys(m).forEach(k=>{ if(!(k in all)) all[k]=m[k]; }); });
+		map.ALL = all;
+		return map;
+	})();
+
+	function getAllDepartments() { return []; }
 
 	function setBtnLabel(btn, baseLabel, valueLabel) {
 		if (!btn) return;
@@ -256,21 +226,52 @@ function initCompletedAppsFilters() {
 		btn.innerHTML = `${label}<span>▼</span>`;
 	}
 
-	function buildProgramMenu(programs) {
-		if (!programMenu) return;
-		const items = [`<button class="dropdown-item" type="button">All</button>`]
-			.concat(programs.map(p => `<button class="dropdown-item" type="button">${p}</button>`))
+	function buildProgramMenuFromValues(programValues, collegeCode){
+		if(!programMenu) return;
+		const code = (!collegeCode || collegeCode==='All') ? 'ALL' : (collegeCode||'');
+		const dict = PROGRAM_DISPLAY_MAP[code] || PROGRAM_DISPLAY_MAP.ALL || {};
+		// Fallbacks: if derived values are empty, try static list for selected college, then ALL union
+		let values = Array.isArray(programValues) ? programValues.slice() : [];
+		if (values.length === 0) {
+			const staticList = (code !== 'ALL' && COLLEGE_PROGRAMS[code]) ? COLLEGE_PROGRAMS[code] : [];
+			values = staticList.slice();
+		}
+		if (values.length === 0) {
+			const all = Object.values(PROGRAM_DISPLAY_MAP.ALL || {});
+			values = all.slice();
+		}
+		// Dedupe and sort by display label
+		const seen = new Set();
+		values = values.filter(v=>{
+			const key = norm(v);
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		}).sort((a,b)=> (a||'').localeCompare(b||''));
+		const items = [ `<button class="dropdown-item" type="button" data-value="All">All</button>` ]
+			.concat(values.map(v=>{
+				const val = norm(v);
+				const disp = dict[val] || (v || '').replace(/\b\w/g, ch=>ch.toUpperCase());
+				return `<button class="dropdown-item" type="button" data-value="${val}">${disp}</button>`;
+			}))
 			.join('');
 		programMenu.innerHTML = items;
 	}
 
-	function buildDepartmentMenu(departments) {
-		if (!departmentMenu) return;
-		const items = [`<button class="dropdown-item" type="button">All</button>`]
-			.concat(departments.map(d => `<button class="dropdown-item" type="button">${d}</button>`))
-			.join('');
-		departmentMenu.innerHTML = items;
+	// Derive program list from actual items on the page, filtered by college code if provided
+	function collectProgramsFor(collegeCode){
+		const set = new Set();
+		Array.from(document.querySelectorAll('#ipappList .ipapp-list-item')).forEach(el=>{
+			const code = (el.getAttribute('data-college-code')||'').trim();
+			if(!collegeCode || collegeCode==='All' || code === (collegeCode||'').toLowerCase()){
+				const prog = (el.getAttribute('data-program')||'').trim();
+				if(prog) set.add(prog.replace(/\s+/g,' ').trim());
+			}
+		});
+		return Array.from(set).sort((a,b)=> a.localeCompare(b));
 	}
+
+	function buildDepartmentMenu(departments) { /* no-op */ }
 
 	function parseCollegeCode(text) {
 		if (!text) return 'All';
@@ -281,15 +282,15 @@ function initCompletedAppsFilters() {
 
 	function onCollegeSelected(labelText) {
 		selectedCollegeCode = parseCollegeCode(labelText);
-		const programs = selectedCollegeCode === 'All' ? getAllPrograms() : (COLLEGE_PROGRAMS[selectedCollegeCode] || []);
-		buildProgramMenu(programs);
+		const programs = collectProgramsFor(selectedCollegeCode);
+	buildProgramMenuFromValues(programs, selectedCollegeCode);
 		setBtnLabel(collegeBtn, 'College', selectedCollegeCode === 'All' ? '' : selectedCollegeCode);
-		setBtnLabel(programBtn, 'Program', 'All');
+	setBtnLabel(programBtn, 'Program', 'All');
+		selectedProgram = 'All';
 
 		// Rebuild Department menu based on selected college
-		const departments = selectedCollegeCode === 'All' ? getAllDepartments() : (COLLEGE_DEPARTMENTS[selectedCollegeCode] || []);
-		if (departmentMenu) buildDepartmentMenu(departments);
-		setBtnLabel(departmentBtn, 'Department', 'All');
+	// Department filter removed
+		updateListVisibility();
 	}
 
 	let selectedRange = 'all';
@@ -352,13 +353,78 @@ function initCompletedAppsFilters() {
 		return desc.includes(q) || name.includes(q) || date.includes(q);
 	}
 
+	function matchesFilters(el){
+		// College
+		if (selectedCollegeCode !== 'All') {
+			const code = (el.getAttribute('data-college-code')||'').trim();
+			if (code !== selectedCollegeCode.toLowerCase()) return false;
+		}
+		// Program
+		if (selectedProgram !== 'All') {
+			const prog = (el.getAttribute('data-program')||'').trim();
+			if (prog !== (selectedProgram||'').toLowerCase()) return false;
+		}
+		// Department filter removed
+		// Campus (substring match)
+		if (selectedCampus !== 'All') {
+			const campus = (el.getAttribute('data-campus')||'').trim();
+			if (!campus.includes(selectedCampus.toLowerCase())) return false;
+		}
+		// Types
+		if (selectedType !== 'All') {
+			const t = (el.getAttribute('data-type')||'').trim();
+			if (t !== selectedType.toLowerCase()) return false;
+		}
+		// Group
+		if (selectedGroup !== 'All') {
+			const g = (el.getAttribute('data-group')||'').trim();
+			if (g !== selectedGroup.toLowerCase()) return false;
+		}
+		return true;
+	}
+
 	function updateListVisibility() {
 		const q = (searchInput && searchInput.value || '').trim().toLowerCase();
 		items.forEach(el => {
 			const d = parseIsoOrFallbackDate(el);
-			const ok = matchesQuery(el, q) && isInSelectedRange(d);
+			const ok = matchesQuery(el, q) && isInSelectedRange(d) && matchesFilters(el);
 			el.style.display = ok ? '' : 'none';
 		});
+		updateDashboardLink();
+	}
+
+	function updateDashboardLink(){
+		if (!dashboardLink) return;
+		const params = new URLSearchParams();
+		// Always scope to completed applications when jumping to dashboard
+		params.set('status','completed');
+		// College/program/campus/type/group
+		if (selectedCollegeCode && selectedCollegeCode !== 'All') params.set('college', selectedCollegeCode);
+		if (selectedProgram && selectedProgram !== 'All') params.set('program', selectedProgram);
+		if (selectedCampus && selectedCampus !== 'All') params.set('campus', selectedCampus);
+		if (selectedType && selectedType !== 'All') params.set('type', selectedType);
+		if (selectedGroup && selectedGroup !== 'All') params.set('group', selectedGroup);
+		// Date range
+		const now = new Date();
+		function fmt(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+		if (selectedRange === 'today'){
+			const a = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			const b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			params.set('start', fmt(a)); params.set('end', fmt(b));
+		} else if (selectedRange === 'thismonth'){
+			const a = new Date(now.getFullYear(), now.getMonth(), 1);
+			const b = new Date(now.getFullYear(), now.getMonth()+1, 0);
+			params.set('start', fmt(a)); params.set('end', fmt(b));
+		} else if (selectedRange === 'thisyear'){
+			const a = new Date(now.getFullYear(), 0, 1);
+			const b = new Date(now.getFullYear(), 11, 31);
+			params.set('start', fmt(a)); params.set('end', fmt(b));
+		} else if (selectedRange === 'custom' && customRange.start && customRange.end){
+			params.set('start', fmt(customRange.start));
+			params.set('end', fmt(customRange.end));
+		}
+		const base = 'admin.php';
+		dashboardLink.href = base + '?' + params.toString();
 	}
 
 	// Search
@@ -487,17 +553,50 @@ function initCompletedAppsFilters() {
 			programMenu.addEventListener('click', (e) => {
 				const item = e.target.closest('.dropdown-item');
 				if (!item) return;
-				setBtnLabel(programBtn, 'Program', item.textContent.trim() === 'All' ? 'All' : item.textContent.trim());
+				const value = item.getAttribute('data-value') || 'All';
+				const label = item.textContent.trim();
+				setBtnLabel(programBtn, 'Program', label === 'All' ? 'All' : label);
+				selectedProgram = value;
+				updateListVisibility();
 				programMenu.classList.remove('menu-active');
 			});
 		}
 
-		if (departmentMenu) {
-			departmentMenu.addEventListener('click', (e) => {
+		// Department menu removed
+
+		// Campus
+		if (campusMenu) {
+			campusMenu.addEventListener('click', (e) => {
 				const item = e.target.closest('.dropdown-item');
 				if (!item) return;
-				setBtnLabel(departmentBtn, 'Department', item.textContent.trim() === 'All' ? 'All' : item.textContent.trim());
-				departmentMenu.classList.remove('menu-active');
+				const label = item.textContent.trim();
+				selectedCampus = label;
+				updateListVisibility();
+				campusMenu.classList.remove('menu-active');
+			});
+		}
+
+		// Types
+		if (typesMenu) {
+			typesMenu.addEventListener('click', (e) => {
+				const item = e.target.closest('.dropdown-item');
+				if (!item) return;
+				const label = item.textContent.trim();
+				selectedType = label;
+				updateListVisibility();
+				typesMenu.classList.remove('menu-active');
+			});
+		}
+
+		// Group
+		if (groupMenu) {
+			groupMenu.addEventListener('click', (e) => {
+				const item = e.target.closest('.dropdown-item');
+				if (!item) return;
+				const label = item.textContent.trim();
+				selectedGroup = label;
+				updateListVisibility();
+				groupMenu.classList.remove('menu-active');
 			});
 		}
 
@@ -525,7 +624,24 @@ function initCompletedAppsFilters() {
 			const s = details.student || {};
 			const d = details.document || {};
 			const files = Array.isArray(details.files) ? details.files : [];
-			const fileRows = files.map(f => `<li class="d-flex justify-content-between align-items-center mb-2"><span>${f.label||''}</span><div class="d-flex gap-2"><a class="btn btn-sm btn-download" href="${f.url||'#'}" download>Download File</a><a class="btn btn-sm btn-view-file" href="${f.url||'#'}" target="_blank" rel="noopener">View File</a></div></li>`).join('');
+			const fileRows = files.map(f => {
+				const exists = !!f.exists;
+				const href = exists ? (f.url || '#') : '#';
+				const name = f.name || '';
+				const label = f.label || name || '';
+				const nameNote = name ? ` <small class="text-muted">(${name})</small>` : '';
+				const missingNote = exists ? '' : ` <small class="text-danger">(missing)</small>`;
+				const downloadAttr = exists && name ? `download="${name}"` : (exists ? 'download' : '');
+				const dlBtn = exists ? `<a class="btn btn-sm btn-download" href="${href}" ${downloadAttr}>Download File</a>` : `<button class="btn btn-sm btn-download" disabled>Download File</button>`;
+				const viewBtn = exists ? `<a class="btn btn-sm btn-view-file" href="${href}" target="_blank" rel="noopener">View File</a>` : `<button class="btn btn-sm btn-view-file" disabled>View File</button>`;
+				return `<li class="d-flex justify-content-between align-items-center mb-2">
+					<span>${label}${nameNote}${missingNote}</span>
+					<div class="d-flex gap-2">
+						${dlBtn}
+						${viewBtn}
+					</div>
+				</li>`;
+			}).join('');
 			body.innerHTML = `
 				<div>
 					<h5>Student Information</h5>
@@ -534,13 +650,15 @@ function initCompletedAppsFilters() {
 					<p><strong>Email Address:</strong> ${s.email||'—'}</p>
 					<p><strong>Home Address:</strong> ${s.homeAddress||'—'}</p>
 					<p><strong>Campus:</strong> ${s.campus||'—'}</p>
-					<p><strong>Department:</strong> ${s.department||'—'}</p>
+                    
 					<p><strong>College:</strong> ${s.college||'—'}</p>
 					<p><strong>Program:</strong> ${s.program||'—'}</p>
+					<p><strong>Academic Level:</strong> ${s.academicLevel||'—'}</p>
 				</div>
 				<div class="mt-3">
 					<h5>Document Information</h5>
 					<p><strong>Title:</strong> ${d.title||'—'}</p>
+					<p><strong>Type (Work Classification):</strong> ${d.workClassification||'—'}</p>
 					<p><strong>Author/s Full name/s:</strong> ${d.author||s.name||'—'}</p>
 					<p><strong>Date Accomplished:</strong> ${d.dateAccomplished||'—'}</p>
 				</div>
@@ -570,17 +688,38 @@ function initCompletedAppsFilters() {
 
 	// Initial render
 	updateListVisibility();
+	updateDashboardLink();
+
+	// Deep-link: if ?code= is present, highlight and open that item
+	try {
+		const params = new URLSearchParams(window.location.search);
+		const code = params.get('code');
+		if (code) {
+			const target = items.find(el => (el.getAttribute('data-request-id') || '').trim() === code.trim());
+			if (target) {
+				// scroll into view and flash highlight
+				target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				target.classList.add('bg-warning-subtle');
+				setTimeout(() => target.classList.remove('bg-warning-subtle'), 2000);
+				const link = target.querySelector('.ipapp-desc-link');
+				if (link) {
+					const ev = new MouseEvent('click', { bubbles: true, cancelable: true });
+					link.dispatchEvent(ev);
+				}
+			}
+		}
+	} catch (_) {}
 
 	// Initialize dependent dropdowns with full list
 	if (programMenu) {
-		buildProgramMenu(getAllPrograms());
+		buildProgramMenuFromValues(collectProgramsFor('All'), 'All');
 	}
 	if (departmentMenu) {
 		buildDepartmentMenu(getAllDepartments());
 	}
 	setBtnLabel(collegeBtn, 'College', '');
 	setBtnLabel(programBtn, 'Program', 'All');
-	setBtnLabel(departmentBtn, 'Department', 'All');
+	// Department button removed
 }
 
 if (document.readyState === 'loading') {
