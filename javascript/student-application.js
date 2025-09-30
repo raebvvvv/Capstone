@@ -439,20 +439,77 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Download as PDF (print) handler
+  // Download as PDF handler (prefer direct PDF generation; fallback to print if unavailable)
   document.addEventListener('click', function(e){
     const dlBtn = e.target.closest('#downloadRequestIdBtn');
     if(!dlBtn) return;
     e.preventDefault();
     const card = document.getElementById('requestIdCard');
     if(!card) return;
-    // Simple print: open new window with minimal styles
-    const html = `<!DOCTYPE html><html><head><title>Request ID</title><style>body{font-family:Arial,Helvetica,sans-serif;margin:40px;} .card{border:1px solid #000;padding:16px;max-width:480px;} h1{font-size:18px;text-align:center;margin:0 0 12px;} p{margin:4px 0;font-size:14px;} </style></head><body><div class="card">` + card.innerHTML + `</div><script>window.print();setTimeout(()=>window.close(),300);<\/script></body></html>`;
-    const w = window.open('', '_blank','noopener');
-    if(!w){ alert('Popup blocked. Please allow popups to download.'); return; }
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
+    // Build validation link using current Request ID (prefer signed URL from server)
+    const ridText = (document.getElementById('rid_value')?.textContent || '').trim();
+    const buildFallbackValidateUrl = () => {
+      try {
+        const origin = window.location.origin;
+        return origin + '/Capstone/validate_ticket.php?code=' + encodeURIComponent(ridText || '');
+      } catch(_) { return ''; }
+    };
+    const validateUrlPromise = (async () => {
+      if(!ridText) return '';
+      try {
+        const r = await fetch(`ticket_token.php?code=${encodeURIComponent(ridText)}`);
+        const d = await r.json();
+        if(d && d.success && d.verifyUrl){ return d.verifyUrl; }
+      } catch(_) { /* ignore and fallback */ }
+      return buildFallbackValidateUrl();
+    })();
+
+    // Helper to load html2pdf once
+    const loadScriptOnce = (src) => new Promise((resolve, reject) => {
+      if (window.html2pdf) return resolve();
+      const s = document.createElement('script');
+      s.src = src; s.async = true; s.onload = () => resolve(); s.onerror = () => reject(new Error('load failed'));
+      document.head.appendChild(s);
+    });
+
+    const buildWrapper = (validateUrl) => {
+      const wrap = document.createElement('div');
+      wrap.style.fontFamily = 'Arial,Helvetica,sans-serif';
+      wrap.style.fontSize = '14px';
+      wrap.style.width = '520px';
+      wrap.style.margin = '0 auto';
+      wrap.innerHTML = '<div style="border:1px solid #000;padding:16px;">' + card.innerHTML + (validateUrl ? `<p style="margin-top:8px;"><strong>Validation link:</strong> <span style="color:#555;">${validateUrl}</span></p>` : '') + '</div>';
+      return wrap;
+    };
+
+    // Resolve validate URL first, then try direct PDF generation (no print dialog)
+    validateUrlPromise.then((validateUrl) =>
+      loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js')
+        .then(() => {
+          const wrapper = buildWrapper(validateUrl);
+          document.body.appendChild(wrapper);
+          const filename = 'RequestID-' + (ridText || 'ticket') + '.pdf';
+          const opt = { margin: 10, filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+          return window.html2pdf().set(opt).from(wrapper).save().finally(() => { try { document.body.removeChild(wrapper); } catch(_) {} });
+        })
+        .catch(() => {
+          // Fallback: print via hidden iframe (user can choose Save as PDF)
+          const html = `<!DOCTYPE html><html><head><title>Request ID</title><style>body{font-family:Arial,Helvetica,sans-serif;margin:40px;} .card{border:1px solid #000;padding:16px;max-width:520px;} h1{font-size:18px;text-align:center;margin:0 0 12px;} p{margin:4px 0;font-size:14px;} .muted{color:#555;} .mt{margin-top:8px;} </style></head><body><div class=\"card\">`
+            + card.innerHTML
+            + (validateUrl ? `<p class=\"mt\"><strong>Validation link:</strong> <span class=\"muted\">${validateUrl}</span></p>` : '')
+            + `</div></body></html>`;
+          const iframe = document.createElement('iframe');
+          iframe.style.position = 'fixed'; iframe.style.right = '0'; iframe.style.bottom = '0'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = '0';
+          document.body.appendChild(iframe);
+          const doc = iframe.contentWindow || iframe.contentDocument;
+          const docEl = doc.document || doc;
+          docEl.open(); docEl.write(html); docEl.close();
+          setTimeout(() => {
+            try { (iframe.contentWindow || iframe).focus(); (iframe.contentWindow || iframe).print(); } catch(_) {}
+            setTimeout(() => { try { document.body.removeChild(iframe); } catch(_) {} }, 1000);
+          }, 300);
+        })
+    );
   });
 
 });
