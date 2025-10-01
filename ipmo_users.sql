@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 29, 2025 at 02:49 PM
+-- Generation Time: Oct 01, 2025 at 09:02 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.4.12
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,20 +24,6 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `submission_notes`
---
-
-CREATE TABLE `submission_notes` (
-  `id` int(11) NOT NULL,
-  `submission_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `note` text NOT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `admin_notifications`
 --
 
@@ -50,20 +36,6 @@ CREATE TABLE `admin_notifications` (
   `message` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `is_read` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `submission_notes_admin_views`
---
-
-CREATE TABLE `submission_notes_admin_views` (
-  `id` int(11) NOT NULL,
-  `submission_id` int(11) NOT NULL,
-  `admin_id` int(11) NOT NULL,
-  `last_viewed_at` datetime DEFAULT current_timestamp(),
-  UNIQUE KEY `uniq_view` (`submission_id`,`admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -109,7 +81,24 @@ INSERT INTO `admin_notifications` (`id`, `submission_id`, `submission_code`, `us
 (36, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 11:21:38', 1),
 (37, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 11:25:12', 1),
 (38, 37, 'SRID-2025-20250927-4', 19, 'full_manuscript', 'User #19 re-uploaded full manuscript (SRID-2025-20250927-4)', '2025-09-29 11:25:12', 1),
-(39, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 11:33:44', 1);
+(39, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 11:33:44', 1),
+(40, 37, 'SRID-2025-20250927-4', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250927-4)', '2025-09-29 12:59:17', 1),
+(41, 37, 'SRID-2025-20250927-4', 19, 'full_manuscript', 'User #19 re-uploaded full manuscript (SRID-2025-20250927-4)', '2025-09-29 13:03:14', 1),
+(42, 37, 'SRID-2025-20250927-4', 19, 'journal_publication_format', 'User #19 re-uploaded journal publication format (SRID-2025-20250927-4)', '2025-09-29 13:03:14', 1),
+(43, 37, 'SRID-2025-20250927-4', 19, 'record_copyright', 'User #19 re-uploaded record copyright (SRID-2025-20250927-4)', '2025-09-29 13:03:14', 1),
+(44, 39, 'SRID-2025-20250929-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250929-1)', '2025-09-29 14:47:58', 1),
+(45, 39, 'SRID-2025-20250929-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250929-1)', '2025-09-29 14:48:49', 1),
+(46, 39, 'SRID-2025-20250929-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250929-1)', '2025-09-29 15:07:42', 1),
+(47, 40, 'SRID-2025-20250930-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250930-1)', '2025-09-30 06:47:33', 1),
+(48, 40, 'SRID-2025-20250930-1', 19, 'journal_publication_format', 'User #19 re-uploaded journal publication format (SRID-2025-20250930-1)', '2025-09-30 08:44:20', 1),
+(49, 40, 'SRID-2025-20250930-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250930-1)', '2025-09-30 10:55:43', 1),
+(50, 40, 'SRID-2025-20250930-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250930-1)', '2025-09-30 11:26:46', 1),
+(51, 40, 'SRID-2025-20250930-1', 19, 'full_manuscript', 'User #19 re-uploaded full manuscript (SRID-2025-20250930-1)', '2025-09-30 11:26:47', 1),
+(52, 40, 'SRID-2025-20250930-1', 19, 'journal_publication_format', 'User #19 re-uploaded journal publication format (SRID-2025-20250930-1)', '2025-09-30 11:26:47', 1),
+(53, 40, 'SRID-2025-20250930-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20250930-1)', '2025-09-30 11:31:24', 1),
+(54, 42, 'SRID-2025-20251001-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20251001-1)', '2025-10-01 16:37:53', 1),
+(55, 42, 'SRID-2025-20251001-1', 19, 'journal_publication_format', 'User #19 re-uploaded journal publication format (SRID-2025-20251001-1)', '2025-10-01 18:36:18', 1),
+(56, 42, 'SRID-2025-20251001-1', 19, 'approval_sheet', 'User #19 re-uploaded approval sheet (SRID-2025-20251001-1)', '2025-10-01 18:41:28', 1);
 
 -- --------------------------------------------------------
 
@@ -216,14 +205,18 @@ CREATE TABLE `submissions` (
 INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first_name`, `middle_name`, `last_name`, `student_number`, `home_address`, `mobile_number`, `webmail`, `campus`, `academic_level`, `college`, `program`, `work_classification`, `title`, `date_accomplished`, `accepted_terms`, `status`, `status_updated_at`, `remarks`, `version`, `is_latest`, `submission_type`, `created_at`, `updated_at`, `reviewer_id`, `reviewed_at`, `adviser_id`) VALUES
 (27, 'SRID-2025-20250924-3', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Information Technology (MSIT)', '(m) Pictorial illustrations and advertisements', 'eqweq', '2025-09-24', 1, 'approved', '2025-09-29 00:45:15', 'test', 1, 1, 'copyright', '2025-09-24 17:33:20', '2025-09-29 00:45:15', 18, '2025-09-29 00:45:15', 11),
 (29, 'SRID-2025-20250924-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', 'Bachelor of Science in Chemistry (BSCHEM)', '(n) Computer Programs', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-16', 1, 'approved', '2025-09-29 19:31:08', 'testing', 1, 1, 'copyright', '2025-09-24 17:45:57', '2025-09-29 19:31:08', 18, '2025-09-29 19:31:08', 12),
-(31, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(e) Dramatic or dramatic-musical compositions; choreographic works', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-22', 1, 'approved', '2025-09-29 19:30:41', 'Error in Document', 1, 1, 'copyright', '2025-09-24 17:55:30', '2025-09-29 19:30:41', 18, '2025-09-27 22:34:43', 11),
-(32, 'SRID-2025-20250924-4', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Open University', 'N/A', 'Doctor in Public Administration (DPA)', '(b) Periodicals and newspaper', 'testt', '2025-09-24', 1, 'approved', '2025-09-27 23:38:41', 'Missing Document', 1, 1, 'copyright', '2025-09-24 18:57:04', '2025-09-27 23:38:41', 18, '2025-09-27 22:30:01', 13),
+(31, 'SRID-2025-20250924-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(e) Dramatic or dramatic-musical compositions; choreographic works', 'A Mathematical Model for Predicting the Diffusion of  Information in Social Networks', '2025-09-22', 1, 'completed', '2025-10-02 00:34:43', 'Documents don’t match', 1, 1, 'copyright', '2025-09-24 17:55:30', '2025-10-02 00:34:43', 18, '2025-09-27 22:34:43', 11),
+(32, 'SRID-2025-20250924-4', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Open University', 'N/A', 'Doctor in Public Administration (DPA)', '(b) Periodicals and newspaper', 'testt', '2025-09-24', 1, 'completed', '2025-09-30 19:39:26', 'Missing Document', 1, 1, 'copyright', '2025-09-24 18:57:04', '2025-09-30 19:39:26', 18, '2025-09-27 22:30:01', 13),
 (33, 'SRID-2025-20250924-5', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(q) Broadcast recordings', 'a', '2025-09-24', 1, 'completed', '2025-09-28 01:49:09', 'LESTGO', 1, 1, 'copyright', '2025-09-24 21:32:32', '2025-09-28 01:49:09', 18, '2025-09-27 22:14:06', 14),
 (34, 'SRID-2025-20250927-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master in Business Administration (MBA)', '(b) Periodicals and newspaper', 'a', '2025-09-27', 1, 'completed', '2025-09-28 01:42:01', 'test', 1, 1, 'copyright', '2025-09-27 21:05:13', '2025-09-28 01:42:01', 22, '2025-09-27 22:01:13', 15),
 (35, 'SRID-2025-20250927-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Mathematics (MSM)', '(p) Sound recordings', 'TEST', '2025-09-27', 1, 'completed', '2025-09-28 00:37:01', 'Error in Document', 1, 1, 'copyright', '2025-09-27 21:17:27', '2025-09-28 00:37:01', 22, '2025-09-27 22:00:19', 15),
 (36, 'SRID-2025-20250927-3', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master in Business Administration (MBA)', '(c) Lectures, sermons, addresses, dissertations for oral delivery', 'HEHE', '2025-09-27', 1, 'completed', '2025-09-28 00:44:48', 'for evaluation', 1, 1, 'copyright', '2025-09-27 23:48:30', '2025-09-28 00:44:48', 18, '2025-09-28 00:35:43', 15),
-(37, 'SRID-2025-20250927-4', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master in Business Administration (MBA)', '(a) Books, Pamphlets, articles and other writings', 'TESTING', '2025-09-27', 1, 'pending_review', '2025-09-29 19:33:36', 'For Evaluation', 1, 1, 'copyright', '2025-09-27 23:54:02', '2025-09-29 19:33:44', NULL, NULL, 15),
-(38, 'SRID-2025-20250927-5', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Mathematics (MSM)', '(o) Other literary, scholarly, scientific and artistic works', 'a', '2025-09-26', 1, 'completed', '2025-09-28 02:27:57', 'test', 1, 1, 'copyright', '2025-09-28 02:11:50', '2025-09-28 02:27:57', 18, '2025-09-28 02:17:29', 15);
+(37, 'SRID-2025-20250927-4', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master in Business Administration (MBA)', '(a) Books, Pamphlets, articles and other writings', 'TESTING', '2025-09-27', 1, 'completed', '2025-09-30 21:58:28', 'For Evaluation', 1, 1, 'copyright', '2025-09-27 23:54:02', '2025-09-30 21:58:28', 18, '2025-09-29 21:03:46', 15),
+(38, 'SRID-2025-20250927-5', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Mathematics (MSM)', '(o) Other literary, scholarly, scientific and artistic works', 'a', '2025-09-26', 1, 'completed', '2025-09-28 02:27:57', 'test', 1, 1, 'copyright', '2025-09-28 02:11:50', '2025-09-28 02:27:57', 18, '2025-09-28 02:17:29', 15),
+(39, 'SRID-2025-20250929-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', 'Bachelor of Science Food Technology (BSFT)', '(o) Other literary, scholarly, scientific and artistic works', 'testing', '2025-09-10', 1, 'completed', '2025-09-30 19:41:08', 'Missing Document', 1, 1, 'copyright', '2025-09-29 22:46:51', '2025-09-30 19:41:08', 18, '2025-09-30 13:05:55', 11),
+(40, 'SRID-2025-20250930-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'N/A', 'Doctor of Philosophy in Communication (PhD Com)', '(o) Other literary, scholarly, scientific and artistic works', 'qweqweq', '2025-09-26', 1, 'completed', '2025-09-30 19:41:47', 'For Evaluation', 1, 1, 'copyright', '2025-09-30 14:47:06', '2025-09-30 19:41:47', 18, '2025-09-30 19:41:27', 11),
+(41, 'SRID-2025-20250930-2', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'N/A', 'Doctor of Philosophy in Economics (PhD Econ)', '(b) Periodicals and newspaper', 'Heliocentric Theory', '2025-09-30', 1, 'completed', '2025-09-30 22:27:46', 'for evaluation', 1, 1, 'copyright', '2025-09-30 22:26:01', '2025-09-30 22:27:46', 18, '2025-09-30 22:27:18', 11),
+(42, 'SRID-2025-20251001-1', 19, 'Juan', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '123 Sampaguita St., Manila City', '09171234567', 'hellohihihi1234567890@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Tourism, Hospitality and Transportation Management (CTHTM)', 'Bachelor of Science in Hospitality Management (BSHM)', '(p) Sound recordings', 'Recording of the Plates', '2025-10-01', 1, 'pending_review', '2025-10-02 02:41:01', 'For Evaluation', 1, 1, 'copyright', '2025-10-02 00:37:09', '2025-10-02 02:41:28', NULL, NULL, 11);
 
 -- --------------------------------------------------------
 
@@ -264,7 +257,14 @@ INSERT INTO `submission_authors` (`author_id`, `submission_id`, `first_name`, `m
 (48, 35, 'a', '', '', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-27 21:17:27', 15),
 (49, 36, 'a', '', '', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-27 23:48:30', 15),
 (50, 37, 'a', '', '', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-27 23:54:02', 15),
-(51, 38, 'a', '', '', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-28 02:11:50', 15);
+(51, 38, 'a', '', '', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-28 02:11:50', 15),
+(52, 39, 'Hella', '', 'Deola', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-29 22:46:51', 11),
+(53, 39, 'Mark Reinier', 'Malinaw', 'Dela Cruz', '2023-12335-MN-0', '09171234567', '4746 Peralta St. V. Mapa Sta. Mesa Manila', 'juankarlosdelacruz@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-09-29 22:46:51', NULL),
+(54, 40, 'Mark Reinier', 'E', 'Salvador', '2023-12335-MN-0', '09171234567', '4746 Peralta St. V. Mapa Sta. Mesa Manila', 'juankarlosdelacruz@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-09-30 14:47:06', NULL),
+(55, 41, 'Hella', '', 'Deola', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-09-30 22:26:01', 11),
+(56, 41, 'Janella', 'Malinaw', 'Hella', '2023-12335-MN-0', '09171234567', '4746 Peralta St. V. Mapa Sta. Mesa Manila', 'firstnamelastname@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-09-30 22:26:01', NULL),
+(57, 42, 'Hella', '', 'Deola', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-10-02 00:37:09', 11),
+(58, 42, 'Nora', 'Malinaw', 'Aurora', '2023-12335-MN-0', '09171234567', '123 Sampaguita St., Manila City', 'juandelacruz@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-02 00:37:09', NULL);
 
 -- --------------------------------------------------------
 
@@ -346,20 +346,48 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (250, 36, 'notarized_coauthorship', 'notarized_coauthorship_1758988110_670c9813.pdf', '2025-09-27 23:48:30', 171741, 'application/pdf', 0, NULL, NULL),
 (251, 36, 'approval_sheet', 'approval_sheet_1758988110_86624ff1.pdf', '2025-09-27 23:48:30', 171741, 'application/pdf', 0, NULL, NULL),
 (252, 36, 'record_copyright', 'record_copyright_1758988110_da3b5c1c.pdf', '2025-09-27 23:48:30', 171741, 'application/pdf', 0, NULL, NULL),
-(253, 37, 'journal_publication_format', 'journal_publication_format_1758988442_2ea8d677.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
+(253, 37, 'journal_publication_format', 'journal_publication_format_1759150994_9099328f.pdf', '2025-09-29 21:03:14', 1831, 'application/pdf', 0, NULL, NULL),
 (254, 37, 'notarized_copyright', 'notarized_copyright_1758988442_102257d6.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
 (255, 37, 'receipt_payment', 'receipt_payment_1758988442_3328ccda.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
-(256, 37, 'full_manuscript', 'full_manuscript_1759145112_472bdd43.pdf', '2025-09-29 19:25:12', 171741, 'application/pdf', 0, NULL, NULL),
+(256, 37, 'full_manuscript', 'full_manuscript_1759150994_a65245f6.pdf', '2025-09-29 21:03:14', 1822, 'application/pdf', 0, NULL, NULL),
 (257, 37, 'notarized_coauthorship', 'notarized_coauthorship_1758988442_f754df6e.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
-(258, 37, 'approval_sheet', 'approval_sheet_1759145624_680fad91.pdf', '2025-09-29 19:33:44', 171741, 'application/pdf', 0, NULL, NULL),
-(259, 37, 'record_copyright', 'record_copyright_1758988442_4120e2ee.pdf', '2025-09-27 23:54:02', 171741, 'application/pdf', 0, NULL, NULL),
+(258, 37, 'approval_sheet', 'approval_sheet_1759150757_47de8b79.pdf', '2025-09-29 20:59:17', 1831, 'application/pdf', 0, NULL, NULL),
+(259, 37, 'record_copyright', 'record_copyright_1759150994_7d381ee9.pdf', '2025-09-29 21:03:14', 1835, 'application/pdf', 0, NULL, NULL),
 (260, 38, 'journal_publication_format', 'journal_publication_format_1758996710_20522c43.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
 (261, 38, 'notarized_copyright', 'notarized_copyright_1758996710_3461e90a.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
 (262, 38, 'receipt_payment', 'receipt_payment_1758996710_f8359d1f.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
 (263, 38, 'full_manuscript', 'full_manuscript_1758996710_90a425fe.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
 (264, 38, 'notarized_coauthorship', 'notarized_coauthorship_1758996710_e69df97d.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
 (265, 38, 'approval_sheet', 'approval_sheet_1758996710_8e8360e9.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
-(266, 38, 'record_copyright', 'record_copyright_1758996710_04836bf3.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL);
+(266, 38, 'record_copyright', 'record_copyright_1758996710_04836bf3.pdf', '2025-09-28 02:11:50', 171741, 'application/pdf', 0, NULL, NULL),
+(267, 39, 'journal_publication_format', 'journal_publication_format_1759157211_108c3081.pdf', '2025-09-29 22:46:51', 1831, 'application/pdf', 0, NULL, NULL),
+(268, 39, 'notarized_copyright', 'notarized_copyright_1759157211_3b7cd6fc.pdf', '2025-09-29 22:46:51', 1841, 'application/pdf', 0, NULL, NULL),
+(269, 39, 'receipt_payment', 'receipt_payment_1759157211_db232168.pdf', '2025-09-29 22:46:51', 1821, 'application/pdf', 0, NULL, NULL),
+(270, 39, 'full_manuscript', 'full_manuscript_1759157211_53007de5.pdf', '2025-09-29 22:46:51', 1822, 'application/pdf', 0, NULL, NULL),
+(271, 39, 'notarized_coauthorship', 'notarized_coauthorship_1759157211_1331bf70.pdf', '2025-09-29 22:46:51', 1831, 'application/pdf', 0, NULL, NULL),
+(272, 39, 'approval_sheet', 'approval_sheet_1759158462_e4cb1274.pdf', '2025-09-29 23:07:42', 1831, 'application/pdf', 0, NULL, NULL),
+(273, 39, 'record_copyright', 'record_copyright_1759157211_839d9ba6.pdf', '2025-09-29 22:46:51', 1835, 'application/pdf', 0, NULL, NULL),
+(274, 40, 'journal_publication_format', 'journal_publication_format_1759231607_44d27c6e.pdf', '2025-09-30 19:26:47', 1831, 'application/pdf', 0, NULL, NULL),
+(275, 40, 'notarized_copyright', 'notarized_copyright_1759214826_e40d69bc.pdf', '2025-09-30 14:47:06', 1841, 'application/pdf', 0, NULL, NULL),
+(276, 40, 'receipt_payment', 'receipt_payment_1759214826_cdfe6b50.pdf', '2025-09-30 14:47:06', 1821, 'application/pdf', 0, NULL, NULL),
+(277, 40, 'full_manuscript', 'full_manuscript_1759231607_64e64bfb.pdf', '2025-09-30 19:26:47', 1822, 'application/pdf', 0, NULL, NULL),
+(278, 40, 'notarized_coauthorship', 'notarized_coauthorship_1759214826_f6b0c2cd.pdf', '2025-09-30 14:47:06', 1831, 'application/pdf', 0, NULL, NULL),
+(279, 40, 'approval_sheet', 'approval_sheet_1759231884_50d1c66a.pdf', '2025-09-30 19:31:24', 1831, 'application/pdf', 0, NULL, NULL),
+(280, 40, 'record_copyright', 'record_copyright_1759214826_c4f12913.pdf', '2025-09-30 14:47:06', 1835, 'application/pdf', 0, NULL, NULL),
+(281, 41, 'journal_publication_format', 'journal_publication_format_1759242361_511dc3b7.pdf', '2025-09-30 22:26:01', 1831, 'application/pdf', 0, NULL, NULL),
+(282, 41, 'notarized_copyright', 'notarized_copyright_1759242361_ca3c5bbc.pdf', '2025-09-30 22:26:01', 1841, 'application/pdf', 0, NULL, NULL),
+(283, 41, 'receipt_payment', 'receipt_payment_1759242361_5eff92e6.pdf', '2025-09-30 22:26:01', 1821, 'application/pdf', 0, NULL, NULL),
+(284, 41, 'full_manuscript', 'full_manuscript_1759242361_801df643.pdf', '2025-09-30 22:26:01', 1822, 'application/pdf', 0, NULL, NULL),
+(285, 41, 'notarized_coauthorship', 'notarized_coauthorship_1759242361_b0b04c66.pdf', '2025-09-30 22:26:01', 1831, 'application/pdf', 0, NULL, NULL),
+(286, 41, 'approval_sheet', 'approval_sheet_1759242361_c71a2551.pdf', '2025-09-30 22:26:01', 1831, 'application/pdf', 0, NULL, NULL),
+(287, 41, 'record_copyright', 'record_copyright_1759242361_3bc5f0f3.pdf', '2025-09-30 22:26:01', 1835, 'application/pdf', 0, NULL, NULL),
+(288, 42, 'journal_publication_format', 'journal_publication_format_1759343778_a780eba9.pdf', '2025-10-02 02:36:18', 1831, 'application/pdf', 0, NULL, NULL),
+(289, 42, 'notarized_copyright', 'notarized_copyright_1759336629_e46703d0.pdf', '2025-10-02 00:37:09', 1841, 'application/pdf', 0, NULL, NULL),
+(290, 42, 'receipt_payment', 'receipt_payment_1759336629_21bb4b21.pdf', '2025-10-02 00:37:09', 1821, 'application/pdf', 0, NULL, NULL),
+(291, 42, 'full_manuscript', 'full_manuscript_1759336629_12d81f44.pdf', '2025-10-02 00:37:09', 1822, 'application/pdf', 0, NULL, NULL),
+(292, 42, 'notarized_coauthorship', 'notarized_coauthorship_1759336629_61565415.pdf', '2025-10-02 00:37:09', 1831, 'application/pdf', 0, NULL, NULL),
+(293, 42, 'approval_sheet', 'approval_sheet_1759344088_9db78e0c.pdf', '2025-10-02 02:41:28', 1831, 'application/pdf', 0, NULL, NULL),
+(294, 42, 'record_copyright', 'record_copyright_1759336629_bcb697f2.pdf', '2025-10-02 00:37:09', 1835, 'application/pdf', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -386,12 +414,93 @@ CREATE TABLE `submission_incomplete_meta` (
 INSERT INTO `submission_incomplete_meta` (`submission_id`, `scope`, `issue_label`, `admin_comment`, `affected_doc_types`, `updated_at`, `created_at`, `reuploaded_doc_types`, `reupload_locked`) VALUES
 (27, 'pending', 'Error in Document/Upload', 'test', '', '2025-09-29 00:44:17', '2025-09-29 00:39:07', NULL, 0),
 (29, 'pending', 'Error in Document/Upload', 'test', '', '2025-09-28 23:39:48', '2025-09-27 23:31:41', NULL, 0),
-(31, 'approved', 'Error in Document', 'test', 'approval_sheet', '2025-09-29 19:30:41', '2025-09-29 19:30:41', NULL, 0),
+(31, 'approved', 'Documents don’t match', NULL, NULL, '2025-09-30 22:49:44', '2025-09-29 19:30:41', NULL, 0),
 (32, 'approved', 'Missing Document', NULL, 'approval_sheet|full_manuscript|journal_publication_format|notarized_coauthorship|notarized_copyright|receipt_payment|record_copyright', '2025-09-27 23:38:41', '2025-09-27 23:38:41', NULL, 0),
 (33, 'approved', 'Missing Document', 'test', 'approval_sheet', '2025-09-27 23:40:23', '2025-09-27 23:38:31', NULL, 0),
 (34, 'approved', 'Missing Document', 'test', 'approval_sheet', '2025-09-28 00:11:49', '2025-09-27 23:38:15', NULL, 0),
 (35, 'approved', 'Error in Document', 'test', 'approval_sheet', '2025-09-28 00:20:12', '2025-09-27 23:31:49', NULL, 0),
-(37, 'pending', 'Incorrect Document/Upload', 'test', '', '2025-09-29 19:33:44', '2025-09-27 23:57:00', NULL, 0);
+(37, 'pending', 'Error in Document/Upload', 'testing', '', '2025-09-29 21:03:14', '2025-09-27 23:57:00', NULL, 0),
+(39, 'pending', 'Error in Document/Upload', NULL, '', '2025-09-29 23:07:42', '2025-09-29 22:47:19', NULL, 0),
+(39, 'approved', 'Missing Document', 'documents not enough', 'approval_sheet', '2025-09-30 19:35:44', '2025-09-30 13:07:02', NULL, 0),
+(40, 'pending', 'Incorrect Document/Upload', 'Testing', '', '2025-09-30 19:31:24', '2025-09-30 14:47:19', NULL, 0),
+(42, 'pending', NULL, NULL, '', '2025-10-02 02:41:28', '2025-10-02 00:37:17', NULL, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_notes`
+--
+
+CREATE TABLE `submission_notes` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `note` text NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `submission_notes`
+--
+
+INSERT INTO `submission_notes` (`id`, `submission_id`, `user_id`, `note`, `created_at`) VALUES
+(1, 37, 19, 'hi t3eh', '2025-09-30 20:01:45'),
+(2, 37, 19, 'hello teh', '2025-09-30 20:16:18'),
+(3, 42, 19, 'tapos na po sir', '2025-10-02 02:36:19');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_notes_admin_views`
+--
+
+CREATE TABLE `submission_notes_admin_views` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `last_viewed_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `submission_notes_admin_views`
+--
+
+INSERT INTO `submission_notes_admin_views` (`id`, `submission_id`, `admin_id`, `last_viewed_at`) VALUES
+(1, 42, 18, '2025-10-02 03:00:13'),
+(3, 37, 18, '2025-10-02 02:56:13');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ticket_tokens`
+--
+
+CREATE TABLE `ticket_tokens` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `request_id` varchar(64) NOT NULL,
+  `validation_token` varchar(64) NOT NULL,
+  `token_expires` datetime NOT NULL,
+  `status` enum('active','used','expired') NOT NULL DEFAULT 'active',
+  `used_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ticket_validation_attempts`
+--
+
+CREATE TABLE `ticket_validation_attempts` (
+  `id` int(11) NOT NULL,
+  `ip` varchar(45) NOT NULL,
+  `request_id` varchar(64) DEFAULT NULL,
+  `token` varchar(64) DEFAULT NULL,
+  `success` tinyint(1) NOT NULL DEFAULT 0,
+  `attempted_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -419,7 +528,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`user_id`, `student_number`, `email`, `password`, `role`, `status`, `verification_code`, `code_expires_at`, `email_verified_at`, `created_at`) VALUES
 (18, '2020-12345-MN-0', 'admin@ipmo.local', '$2y$10$KLqtU38o9d2UNOL5rrxU7.SnM6d3gL1PxxtqltKwbb6NnuJdBcR3W', 'admin', 'active', NULL, NULL, NULL, '2025-09-23 21:52:32'),
 (19, '2023-12335-MN-0', 'hellohihihi1234567890@gmail.com', '$2y$10$.O0EiMRNxmuVXLUaleq6zeFYyTziPjpyO3Ixf4IWcY24moWKwJdsS', 'student', 'active', NULL, NULL, '2025-09-24 15:35:59', '2025-09-24 15:35:48'),
-(20, '2023-12345-MN-0', 'aceplanetary0@gmail.com', '$2y$10$.dyFX21SHVFX9cVsiIJ18O3jEA9PtXmZpvtI65RxasxVFOnpnMT8q', 'student', 'active', NULL, NULL, '2025-09-24 18:22:51', '2025-09-24 18:22:40'),
+(20, '2023-12345-MN-0', 'aceplanetary0@gmail.com', '$2y$10$.dyFX21SHVFX9cVsiIJ18O3jEA9PtXmZpvtI65RxasxVFOnpnMT8q', 'student', 'inactive', NULL, NULL, '2025-09-24 18:22:51', '2025-09-24 18:22:40'),
 (21, '2023-12355-MN-0', 'errorloading19990@gmail.com', '$2y$10$KeO9PfVxlab10fBUfbafZ.cFcwBhxr8xKoLNvBQuPl.rwrsrq4AHi', 'student', 'pending', '19a79347aa094355', '2025-09-25 12:26:02', NULL, '2025-09-24 18:26:02'),
 (22, '2022-08680-MN-0', 'inocentesraebv@gmail.com', '$2y$12$s37ZbFYWYuPs.aK08SGzHOYkZQqCH/iQgg1tyahLuld8gT.kEFUIe', 'student', 'active', NULL, NULL, '2025-09-24 23:02:31', '2025-09-24 22:57:00');
 
@@ -488,16 +597,32 @@ ALTER TABLE `submission_incomplete_meta`
 --
 ALTER TABLE `submission_notes`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_submission_id` (`submission_id`),
-  ADD KEY `idx_user_id` (`user_id`),
-  ADD KEY `idx_created_at` (`created_at`);
+  ADD KEY `fk_sn_submission` (`submission_id`);
 
 --
 -- Indexes for table `submission_notes_admin_views`
 --
 ALTER TABLE `submission_notes_admin_views`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_submission_admin` (`submission_id`,`admin_id`);
+  ADD UNIQUE KEY `uniq_view` (`submission_id`,`admin_id`),
+  ADD KEY `idx_submission_admin` (`submission_id`,`admin_id`),
+  ADD KEY `fk_snav_admin` (`admin_id`);
+
+--
+-- Indexes for table `ticket_tokens`
+--
+ALTER TABLE `ticket_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_request_id` (`request_id`),
+  ADD KEY `idx_token` (`validation_token`),
+  ADD KEY `fk_tt_submission` (`submission_id`);
+
+--
+-- Indexes for table `ticket_validation_attempts`
+--
+ALTER TABLE `ticket_validation_attempts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_ip_time` (`ip`,`attempted_at`);
 
 --
 -- Indexes for table `users`
@@ -515,7 +640,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `advisers`
@@ -533,30 +658,42 @@ ALTER TABLE `student_profiles`
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `submission_documents`
 --
 ALTER TABLE `submission_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=267;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=295;
 
 --
 -- AUTO_INCREMENT for table `submission_notes`
 --
 ALTER TABLE `submission_notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `submission_notes_admin_views`
 --
 ALTER TABLE `submission_notes_admin_views`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `ticket_tokens`
+--
+ALTER TABLE `ticket_tokens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ticket_validation_attempts`
+--
+ALTER TABLE `ticket_validation_attempts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -602,17 +739,25 @@ ALTER TABLE `submission_documents`
 --
 ALTER TABLE `submission_incomplete_meta`
   ADD CONSTRAINT `fk_sim_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`submission_id`) ON DELETE CASCADE;
+
 --
 -- Constraints for table `submission_notes`
 --
 ALTER TABLE `submission_notes`
   ADD CONSTRAINT `fk_sn_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`submission_id`) ON DELETE CASCADE;
+
 --
 -- Constraints for table `submission_notes_admin_views`
 --
 ALTER TABLE `submission_notes_admin_views`
-  ADD CONSTRAINT `fk_snav_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`submission_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_snav_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_snav_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_snav_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`submission_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `ticket_tokens`
+--
+ALTER TABLE `ticket_tokens`
+  ADD CONSTRAINT `fk_tt_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`submission_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
