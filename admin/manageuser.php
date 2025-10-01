@@ -66,7 +66,7 @@ $result_active = $stmt_active->fetchAll();
 $sql_pending = "SELECT user_id, student_number, email, role, status FROM users WHERE status = 'pending' AND (student_number LIKE :q1 OR email LIKE :q2)" . $role_sql . " ORDER BY created_at DESC";
 $stmt_pending = $pdo->prepare($sql_pending);
 $stmt_pending->bindValue(':q1', $search_param, PDO::PARAM_STR);
-$stmt_pending->bindValue(':q2', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q2', $search_param, PDO::PARAM_STR); 
 if ($role_filter !== 'all') { $stmt_pending->bindValue(':role_filter', $role_filter, PDO::PARAM_STR); }
 $stmt_pending->execute();
 $result_pending = $stmt_pending->fetchAll();
@@ -145,7 +145,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                         <option value="all" <?php echo $role_filter==='all'?'selected':''; ?>>All Roles</option>
                         <option value="student" <?php echo $role_filter==='student'?'selected':''; ?>>Student</option>
                         <option value="employee" <?php echo $role_filter==='employee'?'selected':''; ?>>Employee</option>
-                        <option value="admin" <?php echo $role_filter==='admin'?'selected':''; ?>>Admin</option>
+                  
                     </select>
                 </div>
                 <div class="col-6 col-md-3 d-grid">

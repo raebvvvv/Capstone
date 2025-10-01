@@ -35,9 +35,25 @@ $files_stmt = $pdo->prepare("SELECT * FROM submission_documents WHERE submission
 $files_stmt->execute([$submission_id]);
 $files = $files_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Notes feature disabled on user side: no retrieval or rendering
+// Fetch existing notes for this submission (user-side view)
 $notes = [];
 $noteSaved = null;
+try {
+  // Ensure notes table exists lazily
+  $pdo->exec("CREATE TABLE IF NOT EXISTS submission_notes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    submission_id INT NOT NULL,
+    user_id INT NOT NULL,
+    note TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_sn_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+  $nstmt = $pdo->prepare('SELECT note, created_at FROM submission_notes WHERE submission_id = ? ORDER BY created_at DESC');
+  $nstmt->execute([$submission_id]);
+  $notes = $nstmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+  $notes = [];
+}
 
 function pup_modal_body($submission, $authors, $files, $notes = [], $noteSaved = null) {
 ?>
@@ -133,7 +149,51 @@ function pup_modal_body($submission, $authors, $files, $notes = [], $noteSaved =
       <div id="reuploadControls" class="w-75 mt-3"></div>
     </div>
   </div>
-  <!-- Note feature removed on user side -->
+  <!-- Notes -->
+  <div class="mt-4">
+    <h5 class="text-center text-primary fw-bold mb-3">Notes</h5>
+    <div class="d-flex flex-column align-items-center">
+      <div class="w-75">
+        <?php if (!empty($notes)): ?>
+          <ul class="list-group mb-3" id="notesList">
+            <?php foreach ($notes as $n): ?>
+              <li class="list-group-item">
+                <div class="small text-muted"><?php echo htmlspecialchars($n['created_at']); ?></div>
+                <div class="mt-1" style="white-space:pre-wrap; word-wrap:break-word;"><?php echo htmlspecialchars($n['note']); ?></div>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php else: ?>
+          <div class="text-muted small mb-3" id="notesEmpty">No notes yet.</div>
+          <ul class="list-group mb-3 d-none" id="notesList"></ul>
+        <?php endif; ?>
+        <?php 
+          $status = strtolower((string)$submission['status']);
+          $allowStatuses = ['pending','pending_review','under_review','revision_needed','approved'];
+          $canNote = in_array($status, $allowStatuses, true);
+        ?>
+        <?php if ($canNote): ?>
+        <form id="noteForm" class="card">
+          <div class="card-body">
+            <div class="mb-2">
+              <label for="noteText" class="form-label">Add a note to the IPMO</label>
+              <textarea id="noteText" name="note" rows="3" class="form-control" maxlength="1000" placeholder="Be clear and concise (max 1000 chars)"></textarea>
+              <div class="form-text">Max 1000 characters. Avoid personal data. Keep it relevant to your application.</div>
+            </div>
+            <input type="hidden" name="submission_code" value="<?php echo htmlspecialchars($submission['submission_code']); ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+            <div class="d-flex align-items-center gap-2">
+              <button type="submit" class="btn btn-sm btn-primary" id="noteSubmitBtn">Send Note</button>
+              <span class="small text-muted" id="noteHint"></span>
+            </div>
+          </div>
+        </form>
+        <?php else: ?>
+          <div class="alert alert-warning small">Notes are disabled for this submission status.</div>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
 </div>
 <?php
 }

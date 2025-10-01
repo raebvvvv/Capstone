@@ -175,17 +175,45 @@ function initCompletedAppsFilters() {
 		]
 	};
 
+	// Map short college codes used in UI to full names used by academicData.program keys
+	const CODE_TO_COLLEGE_FULL = {
+		'CAF': 'College of Accountancy and Finance (CAF)',
+		'CADBE': 'College of Architecture, Design and the Built Environment (CADBE)',
+		'CAL': 'College of Arts and Letters (CAL)',
+		'CBA': 'College of Business Administration (CBA)',
+		'COC': 'College of Communication (COC)',
+		'CCIS': 'College of Computer and Information Sciences (CCIS)',
+		'COED': 'College of Education (COED)',
+		'CE': 'College of Engineering (CE)',
+		'CHK': 'College of Human Kinetics (CHK)',
+		'CL': 'College of Law (CL)',
+		'CPSPA': 'College of Political Science and Public Administration (CPSPA)',
+		'CSSD': 'College of Social Sciences and Development (CSSD)',
+		'CS': 'College of Science (CS)',
+		'CTHTM': 'College of Tourism, Hospitality and Transportation Management (CTHTM)'
+		// Note: Institute of Technology isn't in the College menu; add if needed
+	};
+
+	// Safe accessor for academicData defined in forms/academic-dropdowns.js
+	function getAD(){
+		try { if (typeof academicData !== 'undefined') return academicData; } catch(_) {}
+		return (window.academicData || null);
+	}
+
+	const acadLevelBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="acadLevelMenu"]') : null;
 	const collegeBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="collegeMenu"]') : null;
 	const programBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="programMenu"]') : null;
 	// Department filter removed from UI
 	const departmentBtn = null;
 	const campusMenu = document.getElementById('campusMenu');
+	const acadLevelMenu = document.getElementById('acadLevelMenu');
 	const collegeMenu = document.getElementById('collegeMenu');
 	const programMenu = document.getElementById('programMenu');
 	const departmentMenu = null;
 	const typesMenu = document.getElementById('typesMenu');
 	const groupMenu = document.getElementById('groupMenu');
 
+	let selectedAcademicLevel = 'All';
 	let selectedCollegeCode = 'All';
 	let selectedProgram = 'All';
 	let selectedDepartment = 'All';
@@ -251,11 +279,34 @@ function initCompletedAppsFilters() {
 		const items = [ `<button class="dropdown-item" type="button" data-value="All">All</button>` ]
 			.concat(values.map(v=>{
 				const val = norm(v);
-				const disp = dict[val] || (v || '').replace(/\b\w/g, ch=>ch.toUpperCase());
+				const disp = dict[val] || (v || '');
 				return `<button class="dropdown-item" type="button" data-value="${val}">${disp}</button>`;
 			}))
 			.join('');
 		programMenu.innerHTML = items;
+	}
+
+	// Helpers to get program lists from academicData based on selection
+	function listUndergradCollegeKeys(){
+		const ad = getAD();
+		const data = (ad && ad.program) || {};
+		return Object.keys(data).filter(k => !['Masters','Doctorate','Open University','default'].includes(k));
+	}
+	function programsForUndergradCollege(code){
+		const ad = getAD();
+		const data = (ad && ad.program) || {};
+		if(!data || Object.keys(data).length===0){ return []; }
+		if(!code || code==='All'){
+			// Union of all undergrad colleges
+			const keys = listUndergradCollegeKeys();
+			const set = new Set();
+			keys.forEach(k=> (data[k]||[]).forEach(p=> set.add(p)) );
+			return Array.from(set);
+		}
+		const full = CODE_TO_COLLEGE_FULL[code] || null;
+		if(full && data[full]) return data[full].slice();
+		// Fallback: collect from dataset on the page
+		return collectProgramsFor(code);
 	}
 
 	// Derive program list from actual items on the page, filtered by college code if provided
@@ -282,16 +333,50 @@ function initCompletedAppsFilters() {
 
 	function onCollegeSelected(labelText) {
 		selectedCollegeCode = parseCollegeCode(labelText);
-		const programs = collectProgramsFor(selectedCollegeCode);
-	buildProgramMenuFromValues(programs, selectedCollegeCode);
+		// If graduate/Open University is selected, keep college locked
+		const gradLevels = ['masters','doctorate','open university'];
+		if (gradLevels.includes((selectedAcademicLevel||'').toLowerCase())) {
+			setBtnLabel(collegeBtn, 'College', 'N/A');
+			return;
+		}
+		const programs = programsForUndergradCollege(selectedCollegeCode);
+		buildProgramMenuFromValues(programs, selectedCollegeCode);
 		setBtnLabel(collegeBtn, 'College', selectedCollegeCode === 'All' ? '' : selectedCollegeCode);
-	setBtnLabel(programBtn, 'Program', 'All');
+		setBtnLabel(programBtn, 'Program', 'All');
 		selectedProgram = 'All';
 
 		// Rebuild Department menu based on selected college
 	// Department filter removed
 		updateListVisibility();
 	}
+
+		function onAcademicLevelSelected(labelText){
+			selectedAcademicLevel = (labelText || 'All').trim();
+			setBtnLabel(acadLevelBtn, 'Academic Level', selectedAcademicLevel === 'All' ? '' : selectedAcademicLevel);
+			// Constraint: Masters/Doctorate/Open University -> College becomes N/A and disabled; Program pulled from academicData.program[level]
+			const gradLevels = ['masters','doctorate','open university'];
+			const isGrad = gradLevels.includes((selectedAcademicLevel||'').toLowerCase());
+			if (isGrad) {
+				// Force College to N/A (display) and program list from academicData
+				selectedCollegeCode = 'N/A';
+				setBtnLabel(collegeBtn, 'College', 'N/A');
+				// Build program menu
+				const ad = getAD();
+				const list = (ad && ad.program && ad.program[selectedAcademicLevel]) ? ad.program[selectedAcademicLevel] : [];
+				// Fall back to undergrad union from academicData (proper case) if list empty
+				const values = (list && list.length) ? list : programsForUndergradCollege('All');
+				buildProgramMenuFromValues(values, 'ALL');
+				// Reset selected program
+				selectedProgram = 'All';
+				setBtnLabel(programBtn, 'Program', 'All');
+			} else {
+				// Undergraduate: enable College dropdown semantics; repopulate Program based on College
+				if (selectedCollegeCode === 'N/A') selectedCollegeCode = 'All';
+				setBtnLabel(collegeBtn, 'College', selectedCollegeCode === 'All' ? '' : selectedCollegeCode);
+				buildProgramMenuFromValues(programsForUndergradCollege(selectedCollegeCode), selectedCollegeCode);
+			}
+			updateListVisibility();
+		}
 
 	let selectedRange = 'all';
 	let customRange = { start: null, end: null };
@@ -354,6 +439,11 @@ function initCompletedAppsFilters() {
 	}
 
 	function matchesFilters(el){
+		// Academic Level
+		if (selectedAcademicLevel !== 'All'){
+			const lvl = (el.getAttribute('data-academic-level')||'').trim();
+			if (lvl !== selectedAcademicLevel.toLowerCase()) return false;
+		}
 		// College
 		if (selectedCollegeCode !== 'All') {
 			const code = (el.getAttribute('data-college-code')||'').trim();
@@ -540,11 +630,28 @@ function initCompletedAppsFilters() {
 		});
 		document.addEventListener('click', () => closeAllMini());
 
+		// Academic Level
+		if (acadLevelMenu) {
+			acadLevelMenu.addEventListener('click', (e) => {
+				const item = e.target.closest('.dropdown-item');
+				if (!item) return;
+				const label = item.textContent.trim();
+				onAcademicLevelSelected(label);
+				acadLevelMenu.classList.remove('menu-active');
+			});
+		}
+
 		// Selection within college/program menus
 		if (collegeMenu) {
 			collegeMenu.addEventListener('click', (e) => {
 				const item = e.target.closest('.dropdown-item');
 				if (!item) return;
+				// If current level is Masters/Doctorate/Open University, ignore college changes
+				const gradLevels = ['masters','doctorate','open university'];
+				if (gradLevels.includes((selectedAcademicLevel||'').toLowerCase())) {
+					// lock at N/A, do nothing
+					return;
+				}
 				onCollegeSelected(item.textContent.trim());
 				collegeMenu.classList.remove('menu-active');
 			});
@@ -712,7 +819,8 @@ function initCompletedAppsFilters() {
 
 	// Initialize dependent dropdowns with full list
 	if (programMenu) {
-		buildProgramMenuFromValues(collectProgramsFor('All'), 'All');
+		// Initialize with all undergraduate programs from academicData for better accuracy
+		buildProgramMenuFromValues(programsForUndergradCollege('All'), 'All');
 	}
 	if (departmentMenu) {
 		buildDepartmentMenu(getAllDepartments());

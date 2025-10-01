@@ -398,6 +398,59 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // --- Notes: submit handler (delegated) ---
+  document.addEventListener('submit', function(e){
+    const form = e.target.closest('#noteForm');
+    if(!form) return;
+    e.preventDefault();
+    const btn = form.querySelector('#noteSubmitBtn');
+    const textarea = form.querySelector('#noteText');
+    const hint = form.querySelector('#noteHint');
+    const list = document.getElementById('notesList');
+    const empty = document.getElementById('notesEmpty');
+    const data = new FormData(form);
+    const note = (textarea.value || '').trim();
+    if(note.length === 0){
+      hint.textContent = 'Note cannot be empty.';
+      return;
+    }
+    if(note.length > 1000){
+      hint.textContent = 'Note exceeds 1000 characters.';
+      return;
+    }
+    btn.disabled = true; hint.textContent = 'Sending…';
+    fetch('add_note.php', { method:'POST', body:data })
+      .then(r=> r.json())
+      .then(res => {
+        if(!res || !res.success){
+          const msg = (res && res.error) ? res.error : 'Failed to send note.';
+          hint.textContent = msg;
+          return;
+        }
+        // Prepend note to the list
+        if(empty){ empty.classList.add('d-none'); }
+        if(list){
+          list.classList.remove('d-none');
+          const li = document.createElement('li');
+          li.className = 'list-group-item';
+          const created = (res.note && res.note.created_at) ? res.note.created_at : new Date().toISOString().slice(0,19).replace('T',' ');
+          const text = (res.note && res.note.note) ? res.note.note : note;
+          li.innerHTML = `<div class="small text-muted">${created}</div><div class="mt-1" style="white-space:pre-wrap; word-wrap:break-word;"></div>`;
+          li.querySelector('div.mt-1').textContent = text;
+          list.prepend(li);
+        }
+        textarea.value = '';
+        const remaining = (res.limits && (res.limits.per_submission_daily_remaining ?? null))
+          ? ` Remaining today for this submission: ${res.limits.per_submission_daily_remaining}.` : '';
+        hint.textContent = 'Note sent.' + remaining;
+      })
+      .catch(err => {
+        console.error('Note submit error', err);
+        hint.textContent = 'Network error. Please try again.';
+      })
+      .finally(()=>{ btn.disabled = false; setTimeout(()=>{ hint.textContent=''; }, 4000); });
+  });
+
   // --- Request ID modal logic ---
   document.addEventListener('click', async function(e){
     const btn = e.target.closest('.btn-request-id');

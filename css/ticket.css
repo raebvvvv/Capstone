@@ -182,6 +182,9 @@ img {
     color: #222 !important;
     border: none !important;
 }
+/* Ensure the View Notes button is always clickable even with the unread dot overlay */
+.view-notes { position: relative; z-index: 3; }
+.view-notes > .position-absolute { pointer-events: none; }
 /* Removed: using flex on .action created extra header height */
 .details-modal-content {
     border-radius: 12px;

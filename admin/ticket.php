@@ -199,10 +199,11 @@ foreach ($rows as $r) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="../css/ticket.css?v=5">
+    <link rel="stylesheet" href="../css/ticket.css?v=6">
     <link rel="stylesheet" href="../css/admin-navbar.css">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Manage Requests</title>
+    <script src="../javascript/admin-filters.js?v=1" defer></script>
 </head>
 <body>
 <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>">
@@ -235,32 +236,7 @@ foreach ($rows as $r) {
                             </div>
                         </div>
                     </div>
-                    <script>
-                    document.addEventListener('click', function(e){
-                        const btn = e.target.closest('.view-notes');
-                        if (!btn) return;
-                        e.preventDefault();
-                        const id = btn.getAttribute('data-sub-id');
-                        const modalEl = document.getElementById('notesModal');
-                        const container = document.getElementById('notesContainer');
-                        container.textContent = 'Loading…';
-                        fetch('fetch_notes.php?submission_id=' + encodeURIComponent(id), { credentials: 'same-origin' })
-                            .then(r => r.ok ? r.json() : Promise.reject())
-                            .then(data => {
-                                const notes = (data && data.notes) || [];
-                                if (!notes.length) { container.innerHTML = '<div class="text-muted">No notes.</div>'; return; }
-                                container.innerHTML = notes.map(n => `
-                                    <div class="mb-3 p-2 border rounded">
-                                        <div class="small text-muted">${n.created_at} — ${n.email || ''}</div>
-                                        <div>${(n.note || '').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>
-                                    </div>
-                                `).join('');
-                            })
-                            .catch(() => { container.textContent = 'Failed to load notes.'; });
-                        const bsModal = new bootstrap.Modal(modalEl);
-                        bsModal.show();
-                    });
-                    </script>
+                    <script src="../javascript/admin-notes.js?v=1" defer></script>
                         <li class="nav-item"><a class="nav-link fw-bold" aria-current="page" href="ticket.php">Applications</a></li>
                         <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
                             <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
@@ -342,7 +318,6 @@ foreach ($rows as $r) {
                     <input class="form-check-input" type="checkbox" id="hasNotesSwitch" name="has_notes" value="1" <?php echo $has_notes ? 'checked' : ''; ?>>
                     <label class="form-check-label ms-2 small" for="hasNotesSwitch">Has Notes</label>
                 </div>
-                <button class="btn btn-outline-secondary rounded-pill px-3" type="submit">Filter</button>
                 <a href="ticket.php" class="btn btn-link">Reset</a>
             </form>
         </div>
@@ -420,10 +395,10 @@ foreach ($rows as $r) {
                                     </td>
                                     <td>
                                         <?php if ((int)($ticket['note_count'] ?? 0) > 0): ?>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm view-notes position-relative" data-sub-id="<?php echo (int)$ticket['submission_id']; ?>">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm view-notes position-relative" style="z-index:10;" data-sub-id="<?php echo (int)$ticket['submission_id']; ?>">
                                                 View (<?php echo (int)$ticket['note_count']; ?>)
                                                 <?php if ((int)($ticket['unread_count'] ?? 0) > 0): ?>
-                                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"><span class="visually-hidden">Unread</span></span>
+                                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="pointer-events:none;"><span class="visually-hidden">Unread</span></span>
                                                 <?php endif; ?>
                                             </button>
                                         <?php else: ?>
@@ -518,10 +493,10 @@ foreach ($rows as $r) {
                                     </td>
                                         <td>
                                             <?php if ((int)($ticket['note_count'] ?? 0) > 0): ?>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm view-notes position-relative" data-sub-id="<?php echo (int)$ticket['submission_id']; ?>">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm view-notes position-relative" style="z-index:10;" data-sub-id="<?php echo (int)$ticket['submission_id']; ?>">
                                                     View (<?php echo (int)$ticket['note_count']; ?>)
                                                     <?php if ((int)($ticket['unread_count'] ?? 0) > 0): ?>
-                                                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"><span class="visually-hidden">Unread</span></span>
+                                                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="pointer-events:none;"><span class="visually-hidden">Unread</span></span>
                                                     <?php endif; ?>
                                                 </button>
                                             <?php else: ?>
@@ -583,10 +558,10 @@ foreach ($rows as $r) {
                                     <td><span class="status-badge status-completed">Completed</span></td>
                                     <td>
                                         <?php if ((int)($ticket['note_count'] ?? 0) > 0): ?>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm view-notes position-relative" data-sub-id="<?php echo (int)$ticket['submission_id']; ?>">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm view-notes position-relative" style="z-index:10;" data-sub-id="<?php echo (int)$ticket['submission_id']; ?>">
                                                 View (<?php echo (int)$ticket['note_count']; ?>)
                                                 <?php if ((int)($ticket['unread_count'] ?? 0) > 0): ?>
-                                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"><span class="visually-hidden">Unread</span></span>
+                                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="pointer-events:none;"><span class="visually-hidden">Unread</span></span>
                                                 <?php endif; ?>
                                             </button>
                                         <?php else: ?>

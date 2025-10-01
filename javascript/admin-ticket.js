@@ -144,9 +144,17 @@
   function showDetailsModal(row){
     const tr = row && row.tagName==='TR' ? row : (row.closest && row.closest('tr'));
     if(!tr) return;
-    const tds = tr.querySelectorAll('td');
-    const cell = i => (tds[i]? tds[i].textContent.trim(): '');
-    const details = { studentName: cell(2), studentNumber: cell(1), email:'', homeAddress:'', campus:'', department:'', college:'', program: cell(4), documentTitle:'', authorName:'', accomplishmentDate: cell(5) };
+    const nameEl = tr.querySelector('td:nth-child(2) .fw-semibold');
+    const numEl = tr.querySelector('td:nth-child(2) .student-subtext');
+    const programText = (tr.querySelector('.col-program')?.textContent || '').trim();
+    const reqDateText = (tr.querySelector('td:nth-child(5)')?.textContent || '').trim();
+    const details = {
+      studentName: nameEl ? nameEl.textContent.trim() : '',
+      studentNumber: numEl ? numEl.textContent.trim() : '',
+      email:'', homeAddress:'', campus:'', department:'', college:'',
+      program: programText,
+      documentTitle:'', authorName:'', accomplishmentDate: reqDateText
+    };
     currentDetails = details;
     renderDetails(details,false);
     const detailsModalEl = document.getElementById('detailsModal');
@@ -279,7 +287,8 @@
           const row = Array.from(document.querySelectorAll('#pending tbody tr')).find(tr=> (tr.querySelector('td')?.textContent.trim()||'') === requestId);
             if(row){
               const cells = row.querySelectorAll('td');
-              if(cells[6]) cells[6].textContent = 'Awaiting Review';
+              // Remarks column is 6th (index 5)
+              if(cells[5]) cells[5].innerHTML = '<span class="status-badge status-awaiting">Awaiting Review</span>';
               row.classList.add('table-warning');
               if(comment) row.setAttribute('data-admin-comment', comment);
               if(remark && remark.toLowerCase() !== 'remarks') row.setAttribute('data-incomplete-remark', remark);
