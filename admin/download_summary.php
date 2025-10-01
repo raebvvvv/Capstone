@@ -55,14 +55,23 @@ function fetch_submission_people(PDO $pdo, int $sid): array {
 }
 
 // Parse inputs
-$type = isset($_GET['type']) ? strtolower(trim($_GET['type'])) : 'national';
-$isRmipo = ($type === 'rmipo');
+// Use separate 'summary' param for summary flavor to avoid clashing with 'type' filter
+$summary = isset($_GET['summary']) ? strtolower(trim($_GET['summary'])) : 'national';
+$isRmipo = ($summary === 'rmipo');
 $filename = ($isRmipo ? 'summary_rmipo' : 'summary_national') . '_' . date('Ymd_His') . '.csv';
 
 // Optional date range filter (?start=YYYY-MM-DD&end=YYYY-MM-DD)
 $start = isset($_GET['start']) ? trim($_GET['start']) : '';
 $end   = isset($_GET['end']) ? trim($_GET['end']) : '';
-$hasRange = ($start !== '' && $end !== '' && strtotime($start) && strtotime($end));
+$hasRange = ($start !== '' && $end !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $start) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $end));
+
+// Optional filters to mirror Completed Applications page
+$level  = isset($_GET['level'])  ? trim($_GET['level'])  : 'All';
+$college= isset($_GET['college'])? trim($_GET['college']): 'All'; // code like CCIS
+$program= isset($_GET['program'])? trim($_GET['program']): 'All'; // expect lowercased
+$campus = isset($_GET['campus']) ? trim($_GET['campus']) : 'All';
+$itype  = isset($_GET['type'])   ? trim($_GET['type'])   : 'All'; // maps to work_classification
+$group  = isset($_GET['group'])  ? trim($_GET['group'])  : 'All'; // Employee/Student (derived)
 
 // Build header row per spec
 if ($isRmipo) {
@@ -90,12 +99,48 @@ if ($isRmipo) {
 
 // Query completed submissions
 try {
-    $sql = "SELECT submission_id, first_name, middle_name, last_name, campus, program, title, date_accomplished, status_updated_at, created_at FROM submissions WHERE LOWER(status) = 'completed'";
+    $sql = "SELECT submission_id, first_name, middle_name, last_name, campus, program, title, date_accomplished, status_updated_at, created_at, college, academic_level, work_classification FROM submissions WHERE LOWER(status) = 'completed'";
     $params = [];
+    // Date range on COALESCE(status_updated_at, created_at)
     if ($hasRange) {
-        // Filter by status_updated_at within [start, end]
-        $sql .= " AND DATE(status_updated_at) BETWEEN ? AND ?";
+        $sql .= " AND DATE(COALESCE(status_updated_at, created_at)) BETWEEN ? AND ?";
         $params[] = $start; $params[] = $end;
+    }
+    // Academic Level (exact, case-insensitive), skip if 'All'
+    if ($level !== '' && strcasecmp($level, 'All') !== 0) {
+        $sql .= " AND LOWER(academic_level) = ?";
+        $params[] = strtolower($level);
+    }
+    // Group: Employee -> academic_level like %employee%; Student -> NOT like %employee%
+    if ($group !== '' && strcasecmp($group, 'All') !== 0) {
+        if (strcasecmp($group, 'Employee') === 0) {
+            $sql .= " AND LOWER(academic_level) LIKE '%employee%'";
+        } elseif (strcasecmp($group, 'Student') === 0) {
+            $sql .= " AND LOWER(academic_level) NOT LIKE '%employee%'";
+        }
+    }
+    // College code (accept code in multiple stored formats)
+    if ($college !== '' && strcasecmp($college, 'All') !== 0 && strcasecmp($college, 'N/A') !== 0) {
+        // Matches: "CODE - ..." OR "...(CODE)" OR exactly "CODE"
+        $sql .= " AND (college LIKE ? OR college LIKE ? OR college = ?)";
+        $params[] = $college . ' - %';
+        $params[] = '%(' . $college . ')';
+        $params[] = $college;
+    }
+    // Program (exact match, case-insensitive)
+    if ($program !== '' && strcasecmp($program, 'All') !== 0) {
+        $sql .= " AND LOWER(program) = ?";
+        $params[] = strtolower($program);
+    }
+    // Campus (substring, case-insensitive)
+    if ($campus !== '' && strcasecmp($campus, 'All') !== 0) {
+        $sql .= " AND LOWER(campus) LIKE ?";
+        $params[] = '%' . strtolower($campus) . '%';
+    }
+    // Types -> map to work_classification
+    if ($itype !== '' && strcasecmp($itype, 'All') !== 0) {
+        $sql .= " AND LOWER(work_classification) = ?";
+        $params[] = strtolower($itype);
     }
     $sql .= " ORDER BY COALESCE(status_updated_at, created_at) DESC";
     $stmt = $pdo->prepare($sql);

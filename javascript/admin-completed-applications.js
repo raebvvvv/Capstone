@@ -61,6 +61,8 @@ function initCompletedAppsFilters() {
 	const othersBtn = document.getElementById('othersBtn');
 	const filtersBar = document.getElementById('filtersBar');
 	const dashboardLink = document.querySelector('a.nav-link[href="admin.php"], a.nav-link[href="./admin.php"], a.nav-link[href="/admin/admin.php"]');
+	const downloadBtn = document.getElementById('confirmDownloadSummaryBtn');
+	const openDownloadModalBtn = document.getElementById('openDownloadSummaryModal');
 
 	// Dependent dropdowns: College -> Program mapping
 	const COLLEGE_PROGRAMS = {
@@ -382,7 +384,13 @@ function initCompletedAppsFilters() {
 	let customRange = { start: null, end: null };
 
 	function parseIsoOrFallbackDate(el) {
-		// Prefer ISO date from embedded details JSON if present
+		// 1) Explicit ISO attribute from server
+		const isoAttr = (el.getAttribute('data-application-date') || '').trim();
+		if (isoAttr) {
+			const d = new Date(isoAttr);
+			if (!Number.isNaN(d.getTime())) return d;
+		}
+		// 2) Embedded details JSON (back-compat)
 		try {
 			const descLink = el.querySelector('.ipapp-desc-link');
 			if (descLink && descLink.dataset && descLink.dataset.details) {
@@ -395,7 +403,7 @@ function initCompletedAppsFilters() {
 				}
 			}
 		} catch (_) { /* ignore */ }
-		// Fallback: try to parse data-date like "May 2025" as first of month
+		// 3) Fallback: parse human month label (month granularity only)
 		const dateText = (el.getAttribute('data-date') || '').trim();
 		if (dateText) {
 			const d = new Date(`${dateText} 1`);
@@ -405,7 +413,9 @@ function initCompletedAppsFilters() {
 	}
 
 	function isInSelectedRange(d) {
-		if (!(d instanceof Date) || Number.isNaN(d.getTime())) return true; // no date means don't filter it out
+		// If a specific range is chosen and we cannot parse a date, exclude the item.
+		const requiresDate = selectedRange !== 'all';
+		if (!(d instanceof Date) || Number.isNaN(d.getTime())) return requiresDate ? false : true;
 		const now = new Date();
 		if (selectedRange === 'today') {
 			const a = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -517,6 +527,46 @@ function initCompletedAppsFilters() {
 		dashboardLink.href = base + '?' + params.toString();
 	}
 
+	// Build Download Summary URL with current filters/date and open
+	function openDownloadSummary(){
+		const params = new URLSearchParams();
+		// summary: national|rmipo from radio (avoid clashing with 'type' filter)
+		let t = 'national';
+		try {
+			const sel = document.querySelector('input[name="summaryType"]:checked');
+			if (sel) t = sel.value;
+		} catch(_){}
+		params.set('summary', t);
+		// filters to mirror dashboard link
+		if (selectedAcademicLevel && selectedAcademicLevel !== 'All') params.set('level', selectedAcademicLevel);
+		if (selectedCollegeCode && selectedCollegeCode !== 'All') params.set('college', selectedCollegeCode);
+		if (selectedProgram && selectedProgram !== 'All') params.set('program', selectedProgram);
+		if (selectedCampus && selectedCampus !== 'All') params.set('campus', selectedCampus);
+		if (selectedType && selectedType !== 'All') params.set('type', selectedType);
+		if (selectedGroup && selectedGroup !== 'All') params.set('group', selectedGroup);
+		// date range
+		const now = new Date();
+		function fmt(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+		if (selectedRange === 'today'){
+			const a = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			const b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			params.set('start', fmt(a)); params.set('end', fmt(b));
+		} else if (selectedRange === 'thismonth'){
+			const a = new Date(now.getFullYear(), now.getMonth(), 1);
+			const b = new Date(now.getFullYear(), now.getMonth()+1, 0);
+			params.set('start', fmt(a)); params.set('end', fmt(b));
+		} else if (selectedRange === 'thisyear'){
+			const a = new Date(now.getFullYear(), 0, 1);
+			const b = new Date(now.getFullYear(), 11, 31);
+			params.set('start', fmt(a)); params.set('end', fmt(b));
+		} else if (selectedRange === 'custom' && customRange.start && customRange.end){
+			params.set('start', fmt(customRange.start));
+			params.set('end', fmt(customRange.end));
+		}
+		const url = `download_summary.php?${params.toString()}`;
+		window.open(url, '_blank');
+	}
+
 	// Search
 	if (searchInput) {
 		searchInput.addEventListener('input', updateListVisibility);
@@ -592,6 +642,14 @@ function initCompletedAppsFilters() {
 				}
 			});
 		}
+	}
+
+	// Download Summary: confirm button opens CSV with current selections
+	if (downloadBtn) {
+		downloadBtn.addEventListener('click', (e)=>{
+			e.preventDefault();
+			try { openDownloadSummary(); } catch(_) {}
+		});
 	}
 
 	// Others -> show/hide filters bar
@@ -730,6 +788,16 @@ function initCompletedAppsFilters() {
 			if (!body) return;
 			const s = details.student || {};
 			const d = details.document || {};
+			// Pretty format for Date Approved (applicationDate is ISO yyyy-mm-dd)
+			let approvedPretty = '—';
+			try {
+				if (d.applicationDate) {
+					const dt = new Date(d.applicationDate);
+					if (!Number.isNaN(dt.getTime())) {
+						approvedPretty = dt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+					}
+				}
+			} catch(_) {}
 			const files = Array.isArray(details.files) ? details.files : [];
 			const fileRows = files.map(f => {
 				const exists = !!f.exists;
@@ -766,6 +834,7 @@ function initCompletedAppsFilters() {
 					<h5>Document Information</h5>
 					<p><strong>Title:</strong> ${d.title||'—'}</p>
 					<p><strong>Type (Work Classification):</strong> ${d.workClassification||'—'}</p>
+					<p><strong>Date Approved:</strong> ${approvedPretty}</p>
 					<p><strong>Author/s Full name/s:</strong> ${d.author||s.name||'—'}</p>
 					<p><strong>Date Accomplished:</strong> ${d.dateAccomplished||'—'}</p>
 				</div>

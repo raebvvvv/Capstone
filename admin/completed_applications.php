@@ -62,7 +62,8 @@ try {
         $desc = (string)($s['title'] ?? 'Untitled');
         $name = (string)($s['student_name'] ?? '');
         $completedAt = $s['status_updated_at'] ?: $s['created_at'];
-        $dateLabel = $completedAt ? date('F Y', strtotime($completedAt)) : '';
+    $dateLabel = $completedAt ? date('F Y', strtotime($completedAt)) : '';
+    $datePretty = $completedAt ? date('F j, Y', strtotime($completedAt)) : '';
         $applicationDateIso = $completedAt ? date('Y-m-d', strtotime($completedAt)) : '';
 
         // Compute simple group from academic level
@@ -76,6 +77,7 @@ try {
             'description' => $desc,
             'name' => $name,
             'date' => $dateLabel,
+            'date_pretty' => $datePretty,
             'details' => [
                 'requestId' => (string)($s['request_id'] ?? ''),
                 'student' => [
@@ -354,7 +356,8 @@ try {
                      data-request-id="<?php echo htmlspecialchars($requestId); ?>"
                      data-description="<?php echo htmlspecialchars(strtolower($app['description'])); ?>"
                      data-name="<?php echo htmlspecialchars(strtolower($app['name'])); ?>"
-                     data-date="<?php echo htmlspecialchars(strtolower($app['date'])); ?>"
+                     data-date="<?php echo htmlspecialchars(strtolower($app['date_pretty'] ?? $app['date'])); ?>"
+                 data-application-date="<?php echo htmlspecialchars($app['details']['document']['applicationDate'] ?? ''); ?>"
                      data-college="<?php echo htmlspecialchars(strtolower($meta['college'] ?? '')); ?>"
                      data-college-code="<?php echo htmlspecialchars(strtolower($meta['college_code'] ?? '')); ?>"
                      data-program="<?php echo htmlspecialchars(strtolower($meta['program'] ?? '')); ?>"
@@ -367,7 +370,7 @@ try {
                         <?php echo htmlspecialchars($app['description']); ?>
                     </a>
                     <div class="ipapp-userdate">
-                        <a href="#" class="ipapp-user-link"><?php echo htmlspecialchars($app['name']); ?>, <?php echo htmlspecialchars($app['date']); ?></a>
+                        <a href="#" class="ipapp-user-link"><?php echo htmlspecialchars($app['name']); ?>, <?php echo htmlspecialchars($app['date_pretty'] ?? $app['date']); ?></a>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -432,7 +435,7 @@ try {
         </div>
     </div>
 
-<script src="../javascript/admin-completed-applications.js?v=9"></script>
+    <script src="../javascript/admin-completed-applications.js?v=11"></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
