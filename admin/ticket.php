@@ -370,8 +370,7 @@ foreach ($rows as $r) {
                             <tr>
                                 <th class="sortable" data-sort="request">Request ID</th>
                                 <th class="sortable" data-sort="name">Name</th>
-                                <th class="col-classification sortable" data-sort="class">Classification</th>
-                                <th class="col-program sortable" data-sort="program">Program</th>
+                                <th class="sortable" data-sort="user">User</th>
                                 <th class="col-date sortable" data-sort="date">Request Date</th>
                                 <th>Remarks</th>
                                 <th>Notes</th>
@@ -404,8 +403,13 @@ foreach ($rows as $r) {
                                             <div class="student-subtext text-muted small"><?php echo htmlspecialchars($ticket['student_id']); ?></div>
                                         </div>
                                     </td>
-                                    <td><?php echo htmlspecialchars($ticket['user_classification']); ?></td>
-                                    <td class="col-program text-truncate" title="<?php echo htmlspecialchars($ticket['program']); ?>"><?php echo htmlspecialchars($ticket['program']); ?></td>
+                                    <td>
+                                        <?php
+                                            $userRaw = trim((string)($ticket['user_classification'] ?? ''));
+                                            $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
+                                            echo htmlspecialchars($userLabel);
+                                        ?>
+                                    </td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
                                     <td>
                                         <?php if (strtolower($pendingDisplayRemark)==='awaiting review'): ?>
@@ -455,8 +459,7 @@ foreach ($rows as $r) {
                             <tr>
                                 <th class="sortable" data-sort="request">Request ID</th>
                                 <th class="sortable" data-sort="name">Name</th>
-                                <th class="col-classification sortable" data-sort="class">Classification</th>
-                                <th class="col-program sortable" data-sort="program">Program</th>
+                                <th class="sortable" data-sort="user">User</th>
                                 <th class="col-date sortable" data-sort="date">Request Date</th>
                                 <th class="sortable" data-sort="status">Status</th>
                                 <th>Notes</th>
@@ -496,8 +499,13 @@ foreach ($rows as $r) {
                                             <div class="student-subtext text-muted small"><?php echo htmlspecialchars($ticket['student_id']); ?></div>
                                         </div>
                                         </td>
-                                        <td><?php echo htmlspecialchars($ticket['user_classification']); ?></td>
-                                        <td class="col-program text-truncate" title="<?php echo htmlspecialchars($ticket['program']); ?>"><?php echo htmlspecialchars($ticket['program']); ?></td>
+                                        <td>
+                                            <?php
+                                                $userRaw = trim((string)($ticket['user_classification'] ?? ''));
+                                                $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
+                                                echo htmlspecialchars($userLabel);
+                                            ?>
+                                        </td>
                                         <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
                                     <td>
                                         <?php if (stripos($approvedStatusLabel,'await')!==false): ?>
@@ -545,8 +553,7 @@ foreach ($rows as $r) {
                             <tr>
                                 <th class="sortable" data-sort="request">Request ID</th>
                                 <th class="sortable" data-sort="name">Name</th>
-                                <th class="col-classification sortable" data-sort="class">Classification</th>
-                                <th class="col-program sortable" data-sort="program">Program</th>
+                                <th class="sortable" data-sort="user">User</th>
                                 <th class="col-date sortable" data-sort="date">Request Date</th>
                                 <th class="sortable" data-sort="status">Status</th>
                                 <th>Notes</th>
@@ -565,8 +572,13 @@ foreach ($rows as $r) {
                                             <div class="student-subtext text-muted small"><?php echo htmlspecialchars($ticket['student_id']); ?></div>
                                         </div>
                                     </td>
-                                    <td><?php echo htmlspecialchars($ticket['user_classification']); ?></td>
-                                    <td class="col-program text-truncate" title="<?php echo htmlspecialchars($ticket['program']); ?>"><?php echo htmlspecialchars($ticket['program']); ?></td>
+                                    <td>
+                                        <?php
+                                            $userRaw = trim((string)($ticket['user_classification'] ?? ''));
+                                            $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
+                                            echo htmlspecialchars($userLabel);
+                                        ?>
+                                    </td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
                                     <td><span class="status-badge status-completed">Completed</span></td>
                                     <td>
