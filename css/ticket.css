@@ -64,6 +64,32 @@ footer, .site-footer {
     text-align: center;
 }
 
+/* Sticky footer behavior: push footer to bottom when content is short */
+footer.standard-footer {
+    position: static !important;
+    margin-top: auto !important;
+}
+
+/* Match site standard footer look and feel */
+footer.standard-footer {
+    background: #fff !important;
+    border-top: 1px solid #dee2e6 !important;
+    padding: 1rem 0 !important;
+    font-size: 0.875rem !important;
+    color: #6c757d !important;
+}
+footer.standard-footer .container {
+    text-align: center !important;
+}
+footer.standard-footer a {
+    color: #0d6efd !important;
+    text-decoration: none !important;
+}
+footer.standard-footer a:hover {
+    color: #0a58ca !important;
+    text-decoration: underline !important;
+}
+
 .navbar-brand {
     font-weight: bold;
 }

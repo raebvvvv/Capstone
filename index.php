@@ -133,7 +133,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
         <h5 class="fw-bold mb-3">Register or Login here!</h5>
         <div class="d-flex">
           <a href="User/Beforelogin/login.php" class="btn btn-login fw-bold px-5 py-2">STUDENT</a>
-          <a href="User/Beforelogin/login.php" class="btn btn-login fw-bold px-5 py-2">EMPLOYEE</a>
+          <a href="User/Beforelogin/login.php?role=employee" class="btn btn-login fw-bold px-5 py-2">EMPLOYEE</a>
         </div>
       </div>
       <?php endif; ?>

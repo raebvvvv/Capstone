@@ -46,6 +46,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
+<?php
+    // Determine login mode (student default, employee optional via query)
+    $loginMode = (isset($_GET['role']) && strtolower($_GET['role']) === 'employee') ? 'employee' : 'student';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" class="login-logo">
             </div>
             <div class="text-center mb-3">
-                <span class="fw-normal student-login-text">Student Login.</span>
+                <span class="fw-normal student-login-text"><?php echo ($loginMode === 'employee') ? 'Employee Login' : 'Student Login.'; ?></span>
             </div>
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger py-2 mb-3"><?php echo $error; ?></div>

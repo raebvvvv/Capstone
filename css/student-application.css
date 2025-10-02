@@ -2,12 +2,15 @@
 body {
   background: #f7f7f7;
   min-height: 100vh;
-  /* display: flex; */
-  /* flex-direction: column; */
+  /* Sticky footer: body as a flex column */
+  display: flex;
+  flex-direction: column;
 }
 
 main {
   flex: 1 0 auto;
+  /* Ensure content doesn't get hidden behind the footer */
+  padding-bottom: 3.5rem;
 }
 
 footer, .site-footer { 
@@ -15,6 +18,17 @@ footer, .site-footer {
   width: 100%;
   text-align: center;
   margin-left: 0;
+}
+
+/* Ensure footer sits at the bottom when content is short */
+footer.standard-footer {
+  position: static !important;
+  margin-top: auto !important;
+}
+
+/* Stronger guarantee that the shared footer is not fixed on this page */
+footer.standard-footer {
+  position: static !important;
 }
 
 /* Center and limit width of main content area */
