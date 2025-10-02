@@ -452,17 +452,10 @@ foreach ($rows as $r) {
                                     $aIssue = trim((string)($ticket['approved_issue_label'] ?? ''));
                                     $aComment = trim((string)($ticket['approved_admin_comment'] ?? ''));
                                     $aAffected = trim((string)($ticket['approved_affected_doc_types'] ?? ''));
-                                    $rawRemark = trim((string)($ticket['remark'] ?? ''));
-                                    $approvedStatusLabel = '';
-                                    if ($aIssue !== '') {
-                                        $approvedStatusLabel = $aIssue;
-                                    } else {
-                                        if ($rawRemark === '' || preg_match('/^(for evaluation)$/i', $rawRemark)) {
-                                            $approvedStatusLabel = 'In-Review';
-                                        } else {
-                                            $approvedStatusLabel = $rawRemark;
-                                        }
-                                    }
+                                    // Status logic for Approved tab:
+                                    // - Default: In-Review
+                                    // - If admin flagged an issue OR selected files to resubmit (approved scope), show Awaiting Review
+                                    $approvedStatusLabel = ($aIssue !== '' || $aAffected !== '') ? 'Awaiting Review' : 'In-Review';
                                     $approvedAttrs = '';
                                     if($aIssue !== '') { $approvedAttrs .= ' data-incomplete-remark="'.htmlspecialchars($aIssue, ENT_QUOTES).'"'; }
                                     if($aComment !== '') { $approvedAttrs .= ' data-admin-comment="'.htmlspecialchars($aComment, ENT_QUOTES).'"'; }
@@ -491,7 +484,7 @@ foreach ($rows as $r) {
                                         <?php elseif (stripos($approvedStatusLabel,'review')!==false): ?>
                                             <span class="status-badge status-inreview">In-Review</span>
                                         <?php else: ?>
-                                            <span class="status-badge status-inreview"><?php echo htmlspecialchars($approvedStatusLabel); ?></span>
+                                            <span class="status-badge status-inreview">In-Review</span>
                                         <?php endif; ?>
                                     </td>
                                         <td>

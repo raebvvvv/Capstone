@@ -451,7 +451,7 @@
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
   const payload = { request_id: requestId, comment };
   console.debug('[complete_request] sending', payload, 'csrf:', csrf);
-  const res = await fetch('../admin/complete_request.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify(payload) });
+          const res = await fetch('../admin/complete_request.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify(payload) });
         let data = {};
         try { data = await res.json(); } catch(parseErr){ console.error('complete_request parse error', parseErr); }
   console.debug('[complete_request] response status', res.status, 'body', data);
@@ -473,15 +473,16 @@
         let row = Array.from(document.querySelectorAll('#approved tbody tr, #pending tbody tr')).find(tr=> (tr.querySelector('td')?.textContent.trim()||'') === requestId);
         if(row){
           const cells = row.querySelectorAll('td');
-          // Capture needed values
-            const rowData = {
-              requestId: cells[0]?.textContent.trim() || requestId,
-              studentId: (row.querySelector('.student-subtext')?.textContent.trim()) || '',
-              studentName: (row.querySelector('td:nth-child(2) a.open-details')?.textContent.trim()) || '',
-              classification: cells[3-1]?.textContent.trim() || cells[3]?.textContent.trim() || '',
-              program: (row.querySelector('.col-program')?.textContent.trim()) || '',
-              requestDate: cells[5-1]?.textContent.trim() || cells[5]?.textContent.trim() || ''
-            };
+          // Capture values based on current column structure:
+          // [0]=Request ID, [1]=Name, [2]=User, [3]=Request Date, [4]=Status/Remarks, [5]=Notes, [6]=Action
+          const reqLink = cells[0]?.querySelector('a.open-details');
+          const requestIdText = (reqLink?.getAttribute('data-request-id') || cells[0]?.textContent || requestId).trim();
+          const nameText = (cells[1]?.querySelector('.fw-semibold')?.textContent || cells[1]?.textContent || '').trim();
+          const studIdText = (cells[1]?.querySelector('.student-subtext')?.textContent || '').trim();
+          const userLabel = (cells[2]?.textContent || '').trim();
+          const reqDateText = (cells[3]?.textContent || '').trim();
+          const notesHTML = (cells[5]?.innerHTML || '<span class="text-muted small">None</span>');
+          const rowData = { requestId: requestIdText, studentName: nameText, studentId: studIdText, userLabel, requestDate: reqDateText, notesHTML };
           row.remove();
           const completedTbody = document.querySelector('#completed tbody');
           if(completedTbody){
@@ -493,10 +494,10 @@
             newRow.innerHTML = `
               <td><a href=\"#\" class=\"open-details\" data-request-id=\"${escapeHTML(rowData.requestId)}\"><span style=\"font-weight:600;\">${escapeHTML(rowData.requestId)}</span></a></td>
               <td><div><a href=\"#\" class=\"open-details\" data-request-id=\"${escapeHTML(rowData.requestId)}\">${escapeHTML(rowData.studentName)}</a><div class=\"student-subtext text-muted small\">${escapeHTML(rowData.studentId)}</div></div></td>
-              <td>${escapeHTML(rowData.classification)}</td>
-              <td class=\"col-program text-truncate\" title=\"${escapeHTML(rowData.program)}\">${escapeHTML(rowData.program)}</td>
+              <td>${escapeHTML(rowData.userLabel)}</td>
               <td>${escapeHTML(rowData.requestDate)}</td>
-              <td>Completed</td>
+              <td><span class=\"status-badge status-completed\">Completed</span></td>
+              <td>${rowData.notesHTML}</td>
               <td>
                 <div class="action-btn-group">
                   <a href="#" class="btn btn-success btn-sm rounded-pill px-3 btn-view-certificate" data-request-id="${escapeHTML(rowData.requestId)}">View Certificate</a>
@@ -547,14 +548,15 @@
           if(approveCommentModalEl) ModalApi.hide(approveCommentModalEl);
           if(pendingApproveRow){
             const cells = pendingApproveRow.querySelectorAll('td');
-            const rowData = {
-              requestId: cells[0]?.textContent.trim() || requestId,
-              studentId: cells[1]?.textContent.trim() || '',
-              studentName: cells[2]?.textContent.trim() || '',
-              classification: cells[3]?.textContent.trim() || '',
-              program: cells[4]?.textContent.trim() || '',
-              requestDate: cells[5]?.textContent.trim() || ''
-            };
+            // Column layout in Pending: [0]=Request ID, [1]=Name, [2]=User, [3]=Request Date, [4]=Remarks, [5]=Notes, [6]=Action
+            const reqLink = cells[0]?.querySelector('a.open-details');
+            const reqIdText = (reqLink?.getAttribute('data-request-id') || cells[0]?.textContent || requestId).trim();
+            const nameText = (cells[1]?.querySelector('.fw-semibold')?.textContent || cells[1]?.textContent || '').trim();
+            const studIdText = (cells[1]?.querySelector('.student-subtext')?.textContent || '').trim();
+            const userLabel = (cells[2]?.textContent || '').trim();
+            const reqDateText = (cells[3]?.textContent || '').trim();
+            const notesHTML = (cells[5]?.innerHTML || '<span class="text-muted small">None</span>');
+            const rowData = { requestId: reqIdText, studentName: nameText, studentId: studIdText, userLabel, requestDate: reqDateText, notesHTML };
             // Persist comment in the old row (in case needed) then remove
             if(comment) pendingApproveRow.setAttribute('data-admin-comment', comment);
             pendingApproveRow.remove();
@@ -564,16 +566,19 @@
               // Build Comments button only if there is a comment (respect visibility rule)
               const commentsBtnHTML = comment ? `<a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>` : '';
               newRow.innerHTML = `
-                <td>${escapeHTML(rowData.requestId)}</td>
-                <td>${escapeHTML(rowData.studentId)}</td>
-                <td>${escapeHTML(rowData.studentName)}</td>
-                <td>${escapeHTML(rowData.classification)}</td>
-                <td>${escapeHTML(rowData.program)}</td>
+                <td><a href="#" class="open-details" data-request-id="${escapeHTML(rowData.requestId)}">${escapeHTML(rowData.requestId)}</a></td>
+                <td>
+                  <div>
+                    <span class="fw-semibold">${escapeHTML(rowData.studentName)}</span>
+                    <div class="student-subtext text-muted small">${escapeHTML(rowData.studentId)}</div>
+                  </div>
+                </td>
+                <td>${escapeHTML(rowData.userLabel)}</td>
                 <td>${escapeHTML(rowData.requestDate)}</td>
                 <td>In-Review</td>
+                <td>${rowData.notesHTML}</td>
                 <td>
                   <div class="action-btn-group">
-                    <a href="#" class="btn btn-view btn-sm rounded-pill px-3">View Details</a>
                     ${commentsBtnHTML}
                     <button class="btn btn-success btn-sm rounded-pill px-3 me-1 btn-complete" data-request-id="${escapeHTML(rowData.requestId)}">Complete</button>
                     <span class="btn btn-incomplete btn-incomplete-active btn-sm rounded-pill px-3">Incomplete</span>
@@ -690,9 +695,10 @@
           console.debug('[mark_incomplete_approved] payload', { request_id: requestId, remark, comment });
           console.debug('[mark_incomplete_approved] response', data);
           if(data.success){
-            // Update row in place: keep in Approved; set remark/status and flagged files
+            // Update row in place: keep in Approved; set status and flagged files
             const cells = approvedIncompleteTargetRow.querySelectorAll('td');
-            if(cells[4]){ cells[4].textContent = remark && remark.toLowerCase()!=='remarks' ? remark : (comment? 'Needs Attention':'In-Review'); }
+            // Approved tab columns: [0]=Request ID, [1]=Name, [2]=User, [3]=Request Date, [4]=Status, [5]=Notes, [6]=Action
+            if (cells[4]){ cells[4].innerHTML = '<span class="status-badge status-awaiting">Awaiting Review</span>'; }
             approvedIncompleteTargetRow.classList.add('table-warning');
             if(comment) approvedIncompleteTargetRow.setAttribute('data-admin-comment', comment);
             if(remark && remark.toLowerCase() !== 'remarks') approvedIncompleteTargetRow.setAttribute('data-incomplete-remark', remark);

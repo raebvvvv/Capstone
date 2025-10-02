@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
 
-        const submissionCode = btn.getAttribute('data-id');
+  const submissionCode = btn.getAttribute('data-id');
         if (!submissionCode) return;
 
         const modal = bootstrap.Modal.getOrCreateInstance(detailsModalEl);
@@ -94,57 +94,60 @@ document.addEventListener('DOMContentLoaded', function () {
               host.className = 'w-75 mt-3 mx-auto';
               detailsContent.appendChild(host);
 
-              // Notes section (subtle, collapsible, minimized footprint)
-              const notesWrap = document.createElement('div');
-              notesWrap.className = 'mt-3';
-              const notes = Array.isArray(data.notes) ? data.notes : [];
-              const canNote = !!data.canNote;
-              const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-              const subCode = data.submissionCode || '';
-              const noteCount = notes.length;
-              const inCompletedTab = !!btn.closest('#completed');
-              let notesListHTML = '';
-              if(notes.length){
-                notesListHTML = '<ul class="list-group mb-2" id="notesList">' + notes.map(n=>{
-                  const created = String(n.created_at||'');
-                  const txt = String(n.note||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-                  return `<li class="list-group-item py-2"><div class="small text-muted">${created}</div><div class="mt-1" style="white-space:pre-wrap; word-wrap:break-word;">${txt}</div></li>`;
-                }).join('') + '</ul>';
-              } else {
-                notesListHTML = '<div class="text-muted small mb-2" id="notesEmpty">No notes yet.</div><ul class="list-group mb-2 d-none" id="notesList"></ul>';
-              }
-              const formHTML = canNote ? (
-                `<form id="noteForm" class="card border-0">
-                  <div class="card-body p-2">
-                    <div class="mb-2">
-                      <label for="noteText" class="form-label small mb-1">Add a note to the IPMO</label>
-                      <textarea id="noteText" name="note" rows="3" class="form-control form-control-sm" maxlength="1000" placeholder="Be clear and concise (max 1000 chars)"></textarea>
-                      <div class="form-text">Max 1000 characters. Avoid personal data. Keep it relevant to your application.</div>
+              // Notes section: only show in Pending tab
+              const inPendingTabForNotes = !!btn.closest('#pending');
+              if(inPendingTabForNotes){
+                const notesWrap = document.createElement('div');
+                notesWrap.className = 'mt-3';
+                const notes = Array.isArray(data.notes) ? data.notes : [];
+                const canNote = !!data.canNote;
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                const subCode = data.submissionCode || '';
+                const noteCount = notes.length;
+                const inCompletedTab = !!btn.closest('#completed');
+                let notesListHTML = '';
+                if(notes.length){
+                  notesListHTML = '<ul class="list-group mb-2" id="notesList">' + notes.map(n=>{
+                    const created = String(n.created_at||'');
+                    const txt = String(n.note||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+                    return `<li class="list-group-item py-2"><div class="small text-muted">${created}</div><div class="mt-1" style="white-space:pre-wrap; word-wrap:break-word;">${txt}</div></li>`;
+                  }).join('') + '</ul>';
+                } else {
+                  notesListHTML = '<div class="text-muted small mb-2" id="notesEmpty">No notes yet.</div><ul class="list-group mb-2 d-none" id="notesList"></ul>';
+                }
+                const formHTML = canNote ? (
+                  `<form id="noteForm" class="card border-0">
+                    <div class="card-body p-2">
+                      <div class="mb-2">
+                        <label for="noteText" class="form-label small mb-1">Add a note to the IPMO</label>
+                        <textarea id="noteText" name="note" rows="3" class="form-control form-control-sm" maxlength="1000" placeholder="Be clear and concise (max 1000 chars)"></textarea>
+                        <div class="form-text">Max 1000 characters. Avoid personal data. Keep it relevant to your application.</div>
+                      </div>
+                      <input type="hidden" name="submission_code" value="${subCode}">
+                      <input type="hidden" name="csrf_token" value="${csrf}">
+                      <div class="d-flex align-items-center gap-2">
+                        <button type="submit" class="btn btn-sm btn-outline-primary" id="noteSubmitBtn">Send Note</button>
+                        <span class="small text-muted" id="noteHint"></span>
+                      </div>
                     </div>
-                    <input type="hidden" name="submission_code" value="${subCode}">
-                    <input type="hidden" name="csrf_token" value="${csrf}">
-                    <div class="d-flex align-items-center gap-2">
-                      <button type="submit" class="btn btn-sm btn-outline-primary" id="noteSubmitBtn">Send Note</button>
-                      <span class="small text-muted" id="noteHint"></span>
-                    </div>
-                  </div>
-                </form>`
-              ) : (inCompletedTab ? '' : '<div class="alert alert-warning small p-2 mb-0">Notes are disabled for this submission status.</div>');
+                  </form>`
+                ) : (inCompletedTab ? '' : '<div class="alert alert-warning small p-2 mb-0">Notes are disabled for this submission status.</div>');
 
-              notesWrap.innerHTML = `
-                <div class="d-flex flex-column align-items-center">
-                  <div class="w-75">
-                    <a href="#" class="notes-toggle small text-decoration-none" aria-expanded="false" aria-controls="notesSection">
-                      <span class="toggle-icon" aria-hidden="true">+</span>
-                      <span class="toggle-text">Notes ${noteCount ? '('+noteCount+')' : ''}</span>
-                    </a>
-                    <div id="notesSection" class="mt-2 d-none" role="region" aria-label="Notes">
-                      ${notesListHTML}
-                      ${formHTML}
+                notesWrap.innerHTML = `
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="w-75">
+                      <a href="#" class="notes-toggle small text-decoration-none" aria-expanded="false" aria-controls="notesSection">
+                        <span class="toggle-icon" aria-hidden="true">+</span>
+                        <span class="toggle-text">Notes ${noteCount ? '('+noteCount+')' : ''}</span>
+                      </a>
+                      <div id="notesSection" class="mt-2 d-none" role="region" aria-label="Notes">
+                        ${notesListHTML}
+                        ${formHTML}
+                      </div>
                     </div>
-                  </div>
-                </div>`;
-              detailsContent.appendChild(notesWrap);
+                  </div>`;
+                detailsContent.appendChild(notesWrap);
+              }
             } else {
               // Fallback: use legacy HTML endpoint
               return fetch('view-submission.php?code=' + encodeURIComponent(submissionCode) + '&modal=1')
@@ -152,6 +155,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(html => { detailsContent.innerHTML = html; });
             }
             const controlHost = detailsContent.querySelector('#reuploadControls');
+            const inPendingTab = !!btn.closest('#pending');
+            const inApprovedTab = !!btn.closest('#approved');
+            const inCompletedTab = !!btn.closest('#completed');
             const cachedState = window._reuploadState[submissionCode];
 
             // If server indicates resubmission is needed, always unlock and show upload controls (new cycle)
@@ -191,8 +197,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.warn('[student-application] highlight failed', highlightErr);
               }
 
-              // Build reupload controls if container present
-              if(controlHost && parts && parts.length){
+              // Build reupload controls ONLY in Pending tab
+              if(controlHost && parts && parts.length && inPendingTab){
                 // Always treat presence of resubmitRaw as a NEW cycle even if signature matches previous.
                 let state = { locked:false, done:new Set(), sig: signature };
                 window._reuploadState[submissionCode] = state;
@@ -394,12 +400,13 @@ document.addEventListener('DOMContentLoaded', function () {
                   }
                   uploadNext(0);
                 });
+              } else if (controlHost) {
+                // In Approved/Completed, do not show reupload UI
+                controlHost.innerHTML = '';
               }
             } else if (controlHost && cachedState && cachedState.locked) {
-              // No active resubmission request; if previously locked, show success-only banner
-              // But do not show this banner when viewing from Completed tab.
-              const inCompletedTab = !!btn.closest('#completed');
-              if(!inCompletedTab){
+              // No active resubmission request; show success-only banner only in Pending tab
+              if(inPendingTab){
                 controlHost.innerHTML = `<div class="card border-success"><div class="card-body p-2 d-flex align-items-center gap-2">
                   <span class="badge bg-success">✓</span>
                   <span class="small">All requested corrections were submitted. Awaiting review.</span>
