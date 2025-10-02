@@ -189,14 +189,14 @@ try {
     $stmt->execute($p);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $agg = [];
+    $unknownCount = 0; // track rows without a proper college so we can show a fallback bucket
     foreach ($rows as $r) {
         $rawCollege = trim((string)($r['college'] ?? ''));
         $isNA = ($rawCollege === '' || strcasecmp($rawCollege, 'n/a') === 0 || strcasecmp($rawCollege, 'na') === 0 || stripos($rawCollege, 'unknown') !== false);
         if ($isNA) {
-            $disp = level_label((string)($r['academic_level'] ?? ''));
-            $key = 'LEVEL:' . strtolower($disp);
-            if (!isset($agg[$key])) { $agg[$key] = ['label' => $disp, 'count' => 0]; }
-            $agg[$key]['count']++;
+            // Count unknown/blank college for possible 'Unspecified' fallback label
+            $unknownCount++;
+            continue;
         } else {
             [$code, $full] = parse_college($rawCollege);
             $code = strtoupper($code);
@@ -223,6 +223,11 @@ try {
     }
     // Fold others for scalability
     [$collegeLabels, $collegeValues] = fold_others($collegeLabels, $collegeValues, 10);
+    // If all rows were unknown/blank and got skipped, show a single fallback bar
+    if (empty($collegeLabels) && $unknownCount > 0) {
+        $collegeLabels = ['Unspecified'];
+        $collegeValues = [$unknownCount];
+    }
 } catch (Throwable $e) {
     if (function_exists('log_event')) { log_event('DB_WARN', 'College chart query failed', ['err' => $e->getMessage()]); }
 }

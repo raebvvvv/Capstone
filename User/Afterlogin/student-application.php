@@ -98,6 +98,7 @@ try {
   mp.issue_label   AS pending_issue_label,
   mp.affected_doc_types AS pending_affected_doc_types,
     ma.admin_comment AS approved_admin_comment,
+    ma.issue_label   AS approved_issue_label,
     ma.affected_doc_types AS approved_affected_doc_types
     FROM submissions s
     LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope='pending'
@@ -136,27 +137,19 @@ try {
   <?php if($pendingAffected !== ''): ?>data-resubmit-files="<?php echo htmlspecialchars($pendingAffected); ?>"<?php endif; ?>
 >
   <?php
-    // Map pending issue/remarks to allowed values only
-    $lowerIssue = strtolower($pendingIssue);
-    $pendingRemarkRaw = trim((string)($row['remarks'] ?? ''));
-    $mapped = '';
-    if($lowerIssue !== '') {
-      if(str_contains($lowerIssue,'error')) { $mapped = 'Error in Document'; }
-      elseif(str_contains($lowerIssue,'incorrect') || str_contains($lowerIssue,'upload')) { $mapped = 'Incorrect Document/Upload'; }
+    // Pending remarks mapping:
+    // - Default: "For evaluation"
+    // - If admin incompletes the ticket in Pending tab, map issue label to either:
+    //   "Error in document" or "Incorrect Document/Upload" (exact strings as requested)
+    $displayRemark = 'For evaluation';
+    $pIssue = strtolower($pendingIssue);
+    if ($pIssue !== '') {
+      if (str_contains($pIssue, 'incorrect') || str_contains($pIssue, 'upload')) {
+        $displayRemark = 'Incorrect Document/Upload';
+      } elseif (str_contains($pIssue, 'error')) {
+        $displayRemark = 'Error in document';
+      }
     }
-    if($mapped === '') {
-      $lr = strtolower($pendingRemarkRaw);
-      if($lr === 'for evaluation') { $mapped = 'For Evaluation'; }
-      elseif(str_contains($lr,'error')) { $mapped = 'Error in Document'; }
-      elseif(str_contains($lr,'incorrect') || str_contains($lr,'upload')) { $mapped = 'Incorrect Document/Upload'; }
-    }
-  if($mapped === '') { $mapped = 'For Evaluation'; }
-  // If there is an incomplete meta (issue label or admin comment) but mapping fell back to For Evaluation,
-  // force a visible discrepancy label so user knows action needed. Default to 'Error in Document'.
-  if($mapped === 'For Evaluation' && ($pendingIssue !== '' || $pendingComment !== '')) {
-    $mapped = 'Error in Document';
-  }
-    $displayRemark = $mapped;
   ?>
   <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
   <td><?php echo htmlspecialchars($row['student_number']); ?></td>
@@ -170,7 +163,14 @@ try {
   <?php endif; ?>
   <td class="d-flex gap-2 flex-wrap">
     <?php if($pendingComment !== ''): ?>
-      <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($pendingComment, ENT_QUOTES); ?>">Comments</a>
+      <?php
+        // Include files to be resubmitted in the comments content when available (Pending scope)
+        $pendingCommentText = (string)$pendingComment;
+        if ($pendingAffected !== '') {
+          $pendingCommentText = trim($pendingCommentText . "\n\nFile(s) to be resubmitted: " . $pendingAffected);
+        }
+      ?>
+      <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($pendingCommentText, ENT_QUOTES); ?>">Comments</a>
     <?php endif; ?>
   <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-resubmit-files="<?php echo htmlspecialchars($pendingAffected, ENT_QUOTES); ?>">View Details</a>
   </td>
@@ -200,6 +200,7 @@ try {
               <tr><td colspan="6" class="text-center text-muted py-5">No approved applications.</td></tr>
             <?php else: foreach($approvedRows as $row): ?>
               <?php $approvedAffected = trim((string)($row['approved_affected_doc_types'] ?? '')); ?>
+              <?php $approvedIssue = trim((string)($row['approved_issue_label'] ?? '')); ?>
               <?php
                 // Attempt to fetch/display student's name (join can be added if needed; fallback to session fields if present)
                 $studentName = '';
@@ -210,19 +211,51 @@ try {
                 if(!empty($row['created_at'])){
                   try { $reqDate = date('F d, Y', strtotime($row['created_at'])); } catch(Throwable $e){ $reqDate=''; }
                 }
+                // Approved remarks mapping:
+                // - Default: "For Physical Submission"
+                // - If admin incompletes in Approved tab, map to one of:
+                //   "Missing Document", "Error in Document", or "Documents don't match"
+                $approvedRemark = 'For Physical Submission';
+                $aIssue = strtolower(trim($approvedIssue));
+                if ($aIssue !== '') {
+                  // Normalize curly apostrophes to straight apostrophe
+                  $aIssueNorm = str_replace(array("\xE2\x80\x99", '’'), "'", $aIssue);
+                  if (str_contains($aIssueNorm, 'missing')) {
+                    $approvedRemark = 'Missing Document';
+                  } elseif (str_contains($aIssueNorm, 'error')) {
+                    $approvedRemark = 'Error in Document';
+                  } elseif (
+                    str_contains($aIssueNorm, "don't match") ||
+                    str_contains($aIssueNorm, 'dont match') ||
+                    str_contains($aIssueNorm, 'do not match') ||
+                    str_contains($aIssueNorm, "doesn't match") ||
+                    str_contains($aIssueNorm, 'does not match') ||
+                    str_contains($aIssueNorm, 'mismatch') ||
+                    str_contains($aIssueNorm, 'mismatched')
+                  ) {
+                    $approvedRemark = "Documents don't match";
+                  }
+                }
               ?>
               <tr<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>
                 <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
                 <td><?php echo htmlspecialchars($row['student_number']); ?></td>
                 <td><?php echo htmlspecialchars($row['title']); ?></td>
-                <td><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
+                <td><?php echo htmlspecialchars($approvedRemark); ?></td>
                 <td></td>
                 <td>
                   <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>"<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>View Details</a>
                   <!-- Request ID modal trigger button -->
                   <button type="button" class="btn btn-outline-dark btn-sm btn-request-id" data-request-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-request-date="<?php echo htmlspecialchars($reqDate); ?>" data-student-name="<?php echo htmlspecialchars($studentName); ?>">Request ID</button>
                   <?php if(!empty($row['approved_admin_comment'])): ?>
-                    <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($row['approved_admin_comment'], ENT_QUOTES); ?>">Comments</a>
+                    <?php
+                      // Include files to be resubmitted in the comments content when available
+                      $commentText = (string)$row['approved_admin_comment'];
+                      if ($approvedAffected !== '') {
+                        $commentText = trim($commentText . "\n\nFile(s) to be resubmitted: " . $approvedAffected);
+                      }
+                    ?>
+                    <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($commentText, ENT_QUOTES); ?>">Comments</a>
                   <?php endif; ?>
                 </td>
               </tr>
