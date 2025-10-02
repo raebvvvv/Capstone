@@ -12,8 +12,9 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
   <link rel="stylesheet" href="<?php echo asset_url('css/student-application.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/shared-details-modal.css'); ?>">
-    <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
+    
   <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
   <script src="<?php echo asset_url('javascript/shared-details-modal.js'); ?>" defer></script>
 </head>
@@ -270,8 +271,7 @@ try {
     </div>
   </main>
   
-  <!-- Footer -->
-  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
+
 
 
 <div class="modal fade" id="submissionDetailsModal" tabindex="-1" aria-labelledby="submissionDetailsModalLabel" aria-hidden="true">
@@ -330,6 +330,8 @@ try {
   </div>
 </div>
 
+ <!-- Footer -->
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 <!-- JS handlers moved to external student-application.js to satisfy CSP (no inline scripts). -->
 
   <!-- Bootstrap JS -->

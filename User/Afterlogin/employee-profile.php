@@ -306,7 +306,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 
 <div class="row mb-3">
   <div class="col-md-6">
-    <label class="form-label fw-bold">Student ID/Number <span class="text-danger">*</span></label>
+    <label class="form-label fw-bold">Employee ID/Number <span class="text-danger">*</span></label>
     <input type="text" class="form-control lock bg-light" 
            id="studentId" 
            value="<?php echo htmlspecialchars($profile['student_number'] ?? ''); ?>" 

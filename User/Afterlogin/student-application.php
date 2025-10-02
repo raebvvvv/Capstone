@@ -302,9 +302,7 @@ try {
       </div>
     </div>
   </main>
-  
-  <!-- Footer -->
-  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
+
 
 
 <div class="modal fade" id="submissionDetailsModal" tabindex="-1" aria-labelledby="submissionDetailsModalLabel" aria-hidden="true">
@@ -362,6 +360,10 @@ try {
     </div>
   </div>
 </div>
+
+  
+  <!-- Footer -->
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
 <!-- JS handlers moved to external student-application.js to satisfy CSP (no inline scripts). -->
 
