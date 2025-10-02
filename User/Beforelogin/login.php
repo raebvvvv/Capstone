@@ -53,7 +53,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - PUP e-IPMO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/login.css'); ?>">
@@ -91,12 +90,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php endif; ?>
             <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
                 <div class="mb-3 position-relative">
-                    <input type="text" class="form-control rounded-pill ps-4" id="student_number" name="student_number" placeholder="Webmail" required style="border: 2px solid #222;">
-                    <span class="position-absolute top-50 end-0 translate-middle-y pe-3 text-secondary"><i class="fa fa-user"></i></span>
+                    <input type="text" class="form-control rounded-pill ps-4 pe-5" id="student_number" name="student_number" placeholder="Webmail" required style="border: 2px solid #222;">
+                    <span class="position-absolute top-50 end-0 translate-middle-y pe-3 text-secondary" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                            <path d="M14 14s-1-1.5-6-1.5S2 14 2 14s1-4 6-4 6 4 6 4z"/>
+                        </svg>
+                    </span>
                 </div>
                 <div class="mb-2 position-relative">
-                    <input type="password" class="form-control rounded-pill ps-4" id="password" name="password" placeholder="Password" required style="border: 2px solid #222;">
-                    <span class="position-absolute top-50 end-0 translate-middle-y pe-3 text-secondary"><i class="fa fa-lock"></i></span>
+                    <input type="password" class="form-control rounded-pill ps-4 pe-5" id="password" name="password" placeholder="Password" required style="border: 2px solid #222;">
+                    <button type="button" class="position-absolute top-50 end-0 translate-middle-y pe-3 text-secondary bg-transparent border-0 toggle-password" data-target="#password" aria-label="Show password" style="text-decoration:none; box-shadow:none;">
+                        <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"/>
+                            <path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                        </svg>
+                        <svg class="icon-eye-off d-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <path d="M13.359 11.238C15.06 9.87 16 8 16 8s-3-5.5-8-5.5a8.06 8.06 0 0 0-2.79.533l1.262 1.262A6.52 6.52 0 0 1 8 4.5c3.5 0 5.8 3.5 5.8 3.5a13.2 13.2 0 0 1-1.65 1.987l-0.791-.749z"/>
+                            <path d="M3.35 4.354l.707-.708 9.9 9.9-.707.707-1.68-1.68A7.74 7.74 0 0 1 8 13.5C3 13.5 0 8 0 8a17.28 17.28 0 0 1 3.35-3.646zM1.2 8s2.3 3.5 6.8 3.5c.648 0 1.248-.08 1.8-.224L7.06 8.036A3 3 0 0 1 6.5 8a3 3 0 0 1 2.95-3l-1.55-1.55C7.5 3.32 7.26 3.3 7 3.3 2.5 3.3 1.2 8 1.2 8z"/>
+                        </svg>
+                    </button>
                 </div>
                 <div class="mb-3 text-end">
                     <a href="#" class="small forgot-password-link" style="font-size: 0.95rem;">Forgot password?</a>
@@ -110,6 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    <!-- Footer -->
    <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
    
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo asset_url('javascript/show-password.js'); ?>" defer></script>
 </body>
 </html>

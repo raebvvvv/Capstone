@@ -76,10 +76,81 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Use 'code' instead of 'id'
   const resubmitRaw = btn.getAttribute('data-resubmit-files') || '';
-        fetch('view-submission.php?code=' + encodeURIComponent(submissionCode) + '&modal=1')
-          .then((response) => response.text())
-          .then((html) => {
-            detailsContent.innerHTML = html;
+        // Prefer JSON + shared renderer for speed and consistency
+        fetch('fetch_submission_details_user.php?code=' + encodeURIComponent(submissionCode), { credentials: 'same-origin' })
+          .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP '+r.status)))
+          .then((data) => {
+            if(data && data.success && typeof window.renderSubmissionDetails === 'function'){
+              const container = document.createElement('div');
+              detailsContent.innerHTML = '';
+              detailsContent.appendChild(container);
+              const opts = { role: 'user' };
+              if(resubmitRaw){ opts.flaggedTypes = resubmitRaw; }
+              window.renderSubmissionDetails(container, data, { role: 'user' });
+
+              // Provide a host for reupload controls (placed BEFORE Notes)
+              const host = document.createElement('div');
+              host.id = 'reuploadControls';
+              host.className = 'w-75 mt-3 mx-auto';
+              detailsContent.appendChild(host);
+
+              // Notes section (subtle, collapsible, minimized footprint)
+              const notesWrap = document.createElement('div');
+              notesWrap.className = 'mt-3';
+              const notes = Array.isArray(data.notes) ? data.notes : [];
+              const canNote = !!data.canNote;
+              const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+              const subCode = data.submissionCode || '';
+              const noteCount = notes.length;
+              const inCompletedTab = !!btn.closest('#completed');
+              let notesListHTML = '';
+              if(notes.length){
+                notesListHTML = '<ul class="list-group mb-2" id="notesList">' + notes.map(n=>{
+                  const created = String(n.created_at||'');
+                  const txt = String(n.note||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+                  return `<li class="list-group-item py-2"><div class="small text-muted">${created}</div><div class="mt-1" style="white-space:pre-wrap; word-wrap:break-word;">${txt}</div></li>`;
+                }).join('') + '</ul>';
+              } else {
+                notesListHTML = '<div class="text-muted small mb-2" id="notesEmpty">No notes yet.</div><ul class="list-group mb-2 d-none" id="notesList"></ul>';
+              }
+              const formHTML = canNote ? (
+                `<form id="noteForm" class="card border-0">
+                  <div class="card-body p-2">
+                    <div class="mb-2">
+                      <label for="noteText" class="form-label small mb-1">Add a note to the IPMO</label>
+                      <textarea id="noteText" name="note" rows="3" class="form-control form-control-sm" maxlength="1000" placeholder="Be clear and concise (max 1000 chars)"></textarea>
+                      <div class="form-text">Max 1000 characters. Avoid personal data. Keep it relevant to your application.</div>
+                    </div>
+                    <input type="hidden" name="submission_code" value="${subCode}">
+                    <input type="hidden" name="csrf_token" value="${csrf}">
+                    <div class="d-flex align-items-center gap-2">
+                      <button type="submit" class="btn btn-sm btn-outline-primary" id="noteSubmitBtn">Send Note</button>
+                      <span class="small text-muted" id="noteHint"></span>
+                    </div>
+                  </div>
+                </form>`
+              ) : (inCompletedTab ? '' : '<div class="alert alert-warning small p-2 mb-0">Notes are disabled for this submission status.</div>');
+
+              notesWrap.innerHTML = `
+                <div class="d-flex flex-column align-items-center">
+                  <div class="w-75">
+                    <a href="#" class="notes-toggle small text-decoration-none" aria-expanded="false" aria-controls="notesSection">
+                      <span class="toggle-icon" aria-hidden="true">+</span>
+                      <span class="toggle-text">Notes ${noteCount ? '('+noteCount+')' : ''}</span>
+                    </a>
+                    <div id="notesSection" class="mt-2 d-none" role="region" aria-label="Notes">
+                      ${notesListHTML}
+                      ${formHTML}
+                    </div>
+                  </div>
+                </div>`;
+              detailsContent.appendChild(notesWrap);
+            } else {
+              // Fallback: use legacy HTML endpoint
+              return fetch('view-submission.php?code=' + encodeURIComponent(submissionCode) + '&modal=1')
+                .then(resp => resp.text())
+                .then(html => { detailsContent.innerHTML = html; });
+            }
             const controlHost = detailsContent.querySelector('#reuploadControls');
             const cachedState = window._reuploadState[submissionCode];
 
@@ -326,10 +397,16 @@ document.addEventListener('DOMContentLoaded', function () {
               }
             } else if (controlHost && cachedState && cachedState.locked) {
               // No active resubmission request; if previously locked, show success-only banner
-              controlHost.innerHTML = `<div class="card border-success"><div class="card-body p-2 d-flex align-items-center gap-2">
-                <span class="badge bg-success">✓</span>
-                <span class="small">All requested corrections were submitted. Awaiting review.</span>
-              </div></div>`;
+              // But do not show this banner when viewing from Completed tab.
+              const inCompletedTab = !!btn.closest('#completed');
+              if(!inCompletedTab){
+                controlHost.innerHTML = `<div class="card border-success"><div class="card-body p-2 d-flex align-items-center gap-2">
+                  <span class="badge bg-success">✓</span>
+                  <span class="small">All requested corrections were submitted. Awaiting review.</span>
+                </div></div>`;
+              } else {
+                controlHost.innerHTML = '';
+              }
             }
           })
           .catch(() => {
@@ -340,6 +417,21 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
+
+  // Subtle Notes collapse/expand (delegated)
+  document.addEventListener('click', function(e){
+    const t = e.target.closest('.notes-toggle');
+    if(!t) return;
+    e.preventDefault();
+    const sect = document.getElementById('notesSection');
+    if(!sect) return;
+    const hidden = sect.classList.contains('d-none');
+    sect.classList.toggle('d-none', !hidden);
+    // Toggle icon and aria
+    const icon = t.querySelector('.toggle-icon');
+    if(icon){ icon.textContent = hidden ? '−' : '+'; }
+    t.setAttribute('aria-expanded', hidden ? 'true' : 'false');
+  });
 
   // --- Author details (delegated) ---
   const authorModalEl = document.getElementById('authorDetailsModal');

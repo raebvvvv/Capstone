@@ -55,17 +55,11 @@ try {
         exit;
     }
 
-    // We retain status='approved'; just update remarks.
-    // Decide what to store in remarks so Comments button appears on reload.
+    // Keep status as 'approved' and update remarks only to reflect the flag.
     $storeRemark = $remark;
     if ($storeRemark === '' || strcasecmp($storeRemark, 'Remarks') === 0) {
-        if ($comment !== '') {
-            $storeRemark = mb_substr($comment, 0, 255);
-        } else {
-            $storeRemark = 'Needs Attention';
-        }
+        $storeRemark = $comment !== '' ? mb_substr($comment, 0, 255) : 'Needs Attention';
     }
-
     $upd = $pdo->prepare("UPDATE submissions SET remarks = :r, status_updated_at = NOW() WHERE submission_id = :id");
     $upd->execute([
         ':r' => $storeRemark,
@@ -84,7 +78,20 @@ try {
         PRIMARY KEY (submission_id, scope),
         CONSTRAINT fk_sim_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    // Reset verification flags for the selected document types (best-effort)
+    if (!empty($affectedDocTypes)) {
+        $placeholders = implode(',', array_fill(0, count($affectedDocTypes), '?'));
+        $selDocs = $pdo->prepare("SELECT document_id FROM submission_documents WHERE submission_id=? AND doc_type IN ($placeholders)");
+        $selDocs->execute(array_merge([ (int)$row['submission_id'] ], array_map('strval', $affectedDocTypes)));
+        $docIds = $selDocs->fetchAll(PDO::FETCH_COLUMN, 0);
+        if ($docIds) {
+            $place2 = implode(',', array_fill(0, count($docIds), '?'));
+            $reset = $pdo->prepare("UPDATE submission_documents SET verified=0, verified_by=NULL, verified_at=NULL WHERE document_id IN ($place2)");
+            $reset->execute($docIds);
+        }
+    }
 
+    // Store approved-scope meta so the student side can detect re-upload unlocks while staying Approved
     $issueLabel = ($remark !== '' && strtolower($remark) !== 'remarks') ? $remark : '';
     $affectedList = $affectedDocTypes ? implode('|', array_unique($affectedDocTypes)) : '';
     $metaStmt = $pdo->prepare("INSERT INTO submission_incomplete_meta (submission_id, scope, issue_label, admin_comment, affected_doc_types) VALUES (:sid, 'approved', :issue_label, :admin_comment, :affected)
@@ -99,10 +106,10 @@ try {
     echo json_encode([
         'success' => true,
         'request_id' => $row['submission_code'],
-        'stored_remarks' => $storeRemark,
+        'scope' => 'approved',
         'echo_remark' => $remark,
         'comment_received' => ($comment !== ''),
-        'affected_files' => $affected,
+        'affected_files' => $affectedDocTypes,
         'meta' => [
             'issue_label' => $issueLabel,
             'admin_comment' => $comment,

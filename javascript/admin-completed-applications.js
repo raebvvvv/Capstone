@@ -788,60 +788,25 @@ function initCompletedAppsFilters() {
 			if (!body) return;
 			const s = details.student || {};
 			const d = details.document || {};
-			// Pretty format for Date Approved (applicationDate is ISO yyyy-mm-dd)
-			let approvedPretty = '—';
-			try {
-				if (d.applicationDate) {
-					const dt = new Date(d.applicationDate);
-					if (!Number.isNaN(dt.getTime())) {
-						approvedPretty = dt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-					}
-				}
-			} catch(_) {}
-			const files = Array.isArray(details.files) ? details.files : [];
-			const fileRows = files.map(f => {
-				const exists = !!f.exists;
-				const href = exists ? (f.url || '#') : '#';
-				const name = f.name || '';
-				const label = f.label || name || '';
-				const nameNote = name ? ` <small class="text-muted">(${name})</small>` : '';
-				const missingNote = exists ? '' : ` <small class="text-danger">(missing)</small>`;
-				const downloadAttr = exists && name ? `download="${name}"` : (exists ? 'download' : '');
-				const dlBtn = exists ? `<a class="btn btn-sm btn-download" href="${href}" ${downloadAttr}>Download File</a>` : `<button class="btn btn-sm btn-download" disabled>Download File</button>`;
-				const viewBtn = exists ? `<a class="btn btn-sm btn-view-file" href="${href}" target="_blank" rel="noopener">View File</a>` : `<button class="btn btn-sm btn-view-file" disabled>View File</button>`;
-				return `<li class="d-flex justify-content-between align-items-center mb-2">
-					<span>${label}${nameNote}${missingNote}</span>
-					<div class="d-flex gap-2">
-						${dlBtn}
-						${viewBtn}
-					</div>
-				</li>`;
-			}).join('');
-			body.innerHTML = `
-				<div>
-					<h5>Student Information</h5>
-					<p><strong>Name:</strong> ${s.name||'—'}</p>
-					<p><strong>Student Number:</strong> ${s.number||'—'}</p>
-					<p><strong>Email Address:</strong> ${s.email||'—'}</p>
-					<p><strong>Home Address:</strong> ${s.homeAddress||'—'}</p>
-					<p><strong>Campus:</strong> ${s.campus||'—'}</p>
-                    
-					<p><strong>College:</strong> ${s.college||'—'}</p>
-					<p><strong>Program:</strong> ${s.program||'—'}</p>
-					<p><strong>Academic Level:</strong> ${s.academicLevel||'—'}</p>
-				</div>
-				<div class="mt-3">
-					<h5>Document Information</h5>
-					<p><strong>Title:</strong> ${d.title||'—'}</p>
-					<p><strong>Type (Work Classification):</strong> ${d.workClassification||'—'}</p>
-					<p><strong>Date Approved:</strong> ${approvedPretty}</p>
-					<p><strong>Author/s Full name/s:</strong> ${d.author||s.name||'—'}</p>
-					<p><strong>Date Accomplished:</strong> ${d.dateAccomplished||'—'}</p>
-				</div>
-				<div class="mt-3">
-					<h5>Uploaded Files</h5>
-					<ul class="list-unstyled mb-0">${fileRows}</ul>
-				</div>`;
+			const shared = {
+				studentName: s.name || '',
+				studentNumber: s.number || '',
+				email: s.email || '',
+				homeAddress: s.homeAddress || '',
+				campus: s.campus || '',
+				college: s.college || '',
+				program: s.program || '',
+				academicLevel: s.academicLevel || '',
+				documentTitle: d.title || '',
+				workClassification: d.workClassification || '',
+				accomplishmentDate: d.dateAccomplished || '',
+				files_list: Array.isArray(details.files) ? details.files.map(f=>({ label:f.label, url:f.url, size:null, verified:null })) : []
+			};
+			if (typeof window.renderSubmissionDetails === 'function') {
+				window.renderSubmissionDetails(body, shared, { role: 'admin' });
+			} else {
+				body.textContent = 'Details failed to render.';
+			}
 			const el = document.getElementById('detailsGModal');
 			if (el) ModalApi.show(el);
 
@@ -865,6 +830,62 @@ function initCompletedAppsFilters() {
 	// Initial render
 	updateListVisibility();
 	updateDashboardLink();
+
+	// Listen for cross-tab submission updates to reflect edits without manual refresh
+	try {
+		window.addEventListener('storage', (e) => {
+			if (e.key !== 'ipmo:lastUpdate' || !e.newValue) return;
+			let msg = null;
+			try { msg = JSON.parse(e.newValue); } catch(_) {}
+			if (!msg || msg.kind !== 'submission-updated') return;
+			const rid = (msg.requestId || '').trim();
+			if (!rid) return;
+			const item = document.querySelector(`.ipapp-list-item[data-request-id="${CSS.escape(rid)}"]`);
+			if (!item) return;
+			const payload = msg.payload || {};
+			// Update title/description
+			if (payload.documentTitle) {
+				const a = item.querySelector('.ipapp-desc-link');
+				if (a) a.textContent = payload.documentTitle;
+				item.setAttribute('data-description', (payload.documentTitle || '').toLowerCase());
+			}
+			// Update student name
+			if (payload.studentName) {
+				const ud = item.querySelector('.ipapp-userdate .ipapp-user-link');
+				if (ud) {
+					const cur = ud.textContent || '';
+					const parts = cur.split(',');
+					const datePart = parts.length > 1 ? parts.slice(1).join(',') : '';
+					ud.textContent = payload.studentName + (datePart ? ',' + datePart : '');
+				}
+				item.setAttribute('data-name', (payload.studentName || '').toLowerCase());
+			}
+			// Update program/college meta
+			if (payload.program) item.setAttribute('data-program', (payload.program || '').toLowerCase());
+			if (payload.college) {
+				item.setAttribute('data-college', (payload.college || '').toLowerCase());
+				// Derive college code when possible (prefix before ' - ')
+				const code = payload.college.includes(' - ') ? payload.college.split(' - ')[0] : payload.college;
+				item.setAttribute('data-college-code', (code || '').toLowerCase());
+			}
+			// Keep embedded details JSON in sync so the modal shows updated values
+			try {
+				const link = item.querySelector('.ipapp-desc-link');
+				if (link && link.dataset && link.dataset.details) {
+					const obj = JSON.parse(atob(link.dataset.details));
+					if (payload.documentTitle) obj.document = Object.assign({}, obj.document, { title: payload.documentTitle });
+					if (payload.studentName) {
+						obj.student = Object.assign({}, obj.student, { name: payload.studentName });
+						if (obj.document && !obj.document.author) obj.document.author = payload.studentName;
+					}
+					if (payload.program) obj.student = Object.assign({}, obj.student, { program: payload.program });
+					if (payload.college) obj.student = Object.assign({}, obj.student, { college: payload.college });
+					link.dataset.details = btoa(JSON.stringify(obj));
+				}
+			} catch(_) {}
+			updateListVisibility();
+		});
+	} catch(_) {}
 
 	// Deep-link: if ?code= is present, highlight and open that item
 	try {

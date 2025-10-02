@@ -413,7 +413,6 @@ if (isset($_SESSION['user_id'])) {
                 </div>
             </div>
         </div>
-
         <!-- Applications by College (Top) -->
         <div class="dashboard-section mb-4">
             <h5><span class="legend-dot legend-undergrad"></span> Applications by College</h5>
@@ -423,6 +422,7 @@ if (isset($_SESSION['user_id'])) {
                     data-values='<?php echo htmlspecialchars(json_encode($collegeValues), ENT_QUOTES, 'UTF-8'); ?>'></canvas>
             </div>
         </div>
+        
 
         <!-- Applications by Campus (Top) -->
         <div class="dashboard-section mb-4">

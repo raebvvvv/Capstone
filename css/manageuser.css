@@ -16,11 +16,9 @@ main.page-wrapper, .page-wrapper {
 }
 
 footer, .site-footer { 
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
+    position: static;
+    width: 100%;
+    text-align: center;
 }
 
 .search-bar .form-control {

@@ -74,6 +74,9 @@ if (isset($_SESSION['user_id'])) {
 
 // Search filter
 $search_query = isset($_GET['search']) ? trim((string)$_GET['search']) : '';
+// Active tab (preserve across filter submits)
+$active_tab = isset($_GET['tab']) ? strtolower(trim((string)$_GET['tab'])) : 'pending';
+if (!in_array($active_tab, ['pending','approved','completed'], true)) { $active_tab = 'pending'; }
 // Has Notes filter
 $has_notes = isset($_GET['has_notes']) ? (int)$_GET['has_notes'] : 0;
 $where = '';
@@ -199,11 +202,11 @@ foreach ($rows as $r) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="../css/ticket.css?v=6">
+    <link rel="stylesheet" href="../css/ticket.css?v=7">
     <link rel="stylesheet" href="../css/admin-navbar.css">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Manage Requests</title>
-    <script src="../javascript/admin-filters.js?v=1" defer></script>
+    <script src="../javascript/admin-filters.js?v=2" defer></script>
 </head>
 <body>
 <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>">
@@ -314,11 +317,11 @@ foreach ($rows as $r) {
         <div class="d-flex justify-content-center mb-3">
             <form method="get" class="input-group search-bar" style="max-width:540px; gap:10px;">
                 <input class="form-control rounded-pill ps-4" type="search" name="search" placeholder="Search" aria-label="Search" value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius: 50px;">
+                <input type="hidden" name="tab" id="activeTabInput" value="<?php echo htmlspecialchars($active_tab); ?>">
                 <div class="form-check form-switch ms-2 d-flex align-items-center">
                     <input class="form-check-input" type="checkbox" id="hasNotesSwitch" name="has_notes" value="1" <?php echo $has_notes ? 'checked' : ''; ?>>
                     <label class="form-check-label ms-2 small" for="hasNotesSwitch">Has Notes</label>
                 </div>
-                <a href="ticket.php" class="btn btn-link">Reset</a>
             </form>
         </div>
         <div class="d-flex justify-content-center mb-3 gap-2">
@@ -331,14 +334,14 @@ foreach ($rows as $r) {
         </div>
         <div class="d-flex justify-content-between align-items-center mb-2">
             <ul class="nav nav-tabs" id="requestTabs">
-                <li class="nav-item"><a class="nav-link active fw-semibold" data-bs-toggle="tab" href="#pending" style="color:#222;">Pending</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" data-bs-toggle="tab" href="#approved" style="color:#222;">Approved</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" data-bs-toggle="tab" href="#completed" style="color:#222;">Complete</a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='pending' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#pending" style="color:#222;">Pending</a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='approved' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#approved" style="color:#222;">Approved</a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='completed' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#completed" style="color:#222;">Complete</a></li>
             </ul>
             <div></div>
         </div>
         <div class="tab-content mt-3">
-            <div class="tab-pane fade show active" id="pending">
+            <div class="tab-pane fade <?php echo $active_tab==='pending' ? 'show active' : ''; ?>" id="pending">
                 <div class="table-responsive">
                     <table class="table align-middle table-sticky-first">
                         <thead>
@@ -427,7 +430,7 @@ foreach ($rows as $r) {
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="approved">
+            <div class="tab-pane fade <?php echo $active_tab==='approved' ? 'show active' : ''; ?>" id="approved">
                 <div class="table-responsive">
                     <table class="table align-middle table-sticky-first">
                         <thead>
@@ -521,7 +524,7 @@ foreach ($rows as $r) {
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="completed">
+            <div class="tab-pane fade <?php echo $active_tab==='completed' ? 'show active' : ''; ?>" id="completed">
                 <div class="table-responsive">
                     <table class="table align-middle table-sticky-first">
                         <thead>
@@ -775,7 +778,7 @@ foreach ($rows as $r) {
         </div>
     </div>
 
-<script src="../javascript/admin-ticket.js?v=3" defer></script>
+<script src="../javascript/admin-ticket.js?v=6" defer></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
@@ -846,12 +849,6 @@ foreach ($rows as $r) {
         </div>
     </div>
 
-    <footer class="bg-white border-top py-3">
-        <div class="container text-center small">
-        © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-        <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-        <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-        </div>
-    </footer>
+    <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
 </body>
 </html>

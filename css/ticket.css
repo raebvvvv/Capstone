@@ -59,11 +59,9 @@ main.page-wrapper, .page-wrapper {
 }
 
 footer, .site-footer { 
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
+    position: static;
+    width: 100%;
+    text-align: center;
 }
 
 .navbar-brand {
@@ -176,6 +174,17 @@ img {
     background: yellow !important;
     color: black !important;
     border: none !important;
+}
+/* When a row is highlighted (e.g., after marking Incomplete), the default
+   yellow button can blend with the row background. Increase contrast. */
+.table-warning .btn-incomplete {
+    background: #f59e0b !important; /* darker amber */
+    color: #fff !important;
+    border: 1px solid #d97706 !important;
+}
+.table-warning .btn-incomplete:hover {
+    background: #d97706 !important;
+    color: #fff !important;
 }
 .btn-comments {
     background: #ffe066 !important;

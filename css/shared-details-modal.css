@@ -1,0 +1,84 @@
+/* Shared Details Modal styling to match admin design and maroon color convention */
+
+#submissionDetailsModal .modal-title {
+  font-weight: 600;
+}
+
+/* Ensure left alignment inside rendered content */
+#submissionDetailsContent {
+  text-align: left;
+}
+
+/* Section headings */
+#submissionDetailsContent h5 {
+  font-weight: 600;
+  margin: 0 0 .5rem 0;
+}
+
+/* Tidy paragraph spacing */
+#submissionDetailsContent p {
+  margin-bottom: .4rem;
+}
+
+/* Uploaded files list layout */
+#submissionDetailsContent ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+#submissionDetailsContent li {
+  padding: .35rem 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+#submissionDetailsContent li:last-child {
+  border-bottom: none;
+}
+
+/* Maroon action buttons scoped to the submission details modal */
+#submissionDetailsModal .btn-download,
+#submissionDetailsModal .btn-view-file {
+  background-color: #900c0c;
+  border-color: #900c0c;
+  color: #fff;
+}
+
+#submissionDetailsModal .btn-download:hover,
+#submissionDetailsModal .btn-view-file:hover {
+  background-color: #7b0a0a;
+  border-color: #7b0a0a;
+  color: #fff;
+}
+
+#submissionDetailsModal .btn-download:focus,
+#submissionDetailsModal .btn-view-file:focus {
+  box-shadow: 0 0 0 .2rem rgba(144,12,12,.3);
+}
+
+/* Author View Details button styled maroon like admin */
+#submissionDetailsModal .author-view-btn {
+  background-color: #900c0c !important;
+  border-color: #900c0c !important;
+  color: #fff !important;
+}
+
+#submissionDetailsModal .author-view-btn:hover {
+  background-color: #7b0a0a !important;
+  border-color: #7b0a0a !important;
+}
+
+/* Re-upload Submit button in modal: follow maroon convention without changing underlying classes */
+#submissionDetailsModal #reuploadSubmitBtn {
+  background-color: #900c0c !important;
+  border-color: #900c0c !important;
+  color: #fff !important;
+}
+
+#submissionDetailsModal #reuploadSubmitBtn:hover {
+  background-color: #7b0a0a !important;
+  border-color: #7b0a0a !important;
+}
+
+/* Badge spacing and file highlight */
+#submissionDetailsContent .badge { vertical-align: middle; }
+.reupload-highlight { background: #fff3cd !important; transition: background .3s; }

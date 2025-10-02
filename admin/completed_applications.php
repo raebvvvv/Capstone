@@ -130,6 +130,7 @@ try {
     <link rel="stylesheet" href="../css/completed_applications.css?v=5">
     <script src="../javascript/forms/academic-dropdowns.js" defer></script>
     <link rel="stylesheet" href="../css/admin-navbar.css?v=1">
+    <script src="../javascript/shared-details-modal.js?v=1" defer></script>
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Completed Applications</title>
 </head>
@@ -343,7 +344,7 @@ try {
                     <button class="dropdown-item" type="button">Student</button>
                 </div>
             </div>
-            <button class="ipapp-go-btn">Go</button>
+          
         </div>
         <main class="ipapp-list" id="ipappList">
             <?php foreach ($applications as $app): ?>
@@ -418,7 +419,7 @@ try {
             </div>
         </div>
     </div>
-
+    
     <div class="modal fade" id="certificateModalCA" tabindex="-1" aria-labelledby="certificateModalCALabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -435,7 +436,7 @@ try {
         </div>
     </div>
 
-    <script src="../javascript/admin-completed-applications.js?v=11"></script>
+    <script src="../javascript/admin-completed-applications.js?v=12"></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
@@ -495,13 +496,6 @@ try {
         </div>
     </div>
 </div>
-  <!-- Footer -->
-  <footer class="bg-white border-top py-3">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
-    </div>
-  </footer>
+    <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
 </body>
 </html>

@@ -12,6 +12,13 @@ $requestId = trim((string)($input['request_id'] ?? ''));
 $studentName = trim((string)($input['student_name'] ?? ''));
 $studentId = trim((string)($input['student_id'] ?? ''));
 $program = trim((string)($input['program'] ?? ''));
+// Optional fields (update only if provided)
+$email = isset($input['email']) ? trim((string)$input['email']) : null; // maps to webmail
+$homeAddress = isset($input['home_address']) ? trim((string)$input['home_address']) : null;
+$campus = isset($input['campus']) ? trim((string)$input['campus']) : null;
+$college = isset($input['college']) ? trim((string)$input['college']) : null;
+$documentTitle = isset($input['document_title']) ? trim((string)$input['document_title']) : null;
+$accomplishmentDate = isset($input['accomplishment_date']) ? trim((string)$input['accomplishment_date']) : null; // YYYY-MM-DD
 
 if ($requestId === '') {
     echo json_encode(['success' => false, 'error' => 'Invalid request_id']);
@@ -22,29 +29,61 @@ if ($requestId === '') {
 try {
     // Determine identifier column for submissions table
     $idCol = ctype_digit($requestId) ? 'submission_id' : 'submission_code';
-    $sql = "UPDATE submissions
-            SET first_name = :first_name,
-                last_name = :last_name,
-                student_number = :student_number,
-                program = :program,
-                updated_at = NOW()
-            WHERE $idCol = :id";
-    // Attempt to split full name if provided; fallback to existing values if empty inputs
-    $firstName = $studentName;
+    // Build dynamic SET clause for optional fields
+    $sets = [
+        'first_name = :first_name',
+        'middle_name = :middle_name',
+        'last_name = :last_name',
+        'student_number = :student_number',
+        'program = :program'
+    ];
+    $params = [];
+    if ($email !== null) { $sets[] = 'webmail = :webmail'; $params[':webmail'] = $email; }
+    if ($homeAddress !== null) { $sets[] = 'home_address = :home_address'; $params[':home_address'] = $homeAddress; }
+    if ($campus !== null) { $sets[] = 'campus = :campus'; $params[':campus'] = $campus; }
+    if ($college !== null) { $sets[] = 'college = :college'; $params[':college'] = $college; }
+    if ($documentTitle !== null) { $sets[] = 'title = :title'; $params[':title'] = $documentTitle; }
+    if ($accomplishmentDate !== null && $accomplishmentDate !== '') {
+        // Basic YYYY-MM-DD validation
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $accomplishmentDate)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid date format (YYYY-MM-DD)']);
+            exit();
+        }
+        $sets[] = 'date_accomplished = :date_accomplished';
+        $params[':date_accomplished'] = $accomplishmentDate;
+    }
+    $sets[] = 'updated_at = NOW()';
+    $sql = 'UPDATE submissions SET ' . implode(', ', $sets) . " WHERE $idCol = :id";
+    // Attempt to split full name into first, middle, last
+    $firstName = trim($studentName);
+    $middleName = '';
     $lastName = '';
-    if (strpos($studentName, ' ') !== false) {
-        $parts = preg_split('/\s+/', $studentName);
-        $firstName = array_shift($parts);
-        $lastName = implode(' ', $parts);
+    if ($studentName !== '') {
+        $parts = preg_split('/\s+/', $studentName, -1, PREG_SPLIT_NO_EMPTY);
+        if (count($parts) === 1) {
+            $firstName = $parts[0];
+            $middleName = '';
+            $lastName = '';
+        } elseif (count($parts) === 2) {
+            $firstName = $parts[0];
+            $middleName = '';
+            $lastName = $parts[1];
+        } else {
+            $firstName = array_shift($parts);
+            $lastName = array_pop($parts);
+            $middleName = trim(implode(' ', $parts));
+        }
     }
     $stmt = $pdo->prepare($sql);
-    $ok = $stmt->execute([
+    $execParams = array_merge($params, [
         ':first_name' => $firstName,
+        ':middle_name' => $middleName,
         ':last_name' => $lastName,
         ':student_number' => $studentId,
         ':program' => $program,
         ':id' => ctype_digit($requestId) ? (int)$requestId : $requestId,
     ]);
+    $ok = $stmt->execute($execParams);
     if ($ok) {
         if (function_exists('log_event')) { log_event('EDIT_REQUEST', 'Request edited', ['request_id' => $requestId]); }
         echo json_encode(['success' => true]);

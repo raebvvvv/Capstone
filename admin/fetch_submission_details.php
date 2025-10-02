@@ -66,11 +66,12 @@ try {
             'is_adviser' => (int)$a['is_adviser']
         ];
     }
+    $fullName = trim(trim(($sub['first_name']??'')) . ' ' . trim(($sub['middle_name']??'')) . ' ' . trim(($sub['last_name']??'')));
     $response = [
         'success' => true,
         'submission_id' => $sid,
         'request_id' => $sub['submission_code'],
-        'studentName' => trim(($sub['first_name']??'').' '.($sub['last_name']??'')),
+        'studentName' => $fullName !== '' ? $fullName : trim(($sub['first_name']??'').' '.($sub['last_name']??'')),
         'studentNumber' => $sub['student_number'] ?? '',
         'email' => $sub['webmail'] ?? '',
         'homeAddress' => $sub['home_address'] ?? '',

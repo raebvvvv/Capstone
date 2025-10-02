@@ -211,7 +211,7 @@
       if(link){
         e.preventDefault();
         const tr = link.closest('tr');
-        const reqId = tr?.querySelector('td')?.textContent.trim() || '';
+        const reqId = (link.getAttribute('data-request-id') || '').trim() || (tr?.querySelector('td')?.textContent.trim() || '');
         if(!reqId){ showDetailsModal(tr); return; }
         try {
           const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -236,7 +236,92 @@
     const editDetailsBtn = document.getElementById('editDetailsBtn');
     if(editDetailsBtn){ editDetailsBtn.addEventListener('click', ()=> renderDetails(currentDetails,true)); }
     const saveDetailsBtn = document.getElementById('saveDetailsBtn');
-    if(saveDetailsBtn){ saveDetailsBtn.addEventListener('click', ()=>{ const updatedDetails = { request_id: currentDetails.request_id, student_name: document.getElementById('edit_name')?.value || '', student_id: document.getElementById('edit_number')?.value || '', email: document.getElementById('edit_email')?.value || '', program: document.getElementById('edit_program')?.value || '', }; fetch('../edit_ticket.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(updatedDetails) }).then(res=>res.json()).then(data=>{ if(data.success){ renderDetails(updatedDetails,false); alert('Details updated successfully!'); } else { alert('Update failed: '+(data.error || 'Unknown error')); } }); }); }
+    if (saveDetailsBtn) {
+      saveDetailsBtn.addEventListener('click', async () => {
+        // Collect edited values from the modal (match IDs created in renderDetails)
+        const studentName = document.getElementById('editStudentName')?.value?.trim() || '';
+        const studentNumber = document.getElementById('editStudentNumber')?.value?.trim() || '';
+        const email = document.getElementById('editEmail')?.value?.trim() || '';
+        const homeAddress = document.getElementById('editHomeAddress')?.value?.trim() || '';
+        const campus = document.getElementById('editCampus')?.value?.trim() || '';
+        const college = document.getElementById('editCollege')?.value?.trim() || '';
+        const program = document.getElementById('editProgram')?.value?.trim() || '';
+        const documentTitle = document.getElementById('editDocumentTitle')?.value?.trim() || '';
+        const accomplishmentDate = document.getElementById('editAccomplishmentDate')?.value?.trim() || '';
+
+        const rid = currentDetails.request_id || document.querySelector('#detailsModal [data-request-id]')?.getAttribute('data-request-id') || '';
+        if (!rid) { alert('Missing Request ID; cannot save changes.'); return; }
+
+        const payload = {
+          request_id: rid,
+          student_name: studentName,
+          student_id: studentNumber,
+          email,
+          home_address: homeAddress,
+          campus,
+          college,
+          program,
+          document_title: documentTitle,
+          accomplishment_date: accomplishmentDate
+        };
+
+        try {
+          const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+          const res = await fetch('../edit_ticket.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+            body: JSON.stringify(payload)
+          });
+          let data = {};
+          try { data = await res.json(); } catch(_) {}
+          if (!res.ok) { throw new Error(data.error || ('HTTP ' + res.status)); }
+          if (data.success) {
+            // Update local state and UI with edited fields
+            if (studentName) currentDetails.studentName = studentName;
+            if (studentNumber) currentDetails.studentNumber = studentNumber;
+            if (email) currentDetails.email = email;
+            if (homeAddress) currentDetails.homeAddress = homeAddress;
+            if (campus) currentDetails.campus = campus;
+            if (college) currentDetails.college = college;
+            if (program) currentDetails.program = program;
+            if (documentTitle) currentDetails.documentTitle = documentTitle;
+            if (accomplishmentDate) currentDetails.accomplishmentDate = accomplishmentDate;
+
+            // Also reflect changes back into the active table row if present
+            const openLink = document.querySelector(`a.open-details[data-request-id="${CSS.escape(rid)}"]`);
+            const row = openLink?.closest('tr');
+            if (row) {
+              if (studentName) {
+                const nameAnchor = row.querySelector('td:nth-child(2) .fw-semibold, td:nth-child(2) a.open-details');
+                if (nameAnchor) nameAnchor.textContent = studentName;
+              }
+              if (studentNumber) {
+                const sub = row.querySelector('.student-subtext');
+                if (sub) sub.textContent = studentNumber;
+              }
+              if (program) {
+                const prog = row.querySelector('.col-program');
+                if (prog) { prog.textContent = program; prog.setAttribute('title', program); }
+              }
+            }
+            // Broadcast a cross-tab/window event so other pages (e.g., Completed Applications) can update
+            try {
+              window.localStorage.setItem('ipmo:lastUpdate', JSON.stringify({
+                t: Date.now(), kind: 'submission-updated', requestId: rid,
+                payload: { studentName, studentNumber, program, college, documentTitle }
+              }));
+            } catch(_) {}
+            renderDetails(currentDetails, false);
+            alert('Details updated successfully.');
+          } else {
+            alert('Update failed: ' + (data.error || 'Unknown error'));
+          }
+        } catch (err) {
+          console.error('Save details error', err);
+          alert('Failed to save changes: ' + err.message);
+        }
+      });
+    }
 
     // Incomplete (pending) single-modal flow
     document.querySelectorAll('#pending .btn-incomplete').forEach(btn=>{ 
@@ -276,6 +361,10 @@
       const remark = document.getElementById('remarksDropdown')?.textContent.trim() || '';
       const comment = document.getElementById('incompleteTextarea')?.value.trim() || '';
   const affected = Array.from(document.querySelectorAll('.incomplete-pending-file-checkbox:checked')).map(cb=> cb.getAttribute('data-doc-type'));
+      if(!affected || affected.length === 0){
+        alert('Please select at least one document to unlock for re-upload.');
+        return;
+      }
       try {
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
   const res = await fetch('../admin/set_incomplete.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify({ request_id: requestId, remark, comment, file_ids: [], affected_doc_types: affected }) });
@@ -287,8 +376,14 @@
           const row = Array.from(document.querySelectorAll('#pending tbody tr')).find(tr=> (tr.querySelector('td')?.textContent.trim()||'') === requestId);
             if(row){
               const cells = row.querySelectorAll('td');
-              // Remarks column is 6th (index 5)
-              if(cells[5]) cells[5].innerHTML = '<span class="status-badge status-awaiting">Awaiting Review</span>';
+              // Remarks column is 5th (index 4) in Pending tab; show Awaiting Review only when files were selected
+              if(cells[4]){
+                if(affected.length > 0){
+                  cells[4].innerHTML = '<span class="status-badge status-awaiting">Awaiting Review</span>';
+                } else {
+                  cells[4].innerHTML = '<span class="status-badge status-pending">For Evaluation</span>';
+                }
+              }
               row.classList.add('table-warning');
               if(comment) row.setAttribute('data-admin-comment', comment);
               if(remark && remark.toLowerCase() !== 'remarks') row.setAttribute('data-incomplete-remark', remark);
@@ -583,6 +678,10 @@
         const remark = (document.getElementById('remarksDropdownActive')?.textContent || '').trim();
         const comment = (document.getElementById('incompleteTextareaActive')?.value || '').trim();
   const affected = Array.from(document.querySelectorAll('.incomplete-active-file-checkbox:checked')).map(cb=> cb.getAttribute('data-doc-type'));
+        if(!affected || affected.length === 0){
+          alert('Please select at least one document to unlock for re-upload.');
+          return;
+        }
         if(!requestId){ ModalApi.hide(modal); return; }
         try {
           const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -591,19 +690,15 @@
           console.debug('[mark_incomplete_approved] payload', { request_id: requestId, remark, comment });
           console.debug('[mark_incomplete_approved] response', data);
           if(data.success){
-            // Update row in place: mark visually, set attributes, add Comments button if needed
+            // Update row in place: keep in Approved; set remark/status and flagged files
             const cells = approvedIncompleteTargetRow.querySelectorAll('td');
-            // cells[6] is Status column -> change to selected remark for clarity
-            if(cells[6] && remark && remark.toLowerCase() !== 'remarks'){ cells[6].textContent = remark; }
+            if(cells[4]){ cells[4].textContent = remark && remark.toLowerCase()!=='remarks' ? remark : (comment? 'Needs Attention':'In-Review'); }
             approvedIncompleteTargetRow.classList.add('table-warning');
             if(comment) approvedIncompleteTargetRow.setAttribute('data-admin-comment', comment);
             if(remark && remark.toLowerCase() !== 'remarks') approvedIncompleteTargetRow.setAttribute('data-incomplete-remark', remark);
             if(affected.length){ approvedIncompleteTargetRow.setAttribute('data-resubmit-files', affected.join('|')); }
-            // Ensure Comments button exists if we have any content
-            if((remark && remark.toLowerCase() !== 'remarks') || comment || affected.length){
-              ensureCommentsButton(approvedIncompleteTargetRow);
-            }
-            alert('Marked as Incomplete (flagged) while remaining Approved.');
+            ensureCommentsButton(approvedIncompleteTargetRow);
+            alert('Marked as Incomplete. The request remains in Approved and is flagged for resubmission.');
             // Reset active modal fields
             const ddA = document.getElementById('remarksDropdownActive');
             if(ddA) ddA.textContent = 'Remarks';
@@ -658,7 +753,8 @@
     // Row expander ('More') removed
 
     // Initialization scan: Add Comments button for any pending rows already in 'Awaiting Review'
-    document.querySelectorAll('#pending tbody tr').forEach(tr=>{ const cells = tr.querySelectorAll('td'); const remark = (cells[6]?.textContent || '').trim().toLowerCase(); if(remark === 'awaiting review'){ ensureCommentsButton(tr); } });
+  // Ensure rows already marked 'Awaiting Review' in Pending have a Comments button
+  document.querySelectorAll('#pending tbody tr').forEach(tr=>{ const cells = tr.querySelectorAll('td'); const remark = (cells[4]?.textContent || '').trim().toLowerCase(); if(remark === 'awaiting review'){ ensureCommentsButton(tr); } });
     // Optional cleanup: remove/disable stray Comments buttons in Approved tab without a stored comment attribute
     document.querySelectorAll('#approved tbody tr').forEach(tr=>{
       const hasComment = (tr.getAttribute('data-admin-comment')||'').trim() !== '';

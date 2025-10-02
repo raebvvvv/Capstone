@@ -40,8 +40,8 @@ try {
         exit;
     }
 
-    // Only allow re-upload while pending-like states (adjust if needed)
-    $allowStates = ['pending','pending_review','under_review','revision_needed'];
+    // Allow re-upload while in pending-like states AND when status is approved (admin-approved but flagged for resubmission)
+    $allowStates = ['pending','pending_review','under_review','revision_needed','approved'];
     if(!in_array(strtolower($sub['status']), $allowStates, true)){
         http_response_code(409);
         echo json_encode(['success'=>false,'error'=>'Submission not editable in current status']);
@@ -80,8 +80,9 @@ try {
         exit;
     }
 
-    // Ensure this document type is actually still requested for resubmission (affected_doc_types)
-    $metaStmt = $pdo->prepare('SELECT affected_doc_types FROM submission_incomplete_meta WHERE submission_id=? AND scope="pending" LIMIT 1');
+    // Ensure this document type is requested for resubmission. Accept either pending or approved scope.
+    // Prefer approved scope when present (keeps item in Approved while allowing re-upload).
+    $metaStmt = $pdo->prepare('SELECT affected_doc_types FROM submission_incomplete_meta WHERE submission_id=? AND scope IN ("pending","approved") ORDER BY FIELD(scope,"approved","pending") LIMIT 1');
     $metaStmt->execute([(int)$sub['submission_id']]);
     $metaRow = $metaStmt->fetch(PDO::FETCH_ASSOC);
     $requested = [];

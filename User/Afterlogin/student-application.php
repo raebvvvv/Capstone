@@ -11,8 +11,11 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
     <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
-    <link rel="stylesheet" href="<?php echo asset_url('css/student-application.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/student-application.css'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/shared-details-modal.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
+  <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
+  <script src="<?php echo asset_url('javascript/shared-details-modal.js'); ?>" defer></script>
 </head>
 <body>
   <!-- Navbar (uniform across project) -->
@@ -40,7 +43,7 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
   <!-- Main content -->
   <main class="container py-4">
     <h1 class="fw-bold mb-2 mt-4" style="font-size:2.5rem;">My Application</h1>
-    <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p>
+    <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p> 
    
  <div class="d-flex justify-content-center mb-3 gap-2">
     <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Ethics Clearance</button></a>
@@ -94,7 +97,8 @@ try {
   mp.admin_comment AS pending_admin_comment,
   mp.issue_label   AS pending_issue_label,
   mp.affected_doc_types AS pending_affected_doc_types,
-      ma.admin_comment AS approved_admin_comment
+    ma.admin_comment AS approved_admin_comment,
+    ma.affected_doc_types AS approved_affected_doc_types
     FROM submissions s
     LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope='pending'
     LEFT JOIN submission_incomplete_meta ma ON ma.submission_id = s.submission_id AND ma.scope='approved'
@@ -195,6 +199,7 @@ try {
             <?php if(count($approvedRows)===0): ?>
               <tr><td colspan="6" class="text-center text-muted py-5">No approved applications.</td></tr>
             <?php else: foreach($approvedRows as $row): ?>
+              <?php $approvedAffected = trim((string)($row['approved_affected_doc_types'] ?? '')); ?>
               <?php
                 // Attempt to fetch/display student's name (join can be added if needed; fallback to session fields if present)
                 $studentName = '';
@@ -206,14 +211,14 @@ try {
                   try { $reqDate = date('F d, Y', strtotime($row['created_at'])); } catch(Throwable $e){ $reqDate=''; }
                 }
               ?>
-              <tr>
+              <tr<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>
                 <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
                 <td><?php echo htmlspecialchars($row['student_number']); ?></td>
                 <td><?php echo htmlspecialchars($row['title']); ?></td>
                 <td><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
                 <td></td>
                 <td>
-                  <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
+                  <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>"<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>View Details</a>
                   <!-- Request ID modal trigger button -->
                   <button type="button" class="btn btn-outline-dark btn-sm btn-request-id" data-request-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-request-date="<?php echo htmlspecialchars($reqDate); ?>" data-student-name="<?php echo htmlspecialchars($studentName); ?>">Request ID</button>
                   <?php if(!empty($row['approved_admin_comment'])): ?>
