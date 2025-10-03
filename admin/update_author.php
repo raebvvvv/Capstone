@@ -28,10 +28,13 @@ try {
         $s = trim((string)$s);
         if ($s==='') return '';
         $s = strtolower(preg_replace('/\s+/', ' ', $s));
+        // Capitalize first letter of each word
         $s = preg_replace_callback('/\b([a-z])/', function($m){ return strtoupper($m[1]); }, $s);
+        // Ensure letter after hyphen is capitalized (e.g., Ana-Mae)
         $s = preg_replace_callback('/-([a-z])/', function($m){ return '-'.strtoupper($m[1]); }, $s);
-        $s = preg_replace_callback("/'([a-z])", function($m){ return "'".strtoupper($m[1]); }, $s);
-        return $s;
+        // Ensure letter after apostrophe is capitalized (e.g., O'Neil)
+        $s = preg_replace_callback("/'([a-z])/", function($m){ return "'".strtoupper($m[1]); }, $s);
+        return (string)$s;
     };
     $first = $norm($first);
     $middle = $norm($middle);

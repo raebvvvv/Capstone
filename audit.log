@@ -248,3 +248,5 @@
 {"ts":"2025-10-03T15:13:15+02:00","type":"EDIT_AUTHOR","user_id":18,"ip":"::1","msg":"Author updated","ctx":{"author_id":66}}
 {"ts":"2025-10-03T15:18:41+02:00","type":"EDIT_AUTHOR","user_id":18,"ip":"::1","msg":"Author updated","ctx":{"author_id":66}}
 {"ts":"2025-10-03T15:20:00+02:00","type":"EDIT_AUTHOR","user_id":18,"ip":"::1","msg":"Author updated","ctx":{"author_id":66}}
+{"ts":"2025-10-03T15:22:06+02:00","type":"EDIT_AUTHOR","user_id":18,"ip":"::1","msg":"Author updated","ctx":{"author_id":66}}
+{"ts":"2025-10-03T15:26:24+02:00","type":"EDIT_AUTHOR","user_id":18,"ip":"::1","msg":"Author updated","ctx":{"author_id":66}}
