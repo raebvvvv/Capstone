@@ -398,6 +398,15 @@ if (isset($_SESSION['user_id'])) {
         </div>
   <!-- Application Overview Section -->
         <div class="dashboard-section mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <small id="dashAsOf" class="text-muted">As of —</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <input type="datetime-local" id="dashAsOfInput" class="form-control form-control-sm" style="max-width: 230px;"/>
+                    <button type="button" id="dashReloadBtn" class="btn btn-sm btn-outline-primary">Reload data</button>
+                </div>
+            </div>
             <div class="row align-items-center">
                 <h5 class="mb-5"><span class="legend-dot legend-open"></span>Application Overview</h5>
                 <div class="col-md-6 chart-container d-flex justify-content-center align-items-center">
@@ -410,10 +419,10 @@ if (isset($_SESSION['user_id'])) {
                 </div>
                 <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
                     <div style="font-size: 1.2rem;">
-                        <span style="color:#870000;">Undergraduate</span> <b><?= $undergrad ?></b> &nbsp;
-                        <span style="color:#FFD54F;">Graduate School</span> <b><?= $grad ?></b> &nbsp;
-                        <span style="color:gray;">Open University</span> <b><?= $open ?></b> &nbsp; <br><br>
-                         <span style="font-weight:600;">| <?= $total_applications_chart ?> Total Applications</span>
+                        <span style="color:#870000;">Undergraduate</span> <b id="countUndergrad"><?= $undergrad ?></b> &nbsp;
+                        <span style="color:#FFD54F;">Graduate School</span> <b id="countGrad"><?= $grad ?></b> &nbsp;
+                        <span style="color:gray;">Open University</span> <b id="countOpen"><?= $open ?></b> &nbsp; <br><br>
+                         <span style="font-weight:600;">| <span id="countTotalApplications"><?= $total_applications_chart ?></span> Total Applications</span>
                     </div>
                 </div>
             </div>
@@ -451,7 +460,7 @@ if (isset($_SESSION['user_id'])) {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-    <script src="../javascript/admin-dashboard.js?v=4" defer></script>
+    <script src="../javascript/admin-dashboard.js?v=6" defer></script>
     <script src="../javascript/admin-profile.js?v=2" defer></script>
     <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
