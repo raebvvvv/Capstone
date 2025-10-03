@@ -54,6 +54,27 @@ try {
   $allowStatuses = ['pending','pending_review','under_review','revision_needed','approved'];
   $canNote = in_array($status, $allowStatuses, true);
 
+  // Determine adviser name for user side:
+  // 1) submissions.adviser string, else 2) submissions.adviser_id via advisers table, else 3) first co-author with is_adviser=1
+  $adviserName = trim((string)($sub['adviser'] ?? ''));
+  if ($adviserName === '') {
+    $adviserId = isset($sub['adviser_id']) ? (int)$sub['adviser_id'] : 0;
+    if ($adviserId > 0) {
+      try {
+        $stmtAdv = $pdo->prepare('SELECT first_name, middle_name, last_name FROM advisers WHERE adviser_id = ? LIMIT 1');
+        $stmtAdv->execute([$adviserId]);
+        if ($row = $stmtAdv->fetch(PDO::FETCH_ASSOC)) {
+          $adviserName = trim(($row['first_name']??'').' '.($row['middle_name']??'').' '.($row['last_name']??''));
+        }
+      } catch (Throwable $e) { /* ignore missing table/column */ }
+    }
+  }
+  if ($adviserName === '') {
+    foreach ($authors as $a) {
+      if ((int)($a['is_adviser'] ?? 0) === 1) { $adviserName = $a['name'] ?? ''; if ($adviserName !== '') break; }
+    }
+  }
+
   $resp = [
     'success' => true,
     'submissionCode' => $sub['submission_code'],
@@ -66,6 +87,8 @@ try {
     'program' => $sub['program'] ?? '',
     'academicLevel' => $sub['academic_level'] ?? '',
     'documentTitle' => $sub['title'] ?? '',
+  'adviser' => $adviserName,
+    'adviser_coauthor' => isset($sub['adviser_coauthor']) ? (int)$sub['adviser_coauthor'] : 0,
     'workClassification' => $sub['work_classification'] ?? '',
     'accomplishmentDate' => $sub['date_accomplished'] ?? '',
     'files_list' => $files,

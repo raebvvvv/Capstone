@@ -773,7 +773,7 @@ foreach ($rows as $r) {
         </div>
     </div>
 
-<script src="../javascript/admin-ticket.js?v=6" defer></script>
+<script src="../javascript/admin-ticket.js?v=8" defer></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

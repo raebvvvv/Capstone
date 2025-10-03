@@ -110,7 +110,21 @@
       details._exampleSeeded = true;
     }
 
-    const authorsListHTML = (details.additionalAuthors||[]).map((a,idx)=>`<div class="author-entry"><span class="author-name">${a.name||'—'}</span><button type="button" class="btn btn-success btn-sm rounded-pill px-3 ms-2 author-view-btn" data-author-index="${idx}">View Details</button></div>`).join('');
+    const allAuthors = Array.isArray(details.additionalAuthors) ? details.additionalAuthors : [];
+    const isAdv = (a)=> (a && (a.is_adviser===1 || a.is_adviser===true || a.is_adviser==='1'));
+    const advisersInAuthors = allAuthors.filter(isAdv);
+    const coauthors = allAuthors.slice(); // keep all for listing; badge advisers inline
+
+    const coauthorsListHTML = coauthors.map((a)=>{
+      const badge = isAdv(a) ? '<span class="badge bg-warning text-dark ms-2">Adviser</span>' : '';
+      const btn = isAdv(a) ? '' : `<button type="button" class="btn btn-success btn-sm rounded-pill px-3 ms-2 author-view-btn" data-author-index="${allAuthors.indexOf(a)}">View Details</button>`;
+      return `<div class="author-entry"><span class="author-name">${a.name||'—'}</span>${badge}${btn}</div>`;
+    }).join('');
+    // If adviser is not a co-author, show a concise line under Document Information
+    const adviserName = (details.adviser || '').trim();
+    const adviserInlineHTML = (!advisersInAuthors.length && adviserName)
+      ? `<p><strong>Adviser:</strong> ${escapeHTML(adviserName)}</p>`
+      : '';
     const modalBody = document.getElementById('detailsModalBody');
     if(!modalBody) return;
 
@@ -126,8 +140,9 @@
   `<div><h5>Document Information</h5>`+
       `<p><strong>Title:</strong> ${editMode? `<input type='text' id='editDocumentTitle' value='${escapeHTML(v(details.documentTitle,''))}' />` : escapeHTML(v(details.documentTitle,'—'))}</p>`+
   `<p><strong>Type (Work Classification):</strong> ${escapeHTML(v(details.workClassification,'—'))}</p>`+
-      `<p><strong>Author/s Full name/s:</strong> ${escapeHTML(v(details.studentName,'—'))}</p>`+
-      `${authorsListHTML ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${authorsListHTML}</div>`: ''}`+
+  `<p><strong>Author/s Full name/s:</strong> ${escapeHTML(v(details.studentName,'—'))}</p>`+
+  adviserInlineHTML+
+  `${coauthorsListHTML ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${coauthorsListHTML}</div>`: ''}`+
       `<p class="mt-2"><strong>Date Accomplished:</strong> ${editMode? `<input type='date' id='editAccomplishmentDate' value='${escapeHTML(v(details.accomplishmentDate,''))}' />` : escapeHTML(v(details.accomplishmentDate,'—'))}</p></div>`+
       `<div class="mt-3"><h5>Uploaded Files</h5>${attachmentsHTML}</div>`;
 
@@ -165,23 +180,34 @@
     if(!body) return;
     const v=(x)=> (x??'');
     if(!edit){
-      body.innerHTML = `<div class="mb-3"><strong>Name:</strong> ${author.name || '—'}</div>`+
+      const isAdv = (author && (author.is_adviser===1 || author.is_adviser===true || author.is_adviser==='1'));
+      body.innerHTML = `<div class="mb-3"><strong>Name:</strong> ${author.name || '—'} ${isAdv? '<span class="badge bg-warning text-dark ms-2">Adviser</span>':''}</div>`+
+        `<div class="mb-2"><strong>Role:</strong> ${isAdv ? 'Adviser' : 'Author'}</div>`+
         `<div class="mb-2"><strong>Student Number:</strong> ${author.studentNumber || ''}</div>`+
         `<div class="mb-2"><strong>Email Address:</strong> ${author.email || ''}</div>`+
         `<div class="mb-2"><strong>Home Address:</strong> ${author.address || ''}</div>`+
-        `<div class="mb-2"><strong>Phone Number:</strong> ${author.phone || ''}</div>`+
-        `<div class="mb-2"><strong>Campus:</strong> ${author.campus || ''}</div>`+
-        `<div class="mb-2"><strong>College:</strong> ${author.college || ''}</div>`+
-        `<div class="mb-2"><strong>Program:</strong> ${author.program || ''}</div>`;
+        `<div class="mb-2"><strong>Phone Number:</strong> ${author.phone || ''}</div>`;
     } else {
-      body.innerHTML = `<div class="mb-2"><label class="form-label">Name</label><input class="form-control" id="editAuthorNameInput" value="${v(author.name)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Student Number</label><input class="form-control" id="editAuthorStudNoInput" value="${v(author.studentNumber)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Email Address</label><input type="email" class="form-control" id="editAuthorEmailInput" value="${v(author.email)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Home Address</label><input class="form-control" id="editAuthorAddressInput" value="${v(author.address)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Phone Number</label><input class="form-control" id="editAuthorPhoneInput" value="${v(author.phone)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Campus</label><input class="form-control" id="editAuthorCampusInput" value="${v(author.campus)}"></div>`+
-        `<div class="mb-2"><label class="form-label">College</label><input class="form-control" id="editAuthorCollegeInput" value="${v(author.college)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Program</label><input class="form-control" id="editAuthorProgramInput" value="${v(author.program)}"></div>`;
+      // Split name for editing convenience; attempt First [Middle ...] Last
+      const splitName = (n)=>{
+        const parts = String(n||'').trim().split(/\s+/).filter(Boolean);
+        if(parts.length<=1) return { first: parts[0]||'', middle:'', last:'' };
+        if(parts.length===2) return { first: parts[0], middle:'', last: parts[1] };
+        const first = parts.shift();
+        const last = parts.pop();
+        const middle = parts.join(' ');
+        return { first, middle, last };
+      };
+      const nm = splitName(author.name||'');
+      body.innerHTML = `<div class="row g-2">`+
+        `<div class="col-12 col-md-4"><label class="form-label">First Name</label><input class="form-control" id="editAuthorFirst" value="${escapeHTML(v(nm.first))}"></div>`+
+        `<div class="col-12 col-md-4"><label class="form-label">Middle Name</label><input class="form-control" id="editAuthorMiddle" value="${escapeHTML(v(nm.middle))}"></div>`+
+        `<div class="col-12 col-md-4"><label class="form-label">Last Name</label><input class="form-control" id="editAuthorLast" value="${escapeHTML(v(nm.last))}"></div>`+
+        `</div>`+
+        `<div class="mb-2 mt-2"><label class="form-label">Student Number</label><input class="form-control" id="editAuthorStudNoInput" value="${escapeHTML(v(author.studentNumber))}"></div>`+
+        `<div class="mb-2"><label class="form-label">Email Address</label><input type="email" class="form-control" id="editAuthorEmailInput" value="${escapeHTML(v(author.email))}"></div>`+
+        `<div class="mb-2"><label class="form-label">Home Address</label><input class="form-control" id="editAuthorAddressInput" value="${escapeHTML(v(author.address))}"></div>`+
+        `<div class="mb-2"><label class="form-label">Phone Number</label><input class="form-control" id="editAuthorPhoneInput" value="${escapeHTML(v(author.phone))}"></div>`;
     }
     const editBtn = document.getElementById('authorEditBtn');
     const saveBtn = document.getElementById('authorSaveBtn');
@@ -190,7 +216,7 @@
       saveBtn.style.display = edit ? 'inline-block':'none';
     }
   }
-  function openAuthorModal(index){
+  function openAuthorModal(index){ 
     currentAuthorIndex = index;
     const author = (currentDetails.additionalAuthors || [])[index] || {};
     renderAuthorModal(author,false);
@@ -203,6 +229,74 @@
   function selectRemarkActive(remark){ const dd=document.getElementById('remarksDropdownActive'); if(dd) dd.textContent=remark; }
 
   document.addEventListener('DOMContentLoaded', function(){
+    // Global handlers for Author modal edit/save (use currentAuthorIndex)
+    const authorEditBtnEl = document.getElementById('authorEditBtn');
+    if(authorEditBtnEl){
+      authorEditBtnEl.addEventListener('click', ()=>{
+        const author = (currentDetails.additionalAuthors || [])[currentAuthorIndex ?? -1];
+        if(!author){ return; }
+        renderAuthorModal(author, true);
+      });
+    }
+    const authorSaveBtnEl = document.getElementById('authorSaveBtn');
+    if(authorSaveBtnEl){
+      authorSaveBtnEl.addEventListener('click', async ()=>{
+        const author = (currentDetails.additionalAuthors || [])[currentAuthorIndex ?? -1];
+        if(!author){ alert('No author selected.'); return; }
+        const authorId = author.id || null;
+        if(!authorId){ alert('Missing author id; cannot save.'); return; }
+        const first = document.getElementById('editAuthorFirst')?.value?.trim() || '';
+        const middle = document.getElementById('editAuthorMiddle')?.value?.trim() || '';
+        const last = document.getElementById('editAuthorLast')?.value?.trim() || '';
+        const studentId = document.getElementById('editAuthorStudNoInput')?.value?.trim() || '';
+        const email = document.getElementById('editAuthorEmailInput')?.value?.trim() || '';
+        const address = document.getElementById('editAuthorAddressInput')?.value?.trim() || '';
+        const phone = document.getElementById('editAuthorPhoneInput')?.value?.trim() || '';
+        try {
+          authorSaveBtnEl.disabled = true;
+          const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+          const res = await fetch('../admin/update_author.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+            body: JSON.stringify({
+              author_id: authorId,
+              first_name: first,
+              middle_name: middle,
+              last_name: last,
+              student_id: studentId,
+              webmail: email,
+              home_address: address,
+              mobile: phone
+            })
+          });
+          let data = null;
+          try { data = await res.json(); } catch(_) {}
+          if(!data){
+            let txt = '';
+            try { txt = await res.text(); } catch(_) {}
+            alert('Failed to save author changes' + (txt?`\n${txt}`:''));
+            return;
+          }
+          if(!data.success){ alert('Failed to save author changes' + (data.error?`: ${data.error}`:'' ) + (data.detail?`\n${data.detail}`:'')); return; }
+          // Update local model
+          const full = [first, middle, last].filter(Boolean).join(' ');
+          author.name = full;
+          author.studentNumber = studentId;
+          author.email = email;
+          author.address = address;
+          author.phone = phone;
+          // Re-render
+          renderAuthorModal(author,false);
+          renderDetails(currentDetails,false);
+        } catch(err){
+          console.error('update_author error', err);
+          alert('Network error updating author');
+        } finally {
+          authorSaveBtnEl.disabled = false;
+        }
+      });
+    }
     // Density toggle removed; always use optimized layout
 
     // Open details by clicking Request ID only
@@ -216,19 +310,45 @@
         try {
           const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
           const res = await fetch('../admin/fetch_submission_details.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify({ request_id: reqId }) });
-          const data = await res.json();
-          if(data.success){
-            currentDetails = data; // matches expected keys in renderDetails
+          let data = {};
+          try { data = await res.json(); } catch(_) {}
+          if(data && data.success){
+            currentDetails = data;
             renderDetails(currentDetails,false);
             const detailsModalEl = document.getElementById('detailsModal');
             if(detailsModalEl) ModalApi.show(detailsModalEl);
           } else {
-            console.warn('Details fetch failed', data);
-            showDetailsModal(tr); // fallback to legacy static extraction
+            // Retry via GET (read-only) to avoid CSRF-related failures
+            const res2 = await fetch(`../admin/fetch_submission_details.php?request_id=${encodeURIComponent(reqId)}`, { method:'GET', credentials:'same-origin' });
+            let data2 = {};
+            try { data2 = await res2.json(); } catch(_) {}
+            if(data2 && data2.success){
+              currentDetails = data2;
+              renderDetails(currentDetails,false);
+              const detailsModalEl = document.getElementById('detailsModal');
+              if(detailsModalEl) ModalApi.show(detailsModalEl);
+            } else {
+              console.warn('Details fetch failed', data || data2);
+              showDetailsModal(tr);
+            }
           }
         } catch(err){
-          console.error('Details fetch error', err);
-          showDetailsModal(tr);
+          try {
+            const res2 = await fetch(`../admin/fetch_submission_details.php?request_id=${encodeURIComponent(reqId)}`, { method:'GET', credentials:'same-origin' });
+            const data2 = await res2.json();
+            if(data2 && data2.success){
+              currentDetails = data2;
+              renderDetails(currentDetails,false);
+              const detailsModalEl = document.getElementById('detailsModal');
+              if(detailsModalEl) ModalApi.show(detailsModalEl);
+            } else {
+              console.error('Details fetch GET error', err, data2);
+              showDetailsModal(tr);
+            }
+          } catch(err2){
+            console.error('Details fetch error', err, err2);
+            showDetailsModal(tr);
+          }
         }
       }
     });

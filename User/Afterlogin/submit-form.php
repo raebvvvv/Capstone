@@ -124,16 +124,35 @@ $logLine = date('c') . ' | SUBMISSION | ' . json_encode([
 ]) . PHP_EOL;
 file_put_contents(app_path('audit.log'), $logLine, FILE_APPEND);
 
+// Helper: title-case capitalization for names (handles hyphens and apostrophes)
+function normalize_name($s) {
+    $s = trim((string)$s);
+    if ($s === '') return '';
+    $s = strtolower(preg_replace('/\s+/', ' ', $s));
+    $s = preg_replace_callback('/\b([a-z])/', function($m){ return strtoupper($m[1]); }, $s);
+    $s = preg_replace_callback('/-([a-z])/', function($m){ return '-'.strtoupper($m[1]); }, $s);
+    $s = preg_replace_callback("/'([a-z])/", function($m){ return "'".strtoupper($m[1]); }, $s);
+    return $s;
+}
+
+// Normalize submitter names
+$data['first_name'] = normalize_name($data['first_name'] ?? '');
+$data['last_name'] = normalize_name($data['last_name'] ?? '');
+$_POST['middle_name'] = normalize_name($_POST['middle_name'] ?? '');
+
+// Normalize adviser field
+$data['adviser'] = normalize_name($data['adviser']);
+
 if (empty($errors)) {
     try {
         $pdo->beginTransaction();
 
         // --- Adviser handling: insert/get adviser_id ---
-        $adviserFullName = trim($_POST['adviser'] ?? '');
+    $adviserFullName = trim($data['adviser'] ?? '');
         $nameParts = preg_split('/\s+/', $adviserFullName);
-        $firstName = $nameParts[0] ?? '';
-        $lastName = count($nameParts) > 1 ? array_pop($nameParts) : '';
-        $middleName = count($nameParts) > 1 ? implode(' ', $nameParts) : '';
+    $firstName = normalize_name($nameParts[0] ?? '');
+    $lastName = normalize_name(count($nameParts) > 1 ? array_pop($nameParts) : '');
+    $middleName = normalize_name(count($nameParts) > 1 ? implode(' ', $nameParts) : '');
 
         $adviserStmt = $pdo->prepare("SELECT adviser_id FROM advisers WHERE first_name = ? AND last_name = ? AND middle_name = ?");
         $adviserStmt->execute([$firstName, $lastName, $middleName]);
@@ -251,9 +270,9 @@ if (empty($errors)) {
                 try {
                     $authorStmt->execute([
                         $submission_id,
-                        $author['first_name'],
-                        $author['middle_name'], // <-- use middle_name
-                        $author['last_name'],
+                        normalize_name($author['first_name']),
+                        normalize_name($author['middle_name']), // <-- use middle_name
+                        normalize_name($author['last_name']),
                         $author['student_id'],
                         $author['mobile'],
                         $author['home_address'],
@@ -295,9 +314,9 @@ if (empty($errors)) {
                 }
                 $authorStmt->execute([
                     $submission_id,
-                    $coauthor['first_name'],
-                    $coauthor['middle_name'],
-                    $coauthor['last_name'],
+                    normalize_name($coauthor['first_name']),
+                    normalize_name($coauthor['middle_name']),
+                    normalize_name($coauthor['last_name']),
                     $coauthor['student_id'],
                     $coauthor['mobile'],
                     $coauthor['home_address'],

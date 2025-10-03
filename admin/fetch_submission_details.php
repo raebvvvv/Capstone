@@ -5,21 +5,30 @@ if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 header('Content-Type: application/json');
 try {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    // Read-only endpoint: allow GET without CSRF; require CSRF only for POST
+    if ($method !== 'GET' && $method !== 'POST') {
         http_response_code(405);
         echo json_encode(['success'=>false,'error'=>'Method not allowed']);
         exit;
     }
-    $csrfHeader = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    if (function_exists('csrf_token') && $csrfHeader !== csrf_token()) {
-        http_response_code(403);
-        echo json_encode(['success'=>false,'error'=>'CSRF token mismatch']);
-        exit;
+    if ($method === 'POST') {
+        $csrfHeader = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        if (function_exists('csrf_token') && $csrfHeader !== csrf_token()) {
+            http_response_code(403);
+            echo json_encode(['success'=>false,'error'=>'CSRF token mismatch']);
+            exit;
+        }
     }
-    $raw = file_get_contents('php://input');
-    $payload = json_decode($raw, true);
-    if(!is_array($payload)) { $payload = $_POST; }
-    $requestId = trim((string)($payload['request_id'] ?? ''));
+    $requestId = '';
+    if ($method === 'POST') {
+        $raw = file_get_contents('php://input');
+        $payload = json_decode($raw, true);
+        if(!is_array($payload)) { $payload = $_POST; }
+        $requestId = trim((string)($payload['request_id'] ?? ''));
+    } else { // GET
+        $requestId = trim((string)($_GET['request_id'] ?? ''));
+    }
     if($requestId==='') { echo json_encode(['success'=>false,'error'=>'Missing request_id']); exit; }
     $isNumeric = ctype_digit($requestId);
     $col = $isNumeric ? 'submission_id' : 'submission_code';
@@ -51,14 +60,20 @@ try {
             'verified'    => isset($d['verified']) ? (int)$d['verified'] : 0
         ];
     }
-    // Fetch authors
-    $authStmt = $pdo->prepare("SELECT first_name, last_name, student_id, mobile, home_address, webmail, is_adviser FROM submission_authors WHERE submission_id = ? ORDER BY is_adviser DESC, first_name ASC");
+    // Fetch authors (include middle_name for proper display)
+    $authStmt = $pdo->prepare("SELECT author_id, first_name, middle_name, last_name, student_id, mobile, home_address, webmail, is_adviser FROM submission_authors WHERE submission_id = ? ORDER BY is_adviser DESC, first_name ASC");
     $authStmt->execute([$sid]);
     $authorsRaw = $authStmt->fetchAll(PDO::FETCH_ASSOC);
     $additionalAuthors = [];
     foreach($authorsRaw as $a){
+        // Build full name: First Middle Last (use middle when available)
+        $mid = trim((string)($a['middle_name'] ?? ''));
+        $dispName = trim(preg_replace('/\s+/', ' ',
+            ($a['first_name'] ?? '') . ' ' . ($mid !== '' ? $mid . ' ' : '') . ($a['last_name'] ?? '')
+        ));
         $additionalAuthors[] = [
-            'name' => trim($a['first_name'].' '.$a['last_name']),
+            'id' => isset($a['author_id']) ? (int)$a['author_id'] : null,
+            'name' => $dispName !== '' ? $dispName : trim(($a['first_name'] ?? '').' '.($a['last_name'] ?? '')),
             'studentNumber' => $a['student_id'],
             'email' => $a['webmail'],
             'phone' => $a['mobile'],
@@ -66,7 +81,37 @@ try {
             'is_adviser' => (int)$a['is_adviser']
         ];
     }
-    $fullName = trim(trim(($sub['first_name']??'')) . ' ' . trim(($sub['middle_name']??'')) . ' ' . trim(($sub['last_name']??'')));
+    // Build student's full name with full middle name if present
+    $mid = trim((string)($sub['middle_name'] ?? ''));
+    $fullName = trim(preg_replace('/\s+/', ' ',
+        (string)($sub['first_name'] ?? '') . ' ' . ($mid !== '' ? $mid . ' ' : '') . (string)($sub['last_name'] ?? '')
+    ));
+    // Determine adviser name:
+    // 1) prefer submissions.adviser (string)
+    // 2) then submissions.adviser_id via advisers table
+    // 3) then first author flagged is_adviser=1
+    $adviserName = trim((string)($sub['adviser'] ?? ''));
+    if ($adviserName === '') {
+        $adviserId = isset($sub['adviser_id']) ? (int)$sub['adviser_id'] : 0;
+        if ($adviserId > 0) {
+            try {
+                $advStmt = $pdo->prepare('SELECT first_name, middle_name, last_name FROM advisers WHERE adviser_id = ? LIMIT 1');
+                $advStmt->execute([$adviserId]);
+                if ($row = $advStmt->fetch(PDO::FETCH_ASSOC)) {
+                    $adviserName = trim(($row['first_name']??'') . ' ' . ($row['middle_name']??'') . ' ' . ($row['last_name']??''));
+                }
+            } catch (Throwable $e) { /* ignore missing table/column */ }
+        }
+    }
+    if ($adviserName === '') {
+        foreach ($authorsRaw as $a) {
+            if ((int)($a['is_adviser'] ?? 0) === 1) {
+                $adviserName = trim(($a['first_name'] ?? '') . ' ' . ($a['last_name'] ?? ''));
+                if ($adviserName !== '') break;
+            }
+        }
+    }
+
     $response = [
         'success' => true,
         'submission_id' => $sid,
@@ -81,6 +126,9 @@ try {
         'program' => $sub['program'] ?? '',
     'academicLevel' => $sub['academic_level'] ?? '',
         'documentTitle' => $sub['title'] ?? '',
+    // Adviser fields (string name stored on submission table; fallback to first co-author with is_adviser=1)
+    'adviser' => $adviserName,
+        'adviser_coauthor' => isset($sub['adviser_coauthor']) ? (int)$sub['adviser_coauthor'] : 0,
         'accomplishmentDate' => $sub['date_accomplished'] ?? '',
         // Application Type (Work Classification)
         'workClassification' => $sub['work_classification'] ?? '',

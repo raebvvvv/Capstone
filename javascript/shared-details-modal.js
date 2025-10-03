@@ -31,14 +31,19 @@
 
   function buildAuthorsHTML(details, options){
     const add = Array.isArray(details.additionalAuthors)? details.additionalAuthors: [];
-    if(!add.length) return '';
+    if(!add.length && !details.adviser) return '';
+  const isAdv = (a)=> !!(a && a.is_adviser);
     const rows = add.map((a,idx)=>{
-      const isAdv = a.is_adviser ? '<span class="badge bg-warning text-dark ms-2">Adviser</span>' : '';
+      const badge = isAdv(a) ? '<span class="badge bg-warning text-dark ms-2">Adviser</span>' : '';
       const name = escapeHTML(a.name || '—');
       const btn = options && options.onAuthorDetails ? `<button type="button" class="btn btn-success btn-sm rounded-pill px-3 ms-2 author-view-btn" data-author-index="${idx}">View Details</button>` : '';
-      return `<div class="author-entry">${name}${isAdv}${btn}</div>`;
+      return `<div class="author-entry">${name}${badge}${btn}</div>`;
     }).join('');
-    return `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${rows}</div>`;
+  const hasAdviserInAuthors = add.some(isAdv);
+  const adviserRaw = (details.adviser || '').toString().trim();
+  const adviserName = (!hasAdviserInAuthors && adviserRaw) ? `<p><strong>Adviser:</strong> ${escapeHTML(adviserRaw)}</p>` : '';
+    const authorsBlock = rows ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${rows}</div>` : '';
+    return adviserName + authorsBlock;
   }
 
   function render(containerEl, details, opts){
