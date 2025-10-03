@@ -6,6 +6,12 @@ if (!defined('BASE_PATH')) {
     define('BASE_PATH', __DIR__); // Physical root of the project
 }
 
+// Ensure all server-side times default to Philippine time
+if (function_exists('date_default_timezone_set')) {
+    // Set once at bootstrap; individual scripts may override if needed
+    @date_default_timezone_set('Asia/Manila');
+}
+
 // Try to derive base URL automatically (works for typical XAMPP localhost setups)
 if (!defined('BASE_URL')) {
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';

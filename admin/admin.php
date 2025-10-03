@@ -12,6 +12,48 @@ function table_exists(PDO $pdo, string $table): bool {
     return (bool)$stmt->fetchColumn();
 }
 
+// Prefer cached dashboard summary to avoid heavy live queries
+$useSummary = false;
+$summary_last_updated = '';
+$summary_last_updated_iso = '';
+$total_users = 0; $total_applications = 0; $pending_applications = 0; $approved_applications = 0; $completed_applications = 0;
+$undergrad = 0; $grad = 0; $open = 0; $total_applications_chart = 0;
+$collegeLabels = []; $collegeValues = [];
+$campusLabels = []; $campusValues = [];
+$wcLabels = []; $wcValues = [];
+try {
+    $stmt = $pdo->prepare("SELECT * FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'dashboard_summary' LIMIT 1");
+    $stmt->execute();
+    if ($stmt->fetchColumn()) {
+        $row = $pdo->query("SELECT * FROM dashboard_summary WHERE id=1 LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $useSummary = true;
+            $summary_last_updated = (string)$row['last_updated'];
+            try {
+                if ($summary_last_updated !== '') {
+                    $dt = new DateTime($summary_last_updated, new DateTimeZone('Asia/Manila'));
+                    $summary_last_updated_iso = $dt->format(DateTime::ATOM);
+                }
+            } catch (Throwable $e) { $summary_last_updated_iso = ''; }
+            $total_users = (int)$row['total_users'];
+            $total_applications = (int)$row['total_apps'];
+            $pending_applications = (int)$row['pending_apps'];
+            $approved_applications = (int)$row['approved_apps'];
+            $completed_applications = (int)$row['completed_apps'];
+            $undergrad = (int)$row['overview_undergrad'];
+            $grad = (int)$row['overview_grad'];
+            $open = (int)$row['overview_open'];
+            $total_applications_chart = $undergrad + $grad + $open;
+            $bc = json_decode($row['by_college_json'] ?? '{}', true) ?: ['labels'=>[], 'values'=>[]];
+            $collegeLabels = $bc['labels']; $collegeValues = $bc['values'];
+            $bp = json_decode($row['by_campus_json'] ?? '{}', true) ?: ['labels'=>[], 'values'=>[]];
+            $campusLabels = $bp['labels']; $campusValues = $bp['values'];
+            $wcj = json_decode($row['work_class_json'] ?? '{}', true) ?: ['labels'=>[], 'values'=>[]];
+            $wcLabels = $wcj['labels']; $wcValues = $wcj['values'];
+        }
+    }
+} catch (Throwable $e) { /* ignore, fallback to live */ }
+
 // Helper: Secure count query with graceful fallback if table dropped
 function getCount($pdo, $table, $where = '', $params = []) {
     if (!table_exists($pdo, $table)) {
@@ -26,19 +68,23 @@ function getCount($pdo, $table, $where = '', $params = []) {
     return $row ? (int)$row['count'] : 0;
 }
 
-// Dashboard counts
-$total_users = getCount($pdo, 'users', "role IN ('student','employee') AND status = ?", ['active']);
-$total_applications = getCount($pdo, 'submissions');
-// Pending should include both brand-new (status='pending') and legacy/alternate flag (status='pending_review')
-$pending_applications = getCount($pdo, 'submissions', "status IN ('pending','pending_review')");
-$approved_applications = getCount($pdo, 'submissions', "status = ?", ['approved']);
-$completed_applications = getCount($pdo, 'submissions', "status = ?", ['completed']);
+// Dashboard counts (live only when no cached summary)
+if (!$useSummary) {
+    $total_users = getCount($pdo, 'users', "role IN ('student','employee') AND status = ?", ['active']);
+    $total_applications = getCount($pdo, 'submissions');
+    // Pending should include both brand-new (status='pending') and legacy/alternate flag (status='pending_review')
+    $pending_applications = getCount($pdo, 'submissions', "status IN ('pending','pending_review')");
+    $approved_applications = getCount($pdo, 'submissions', "status = ?", ['approved']);
+    $completed_applications = getCount($pdo, 'submissions', "status = ?", ['completed']);
+}
 
-// Example chart values (replace with real queries as needed)
-$undergrad = getCount($pdo, 'submissions', "academic_level = ?", ['Undergraduate']);
-$grad = getCount($pdo, 'submissions', "academic_level = ?", ['Masters']);
-$open = getCount($pdo, 'submissions', "academic_level = ?", ['Open University']);
-$total_applications_chart = $undergrad + $grad + $open;
+// Overview counts (live only when no cached summary)
+if (!$useSummary) {
+    $undergrad = getCount($pdo, 'submissions', "academic_level = ?", ['Undergraduate']);
+    $grad = getCount($pdo, 'submissions', "academic_level = ?", ['Masters']);
+    $open = getCount($pdo, 'submissions', "academic_level = ?", ['Open University']);
+    $total_applications_chart = $undergrad + $grad + $open;
+}
 
 // Build real datasets for charts
 // Optional filters: status and date range (created_at)
@@ -146,6 +192,7 @@ try {
 }
 
 // Applications by College (top 12) with N/A mapped to academic level labels and filters
+if (!$useSummary) {
 $collegeLabels = [];
 $collegeValues = [];
 try {
@@ -231,8 +278,10 @@ try {
 } catch (Throwable $e) {
     if (function_exists('log_event')) { log_event('DB_WARN', 'College chart query failed', ['err' => $e->getMessage()]); }
 }
+}
 
 // Applications by Campus (top 12) with filters and Others
+if (!$useSummary) {
 $campusLabels = [];
 $campusValues = [];
 try {
@@ -252,8 +301,10 @@ try {
 } catch (Throwable $e) {
     if (function_exists('log_event')) { log_event('DB_WARN', 'Campus chart query failed', ['err' => $e->getMessage()]); }
 }
+}
 
 // Work Classification distribution (by code letter if available) with filters and Others
+if (!$useSummary) {
 $wcLabels = [];
 $wcValues = [];
 try {
@@ -282,6 +333,7 @@ try {
     [$wcLabels, $wcValues] = fold_others($wcLabels, $wcValues, 10);
 } catch (Throwable $e) {
     if (function_exists('log_event')) { log_event('DB_WARN', 'Work classification chart query failed', ['err' => $e->getMessage()]); }
+}
 }
 
 // Fetch admin data
@@ -341,29 +393,7 @@ if (isset($_SESSION['user_id'])) {
     </header>
 
     <div class="container mt-5">
-        <!-- Dashboard Filters -->
-        <form method="get" class="row g-2 align-items-end mb-3">
-            <div class="col-12 col-sm-3">
-                <label class="form-label small fw-semibold">Status</label>
-                <select class="form-select form-select-sm" name="status">
-                    <option value="all" <?php echo $statusParam==='all'?'selected':''; ?>>All</option>
-                    <option value="pending" <?php echo $statusParam==='pending'?'selected':''; ?>>Pending</option>
-                    <option value="approved" <?php echo $statusParam==='approved'?'selected':''; ?>>Approved</option>
-                    <option value="completed" <?php echo $statusParam==='completed'?'selected':''; ?>>Completed</option>
-                </select>
-            </div>
-            <div class="col-6 col-sm-2">
-                <label class="form-label small fw-semibold">Start</label>
-                <input type="date" class="form-control form-control-sm" name="start" value="<?php echo htmlspecialchars($hasStart?$startParam:''); ?>">
-            </div>
-            <div class="col-6 col-sm-2">
-                <label class="form-label small fw-semibold">End</label>
-                <input type="date" class="form-control form-control-sm" name="end" value="<?php echo htmlspecialchars($hasEnd?$endParam:''); ?>">
-            </div>
-            <div class="col-12 col-sm-auto">
-                <button type="submit" class="btn btn-sm btn-outline-secondary">Apply</button>
-            </div>
-        </form>
+        <!-- Snapshot dashboard: filters removed to avoid live queries -->
         <div class="row mb-4 justify-content-center">
             <div class="col-lg-2 col-md-4 col-6 mb-3 d-flex justify-content-center">
                 <div class="summary-card users text-center w-100">
@@ -400,11 +430,11 @@ if (isset($_SESSION['user_id'])) {
         <div class="dashboard-section mb-4">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <div>
-                    <small id="dashAsOf" class="text-muted">As of —</small>
+                    <small id="dashAsOf" class="text-muted d-none" data-initial="<?php echo htmlspecialchars($summary_last_updated ?? ''); ?>" data-initial-iso="<?php echo htmlspecialchars($summary_last_updated_iso ?? ''); ?>">As of —</small>
                 </div>
-                <div class="d-flex gap-2">
-                    <input type="datetime-local" id="dashAsOfInput" class="form-control form-control-sm" style="max-width: 230px;"/>
+                <div class="d-flex align-items-center gap-2">
                     <button type="button" id="dashReloadBtn" class="btn btn-sm btn-outline-primary">Reload data</button>
+                    <div id="dashReloadSpin" class="spinner-border spinner-border-sm text-secondary d-none" role="status" aria-hidden="true"></div>
                 </div>
             </div>
             <div class="row align-items-center">
@@ -460,7 +490,7 @@ if (isset($_SESSION['user_id'])) {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-    <script src="../javascript/admin-dashboard.js?v=6" defer></script>
+    <script src="../javascript/admin-dashboard.js?v=8" defer></script>
     <script src="../javascript/admin-profile.js?v=2" defer></script>
     <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

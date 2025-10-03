@@ -18,10 +18,11 @@
       try{
         var lbl = document.getElementById('dashAsOf');
         if(!lbl) return;
-        if(!iso){ lbl.textContent = 'As of —'; return; }
+        if(!iso){ lbl.textContent = 'As of —'; lbl.classList.add('d-none'); return; }
         var d = new Date(iso);
-        if(String(d) === 'Invalid Date'){ lbl.textContent = 'As of —'; return; }
-        lbl.textContent = 'As of ' + d.toLocaleString();
+        if(String(d) === 'Invalid Date'){ lbl.textContent = 'As of —'; lbl.classList.add('d-none'); return; }
+        lbl.textContent = 'As of ' + d.toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+        lbl.classList.remove('d-none');
       }catch(_){ }
     }
 
@@ -111,43 +112,50 @@
       });
     }
 
-    // Reload button logic
+    // Set initial As-of from server-rendered timestamp
+    (function(){
+      var lbl = document.getElementById('dashAsOf');
+      if(lbl){
+        var initIso = lbl.getAttribute('data-initial-iso');
+        var init = initIso || lbl.getAttribute('data-initial');
+        setAsOf(init || '');
+      }
+    })();
+
+    // Reload button logic (cached summary only)
     var reloadBtn = document.getElementById('dashReloadBtn');
     if(reloadBtn){
       reloadBtn.addEventListener('click', function(){
         (async function(){
           try{
             reloadBtn.disabled = true;
-            var asOfInput = document.getElementById('dashAsOfInput');
-            var payload = {};
-            if(asOfInput && asOfInput.value){
-              var asOf = new Date(asOfInput.value);
-              if(String(asOf) !== 'Invalid Date'){
-                var y = asOf.getFullYear();
-                var m = String(asOf.getMonth()+1).padStart(2,'0');
-                var d = String(asOf.getDate()).padStart(2,'0');
-                var hh = String(asOf.getHours()).padStart(2,'0');
-                var mm = String(asOf.getMinutes()).padStart(2,'0');
-                payload.as_of = y+'-'+m+'-'+d+' '+hh+':'+mm+':00';
-              }
-            }
+            var spin = document.getElementById('dashReloadSpin'); if(spin){ spin.classList.remove('d-none'); }
+            var payload = { reload: true };
             var csrfMeta = document.querySelector('meta[name="csrf-token"]');
             var token = csrfMeta ? csrfMeta.getAttribute('content') : '';
-            var res = await fetch('dashboard_metrics.php', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify(payload) });
+            var res = await fetch('dashboard_refresh.php', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify(payload) });
             var data = null; try { data = await res.json(); } catch(e) {}
-            if(!data || !data.success){ var txt=''; try{ txt = await res.text(); }catch(e){} alert('Failed to reload metrics' + (data && data.error? (': '+data.error):'') + (txt?'\n'+txt:'')); return; }
+            if(!data || !data.success){ var txt=''; try{ txt = await res.text(); }catch(e){} alert('Failed to reload summary' + (data && data.error? (': '+data.error):'') + (txt?'\n'+txt:'')); return; }
             // Update charts and counters
             if(charts.overview){ charts.overview.data.datasets[0].data = [data.overview.undergrad, data.overview.grad, data.overview.open]; charts.overview.update(); }
             var elU = document.getElementById('countUndergrad'); if(elU){ elU.textContent = String(data.overview.undergrad); }
             var elG = document.getElementById('countGrad'); if(elG){ elG.textContent = String(data.overview.grad); }
             var elO = document.getElementById('countOpen'); if(elO){ elO.textContent = String(data.overview.open); }
             var elT = document.getElementById('countTotalApplications'); if(elT){ elT.textContent = String(data.overview.total); }
+            // Update top summary cards if present
+            if (data.totals) {
+              var tUsers = document.getElementById('totalUsers'); if(tUsers){ tUsers.textContent = String(data.totals.users || 0); }
+              var tApps = document.getElementById('totalApplications'); if(tApps){ tApps.textContent = String(data.totals.applications || 0); }
+              var tPend = document.getElementById('pendingApplications'); if(tPend){ tPend.textContent = String(data.totals.pending || 0); }
+              var tAppr = document.getElementById('approvedApplications'); if(tAppr){ tAppr.textContent = String(data.totals.approved || 0); }
+              var tComp = document.getElementById('completedApplications'); if(tComp){ tComp.textContent = String(data.totals.completed || 0); }
+            }
             if(charts.college){ charts.college.data.labels = data.byCollege.labels; charts.college.data.datasets[0].data = data.byCollege.values; charts.college.update(); }
             if(charts.campus){ charts.campus.data.labels = data.byCampus.labels; charts.campus.data.datasets[0].data = data.byCampus.values; charts.campus.update(); }
             if(charts.workClass){ charts.workClass.data.labels = data.workClass.labels; charts.workClass.data.datasets[0].data = data.workClass.values; charts.workClass.update(); }
-            setAsOf(data.as_of);
+            setAsOf(data.last_updated_iso || data.last_updated || data.as_of);
           } catch(err){ console.error('Dashboard reload error', err); alert('Network error while reloading metrics'); }
-          finally{ reloadBtn.disabled = false; }
+          finally{ reloadBtn.disabled = false; var spin2 = document.getElementById('dashReloadSpin'); if(spin2){ spin2.classList.add('d-none'); } }
         })();
       });
     }
