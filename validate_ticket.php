@@ -89,7 +89,7 @@ if ($code !== '') {
             <h3 class="mb-3">Ticket Validation</h3>
             <form method="get" class="row g-2 mb-3" action="<?php echo h('validate_ticket.php'); ?>">
               <div class="col-sm-9">
-                <input type="text" name="code" class="form-control" placeholder="Enter Request ID (e.g. SRID-2025-20250929-1)" value="<?php echo h($code); ?>" required>
+                <input type="text" name="code" class="form-control" placeholder="Enter Request ID (e.g. SRID-2025-20250929-1 or ERID-2025-20250929-1)" value="<?php echo h($code); ?>" required>
               </div>
               <div class="col-sm-3 d-grid">
                 <button type="submit" class="btn btn-primary">Validate</button>
@@ -115,7 +115,8 @@ if ($code !== '') {
               <?php endif; ?>
             <?php else: ?>
               <div class="text-muted">Enter a Request ID above and click Validate, or use a URL like:<br>
-                <code><?php echo h(rtrim(BASE_URL, '/')); ?>/validate_ticket.php?code=SRID-2025-20250929-1</code>
+                <code><?php echo h(rtrim(BASE_URL, '/')); ?>/validate_ticket.php?code=SRID-2025-20250929-1</code> (students) or
+                <code><?php echo h(rtrim(BASE_URL, '/')); ?>/validate_ticket.php?code=ERID-2025-20250929-1</code> (employees)
               </div>
             <?php endif; ?>
 

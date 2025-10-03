@@ -201,7 +201,8 @@ if (!empty($profile['last_updated_at'])) {
         </small>
     <?php endif; ?>
 </div>
-    <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p>
+  <?php $roleLabel = (isset($_SESSION['role']) && strtolower($_SESSION['role']) === 'employee') ? 'Employee' : 'Student'; ?>
+  <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(<?php echo $roleLabel; ?>)</p>
     <?php if (!empty($success)): ?>
     <div class="alert alert-success">
         <i class="fas fa-check-circle"></i> Profile updated successfully!

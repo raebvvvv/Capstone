@@ -9,19 +9,24 @@
 require __DIR__ . '/../../config.php';
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); } else { session_start(); }
 
+// Decide redirect target based on current session role BEFORE destroying session
+$isEmployee = (($_SESSION['role'] ?? '') === 'employee');
+$targetLoginRelative = $isEmployee ? 'login-employee.php' : 'login.php';
+$targetLoginWithPath = 'User/Beforelogin/' . $targetLoginRelative;
+
 // Reject non-POST methods
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-	// Optionally you can show a 405 page. Simplicity: redirect to login.
-	if (function_exists('redirect')) { redirect('User/Beforelogin/login.php'); }
-	header('Location: login.php');
+	// Optionally you can show a 405 page. Simplicity: redirect to appropriate login.
+	if (function_exists('redirect')) { redirect($targetLoginWithPath); }
+	header('Location: ' . $targetLoginRelative);
 	exit();
 }
 
 // Basic CSRF token validation (token should be stored in session when rendering form)
 if (!isset($_POST['csrf_token'], $_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
 	// Token invalid: deny and redirect.
-	if (function_exists('redirect')) { redirect('User/Beforelogin/login.php'); }
-	header('Location: login.php');
+	if (function_exists('redirect')) { redirect($targetLoginWithPath); }
+	header('Location: ' . $targetLoginRelative);
 	exit();
 }
 
@@ -42,7 +47,7 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-if (function_exists('redirect')) { redirect('User/Beforelogin/login.php'); }
-header('Location: login.php');
+if (function_exists('redirect')) { redirect($targetLoginWithPath); }
+header('Location: ' . $targetLoginRelative);
 exit();
 ?>

@@ -128,9 +128,15 @@
     const modalBody = document.getElementById('detailsModalBody');
     if(!modalBody) return;
 
-  modalBody.innerHTML = `<div><h5>Student Information</h5>`+
+    // Determine user type from Request ID prefix (ERID = Employee, SRID = Student)
+    const rid = String(v(details.request_id, ''));
+    const isEmployee = /^ERID-/i.test(rid);
+    const infoHeader = isEmployee ? 'Employee Information' : 'Student Information';
+    const idLabel = isEmployee ? 'Employee ID/Number' : 'Student Number';
+
+  modalBody.innerHTML = `<div><h5>${infoHeader}</h5>`+
       `<p><strong>Name:</strong> ${editMode? `<input type='text' id='editStudentName' value='${escapeHTML(v(details.studentName,''))}' />` : escapeHTML(v(details.studentName,'—'))}</p>`+
-      `<p><strong>Student Number:</strong> ${editMode? `<input type='text' id='editStudentNumber' value='${escapeHTML(v(details.studentNumber,''))}' />` : escapeHTML(v(details.studentNumber,'—'))}</p>`+
+      `<p><strong>${idLabel}:</strong> ${editMode? `<input type='text' id='editStudentNumber' value='${escapeHTML(v(details.studentNumber,''))}' />` : escapeHTML(v(details.studentNumber,'—'))}</p>`+
       `<p><strong>Email Address:</strong> ${editMode? `<input type='email' id='editEmail' value='${escapeHTML(v(details.email,''))}' />` : escapeHTML(v(details.email,'—'))}</p>`+
       `<p><strong>Home Address:</strong> ${editMode? `<input type='text' id='editHomeAddress' value='${escapeHTML(v(details.homeAddress,''))}' />` : escapeHTML(v(details.homeAddress,'—'))}</p>`+
       `<p><strong>Campus:</strong> ${editMode? `<input type='text' id='editCampus' value='${escapeHTML(v(details.campus,''))}' />` : escapeHTML(v(details.campus,'—'))}</p>`+
@@ -170,6 +176,15 @@
       program: programText,
       documentTitle:'', authorName:'', accomplishmentDate: reqDateText
     };
+    // Populate request_id from the table (first column) for ERID/SRID detection in fallback
+    try {
+      const ridCell = tr.querySelector('td:nth-child(1)');
+      if (ridCell) {
+        details.request_id = (ridCell.textContent || '').trim();
+      }
+    } catch(_) {
+      /* noop */
+    }
     currentDetails = details;
     renderDetails(details,false);
     const detailsModalEl = document.getElementById('detailsModal');

@@ -26,8 +26,9 @@
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
+          <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
         </ul>
         <a href="#" class="btn btn-success ms-3 disabled-btn" style="background-color: #B8464A !important; border-color: #B8464A !important; color: #fff !important; cursor: not-allowed; pointer-events: none;">You are in e-Services</a>
       </div>

@@ -84,9 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
               const container = document.createElement('div');
               detailsContent.innerHTML = '';
               detailsContent.appendChild(container);
-              const opts = { role: 'user' };
+              // Determine context: on employee pages, body has data-user-kind="employee"
+              const isEmployee = (document.body && document.body.getAttribute('data-user-kind') === 'employee');
+              const opts = { role: isEmployee ? 'employee' : 'user' };
               if(resubmitRaw){ opts.flaggedTypes = resubmitRaw; }
-              window.renderSubmissionDetails(container, data, { role: 'user' });
+              window.renderSubmissionDetails(container, data, opts);
 
               // Provide a host for reupload controls (placed BEFORE Notes)
               const host = document.createElement('div');

@@ -25,8 +25,9 @@
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link nav-bold" href="index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link nav-bold" href="User/Afterlogin/about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link nav-bold" href="student-profile.php">My Profile</a></li>
+          <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+          <li class="nav-item"><a class="nav-link nav-bold" href="<?php echo $isEmployee ? 'User/Afterlogin/employee-application.php' : 'User/Afterlogin/student-application.php'; ?>">My Application</a></li>
+          <li class="nav-item"><a class="nav-link nav-bold" href="<?php echo $isEmployee ? 'User/Afterlogin/employee-profile.php' : 'User/Afterlogin/student-profile.php'; ?>">My Profile</a></li>
         </ul>
         <a href="e-services.php" class="btn btn-success ms-3">Proceed to e-Services</a>
       </div>

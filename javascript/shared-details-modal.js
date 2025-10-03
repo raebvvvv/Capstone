@@ -77,12 +77,17 @@
   const statusHTML = bannerText ? `<div class="alert alert-success mb-3">${escapeHTML(bannerText)}</div>` : '';
     const notesHTML = o.showNotes ? `<div class="mt-3" id="sharedNotesHost"></div>` : '';
 
+    // Determine labels based on role/page: Employees should see Employee ID/Number and Employee Information
+    const isEmployeeContext = (String(o.role||'').toLowerCase()==='employee') || (document.body && document.body.getAttribute('data-user-kind')==='employee');
+    const infoHeader = isEmployeeContext ? 'Employee Information' : 'Student Information';
+    const idLabel = isEmployeeContext ? 'Employee ID/Number' : 'Student Number';
+
     containerEl.innerHTML = `
       ${statusHTML}
       <div>
-        <h5>Student Information</h5>
+        <h5>${escapeHTML(infoHeader)}</h5>
         <p><strong>Name:</strong> ${escapeHTML(studentName)}</p>
-        <p><strong>Student Number:</strong> ${escapeHTML(num)}</p>
+        <p><strong>${escapeHTML(idLabel)}:</strong> ${escapeHTML(num)}</p>
         <p><strong>Email Address:</strong> ${escapeHTML(email)}</p>
         <p><strong>Home Address:</strong> ${escapeHTML(addr)}</p>
         <p><strong>Campus:</strong> ${escapeHTML(campus)}</p>

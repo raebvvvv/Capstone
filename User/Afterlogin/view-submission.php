@@ -223,7 +223,8 @@ if ($isModal) {
     <div class="card shadow-sm">
         <div class="card-body">
             <?php pup_modal_body($submission, $authors, $files, $notes, $noteSaved); ?>
-            <a href="student-application.php" class="btn btn-secondary mt-4">Back to My Applications</a>
+            <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+            <a href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>" class="btn btn-secondary mt-4">Back to My Applications</a>
         </div>
     </div>
 </div>

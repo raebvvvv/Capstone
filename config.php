@@ -12,6 +12,22 @@ if (function_exists('date_default_timezone_set')) {
     @date_default_timezone_set('Asia/Manila');
 }
 
+if (!defined('TICKET_SIGNING_KEY')) {
+    $signingKey = getenv('TICKET_SIGNING_KEY');
+    if (!$signingKey) {
+        $localKeyFile = BASE_PATH . DIRECTORY_SEPARATOR . 'ticket_signing.key';
+        if (is_readable($localKeyFile)) {
+            $signingKey = trim((string)file_get_contents($localKeyFile));
+        }
+    }
+    if (!$signingKey) {
+        // Fallback: deterministic hash so validation works in development.
+        // Override via environment variable or ticket_signing.key file for production.
+        $signingKey = hash('sha256', BASE_PATH . '|' . php_uname('n'));
+    }
+    define('TICKET_SIGNING_KEY', $signingKey);
+}
+
 // Try to derive base URL automatically (works for typical XAMPP localhost setups)
 if (!defined('BASE_URL')) {
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';

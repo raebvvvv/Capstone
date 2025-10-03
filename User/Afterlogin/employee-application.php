@@ -12,13 +12,12 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
   <link rel="stylesheet" href="<?php echo asset_url('css/student-application.css'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/shared-details-modal.css'); ?>">
-    
+    <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
   <script src="<?php echo asset_url('javascript/shared-details-modal.js'); ?>" defer></script>
 </head>
-<body>
+<body data-user-kind="employee">
   <!-- Navbar (uniform across project) -->
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
@@ -33,8 +32,8 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link active" aria-current="page" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="employee-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link" href="employee-profile.php">My Profile</a></li>
         </ul>
         <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
       </div>
@@ -43,8 +42,9 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
 
   <!-- Main content -->
   <main class="container py-4">
-    <h1 class="fw-bold mb-2 mt-4" style="font-size:2.5rem;">My Application</h1>
-    <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p> 
+  <h1 class="fw-bold mb-2 mt-4" style="font-size:2.5rem;">My Application</h1>
+  <?php $roleLabel = 'Employee'; ?>
+  <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(<?php echo $roleLabel; ?>)</p> 
    
  <div class="d-flex justify-content-center mb-3 gap-2">
     <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Ethics Clearance</button></a>
@@ -67,17 +67,17 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
           <table class="table align-middle bg-white mb-0">
             <thead class="table-light">
               <tr>
-                <th>Request ID</th>
-                <th>Student Number / Employee ID</th>
-                <th>Title of Work</th>
-                <th>Remarks</th>
+                <th class="text-nowrap" style="width: 18%;">Request ID</th>
+                <th class="text-nowrap" style="width: 16%;">Employee ID</th>
+                <th style="width: 45%;">Title of Work</th>
+                <th class="text-nowrap" style="width: 14%;">Remarks</th>
                 <?php if(isset($_GET['debug']) && $_GET['debug']=='1'): ?>
                   <th class="text-danger">Raw Status</th>
                   <th class="text-danger">Raw Remarks</th>
                   <th class="text-danger">Issue Label</th>
                   <th class="text-danger">Admin Comment</th>
                 <?php endif; ?>
-                <th>Action</th>
+                <th class="text-nowrap" style="width: 220px;">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -99,6 +99,7 @@ try {
   mp.issue_label   AS pending_issue_label,
   mp.affected_doc_types AS pending_affected_doc_types,
     ma.admin_comment AS approved_admin_comment,
+    ma.issue_label   AS approved_issue_label,
     ma.affected_doc_types AS approved_affected_doc_types
     FROM submissions s
     LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope='pending'
@@ -120,7 +121,7 @@ try {
   <tr>
     <td colspan="5" class="text-center text-muted py-5">
       You have not applied for anything yet.
-</td>
+    </td>
   </tr>
 <?php else: ?>
   <?php foreach ($pendingRows as $row): ?>
@@ -137,41 +138,50 @@ try {
   <?php if($pendingAffected !== ''): ?>data-resubmit-files="<?php echo htmlspecialchars($pendingAffected); ?>"<?php endif; ?>
 >
   <?php
-    // Map pending issue/remarks to allowed values only
-    $lowerIssue = strtolower($pendingIssue);
-    $pendingRemarkRaw = trim((string)($row['remarks'] ?? ''));
-    $mapped = '';
-    if($lowerIssue !== '') {
-      if(str_contains($lowerIssue,'error')) { $mapped = 'Error in Document'; }
-      elseif(str_contains($lowerIssue,'incorrect') || str_contains($lowerIssue,'upload')) { $mapped = 'Incorrect Document/Upload'; }
+    // Pending remarks mapping:
+    // - Default: "For evaluation"
+    // - If admin incompletes the ticket in Pending tab, map issue label to either:
+    //   "Error in document" or "Incorrect Document/Upload" (exact strings as requested)
+    $displayRemark = 'For evaluation';
+    $pIssue = strtolower($pendingIssue);
+    if ($pIssue !== '') {
+      if (str_contains($pIssue, 'incorrect') || str_contains($pIssue, 'upload')) {
+        $displayRemark = 'Incorrect Document/Upload';
+      } elseif (str_contains($pIssue, 'error')) {
+        $displayRemark = 'Error in document';
+      }
     }
-    if($mapped === '') {
-      $lr = strtolower($pendingRemarkRaw);
-      if($lr === 'for evaluation') { $mapped = 'For Evaluation'; }
-      elseif(str_contains($lr,'error')) { $mapped = 'Error in Document'; }
-      elseif(str_contains($lr,'incorrect') || str_contains($lr,'upload')) { $mapped = 'Incorrect Document/Upload'; }
-    }
-  if($mapped === '') { $mapped = 'For Evaluation'; }
-  // If there is an incomplete meta (issue label or admin comment) but mapping fell back to For Evaluation,
-  // force a visible discrepancy label so user knows action needed. Default to 'Error in Document'.
-  if($mapped === 'For Evaluation' && ($pendingIssue !== '' || $pendingComment !== '')) {
-    $mapped = 'Error in Document';
-  }
-    $displayRemark = $mapped;
   ?>
-  <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
-  <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-  <td><?php echo htmlspecialchars($row['title']); ?></td>
-  <td><?php echo htmlspecialchars($displayRemark); ?></td>
+  <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
+  <td class="text-nowrap"><?php echo htmlspecialchars($row['student_number']); ?></td>
+  <td>
+    <span class="d-inline-block text-truncate" style="max-width: 420px;">
+      <?php echo htmlspecialchars($row['title']); ?>
+    </span>
+  </td>
+  <td>
+    <span class="text-nowrap" style="white-space: nowrap !important;">
+      <?php echo htmlspecialchars($displayRemark); ?>
+    </span>
+  </td>
   <?php if(isset($_GET['debug']) && $_GET['debug']=='1'): ?>
     <td><code><?php echo htmlspecialchars($row['status']); ?></code></td>
     <td><code><?php echo htmlspecialchars($row['remarks']); ?></code></td>
     <td><code><?php echo htmlspecialchars($pendingIssue); ?></code></td>
     <td><code><?php echo htmlspecialchars($pendingComment); ?></code></td>
   <?php endif; ?>
-  <td class="d-flex gap-2 flex-wrap">
+  <td class="align-middle d-flex gap-2 align-items-center flex-nowrap text-nowrap justify-content-start">
     <?php if($pendingComment !== ''): ?>
-      <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($pendingComment, ENT_QUOTES); ?>">Comments</a>
+      <?php
+        // Include files to be resubmitted in the comments content when available (Pending scope)
+        $pendingCommentText = (string)$pendingComment;
+        if ($pendingAffected !== '') {
+          $pendingCommentText = trim($pendingCommentText . "\n\nFile(s) to be resubmitted: " . $pendingAffected);
+        }
+      ?>
+      <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($pendingCommentText, ENT_QUOTES); ?>">Comments</a>
+    <?php else: ?>
+      <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
     <?php endif; ?>
   <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-resubmit-files="<?php echo htmlspecialchars($pendingAffected, ENT_QUOTES); ?>">View Details</a>
   </td>
@@ -188,12 +198,12 @@ try {
           <table class="table align-middle bg-white mb-0">
             <thead class="table-light">
               <tr>
-                <th>Request ID</th>
-                <th>Student Number / Employee ID</th>
-                <th>Title of Work</th>
-                <th>Remarks</th>
-                <th> </th>
-                <th>Action</th>
+                <th class="text-nowrap" style="width: 18%;">Request ID</th>
+                <th class="text-nowrap" style="width: 16%;">Employee ID</th>
+                <th style="width: 45%;">Title of Work</th>
+                <th class="text-nowrap" style="width: 14%;">Remarks</th>
+                <th style="width: 1%"> </th>
+                <th class="text-nowrap" style="width: 220px;">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -201,29 +211,72 @@ try {
               <tr><td colspan="6" class="text-center text-muted py-5">No approved applications.</td></tr>
             <?php else: foreach($approvedRows as $row): ?>
               <?php $approvedAffected = trim((string)($row['approved_affected_doc_types'] ?? '')); ?>
+              <?php $approvedIssue = trim((string)($row['approved_issue_label'] ?? '')); ?>
               <?php
-                // Attempt to fetch/display student's name (join can be added if needed; fallback to session fields if present)
-                $studentName = '';
+                // Attempt to fetch/display employee's name (fallback to session fields if present)
+                $employeeName = '';
                 if(isset($_SESSION['first_name'])){
-                  $studentName = trim($_SESSION['first_name'].' '.($_SESSION['last_name'] ?? ''));
+                  $employeeName = trim($_SESSION['first_name'].' '.($_SESSION['last_name'] ?? ''));
                 }
                 $reqDate = '';
                 if(!empty($row['created_at'])){
                   try { $reqDate = date('F d, Y', strtotime($row['created_at'])); } catch(Throwable $e){ $reqDate=''; }
                 }
+                // Approved remarks mapping:
+                // - Default: "For Physical Submission"
+                // - If admin incompletes in Approved tab, map to one of:
+                //   "Missing Document", "Error in Document", or "Documents don't match"
+                $approvedRemark = 'For Physical Submission';
+                $aIssue = strtolower(trim($approvedIssue));
+                if ($aIssue !== '') {
+                  // Normalize curly apostrophes to straight apostrophe
+                  $aIssueNorm = str_replace(array("\xE2\x80\x99", '’'), "'", $aIssue);
+                  if (str_contains($aIssueNorm, 'missing')) {
+                    $approvedRemark = 'Missing Document';
+                  } elseif (str_contains($aIssueNorm, 'error')) {
+                    $approvedRemark = 'Error in Document';
+                  } elseif (
+                    str_contains($aIssueNorm, "don't match") ||
+                    str_contains($aIssueNorm, 'dont match') ||
+                    str_contains($aIssueNorm, 'do not match') ||
+                    str_contains($aIssueNorm, "doesn't match") ||
+                    str_contains($aIssueNorm, 'does not match') ||
+                    str_contains($aIssueNorm, 'mismatch') ||
+                    str_contains($aIssueNorm, 'mismatched')
+                  ) {
+                    $approvedRemark = "Documents don't match";
+                  }
+                }
               ?>
               <tr<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>
-                <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
-                <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-                <td><?php echo htmlspecialchars($row['title']); ?></td>
-                <td><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
-                <td></td>
+                <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
+                <td class="text-nowrap"><?php echo htmlspecialchars($row['student_number']); ?></td>
                 <td>
+                  <span class="d-inline-block text-truncate" style="max-width: 420px;">
+                    <?php echo htmlspecialchars($row['title']); ?>
+                  </span>
+                </td>
+                <td>
+                  <span class="text-nowrap" style="white-space: nowrap !important;">
+                    <?php echo htmlspecialchars($approvedRemark); ?>
+                  </span>
+                </td>
+                <td></td>
+                <td class="align-middle d-flex gap-2 align-items-center flex-nowrap text-nowrap justify-content-start">
                   <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>"<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>View Details</a>
                   <!-- Request ID modal trigger button -->
-                  <button type="button" class="btn btn-outline-dark btn-sm btn-request-id" data-request-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-request-date="<?php echo htmlspecialchars($reqDate); ?>" data-student-name="<?php echo htmlspecialchars($studentName); ?>">Request ID</button>
+                  <button type="button" class="btn btn-outline-dark btn-sm btn-request-id" data-request-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-request-date="<?php echo htmlspecialchars($reqDate); ?>" data-student-name="<?php echo htmlspecialchars($employeeName); ?>">Request ID</button>
                   <?php if(!empty($row['approved_admin_comment'])): ?>
-                    <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($row['approved_admin_comment'], ENT_QUOTES); ?>">Comments</a>
+                    <?php
+                      // Include files to be resubmitted in the comments content when available
+                      $commentText = (string)$row['approved_admin_comment'];
+                      if ($approvedAffected !== '') {
+                        $commentText = trim($commentText . "\n\nFile(s) to be resubmitted: " . $approvedAffected);
+                      }
+                    ?>
+                    <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($commentText, ENT_QUOTES); ?>">Comments</a>
+                  <?php else: ?>
+                    <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
                   <?php endif; ?>
                 </td>
               </tr>
@@ -238,12 +291,12 @@ try {
           <table class="table align-middle bg-white mb-0">
             <thead class="table-light">
               <tr>
-                <th>Request ID</th>
-                <th>Student Number / Employee ID</th>
-                <th>Title of Work</th>
-                <th>Remarks</th>
-                <th> </th>
-                <th>Action</th>
+                <th class="text-nowrap" style="width: 18%;">Request ID</th>
+                <th class="text-nowrap" style="width: 16%;">Employee ID</th>
+                <th style="width: 45%;">Title of Work</th>
+                <th class="text-nowrap" style="width: 14%;">Remarks</th>
+                <th style="width: 1%"> </th>
+                <th class="text-nowrap" style="width: 220px;">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -251,15 +304,23 @@ try {
               <tr><td colspan="6" class="text-center text-muted py-5">No completed applications.</td></tr>
             <?php else: foreach($completedRows as $row): ?>
               <tr<?php if(!empty($row['approved_admin_comment'])) echo ' data-admin-comment="'.htmlspecialchars($row['approved_admin_comment'], ENT_QUOTES).'"'; ?>>
-                <td><?php echo htmlspecialchars($row['submission_code']); ?></td>
-                <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-                <td><?php echo htmlspecialchars($row['title']); ?></td>
-                <td>Complete</td>
-                <td></td>
+                <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
+                <td class="text-nowrap"><?php echo htmlspecialchars($row['student_number']); ?></td>
                 <td>
+                  <span class="d-inline-block text-truncate" style="max-width: 420px;">
+                    <?php echo htmlspecialchars($row['title']); ?>
+                  </span>
+                </td>
+                <td>
+                  <span class="text-nowrap" style="white-space: nowrap !important;">Complete</span>
+                </td>
+                <td></td>
+                <td class="align-middle d-flex gap-2 align-items-center flex-nowrap text-nowrap justify-content-start">
                   <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
                   <?php if(!empty($row['approved_admin_comment'])): ?>
                     <a href="#" class="btn btn-outline-secondary btn-sm btn-comments">Comments</a>
+                  <?php else: ?>
+                    <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
                   <?php endif; ?>
                 </td>
               </tr>
@@ -270,7 +331,6 @@ try {
       </div>
     </div>
   </main>
-  
 
 
 
@@ -330,8 +390,10 @@ try {
   </div>
 </div>
 
- <!-- Footer -->
+  
+  <!-- Footer -->
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
+
 <!-- JS handlers moved to external student-application.js to satisfy CSP (no inline scripts). -->
 
   <!-- Bootstrap JS -->

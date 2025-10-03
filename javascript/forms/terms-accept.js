@@ -20,9 +20,10 @@
           // Reveal form section if gating container present
           var gate = document.getElementById('termsGate');
           var section = document.getElementById('formSection');
-          if(section && gate){
-            gate.classList.add('d-none');
+          if(section){
+            if(gate){ gate.classList.add('d-none'); }
             section.classList.remove('d-none');
+            try { section.scrollIntoView({behavior:'smooth', block:'start'}); } catch(e) {}
           }
         }
       });

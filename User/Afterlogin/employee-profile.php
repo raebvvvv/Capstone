@@ -135,9 +135,9 @@ if (!empty($profile['last_updated_at'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile | PUP e-IPMO</title>
-    <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>My Profile | PUP e-IPMO</title>
+  <!-- Bootstrap CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/student-profile.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
@@ -171,8 +171,8 @@ if (!empty($profile['last_updated_at'])) {
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link active" href="student-profile.php">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="employee-application.php">My Application</a></li>
+          <li class="nav-item"><a class="nav-link active" href="employee-profile.php">My Profile</a></li>
         </ul>
         <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
         <form method="POST" action="<?php echo asset_url('logout.php'); ?>" class="d-inline">
@@ -189,7 +189,7 @@ if (!empty($profile['last_updated_at'])) {
   <!-- Main content -->
   <main class="container py-4">
     &nbsp;
-    <div class="d-flex align-items-center mb-3">
+  <div class="d-flex align-items-center mb-3">
     <h1 class="fw-bold mb-0" style="font-size:2.5rem;">My Profile</h1>
     <button id="editProfileBtn" type="button" class="btn btn-primary btn-sm ms-3" 
             <?php echo ($now < $nextEditAllowed) ? 'disabled' : ''; ?>>
@@ -201,7 +201,8 @@ if (!empty($profile['last_updated_at'])) {
         </small>
     <?php endif; ?>
 </div>
-    <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(Student)</p>
+  <?php $roleLabel = ((($_SESSION['role'] ?? '') === 'employee') ? 'Employee' : 'Student'); ?>
+  <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(<?php echo $roleLabel; ?>)</p>
     <?php if (!empty($success)): ?>
     <div class="alert alert-success">
         <i class="fas fa-check-circle"></i> Profile updated successfully!
@@ -387,7 +388,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <!-- Scripts -->
   
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="<?php echo asset_url('javascript/student-profile.js'); ?>"></script>
 <script src="<?php echo asset_url('javascript/date-limit.js'); ?>"></script>
 <script src="<?php echo asset_url('javascript/student-profile-inline.js'); ?>"></script>

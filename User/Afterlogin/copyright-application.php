@@ -1,5 +1,6 @@
 <?php require __DIR__ . '/../../config.php'; ?>
 <?php require __DIR__ . '/../../auth_check.php'; ?>
+<?php $isEmployee = ((($_SESSION['role'] ?? '') === 'employee')); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="Photos/pup-logo.png">
+  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/copyright-application.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   
@@ -27,8 +28,8 @@
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
         </ul>
           <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
       </div>
@@ -55,7 +56,7 @@
       </li>
       <li class="mb-4">
         Once printed and accomplished, you may proceed to the <strong>submission form.</strong><br> 
-        <a href="student-copyright-forms.php" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a>
+  <a href="<?php echo $isEmployee ? 'employee-copyright-forms.php' : 'student-copyright-forms.php'; ?>" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a>
       </li>
     </ol>
     <p class="text-muted mb-3" style="font-size:0.95em;">

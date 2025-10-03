@@ -33,8 +33,9 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
           <?php if ($isLoggedIn): ?>
             <!-- Logged in navigation -->
             <li class="nav-item"><a class="nav-link" href="User/Afterlogin/about.php">About Us</a></li>
-            <li class="nav-item"><a class="nav-link" href="User/Afterlogin/student-application.php">My Application</a></li>
-            <li class="nav-item"><a class="nav-link" href="User/Afterlogin/student-profile.php">My Profile</a></li>
+            <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+            <li class="nav-item"><a class="nav-link" href="<?php echo 'User/Afterlogin/' . ($isEmployee ? 'employee-application.php' : 'student-application.php'); ?>">My Application</a></li>
+            <li class="nav-item"><a class="nav-link" href="<?php echo 'User/Afterlogin/' . ($isEmployee ? 'employee-profile.php' : 'student-profile.php'); ?>">My Profile</a></li>
           
           <?php else: ?>
             <!-- Not logged in navigation -->
