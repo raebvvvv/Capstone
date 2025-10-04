@@ -62,6 +62,8 @@
   function render(containerEl, details, opts){
     const o = Object.assign({ role: 'admin', showNotes: false, onAuthorDetails: null }, opts||{});
     if(!containerEl) return;
+    containerEl.classList.remove('text-center');
+    containerEl.classList.add('text-start');
     const v = (x,d='—') => (x==null||x==='')?d:x;
 
     const studentName = v(details.studentName);

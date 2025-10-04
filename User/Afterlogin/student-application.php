@@ -349,7 +349,7 @@ try {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div id="submissionDetailsContent" class="text-center py-5">
+        <div id="submissionDetailsContent" class="text-center py-2">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>

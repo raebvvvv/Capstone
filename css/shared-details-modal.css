@@ -5,11 +5,13 @@
 }
 
 /* Center the overall content; align text within a centered block for readability */
-#submissionDetailsContent { text-align: center; }
-/* Each top-level section (Student, Document, Files) becomes a centered, left-aligned block */
-#submissionDetailsContent > div {
-  display: inline-block;
+#submissionDetailsContent { 
   text-align: left;
+  line-height: 2;
+ }
+/* Each top-level section (Student, Document, Files) flows as a full-width block */
+#submissionDetailsContent > div {
+  display: block;
   max-width: 760px;
   width: 100%;
 }
@@ -18,40 +20,36 @@
 #submissionDetailsContent h5 {
   font-weight: 600;
   margin: 0 0 .5rem 0;
-  text-align: center;
+  text-align: left;
 }
 
 /* Tidy paragraph spacing */
-#submissionDetailsContent p { margin-bottom: .35rem; }
-/* Align labels (strong) to a fixed width so values line up nicely */
+#submissionDetailsContent p { 
+  margin-bottom: .35rem; 
+}
+/* Labels stack inline but keep modest spacing before values */
 #submissionDetailsContent p > strong {
   display: inline-block;
-  min-width: 210px;
-  text-align: right;
-  margin-right: .5rem;
+  min-width: auto;
+  text-align: left;
+  margin-right: .4rem;
 }
 @media (max-width: 576px){
-  #submissionDetailsContent p > strong { min-width: 140px; }
+  #submissionDetailsContent p > strong { margin-right: .35rem; }
 }
 
 /* Additional Author(s) block alignment */
 #submissionDetailsContent .mt-2 > .fw-semibold.mb-1 {
-  /* Render heading like a label aligned with other labels */
-  display: inline-block;
-  min-width: 210px;
-  text-align: right;
-  margin-right: .5rem;
+  display: block;
+  text-align: left;
+  margin-bottom: .25rem;
 }
 #submissionDetailsContent .author-entry {
   display: block;
-  margin-left: calc(210px + .5rem); /* indent to align with value column */
+  margin-left: 0;
   margin-bottom: .25rem;
 }
 #submissionDetailsContent .author-entry .badge { vertical-align: middle; }
-@media (max-width: 576px){
-  #submissionDetailsContent .mt-2 > .fw-semibold.mb-1 { min-width: 140px; }
-  #submissionDetailsContent .author-entry { margin-left: calc(140px + .5rem); }
-}
 
 /* Uploaded files list layout */
 #submissionDetailsContent ul {
