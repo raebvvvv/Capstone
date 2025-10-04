@@ -11,6 +11,18 @@ body {
 main.page-wrapper, .page-wrapper { 
     flex: 1 0 auto; 
 }
+/* Ensure the main content grows to fill space so footer sits at bottom */
+.ipapp-container { 
+    flex: 1 0 auto;
+}
+/* Sticky footer: push footer to bottom when content is short */
+.standard-footer { 
+    margin-top: auto; 
+}
+/* Prevent header from shrinking in flex layout */
+body > header { 
+    flex-shrink: 0; 
+}
 footer, .site-footer { 
     position: static;
     width: 100%;

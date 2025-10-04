@@ -142,9 +142,9 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/completed_applications.css?v=6">
+    <link rel="stylesheet" href="../css/completed_applications.css?v=7">
     <script src="../javascript/forms/academic-dropdowns.js" defer></script>
-    <link rel="stylesheet" href="../css/admin-navbar.css?v=1">
+    <link rel="stylesheet" href="../css/admin-navbar.css?v=2">
     <script src="../javascript/shared-details-modal.js?v=1" defer></script>
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Completed Applications</title>
@@ -391,6 +391,7 @@ try {
                 </div>
             <?php endforeach; ?>
         </main>
+    <nav id="ipappPagination" class="ipapp-pagination d-flex justify-content-center mt-3" aria-label="Completed applications pages"></nav>
     </div>
 
     <!-- Download Summary Modal -->
@@ -451,7 +452,7 @@ try {
         </div>
     </div>
 
-    <script src="../javascript/admin-completed-applications.js?v=13"></script>
+    <script src="../javascript/admin-completed-applications.js?v=14"></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

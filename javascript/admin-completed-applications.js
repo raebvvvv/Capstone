@@ -51,6 +51,10 @@ function initCompletedAppsFilters() {
 	if (!list) return; // page not present
 
 	const items = Array.from(list.querySelectorAll('.ipapp-list-item'));
+	// Pagination state
+	const paginationEl = document.getElementById('ipappPagination');
+	const PAGE_SIZE = 10;
+	let currentPage = 1;
 	const searchInput = document.getElementById('ipappSearch');
 	const searchBtn = document.getElementById('ipappSearchBtn');
 	const allTimeBtn = document.getElementById('allTimeBtn');
@@ -486,13 +490,101 @@ function initCompletedAppsFilters() {
 		return true;
 	}
 
+	function renderPagination(total, page) {
+		if (!paginationEl) return;
+		const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+		if (totalPages <= 1) {
+			paginationEl.innerHTML = '';
+			paginationEl.style.display = 'none';
+			return;
+		}
+		paginationEl.style.display = '';
+		const clamped = Math.min(Math.max(page, 1), totalPages);
+		const windowSize = 5;
+		let start = Math.max(1, clamped - Math.floor(windowSize / 2));
+		let end = Math.min(totalPages, start + windowSize - 1);
+		start = Math.max(1, Math.min(start, end - windowSize + 1));
+
+		function pageBtn(label, targetPage, disabled=false, active=false) {
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'btn btn-sm ' + (active ? 'btn-primary' : 'btn-outline-secondary');
+			btn.textContent = label;
+			btn.disabled = !!disabled;
+			btn.style.margin = '0 4px';
+			if (!disabled && !active) {
+				btn.addEventListener('click', () => {
+					currentPage = targetPage;
+					applyPagination();
+				});
+			}
+			return btn;
+		}
+
+		paginationEl.innerHTML = '';
+		const wrap = document.createElement('div');
+		wrap.className = 'd-flex align-items-center';
+		wrap.appendChild(pageBtn('Prev', clamped - 1, clamped <= 1));
+
+		// Leading first/ellipsis
+		if (start > 1) {
+			wrap.appendChild(pageBtn('1', 1, false, clamped === 1));
+			if (start > 2) {
+				const span = document.createElement('span');
+				span.className = 'mx-1 text-muted';
+				span.textContent = '…';
+				wrap.appendChild(span);
+			}
+		}
+		for (let p = start; p <= end; p++) {
+			wrap.appendChild(pageBtn(String(p), p, false, p === clamped));
+		}
+		// Trailing ellipsis/last
+		if (end < totalPages) {
+			if (end < totalPages - 1) {
+				const span = document.createElement('span');
+				span.className = 'mx-1 text-muted';
+				span.textContent = '…';
+				wrap.appendChild(span);
+			}
+			wrap.appendChild(pageBtn(String(totalPages), totalPages, false, clamped === totalPages));
+		}
+		wrap.appendChild(pageBtn('Next', clamped + 1, clamped >= totalPages));
+		paginationEl.appendChild(wrap);
+	}
+
+	function applyPagination() {
+		// Determine matched items from prior filter step
+		const matched = items.filter(el => el.dataset && el.dataset.match === '1');
+		const total = matched.length;
+		const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+		if (currentPage > totalPages) currentPage = totalPages;
+		if (currentPage < 1) currentPage = 1;
+		const startIdx = (currentPage - 1) * PAGE_SIZE;
+		const endIdx = startIdx + PAGE_SIZE;
+		// Hide all matched initially; unmatched already hidden in filter step
+		matched.forEach((el, idx) => {
+			el.style.display = (idx >= startIdx && idx < endIdx) ? '' : 'none';
+		});
+		renderPagination(total, currentPage);
+	}
+
 	function updateListVisibility() {
+		// Reset to first page whenever filters/search/range change
+		currentPage = 1;
 		const q = (searchInput && searchInput.value || '').trim().toLowerCase();
 		items.forEach(el => {
 			const d = parseIsoOrFallbackDate(el);
 			const ok = matchesQuery(el, q) && isInSelectedRange(d) && matchesFilters(el);
-			el.style.display = ok ? '' : 'none';
+			// Mark match result; unmatched are hidden now, matched visibility decided by pagination
+			if (ok) {
+				el.dataset.match = '1';
+			} else {
+				el.dataset.match = '0';
+				el.style.display = 'none';
+			}
 		});
+		applyPagination();
 		updateDashboardLink();
 	}
 

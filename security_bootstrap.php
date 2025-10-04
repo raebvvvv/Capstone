@@ -1,6 +1,37 @@
 <?php
 // Central security bootstrap: session hardening, security headers, CSRF helpers.
 
+// --- mbstring polyfills (graceful fallbacks when mbstring extension is missing) ---
+if (!function_exists('mb_strtolower')) {
+    function mb_strtolower($string, $encoding = null) { return strtolower((string)$string); }
+}
+if (!function_exists('mb_strtoupper')) {
+    function mb_strtoupper($string, $encoding = null) { return strtoupper((string)$string); }
+}
+if (!function_exists('mb_strlen')) {
+    function mb_strlen($string, $encoding = null) { return strlen((string)$string); }
+}
+if (!function_exists('mb_substr')) {
+    function mb_substr($string, $start, $length = null, $encoding = null) {
+        $s = (string)$string;
+        return ($length === null) ? substr($s, (int)$start) : substr($s, (int)$start, (int)$length);
+    }
+}
+if (!function_exists('mb_convert_case')) {
+    if (!defined('MB_CASE_UPPER')) define('MB_CASE_UPPER', 0);
+    if (!defined('MB_CASE_LOWER')) define('MB_CASE_LOWER', 1);
+    if (!defined('MB_CASE_TITLE')) define('MB_CASE_TITLE', 2);
+    function mb_convert_case($string, $mode, $encoding = null) {
+        $s = (string)$string;
+        switch ((int)$mode) {
+            case MB_CASE_UPPER: return strtoupper($s);
+            case MB_CASE_TITLE: return ucwords(strtolower($s));
+            case MB_CASE_LOWER:
+            default: return strtolower($s);
+        }
+    }
+}
+
 if (!function_exists('secure_bootstrap')) {
     function secure_bootstrap(): void {
         // Basic config constants (define once)
