@@ -12,6 +12,45 @@
       return;
     }
 
+    // Helpers: abbreviate college labels and collapse into codes
+    function abbreviateCollegeLabel(raw){
+      if(!raw) return 'Other';
+      var s = String(raw).trim();
+      var low = s.toLowerCase();
+      if (low.indexOf('institute of technology') !== -1) return 'ITech';
+      var dash = s.indexOf(' - ');
+      if (dash > -1) {
+        var code = s.slice(0, dash).trim();
+        if (code) return code.toUpperCase();
+      }
+      var m = s.match(/\(([^)]+)\)\s*$/);
+      if (m && m[1]) {
+        return String(m[1]).trim().toUpperCase();
+      }
+      if (s.length <= 7 && s === s.toUpperCase()) return s;
+      var stop = { of:1, and:1, the:1, in:1, for:1, college:1, school:1, institute:1, faculty:1 };
+      var abbr = '';
+      s.split(/\s+/).forEach(function(w){
+        var ww = (w||'').trim(); if(!ww) return;
+        var lw = ww.toLowerCase(); if (stop[lw]) return;
+        abbr += ww[0] ? ww[0].toUpperCase() : '';
+      });
+      return abbr || 'Other';
+    }
+    function collapseCollegeSeriesToCodes(labels, values){
+      var agg = Object.create(null);
+      var order = [];
+      for (var i=0;i<labels.length;i++){
+        var code = abbreviateCollegeLabel(labels[i]);
+        var val = parseInt(values[i]||0,10) || 0;
+        if (!(code in agg)) { agg[code] = 0; order.push(code); }
+        agg[code] += val;
+      }
+      var outL = [], outV = [];
+      order.forEach(function(k){ outL.push(k); outV.push(agg[k]); });
+      return { labels: outL, values: outV };
+    }
+
     // Keep refs to charts for dynamic updates
     var charts = { overview:null, college:null, campus:null, workClass:null };
     function setAsOf(iso){
@@ -79,6 +118,11 @@
       var labels = []; var values = [];
       try { labels = JSON.parse(mainUndergradCanvas.getAttribute('data-labels')||'[]'); } catch(_) {}
       try { values = JSON.parse(mainUndergradCanvas.getAttribute('data-values')||'[]'); } catch(_) {}
+      // Normalize to abbreviations/codes on initial render as well
+      try {
+        var collapsed = collapseCollegeSeriesToCodes(labels, values);
+        labels = collapsed.labels; values = collapsed.values;
+      } catch(_) {}
       charts.college = new Chart(mainUndergradCanvas,{
         type:'bar',
         data:{ labels: labels, datasets:[{ label:'Applications', data: values, backgroundColor:'#870000' }] },
@@ -150,7 +194,17 @@
               var tAppr = document.getElementById('approvedApplications'); if(tAppr){ tAppr.textContent = String(data.totals.approved || 0); }
               var tComp = document.getElementById('completedApplications'); if(tComp){ tComp.textContent = String(data.totals.completed || 0); }
             }
-            if(charts.college){ charts.college.data.labels = data.byCollege.labels; charts.college.data.datasets[0].data = data.byCollege.values; charts.college.update(); }
+            if(charts.college){
+              var cLabels = (data.byCollege && Array.isArray(data.byCollege.labels)) ? data.byCollege.labels : [];
+              var cValues = (data.byCollege && Array.isArray(data.byCollege.values)) ? data.byCollege.values : [];
+              try{
+                var collapsed2 = collapseCollegeSeriesToCodes(cLabels, cValues);
+                cLabels = collapsed2.labels; cValues = collapsed2.values;
+              }catch(_){}
+              charts.college.data.labels = cLabels;
+              charts.college.data.datasets[0].data = cValues;
+              charts.college.update();
+            }
             if(charts.campus){ charts.campus.data.labels = data.byCampus.labels; charts.campus.data.datasets[0].data = data.byCampus.values; charts.campus.update(); }
             if(charts.workClass){ charts.workClass.data.labels = data.workClass.labels; charts.workClass.data.datasets[0].data = data.workClass.values; charts.workClass.update(); }
             setAsOf(data.last_updated_iso || data.last_updated || data.as_of);

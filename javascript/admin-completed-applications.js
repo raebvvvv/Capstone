@@ -205,6 +205,9 @@ function initCompletedAppsFilters() {
 	const acadLevelBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="acadLevelMenu"]') : null;
 	const collegeBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="collegeMenu"]') : null;
 	const programBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="programMenu"]') : null;
+	const campusBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="campusMenu"]') : null;
+	const typesBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="typesMenu"]') : null;
+	const groupBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="groupMenu"]') : null;
 	// Department filter removed from UI
 	const departmentBtn = null;
 	const campusMenu = document.getElementById('campusMenu');
@@ -736,6 +739,7 @@ function initCompletedAppsFilters() {
 				if (!item) return;
 				const label = item.textContent.trim();
 				selectedCampus = label;
+				setBtnLabel(campusBtn, 'Campus', label === 'All' ? '' : label);
 				updateListVisibility();
 				campusMenu.classList.remove('menu-active');
 			});
@@ -748,6 +752,7 @@ function initCompletedAppsFilters() {
 				if (!item) return;
 				const label = item.textContent.trim();
 				selectedType = label;
+				setBtnLabel(typesBtn, 'Types', label === 'All' ? '' : label);
 				updateListVisibility();
 				typesMenu.classList.remove('menu-active');
 			});
@@ -760,6 +765,7 @@ function initCompletedAppsFilters() {
 				if (!item) return;
 				const label = item.textContent.trim();
 				selectedGroup = label;
+				setBtnLabel(groupBtn, 'Group', label === 'All' ? '' : label);
 				updateListVisibility();
 				groupMenu.classList.remove('menu-active');
 			});
@@ -802,8 +808,12 @@ function initCompletedAppsFilters() {
 				accomplishmentDate: d.dateAccomplished || '',
 				files_list: Array.isArray(details.files) ? details.files.map(f=>({ label:f.label, url:f.url, size:null, verified:null })) : []
 			};
+			// Determine if submitter is an employee to adjust ID label in modal
+			const itemEl = link.closest('.ipapp-list-item');
+			const groupAttr = itemEl ? (itemEl.getAttribute('data-group')||'').trim().toLowerCase() : '';
+			const isEmployee = (groupAttr === 'employee') || ((s.academicLevel||'').toString().toLowerCase().includes('employee'));
 			if (typeof window.renderSubmissionDetails === 'function') {
-				window.renderSubmissionDetails(body, shared, { role: 'admin' });
+				window.renderSubmissionDetails(body, shared, { role: isEmployee ? 'employee' : 'admin' });
 			} else {
 				body.textContent = 'Details failed to render.';
 			}
@@ -917,6 +927,9 @@ function initCompletedAppsFilters() {
 	}
 	setBtnLabel(collegeBtn, 'College', '');
 	setBtnLabel(programBtn, 'Program', 'All');
+	setBtnLabel(campusBtn, 'Campus', '');
+	setBtnLabel(typesBtn, 'Types', '');
+	setBtnLabel(groupBtn, 'Group', '');
 	// Department button removed
 }
 

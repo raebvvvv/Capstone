@@ -19,6 +19,7 @@ try {
     $sql = "SELECT 
                 s.submission_id,
                 s.submission_code AS request_id,
+                s.user_id,
                 s.student_number,
                 s.webmail,
                 s.home_address,
@@ -31,8 +32,11 @@ try {
                 s.status_updated_at,
                 s.created_at,
                 s.work_classification,
-                CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) AS student_name
+                CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) AS student_name,
+                u.role AS user_role,
+                u.student_number AS u_student_number
             FROM submissions s
+            LEFT JOIN users u ON u.user_id = s.user_id
             WHERE LOWER(s.status) = 'completed'
             ORDER BY s.status_updated_at DESC, s.created_at DESC";
     $stmt = $pdo->query($sql);
@@ -66,12 +70,23 @@ try {
     $datePretty = $completedAt ? date('F j, Y', strtotime($completedAt)) : '';
         $applicationDateIso = $completedAt ? date('Y-m-d', strtotime($completedAt)) : '';
 
-        // Compute simple group from academic level
-        $rawLevel = (string)($s['academic_level'] ?? '');
-        $group = (stripos($rawLevel, 'employee') !== false) ? 'Employee' : 'Student';
+        // Determine group from users.role when available (fallback to academic level)
+        $role = strtolower((string)($s['user_role'] ?? ''));
+        if ($role === 'employee' || $role === 'admin') {
+            $group = ($role === 'employee') ? 'Employee' : 'Student';
+        } else {
+            $rawLevel = (string)($s['academic_level'] ?? '');
+            $group = (stripos($rawLevel, 'employee') !== false) ? 'Employee' : 'Student';
+        }
         $college = (string)($s['college'] ?? '');
         $collegeCode = $college;
         if (strpos($college, ' - ') !== false) { $collegeCode = substr($college, 0, strpos($college, ' - ')); }
+
+        // Choose displayed ID (keep same field; label differs for employee)
+        $idNumber = (string)($s['student_number'] ?? '');
+        if ($idNumber === '' && isset($s['u_student_number']) && (string)$s['u_student_number'] !== '') {
+            $idNumber = (string)$s['u_student_number'];
+        }
 
         $applications[] = [
             'description' => $desc,
@@ -82,7 +97,7 @@ try {
                 'requestId' => (string)($s['request_id'] ?? ''),
                 'student' => [
                     'name' => $name,
-                    'number' => (string)($s['student_number'] ?? ''),
+                    'number' => (string)$idNumber,
                     'email' => (string)($s['webmail'] ?? ''),
                     'homeAddress' => (string)($s['home_address'] ?? ''),
                     'campus' => (string)($s['campus'] ?? ''),
@@ -127,7 +142,7 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/completed_applications.css?v=5">
+    <link rel="stylesheet" href="../css/completed_applications.css?v=6">
     <script src="../javascript/forms/academic-dropdowns.js" defer></script>
     <link rel="stylesheet" href="../css/admin-navbar.css?v=1">
     <script src="../javascript/shared-details-modal.js?v=1" defer></script>
@@ -353,7 +368,7 @@ try {
                     $detailsAttr = isset($app['details']) ? htmlspecialchars(base64_encode(json_encode($app['details'])), ENT_QUOTES, 'UTF-8') : '';
                     $meta = $app['meta'] ?? [];
                 ?>
-                <div class="ipapp-list-item"
+             <div class="ipapp-list-item"
                      data-request-id="<?php echo htmlspecialchars($requestId); ?>"
                      data-description="<?php echo htmlspecialchars(strtolower($app['description'])); ?>"
                      data-name="<?php echo htmlspecialchars(strtolower($app['name'])); ?>"
@@ -363,7 +378,7 @@ try {
                      data-college-code="<?php echo htmlspecialchars(strtolower($meta['college_code'] ?? '')); ?>"
                      data-program="<?php echo htmlspecialchars(strtolower($meta['program'] ?? '')); ?>"
                  data-academic-level="<?php echo htmlspecialchars(strtolower($app['details']['student']['academicLevel'] ?? '')); ?>"
-                     data-group="<?php echo htmlspecialchars(strtolower($meta['group'] ?? '')); ?>"
+                 data-group="<?php echo htmlspecialchars(strtolower($meta['group'] ?? '')); ?>"
                      data-type="<?php echo htmlspecialchars(strtolower($meta['type'] ?? '')); ?>"
                      data-campus="<?php echo htmlspecialchars(strtolower($meta['campus'] ?? '')); ?>"
                 >
@@ -436,7 +451,7 @@ try {
         </div>
     </div>
 
-    <script src="../javascript/admin-completed-applications.js?v=12"></script>
+    <script src="../javascript/admin-completed-applications.js?v=13"></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

@@ -62,18 +62,23 @@ if (!function_exists('secure_bootstrap')) {
 
         // Session timing checks
         $now = time();
+        // Determine appropriate login target (admin vs. public) based on current route
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? ($_SERVER['PHP_SELF'] ?? '');
+        $isAdminRoute = stripos($scriptName, '/admin/') !== false;
+        $loginTarget = $isAdminRoute ? 'admin/login.php' : 'User/Beforelogin/login.php';
+
         if (isset($_SESSION['session_created_at']) && ($now - (int)$_SESSION['session_created_at']) > SESSION_ABSOLUTE_LIFETIME) {
             session_unset(); session_destroy();
-            if (function_exists('redirect')) { redirect('User/Beforelogin/login.php'); }
-            header('Location: User/Beforelogin/login.php'); exit();
+            if (function_exists('redirect')) { redirect($loginTarget); }
+            header('Location: ' . $loginTarget); exit();
         }
         if (!isset($_SESSION['session_created_at'])) {
             $_SESSION['session_created_at'] = $now;
         }
         if (isset($_SESSION['last_activity']) && ($now - (int)$_SESSION['last_activity']) > SESSION_IDLE_TIMEOUT) {
             session_unset(); session_destroy();
-            if (function_exists('redirect')) { redirect('User/Beforelogin/login.php'); }
-            header('Location: User/Beforelogin/login.php'); exit();
+            if (function_exists('redirect')) { redirect($loginTarget); }
+            header('Location: ' . $loginTarget); exit();
         }
         $_SESSION['last_activity'] = $now;
     }
@@ -82,13 +87,20 @@ if (!function_exists('secure_bootstrap')) {
 // Helper to enforce admin-only access
 if (!function_exists('require_admin')) {
     function require_admin(): void {
-        if (empty($_SESSION['user_logged_in']) || empty($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
-            // Redirect to a friendly 404 page instead of server "Not Found"
-            // Use a root-level 404.php to avoid relative path issues from /admin
+        $isLoggedIn = !empty($_SESSION['user_logged_in']);
+        $isAdmin = !empty($_SESSION['is_admin']) && (int)$_SESSION['is_admin'] === 1;
+        if ($isLoggedIn && !$isAdmin) {
+            // Authenticated but not admin -> block with friendly 404 (do not reveal admin area)
             $location = '404.php';
-            if (function_exists('redirect')) {
-                redirect($location);
-            }
+            if (function_exists('redirect')) { redirect($location); }
+            $abs = (defined('BASE_URL') ? BASE_URL : '/') . ltrim($location, '/');
+            header('Location: ' . $abs);
+            exit();
+        }
+        if (!$isLoggedIn) {
+            // Not logged in -> send to admin login (hidden page)
+            $location = 'admin/login.php';
+            if (function_exists('redirect')) { redirect($location); }
             $abs = (defined('BASE_URL') ? BASE_URL : '/') . ltrim($location, '/');
             header('Location: ' . $abs);
             exit();

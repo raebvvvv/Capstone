@@ -10,23 +10,33 @@ require __DIR__ . '/../../config.php';
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); } else { session_start(); }
 
 // Decide redirect target based on current session role BEFORE destroying session
-$isEmployee = (($_SESSION['role'] ?? '') === 'employee');
-$targetLoginRelative = $isEmployee ? 'login-employee.php' : 'login.php';
-$targetLoginWithPath = 'User/Beforelogin/' . $targetLoginRelative;
+$role = strtolower((string)($_SESSION['role'] ?? ''));
+if ($role === 'admin') {
+	// Admins go to home page after logout
+	$targetPath = 'index.php';
+	$fallbackHeaderLocation = '/index.php';
+} elseif ($role === 'employee') {
+	$targetPath = 'User/Beforelogin/login-employee.php';
+	$fallbackHeaderLocation = '/User/Beforelogin/login-employee.php';
+} else {
+	// default: student login
+	$targetPath = 'User/Beforelogin/login.php';
+	$fallbackHeaderLocation = '/User/Beforelogin/login.php';
+}
 
 // Reject non-POST methods
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-	// Optionally you can show a 405 page. Simplicity: redirect to appropriate login.
-	if (function_exists('redirect')) { redirect($targetLoginWithPath); }
-	header('Location: ' . $targetLoginRelative);
+	// Optionally you can show a 405 page. Simplicity: redirect to appropriate target.
+	if (function_exists('redirect')) { redirect($targetPath); }
+	header('Location: ' . $fallbackHeaderLocation);
 	exit();
 }
 
 // Basic CSRF token validation (token should be stored in session when rendering form)
 if (!isset($_POST['csrf_token'], $_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
 	// Token invalid: deny and redirect.
-	if (function_exists('redirect')) { redirect($targetLoginWithPath); }
-	header('Location: ' . $targetLoginRelative);
+	if (function_exists('redirect')) { redirect($targetPath); }
+	header('Location: ' . $fallbackHeaderLocation);
 	exit();
 }
 
@@ -47,7 +57,7 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-if (function_exists('redirect')) { redirect($targetLoginWithPath); }
-header('Location: ' . $targetLoginRelative);
+if (function_exists('redirect')) { redirect($targetPath); }
+header('Location: ' . $fallbackHeaderLocation);
 exit();
 ?>

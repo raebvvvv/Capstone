@@ -46,6 +46,10 @@ try {
             $total_applications_chart = $undergrad + $grad + $open;
             $bc = json_decode($row['by_college_json'] ?? '{}', true) ?: ['labels'=>[], 'values'=>[]];
             $collegeLabels = $bc['labels']; $collegeValues = $bc['values'];
+            // Normalize cached labels to abbreviations (e.g., "College of Science (CS)" -> "CS")
+            if (is_array($collegeLabels) && is_array($collegeValues)) {
+                [$collegeLabels, $collegeValues] = collapse_college_series_to_codes($collegeLabels, $collegeValues);
+            }
             $bp = json_decode($row['by_campus_json'] ?? '{}', true) ?: ['labels'=>[], 'values'=>[]];
             $campusLabels = $bp['labels']; $campusValues = $bp['values'];
             $wcj = json_decode($row['work_class_json'] ?? '{}', true) ?: ['labels'=>[], 'values'=>[]];
@@ -126,6 +130,56 @@ function normalize_college_label(string $raw): string {
         return strtoupper(trim($m[1]));
     }
     return $raw;
+}
+
+// Turn an arbitrary college label into a short code (e.g., "College of Science (CS)" -> "CS").
+function abbreviate_college_label(string $raw): string {
+    $raw = trim($raw);
+    if ($raw === '') return 'Other';
+    // Explicit mapping for Institute of Technology
+    if (stripos($raw, 'institute of technology') !== false) {
+        return 'ITech';
+    }
+    // Prefer prefix code before " - " (e.g., "CCIS - College of ...")
+    if (strpos($raw, ' - ') !== false) {
+        $code = trim(substr($raw, 0, strpos($raw, ' - ')));
+        if ($code !== '') return strtoupper($code);
+    }
+    // Prefer code in parentheses at the end (e.g., "College of ... (CAF)")
+    if (preg_match('/\(([^)]+)\)\s*$/', $raw, $m)) {
+        $code = strtoupper(trim($m[1]));
+        if ($code !== '') return $code;
+    }
+    // If the whole string already looks like a short uppercase code, keep it
+    if (strlen($raw) <= 7 && strtoupper($raw) === $raw) {
+        return strtoupper($raw);
+    }
+    // Derive an acronym from significant words
+    $words = preg_split('/\s+/', $raw);
+    $stop = ['of','and','the','in','for','college','school','institute','faculty'];
+    $abbr = '';
+    foreach ($words as $w) {
+        $lw = strtolower(trim($w));
+        if ($lw === '' || in_array($lw, $stop, true)) continue;
+        $abbr .= strtoupper($w[0] ?? '');
+    }
+    return $abbr !== '' ? $abbr : 'Other';
+}
+
+// Collapse an existing [labels, values] series to use codes-only labels, merging duplicates.
+function collapse_college_series_to_codes(array $labels, array $values): array {
+    $agg = [];
+    $order = [];
+    foreach ($labels as $i => $label) {
+        $code = abbreviate_college_label((string)$label);
+        $val = isset($values[$i]) ? (int)$values[$i] : 0;
+        if (!array_key_exists($code, $agg)) { $agg[$code] = 0; $order[] = $code; }
+        $agg[$code] += $val;
+    }
+    $outLabels = [];
+    $outValues = [];
+    foreach ($order as $code) { $outLabels[] = $code; $outValues[] = (int)$agg[$code]; }
+    return [$outLabels, $outValues];
 }
 
 function level_label(string $raw): string {
@@ -247,12 +301,8 @@ try {
         } else {
             [$code, $full] = parse_college($rawCollege);
             $code = strtoupper($code);
-            // Build display label: prefer "Full (CODE)" when both available
-            $display = '';
-            if ($full !== '' && $code !== '') { $display = $full . ' (' . $code . ')'; }
-            elseif ($full !== '') { $display = $full; }
-            elseif ($code !== '') { $display = $code; }
-            else { $display = 'Other'; }
+            // Build display label using code if present, else abbreviation helper
+            $display = ($code !== '') ? $code : abbreviate_college_label($full !== '' ? $full : $rawCollege);
 
             // Grouping key: prefer code when present to consolidate variants
             $key = $code !== '' ? ('CODE:' . strtolower($code)) : ('FULL:' . strtolower($full));
