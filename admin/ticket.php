@@ -5,6 +5,13 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
+// Provide a fallback for mb_strtolower if the mbstring extension is not enabled
+if (!function_exists('mb_strtolower')) {
+    function mb_strtolower($string, $encoding = null) {
+        return strtolower($string);
+    }
+}
+
 // Handle actions (server-side fallback when JS is disabled)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (function_exists('verify_csrf_post')) { verify_csrf_post(); }
@@ -173,7 +180,7 @@ try {
                 s.submission_code AS request_id,
                 s.student_number AS student_id,
                 CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) AS student_name,
-                s.academic_level AS user_classification,
+                u.role AS user_role,
                 s.program,
                 s.created_at AS request_date,
                 s.status,
@@ -189,6 +196,7 @@ try {
                 ma.admin_comment AS approved_admin_comment,
                 ma.affected_doc_types AS approved_affected_doc_types
             FROM submissions s
+            LEFT JOIN users u ON u.user_id = s.user_id
             LEFT JOIN (
                 SELECT submission_id, COUNT(*) AS note_count, MAX(created_at) AS last_note
                 FROM submission_notes
@@ -528,9 +536,8 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                                     </td>
                                     <td>
                                         <?php
-                                            $userRaw = trim((string)($ticket['user_classification'] ?? ''));
-                                            $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
-                                            echo htmlspecialchars($userLabel);
+                                            $role = strtolower(trim((string)($ticket['user_role'] ?? 'student')));
+                                            echo htmlspecialchars($role === 'employee' ? 'Employee' : 'Student');
                                         ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
@@ -617,9 +624,8 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                                         </td>
                                         <td>
                                             <?php
-                                                $userRaw = trim((string)($ticket['user_classification'] ?? ''));
-                                                $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
-                                                echo htmlspecialchars($userLabel);
+                                                $role = strtolower(trim((string)($ticket['user_role'] ?? 'student')));
+                                                echo htmlspecialchars($role === 'employee' ? 'Employee' : 'Student');
                                             ?>
                                         </td>
                                         <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
@@ -690,9 +696,8 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                                     </td>
                                     <td>
                                         <?php
-                                            $userRaw = trim((string)($ticket['user_classification'] ?? ''));
-                                            $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
-                                            echo htmlspecialchars($userLabel);
+                                            $role = strtolower(trim((string)($ticket['user_role'] ?? 'student')));
+                                            echo htmlspecialchars($role === 'employee' ? 'Employee' : 'Student');
                                         ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>

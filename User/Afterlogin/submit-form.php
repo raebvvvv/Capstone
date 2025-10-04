@@ -260,12 +260,31 @@ if (empty($errors)) {
 
         foreach ($storedFiles as $type => $filename) {
             $filepath = $uploadDir . DIRECTORY_SEPARATOR . $filename;
+            // Determine MIME type safely even if fileinfo/mime_content_type is unavailable
+            $mimeType = 'application/pdf'; // default; uploads are PDFs only
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            // Prefer finfo when available (fileinfo extension)
+            if (function_exists('finfo_open')) {
+                $fi = @finfo_open(FILEINFO_MIME_TYPE);
+                if ($fi) {
+                    $detected = @finfo_file($fi, $filepath);
+                    if (!empty($detected)) { $mimeType = $detected; }
+                    @finfo_close($fi);
+                }
+            } elseif (function_exists('mime_content_type')) {
+                // Older function; may not exist if fileinfo disabled
+                $detected = @mime_content_type($filepath);
+                if (!empty($detected)) { $mimeType = $detected; }
+            } elseif ($ext === 'pdf') {
+                $mimeType = 'application/pdf';
+            }
+
             $docStmt->execute([
                 $submission_id,
                 $type,
                 $filename,
                 filesize($filepath),
-                mime_content_type($filepath)
+                $mimeType
             ]);
         }
 

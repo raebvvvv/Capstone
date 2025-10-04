@@ -5,99 +5,63 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
-// Fetch admin data for navbar/profile
-$user_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT email FROM users WHERE user_id = ?");
-$stmt->execute([$user_id]);
-$admin = $stmt->fetch();
-if (!$admin) {
-    echo "Admin not found.";
-    exit();
-}
+// Fetch admin data
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $query = "SELECT username, email FROM users WHERE user_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $admin = $result->fetch_assoc();
+    if (!$admin) { echo "Admin not found."; exit(); }
+} else { echo "User ID not set in session."; exit(); }
+
+// Pending (unused in UI but kept)
+$query_pending = "SELECT user_id, student_number, username, email, cor FROM users WHERE status = 'pending'";
+$result_pending = $conn->query($query_pending);
 
 // Handle user update
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     verify_csrf_post();
     $user_id = (int)$_POST['user_id'];
+    $username = $_POST['username'];
     $email = $_POST['email'];
     $student_number = $_POST['student_number'];
-    $role = isset($_POST['role']) ? $_POST['role'] : null;
-    $status = isset($_POST['status']) ? $_POST['status'] : null;
-    // Validate role and status
-    $valid_roles = ['student','employee','admin'];
-    $valid_status = ['active','inactive','pending'];
-    if (!in_array($role, $valid_roles, true)) { $role = null; }
-    if (!in_array($status, $valid_status, true)) { $status = null; }
 
-    if ($role !== null && $status !== null) {
-        $stmt_update = $pdo->prepare("UPDATE users SET email = ?, student_number = ?, role = ?, status = ? WHERE user_id = ?");
-        $stmt_update->execute([$email, $student_number, $role, $status, $user_id]);
-    } else {
-        $stmt_update = $pdo->prepare("UPDATE users SET email = ?, student_number = ? WHERE user_id = ?");
-        $stmt_update->execute([$email, $student_number, $user_id]);
-    }
+    $query_update = "UPDATE users SET username = ?, email = ?, student_number = ? WHERE user_id = ?";
+    $stmt_update = $conn->prepare($query_update);
+    $stmt_update->bind_param("sssi", $username, $email, $student_number, $user_id);
+    $stmt_update->execute();
 
     header("Location: manageuser.php");
     exit();
 }
 
-// Search
+// Search active
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
+$query_active = "SELECT user_id, student_number, username, email FROM users WHERE status = 'approved' AND (username LIKE ? OR email LIKE ?)";
+$stmt_active = $conn->prepare($query_active);
 $search_param = '%' . $search_query . '%';
-
-// Role filter (all | student | employee | admin)
-$role_filter = isset($_GET['role']) ? strtolower(trim($_GET['role'])) : 'all';
-$allowed_roles = ['all','student','employee','admin'];
-if (!in_array($role_filter, $allowed_roles, true)) { $role_filter = 'all'; }
-
-// Helper to add role filter clause
-$role_sql = $role_filter !== 'all' ? " AND role = :role_filter" : '';
-
-// Fetch active users
-$sql_active = "SELECT user_id, student_number, email, role, status FROM users WHERE status = 'active' AND (student_number LIKE :q1 OR email LIKE :q2)" . $role_sql . " ORDER BY created_at DESC";
-$stmt_active = $pdo->prepare($sql_active);
-$stmt_active->bindValue(':q1', $search_param, PDO::PARAM_STR);
-$stmt_active->bindValue(':q2', $search_param, PDO::PARAM_STR);
-if ($role_filter !== 'all') { $stmt_active->bindValue(':role_filter', $role_filter, PDO::PARAM_STR); }
+$stmt_active->bind_param("ss", $search_param, $search_param);
 $stmt_active->execute();
-$result_active = $stmt_active->fetchAll();
-
-// Fetch pending users (waiting for verification)
-$sql_pending = "SELECT user_id, student_number, email, role, status FROM users WHERE status = 'pending' AND (student_number LIKE :q1 OR email LIKE :q2)" . $role_sql . " ORDER BY created_at DESC";
-$stmt_pending = $pdo->prepare($sql_pending);
-$stmt_pending->bindValue(':q1', $search_param, PDO::PARAM_STR);
-$stmt_pending->bindValue(':q2', $search_param, PDO::PARAM_STR); 
-if ($role_filter !== 'all') { $stmt_pending->bindValue(':role_filter', $role_filter, PDO::PARAM_STR); }
-$stmt_pending->execute();
-$result_pending = $stmt_pending->fetchAll();
-
-// Fetch inactive users
-$sql_inactive = "SELECT user_id, student_number, email, role, status FROM users WHERE status = 'inactive' AND (student_number LIKE :q1 OR email LIKE :q2)" . $role_sql . " ORDER BY created_at DESC";
-$stmt_inactive = $pdo->prepare($sql_inactive);
-$stmt_inactive->bindValue(':q1', $search_param, PDO::PARAM_STR);
-$stmt_inactive->bindValue(':q2', $search_param, PDO::PARAM_STR);
-if ($role_filter !== 'all') { $stmt_inactive->bindValue(':role_filter', $role_filter, PDO::PARAM_STR); }
-$stmt_inactive->execute();
-$result_inactive = $stmt_inactive->fetchAll();
+$result_active = $stmt_active->get_result();
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="../css/manageuser.css?v=2">
     <link rel="stylesheet" href="../css/admin-navbar.css?v=1">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>User Management</title>
 </head>
 <body>
-    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
+    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -130,237 +94,108 @@ $result_inactive = $stmt_inactive->fetchAll();
 
     <div class="container mt-5">
         <h1 class="text-center mb-4" style="font-size:2rem;">Manage Users</h1>
-        <div class="d-flex justify-content-center mb-3">
-            <form method="GET" action="manageuser.php" class="row g-2 align-items-center" style="max-width:800px;">
-                <div class="col-12 col-md-6">
-                    <div class="input-group search-bar">
-                        <input class="form-control rounded-pill ps-4" type="search" name="search" placeholder="Search by ID or Email" aria-label="Search" value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius: 50px;">
-                        <button class="btn btn-outline-secondary rounded-pill" type="submit" style="margin-left:-40px; border-radius: 50px;">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <select name="role" class="form-select">
-                        <option value="all" <?php echo $role_filter==='all'?'selected':''; ?>>All Roles</option>
-                        <option value="student" <?php echo $role_filter==='student'?'selected':''; ?>>Student</option>
-                        <option value="employee" <?php echo $role_filter==='employee'?'selected':''; ?>>Employee</option>
-                  
-                    </select>
-                </div>
-                <div class="col-6 col-md-3 d-grid">
-                    <button class="btn btn-primary" type="submit">Apply</button>
-                </div>
+         <div class="d-flex justify-content-center mb-3">
+            <form method="GET" action="manageuser.php" class="input-group search-bar" style="max-width:400px;">
+                <input class="form-control rounded-pill ps-4" type="search" name="search" placeholder="Search" aria-label="Search" value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius: 50px;">
+                <button class="btn btn-outline-secondary rounded-pill" type="submit" style="margin-left:-40px; border-radius: 50px;">
+                    <i class="bi bi-search"></i>
+                </button>
             </form>
         </div>
-
-        <!-- Tabs for Active and Pending Users -->
         <ul class="nav nav-tabs" id="userTabs">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#active">Active Users</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#pending">Waiting for Verification</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#inactive">Inactive Users</a></li>
         </ul>
         <div class="tab-content mt-3">
-            <!-- Active Users Tab -->
             <div class="tab-pane fade show active" id="active">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <a class="btn btn-outline-secondary btn-sm" href="manageuser_export.php?status=active&role=<?php echo urlencode($role_filter); ?>&search=<?php echo urlencode($search_query); ?>">Export CSV</a>
-                    </div>
-                </div>
-                <form method="POST" action="bulk_user_action.php" class="bulk-form">
-                    <?php csrf_input(); ?>
-                    <input type="hidden" name="status_scope" value="active">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
-                            <thead class="table-light">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Student Number/Employee ID</th>
+                                <th>Name</th>
+                                <th>Classification</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = $result_active->fetch_assoc()): ?>
                                 <tr>
-                                    <th style="width:36px;"><input type="checkbox" class="form-check-input select-all"></th>
-                                    <th>#</th>
-                                    <th>Student Number/Employee ID</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <td><?php echo htmlspecialchars($row['user_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                     <td>Student</td>
+                                    <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#editUserModal<?php echo $row['user_id']; ?>">Edit</button>
+                                        <form method="POST" action="../delete_user.php" style="display:inline;" onsubmit="return confirm('Delete this user?');">
+                                            <?php csrf_input(); ?>
+                                            <input type="hidden" name="user_id" value="<?php echo (int)$row['user_id']; ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm mb-2">Delete</button>
+                                        </form>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($result_active as $row): ?>
-                                    <tr>
-                                        <td><input type="checkbox" class="form-check-input row-check" name="user_ids[]" value="<?php echo (int)$row['user_id']; ?>"></td>
-                                        <td><?php echo htmlspecialchars($row['user_id']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                        <td><?php echo htmlspecialchars(ucfirst($row['role'])); ?></td>
-                                        <td><?php echo htmlspecialchars(ucfirst($row['status'])); ?></td>
-                                        <td>
-                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal<?php echo $row['user_id']; ?>">Edit</button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <select name="bulk_action" class="form-select form-select-sm bulk-action-select" style="max-width:200px;">
-                            <option value="">Bulk action…</option>
-                            <option value="activate">Activate</option>
-                            <option value="deactivate">Deactivate</option>
-                            <option value="delete">Delete</option>
-                        </select>
-                        <button type="submit" class="btn btn-secondary btn-sm bulk-submit" disabled>Apply</button>
-                    </div>
-                </form>
-            </div>
-            <!-- Pending Users Tab -->
-            <div class="tab-pane fade" id="pending">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <a class="btn btn-outline-secondary btn-sm" href="manageuser_export.php?status=pending&role=<?php echo urlencode($role_filter); ?>&search=<?php echo urlencode($search_query); ?>">Export CSV</a>
-                    </div>
-                </div>
-                <form method="POST" action="bulk_user_action.php" class="bulk-form">
-                    <?php csrf_input(); ?>
-                    <input type="hidden" name="status_scope" value="pending">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:36px;"><input type="checkbox" class="form-check-input select-all"></th>
-                                    <th>#</th>
-                                    <th>Student Number/Employee ID</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($result_pending as $row): ?>
-                                    <tr>
-                                        <td><input type="checkbox" class="form-check-input row-check" name="user_ids[]" value="<?php echo (int)$row['user_id']; ?>"></td>
-                                        <td><?php echo htmlspecialchars($row['user_id']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                        <td><?php echo htmlspecialchars(ucfirst($row['role'])); ?></td>
-                                        <td><?php echo htmlspecialchars(ucfirst($row['status'])); ?></td>
-                                        <td>
-                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal<?php echo $row['user_id']; ?>">Edit</button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <select name="bulk_action" class="form-select form-select-sm bulk-action-select" style="max-width:200px;">
-                            <option value="">Bulk action…</option>
-                            <option value="activate">Activate</option>
-                            <option value="deactivate">Deactivate</option>
-                            <option value="delete">Delete</option>
-                        </select>
-                        <button type="submit" class="btn btn-secondary btn-sm bulk-submit" disabled>Apply</button>
-                    </div>
-                </form>
-            </div>
-            <!-- Inactive Users Tab -->
-            <div class="tab-pane fade" id="inactive">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <a class="btn btn-outline-secondary btn-sm" href="manageuser_export.php?status=inactive&role=<?php echo urlencode($role_filter); ?>&search=<?php echo urlencode($search_query); ?>">Export CSV</a>
-                    </div>
-                </div>
-                <form method="POST" action="bulk_user_action.php" class="bulk-form">
-                    <?php csrf_input(); ?>
-                    <input type="hidden" name="status_scope" value="inactive">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:36px;"><input type="checkbox" class="form-check-input select-all"></th>
-                                    <th>#</th>
-                                    <th>Student Number/Employee ID</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($result_inactive as $row): ?>
-                                    <tr>
-                                        <td><input type="checkbox" class="form-check-input row-check" name="user_ids[]" value="<?php echo (int)$row['user_id']; ?>"></td>
-                                        <td><?php echo htmlspecialchars($row['user_id']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                        <td><?php echo htmlspecialchars(ucfirst($row['role'])); ?></td>
-                                        <td><?php echo htmlspecialchars(ucfirst($row['status'])); ?></td>
-                                        <td>
-                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal<?php echo $row['user_id']; ?>">Edit</button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <select name="bulk_action" class="form-select form-select-sm bulk-action-select" style="max-width:200px;">
-                            <option value="">Bulk action…</option>
-                            <option value="activate">Activate</option>
-                            <option value="deactivate">Deactivate</option>
-                            <option value="delete">Delete</option>
-                        </select>
-                        <button type="submit" class="btn btn-secondary btn-sm bulk-submit" disabled>Apply</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <!-- Modals for editing users (output after tables for valid HTML) -->
-        <?php foreach (array_merge($result_active, $result_pending, $result_inactive) as $row): ?>
-        <div class="modal fade" id="editUserModal<?php echo $row['user_id']; ?>" tabindex="-1" aria-labelledby="editUserModalLabel<?php echo $row['user_id']; ?>" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editUserModalLabel<?php echo $row['user_id']; ?>">Edit User</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="manageuser.php">
-                            <?php csrf_input(); ?>
-                            <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Webmail</label>
-                                <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($row['email']); ?>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="student_number" class="form-label">Student Number/Employee ID</label>
-                                <input type="text" class="form-control" id="student_number" name="student_number" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
-                            </div>
-                            <div class="row">
-                                <div class="mb-3 col-6">
-                                    <label for="role" class="form-label">Role</label>
-                                    <select class="form-select" id="role" name="role" required>
-                                        <option value="student" <?php echo $row['role']==='student'?'selected':''; ?>>Student</option>
-                                        <option value="employee" <?php echo $row['role']==='employee'?'selected':''; ?>>Employee</option>
-                                        <option value="admin" <?php echo $row['role']==='admin'?'selected':''; ?>>Admin</option>
-                                    </select>
+
+                                <div class="modal fade" id="editUserModal<?php echo $row['user_id']; ?>" tabindex="-1" aria-labelledby="editUserModalLabel<?php echo $row['user_id']; ?>" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editUserModalLabel<?php echo $row['user_id']; ?>">Edit User</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="POST" action="manageuser.php">
+                                                    <?php csrf_input(); ?>
+                                                    <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
+                                                    <div class="mb-3">
+                                                        <label for="username" class="form-label">Name</label>
+                                                        <input type="text" class="form-control" id="username" name="username" value="<?php echo htmlspecialchars($row['username']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="email" class="form-label">Webmail</label>
+                                                        <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($row['email']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="student_number" class="form-label">Student Number/Employee ID</label>
+                                                        <input type="text" class="form-control" id="student_number" name="student_number" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="home_address" class="form-label">Home Address</label>
+                                                        <input type="text" class="form-control" id="home_address" name="home_address" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="mobile_number" class="form-label">Mobile Number</label>
+                                                        <input type="text" class="form-control" id="mobile_number" name="mobile_number" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="Campus" class="form-label">PUP Main</label>
+                                                        <input type="text" class="form-control" id="Campus" name="Campus" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="College" class="form-label">CCIS</label>
+                                                        <input type="text" class="form-control" id="College" name="College" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="Department" class="form-label">Department</label>
+                                                        <input type="text" class="form-control" id="Department" name="Department" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="Program" class="form-label">Program</label>
+                                                        <input type="text" class="form-control" id="Program" name="Program" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
+                                                    </div>
+                                                    <button type="submit" name="update_user" class="btn btn-success">Update</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-3 col-6">
-                                    <label for="status" class="form-label">Status</label>
-                                    <select class="form-select" id="status" name="status" required>
-                                        <option value="active" <?php echo $row['status']==='active'?'selected':''; ?>>Active</option>
-                                        <option value="inactive" <?php echo $row['status']==='inactive'?'selected':''; ?>>Inactive</option>
-                                        <option value="pending" <?php echo $row['status']==='pending'?'selected':''; ?>>Pending</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button type="submit" name="update_user" class="btn btn-success">Update</button>
-                        </form>
-                    </div>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <?php endforeach; ?>
     </div>
     <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -380,8 +215,12 @@ $result_inactive = $stmt_inactive->fetchAll();
                         </div>
                         <form id="profileInfoForm">
                             <div class="mb-3">
+                                <label for="profileAdminName" class="form-label fw-semibold">Name</label>
+                                <input type="text" class="form-control" id="profileAdminName" required disabled>
+                            </div>
+                            <div class="mb-3">
                                 <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
-                                <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email']); ?>" required disabled>
+                                <input type="email" class="form-control" id="profileAdminEmail" required disabled>
                             </div>
                             <div class="d-flex justify-content-end">
                                 <button type="submit" class="btn btn-primary d-none" id="profileSaveBtn">Save Changes</button>
@@ -415,8 +254,13 @@ $result_inactive = $stmt_inactive->fetchAll();
         </div>
     </div>
     <script src="../javascript/admin-profile.js?v=2" defer></script>
-    <script src="../javascript/admin-notifications.js?v=1" defer></script>
-    <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
-    <script src="../javascript/admin-manageuser.js?v=2" defer></script>
+      <!-- Footer -->
+  <footer class="bg-white border-top py-3">
+    <div class="container text-center small">
+      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none" target="_blank">Terms of Service</a> &nbsp;|&nbsp;
+      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none" target="_blank">Privacy Statement</a>
+    </div>
+  </footer>
 </body>
 </html>

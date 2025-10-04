@@ -907,24 +907,57 @@
 
     // Table sorting
     function sortTable(tbody, key, dir){
+      const table = tbody.closest('table');
       const rows = Array.from(tbody.querySelectorAll('tr'));
-      const idxMap = { request: 0, name: 1, class: 2, program: 3, date: 4, status: 5 };
+      // Determine column index dynamically based on header data-sort
+      const headers = Array.from(table?.querySelectorAll('thead th') || []);
+      const colIndex = headers.findIndex(h => (h.getAttribute('data-sort')||'') === key);
+      const nth = (colIndex >= 0 ? (colIndex + 1) : null);
+
+      function cellText(tr, n){
+        if (n === null) return tr.textContent.trim();
+        const td = tr.querySelector('td:nth-child(' + n + ')');
+        return (td ? td.textContent : '').trim();
+      }
+
+      function parseDateYmdHms(text){
+        const s = String(text).trim();
+        // Expect: YYYY-MM-DD HH:MM:SS (or with 'T' separator)
+        const m = s.match(/^\s*(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})\s*$/);
+        if(!m) return NaN;
+        const y = +m[1], mo = +m[2]-1, d = +m[3], hh = +m[4], mm = +m[5], ss = +m[6];
+        // Use UTC to avoid TZ differences when comparing
+        return Date.UTC(y, mo, d, hh, mm, ss);
+      }
+
       const getVal = (tr)=>{
         switch(key){
-          case 'request': return (tr.querySelector('td:nth-child(1)')?.textContent||'').trim();
-          case 'name': return (tr.querySelector('td:nth-child(2)')?.textContent||'').trim();
-          case 'class': return (tr.querySelector('td:nth-child(3)')?.textContent||'').trim();
           case 'program': return (tr.querySelector('.col-program')?.textContent||'').trim();
-          case 'date': return (tr.querySelector('td:nth-child(5)')?.textContent||'').trim();
-          case 'status': return (tr.querySelector('td:nth-child(6)')?.textContent||'').trim();
-          default: return tr.textContent.trim();
+          case 'date': {
+            const t = cellText(tr, nth ?? 5);
+            const ts = parseDateYmdHms(t);
+            return Number.isFinite(ts) ? ts : t.toLowerCase();
+          }
+          default:
+            return cellText(tr, nth).toLowerCase();
         }
       };
+
       rows.sort((a,b)=>{
-        const va = getVal(a).toLowerCase();
-        const vb = getVal(b).toLowerCase();
-        if(va === vb) return 0;
-        return dir==='asc' ? (va>vb?1:-1) : (va<vb?1:-1);
+        const va = getVal(a);
+        const vb = getVal(b);
+        // Numeric compare if both numbers (timestamps), else string
+        const numa = typeof va === 'number' && Number.isFinite(va);
+        const numb = typeof vb === 'number' && Number.isFinite(vb);
+        let cmp = 0;
+        if (numa && numb) {
+          cmp = va === vb ? 0 : (va > vb ? 1 : -1);
+        } else {
+          const sa = String(va);
+          const sb = String(vb);
+          cmp = sa === sb ? 0 : (sa > sb ? 1 : -1);
+        }
+        return dir==='asc' ? cmp : -cmp;
       });
       rows.forEach(r=> tbody.appendChild(r));
     }

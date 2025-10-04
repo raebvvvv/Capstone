@@ -102,8 +102,9 @@ if (!function_exists('render_back_link')) {
     $user = 'root';
     $pass = ''; // or your MySQL password
     $charset = 'utf8mb4';
+    $port='3307'; // your database port, default is usually 3306
 
-    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset;port=$port";
     $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -130,8 +131,9 @@ $db   = 'ipmo_users';
 $user = 'root';
 $pass = ''; // or your MySQL password
 $charset = 'utf8mb4';
+$port='3307'; // your database port, default is usually 3306
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset;port=$port";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
