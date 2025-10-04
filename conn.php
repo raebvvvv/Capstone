@@ -4,7 +4,7 @@ $db   = 'ipmo_users'; // your database name
 $user = 'root';       // your database username
 $pass = '';           // your database password
 $charset = 'utf8mb4';
-$port='3307'; // your database port, default is usually 3306
+$port='3306'; // your database port, default is usually 3306
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset;port=$port";
 $options = [
