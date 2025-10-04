@@ -5,6 +5,19 @@
 
   function formatSize(bytes){ if(!bytes && bytes!==0) return ''; const units=['B','KB','MB','GB']; let i=0; let v=bytes; while(v>=1024 && i<units.length-1){ v/=1024; i++; } return v.toFixed(v>=10||i===0?0:1)+' '+units[i]; }
 
+  function formatDateText(dstr){
+    try{
+      if(!dstr) return '';
+      // Normalize common YYYY-MM-DD values
+      const iso = String(dstr).trim();
+      const d = new Date(iso);
+      if(!isNaN(d.getTime())){
+        return d.toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'2-digit' });
+      }
+      return iso; // fallback to original if parse fails
+    }catch(_){ return String(dstr); }
+  }
+
   function buildFilesHTML(details, options){
     const detailedList = Array.isArray(details.files_list) ? details.files_list : [];
     const legacyMap = details.files || {};
@@ -62,7 +75,7 @@
 
     const title = v(details.documentTitle);
     const wc = v(details.workClassification);
-    const accDate = v(details.accomplishmentDate);
+  const accDate = v(details.accomplishmentDate);
 
     // For user role, highlight/label files flagged for resubmission
     let flaggedTypes = [];
@@ -100,7 +113,7 @@
         <p><strong>Title:</strong> ${escapeHTML(title)}</p>
         <p><strong>Type (Work Classification):</strong> ${escapeHTML(wc)}</p>
         <p><strong>Author/s Full name/s:</strong> ${escapeHTML(studentName)}</p>
-        ${accDate ? `<p><strong>Date Accomplished:</strong> ${escapeHTML(accDate)}</p>` : ''}
+  ${accDate ? `<p><strong>Date Accomplished:</strong> ${escapeHTML(formatDateText(accDate))}</p>` : ''}
         ${authorsHTML}
       </div>
       <div class="mt-3">

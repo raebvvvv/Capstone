@@ -171,20 +171,22 @@ try {
     <td><code><?php echo htmlspecialchars($pendingIssue); ?></code></td>
     <td><code><?php echo htmlspecialchars($pendingComment); ?></code></td>
   <?php endif; ?>
-  <td class="align-middle d-flex gap-2 align-items-center flex-nowrap text-nowrap justify-content-start">
-    <?php if($pendingComment !== ''): ?>
-      <?php
-        // Include files to be resubmitted in the comments content when available (Pending scope)
-        $pendingCommentText = (string)$pendingComment;
-        if ($pendingAffected !== '') {
-          $pendingCommentText = trim($pendingCommentText . "\n\nFile(s) to be resubmitted: " . $pendingAffected);
-        }
-      ?>
-      <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($pendingCommentText, ENT_QUOTES); ?>">Comments</a>
-    <?php else: ?>
-      <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
-    <?php endif; ?>
-  <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-resubmit-files="<?php echo htmlspecialchars($pendingAffected, ENT_QUOTES); ?>">View Details</a>
+  <td class="align-middle text-nowrap">
+    <div class="d-flex gap-2 align-items-center flex-nowrap justify-content-start">
+      <?php if($pendingComment !== ''): ?>
+        <?php
+          // Include files to be resubmitted in the comments content when available (Pending scope)
+          $pendingCommentText = (string)$pendingComment;
+          if ($pendingAffected !== '') {
+            $pendingCommentText = trim($pendingCommentText . "\n\nFile(s) to be resubmitted: " . $pendingAffected);
+          }
+        ?>
+        <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($pendingCommentText, ENT_QUOTES); ?>">Comments</a>
+      <?php else: ?>
+        <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
+      <?php endif; ?>
+      <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-resubmit-files="<?php echo htmlspecialchars($pendingAffected, ENT_QUOTES); ?>">View Details</a>
+    </div>
   </td>
 </tr>
   <?php endforeach; ?>
@@ -263,22 +265,24 @@ try {
                   </span>
                 </td>
                 <td></td>
-                <td class="align-middle d-flex gap-2 align-items-center flex-nowrap text-nowrap justify-content-start">
-                  <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>"<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>View Details</a>
-                  <!-- Request ID modal trigger button -->
-                  <button type="button" class="btn btn-outline-dark btn-sm btn-request-id" data-request-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-request-date="<?php echo htmlspecialchars($reqDate); ?>" data-student-name="<?php echo htmlspecialchars($studentName); ?>">Request ID</button>
-                  <?php if(!empty($row['approved_admin_comment'])): ?>
-                    <?php
-                      // Include files to be resubmitted in the comments content when available
-                      $commentText = (string)$row['approved_admin_comment'];
-                      if ($approvedAffected !== '') {
-                        $commentText = trim($commentText . "\n\nFile(s) to be resubmitted: " . $approvedAffected);
-                      }
-                    ?>
-                    <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($commentText, ENT_QUOTES); ?>">Comments</a>
-                  <?php else: ?>
-                    <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
-                  <?php endif; ?>
+                <td class="align-middle text-nowrap">
+                  <div class="d-flex gap-2 align-items-center flex-nowrap justify-content-start">
+                    <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>"<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>View Details</a>
+                    <!-- Request ID modal trigger button -->
+                    <button type="button" class="btn btn-outline-dark btn-sm btn-request-id" data-request-id="<?php echo htmlspecialchars($row['submission_code']); ?>" data-request-date="<?php echo htmlspecialchars($reqDate); ?>" data-student-name="<?php echo htmlspecialchars($studentName); ?>">Request ID</button>
+                    <?php if(!empty($row['approved_admin_comment'])): ?>
+                      <?php
+                        // Include files to be resubmitted in the comments content when available
+                        $commentText = (string)$row['approved_admin_comment'];
+                        if ($approvedAffected !== '') {
+                          $commentText = trim($commentText . "\n\nFile(s) to be resubmitted: " . $approvedAffected);
+                        }
+                      ?>
+                      <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($commentText, ENT_QUOTES); ?>">Comments</a>
+                    <?php else: ?>
+                      <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
+                    <?php endif; ?>
+                  </div>
                 </td>
               </tr>
             <?php endforeach; endif; ?>
@@ -316,13 +320,15 @@ try {
                   <span class="text-nowrap" style="white-space: nowrap !important;">Complete</span>
                 </td>
                 <td></td>
-                <td class="align-middle d-flex gap-2 align-items-center flex-nowrap text-nowrap justify-content-start">
-                  <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
-                  <?php if(!empty($row['approved_admin_comment'])): ?>
-                    <a href="#" class="btn btn-outline-secondary btn-sm btn-comments">Comments</a>
-                  <?php else: ?>
-                    <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
-                  <?php endif; ?>
+                <td class="align-middle text-nowrap">
+                  <div class="d-flex gap-2 align-items-center flex-nowrap justify-content-start">
+                    <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
+                    <?php if(!empty($row['approved_admin_comment'])): ?>
+                      <a href="#" class="btn btn-outline-secondary btn-sm btn-comments">Comments</a>
+                    <?php else: ?>
+                      <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
+                    <?php endif; ?>
+                  </div>
                 </td>
               </tr>
             <?php endforeach; endif; ?>

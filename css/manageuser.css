@@ -53,4 +53,41 @@ footer, .site-footer {
 }
 
 
+/* PUP color convention: primary actions in maroon */
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #900c0c !important;
+    border-color: #900c0c !important;
+}
+
+/* Secondary outline buttons subtle gray */
+.btn-outline-secondary { border-color:#cfd8ea !important; color:#223 !important; }
+.btn-outline-secondary:hover { background:#eef2ff !important; border-color:#a5b4fc !important; color:#1e3a8a !important; }
+
+/* Success in PUP maroon for consistency across admin */
+.btn-success,
+.btn-success:hover,
+.btn-success:focus {
+    background-color: #900c0c !important;
+    border-color: #900c0c !important;
+}
+
+/* Tabs: active underline and text in maroon */
+.nav-tabs { border-bottom: none !important; }
+.nav-tabs .nav-link { border: none !important; color: #000 !important; }
+.nav-tabs .nav-link.active {
+    color: #900c0c !important;
+    border: none !important;
+    border-bottom: 3px solid #900c0c !important;
+    background: transparent !important;
+}
+
+/* Apply to small buttons in the table (Edit) - adopt PUP maroon */
+.table .btn.btn-primary.btn-sm {
+    background-color: #900c0c !important;
+    border-color: #900c0c !important;
+}
+
+
 

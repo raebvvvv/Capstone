@@ -149,7 +149,10 @@
   `<p><strong>Author/s Full name/s:</strong> ${escapeHTML(v(details.studentName,'—'))}</p>`+
   adviserInlineHTML+
   `${coauthorsListHTML ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${coauthorsListHTML}</div>`: ''}`+
-      `<p class="mt-2"><strong>Date Accomplished:</strong> ${editMode? `<input type='date' id='editAccomplishmentDate' value='${escapeHTML(v(details.accomplishmentDate,''))}' />` : escapeHTML(v(details.accomplishmentDate,'—'))}</p></div>`+
+      `<p class="mt-2"><strong>Date Accomplished:</strong> ${editMode
+        ? `<input type='date' id='editAccomplishmentDate' value='${escapeHTML(v(details.accomplishmentDate,''))}' />`
+        : (function(x){ try{ if(!x) return '—'; const d=new Date(String(x).trim()); return isNaN(d)? escapeHTML(x): d.toLocaleDateString('en-PH',{month:'long', day:'2-digit', year:'numeric'});}catch(_){ return escapeHTML(x||'—'); } })(v(details.accomplishmentDate,''))
+      }</p></div>`+
       `<div class="mt-3"><h5>Uploaded Files</h5>${attachmentsHTML}</div>`;
 
     const editBtn = document.getElementById('editDetailsBtn');
