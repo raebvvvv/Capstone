@@ -145,15 +145,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     <script>
-    // simple toggle password
-    const btn = document.querySelector('.toggle-password');
-    if (btn) btn.addEventListener('click', function(){
-        const input = document.querySelector(this.getAttribute('data-target'));
-        if (!input) return;
-        const isPw = input.getAttribute('type') === 'password';
-        input.setAttribute('type', isPw ? 'text' : 'password');
-        this.querySelector('.icon-eye')?.classList.toggle('d-none', !isPw);
-        this.querySelector('.icon-eye-off')?.classList.toggle('d-none', isPw);
+    // Simple toggle password - wait for DOM to load
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.querySelector('.toggle-password');
+        if (btn) {
+            btn.addEventListener('click', function(){
+                const input = document.querySelector(this.getAttribute('data-target'));
+                if (!input) return;
+                const isPw = input.getAttribute('type') === 'password';
+                input.setAttribute('type', isPw ? 'text' : 'password');
+                this.querySelector('.icon-eye')?.classList.toggle('d-none', !isPw);
+                this.querySelector('.icon-eye-off')?.classList.toggle('d-none', isPw);
+            });
+        }
     });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
