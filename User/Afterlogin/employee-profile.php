@@ -19,15 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $mobileNumber  = trim($_POST['mobile_number'] ?? '');
     $campus        = trim($_POST['campus'] ?? '');
     $college       = trim($_POST['college'] ?? '');
-  // Department removed from profile editing
-  $department    = '';
-    $program       = trim($_POST['program'] ?? '');
+    $department    = trim($_POST['department'] ?? '');
 
   // reset errors for this POST
   $errors = [];
 
     // Check last update timestamp
-    $stmt = $pdo->prepare("SELECT last_updated_at FROM student_profiles WHERE user_id = ?");
+    $stmt = $pdo->prepare("SELECT last_updated_at FROM employee_profiles WHERE user_id = ?");
     $stmt->execute([$user_id]);
     $lastUpdate = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -70,13 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
     // Required fields (suffix & middle initial optional)
   if (empty($firstName) || empty($lastName) || empty($homeAddress) ||
-    empty($mobileNumber) || empty($campus) || empty($college) ||
-    empty($program)) {
+    empty($mobileNumber) || empty($campus) || empty($college) || empty($department)) {
     $errors[] = "All fields except suffix and middle name are required";
   }
 
     // Fetch current profile data
-  $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, program FROM student_profiles WHERE user_id = ?");
+  $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department FROM employee_profiles WHERE user_id = ?");
     $stmt->execute([$user_id]);
     $current = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -88,9 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $suffix        !== $current['suffix'] ||
         $homeAddress   !== $current['home_address'] ||
         $mobileNumber  !== $current['mobile_number'] ||
-    $campus        !== $current['campus'] ||
-    $college       !== $current['college'] ||
-    $program       !== $current['program']
+        $campus        !== $current['campus'] ||
+        $college       !== $current['college'] ||
+        $department    !== $current['department']
     );
 
     if (!$hasChanges) {
@@ -100,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     if (empty($errors)) {
         // Proceed with update
     // Only allow updating home address and mobile number; keep others unchanged
-    $stmt = $pdo->prepare("UPDATE student_profiles SET 
+    $stmt = $pdo->prepare("UPDATE employee_profiles SET 
       home_address=?, mobile_number=?, last_updated_at=NOW()
       WHERE user_id=?");
         
@@ -115,8 +112,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 }
 
 // Fetch profile data for display
-$stmt = $pdo->prepare("SELECT u.email, u.student_number, sp.* FROM users u 
-    JOIN student_profiles sp ON u.user_id = sp.user_id WHERE u.user_id = ?");
+$stmt = $pdo->prepare("SELECT u.email, ep.* FROM users u 
+    JOIN employee_profiles ep ON u.user_id = ep.user_id WHERE u.user_id = ?");
 $stmt->execute([$user_id]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -309,8 +306,8 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-6">
     <label class="form-label fw-bold">Employee ID/Number <span class="text-danger">*</span></label>
     <input type="text" class="form-control lock bg-light" 
-           id="studentId" 
-           value="<?php echo htmlspecialchars($profile['student_number'] ?? ''); ?>" 
+           id="employeeId" 
+           value="<?php echo htmlspecialchars($profile['employee_number'] ?? ''); ?>" 
            readonly>
   </div>
 
@@ -353,14 +350,14 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   </div>
 
   <div class="col-md-4">
-    <label class="form-label">Program</label>
+    <label class="form-label">Department</label>
     <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
-           name="program" id="program" 
-           value="<?php echo htmlspecialchars($profile['program'] ?? ''); ?>" 
+           class="form-control bg-light lock <?php echo isset($errors['department']) ? 'is-invalid' : ''; ?>" 
+           name="department" id="department" 
+           value="<?php echo htmlspecialchars($profile['department'] ?? ''); ?>" 
            readonly>
-    <?php if (isset($errors['program'])): ?>
-      <div class="invalid-feedback"><?php echo $errors['program']; ?></div>
+    <?php if (isset($errors['department'])): ?>
+      <div class="invalid-feedback"><?php echo $errors['department']; ?></div>
     <?php endif; ?>
   </div>
 </div>

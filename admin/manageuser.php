@@ -7,7 +7,8 @@ require_admin();
 
 // Fetch admin data for navbar/profile
 $user_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT email FROM users WHERE user_id = ?");
+$stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name FROM users u 
+    LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ?");
 $stmt->execute([$user_id]);
 $admin = $stmt->fetch();
 if (!$admin) {
@@ -15,12 +16,17 @@ if (!$admin) {
     exit();
 }
 
+// Create full name for display
+$admin['username'] = trim(($admin['first_name'] ?? '') . ' ' . ($admin['last_name'] ?? ''));
+if (empty($admin['username'])) {
+    $admin['username'] = 'Admin'; // Fallback if no name in profile
+}
+
 // Handle user update
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     verify_csrf_post();
     $user_id = (int)$_POST['user_id'];
     $email = $_POST['email'];
-    $student_number = $_POST['student_number'];
     $role = isset($_POST['role']) ? $_POST['role'] : null;
     $status = isset($_POST['status']) ? $_POST['status'] : null;
     // Validate role and status
@@ -30,11 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     if (!in_array($status, $valid_status, true)) { $status = null; }
 
     if ($role !== null && $status !== null) {
-        $stmt_update = $pdo->prepare("UPDATE users SET email = ?, student_number = ?, role = ?, status = ? WHERE user_id = ?");
-        $stmt_update->execute([$email, $student_number, $role, $status, $user_id]);
+        $stmt_update = $pdo->prepare("UPDATE users SET email = ?, role = ?, status = ? WHERE user_id = ?");
+        $stmt_update->execute([$email, $role, $status, $user_id]);
     } else {
-        $stmt_update = $pdo->prepare("UPDATE users SET email = ?, student_number = ? WHERE user_id = ?");
-        $stmt_update->execute([$email, $student_number, $user_id]);
+        $stmt_update = $pdo->prepare("UPDATE users SET email = ? WHERE user_id = ?");
+        $stmt_update->execute([$email, $user_id]);
     }
 
     header("Location: manageuser.php");
@@ -53,29 +59,170 @@ if (!in_array($role_filter, $allowed_roles, true)) { $role_filter = 'all'; }
 // Helper to add role filter clause
 $role_sql = $role_filter !== 'all' ? " AND role = :role_filter" : '';
 
-// Fetch active users
-$sql_active = "SELECT user_id, student_number, email, role, status FROM users WHERE status = 'active' AND (student_number LIKE :q1 OR email LIKE :q2)" . $role_sql . " ORDER BY created_at DESC";
+// Fetch active users with proper identifiers from profile tables
+$sql_active = "
+    SELECT 
+        u.user_id, 
+        u.email, 
+        u.role, 
+        u.status, 
+        u.created_at,
+        CASE 
+            WHEN u.role = 'student' THEN sp.student_number
+            WHEN u.role = 'employee' THEN ep.employee_number  
+            WHEN u.role = 'admin' THEN CONCAT('Admin-', u.user_id)
+            ELSE CONCAT('User-', u.user_id)
+        END as identifier,
+        CASE 
+            WHEN u.role = 'student' THEN CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name)
+            WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
+            WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
+            ELSE 'Unknown User'
+        END as full_name
+    FROM users u
+    LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+    LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+    LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id AND u.role = 'admin'
+    WHERE u.status = 'active' AND (
+        u.email LIKE :q1 
+        OR sp.student_number LIKE :q2
+        OR ep.employee_number LIKE :q3
+        OR CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name) LIKE :q4
+        OR CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name) LIKE :q5
+        OR CONCAT_WS(' ', ap.first_name, ap.last_name) LIKE :q6
+        OR sp.first_name LIKE :q7
+        OR sp.last_name LIKE :q8
+        OR ep.first_name LIKE :q9
+        OR ep.last_name LIKE :q10
+        OR ap.first_name LIKE :q11
+        OR ap.last_name LIKE :q12
+    )" . $role_sql . " 
+    ORDER BY u.created_at DESC";
 $stmt_active = $pdo->prepare($sql_active);
 $stmt_active->bindValue(':q1', $search_param, PDO::PARAM_STR);
 $stmt_active->bindValue(':q2', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q3', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q4', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q5', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q6', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q7', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q8', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q9', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q10', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q11', $search_param, PDO::PARAM_STR);
+$stmt_active->bindValue(':q12', $search_param, PDO::PARAM_STR);
 if ($role_filter !== 'all') { $stmt_active->bindValue(':role_filter', $role_filter, PDO::PARAM_STR); }
 $stmt_active->execute();
 $result_active = $stmt_active->fetchAll();
 
-// Fetch pending users (waiting for verification)
-$sql_pending = "SELECT user_id, student_number, email, role, status FROM users WHERE status = 'pending' AND (student_number LIKE :q1 OR email LIKE :q2)" . $role_sql . " ORDER BY created_at DESC";
+// Fetch pending users (waiting for verification)  
+$sql_pending = "
+    SELECT 
+        u.user_id, 
+        u.email, 
+        u.role, 
+        u.status, 
+        u.created_at,
+        CASE 
+            WHEN u.role = 'student' THEN sp.student_number
+            WHEN u.role = 'employee' THEN ep.employee_number  
+            WHEN u.role = 'admin' THEN CONCAT('Admin-', u.user_id)
+            ELSE CONCAT('User-', u.user_id)
+        END as identifier,
+        CASE 
+            WHEN u.role = 'student' THEN CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name)
+            WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
+            WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
+            ELSE 'Unknown User'
+        END as full_name
+    FROM users u
+    LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+    LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+    LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id AND u.role = 'admin'
+    WHERE u.status = 'pending' AND (
+        u.email LIKE :q1 
+        OR sp.student_number LIKE :q2
+        OR ep.employee_number LIKE :q3
+        OR CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name) LIKE :q4
+        OR CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name) LIKE :q5
+        OR CONCAT_WS(' ', ap.first_name, ap.last_name) LIKE :q6
+        OR sp.first_name LIKE :q7
+        OR sp.last_name LIKE :q8
+        OR ep.first_name LIKE :q9
+        OR ep.last_name LIKE :q10
+        OR ap.first_name LIKE :q11
+        OR ap.last_name LIKE :q12
+    )" . $role_sql . " 
+    ORDER BY u.created_at DESC";
 $stmt_pending = $pdo->prepare($sql_pending);
 $stmt_pending->bindValue(':q1', $search_param, PDO::PARAM_STR);
-$stmt_pending->bindValue(':q2', $search_param, PDO::PARAM_STR); 
+$stmt_pending->bindValue(':q2', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q3', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q4', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q5', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q6', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q7', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q8', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q9', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q10', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q11', $search_param, PDO::PARAM_STR);
+$stmt_pending->bindValue(':q12', $search_param, PDO::PARAM_STR);
 if ($role_filter !== 'all') { $stmt_pending->bindValue(':role_filter', $role_filter, PDO::PARAM_STR); }
 $stmt_pending->execute();
 $result_pending = $stmt_pending->fetchAll();
 
 // Fetch inactive users
-$sql_inactive = "SELECT user_id, student_number, email, role, status FROM users WHERE status = 'inactive' AND (student_number LIKE :q1 OR email LIKE :q2)" . $role_sql . " ORDER BY created_at DESC";
+$sql_inactive = "
+    SELECT 
+        u.user_id, 
+        u.email, 
+        u.role, 
+        u.status, 
+        u.created_at,
+        CASE 
+            WHEN u.role = 'student' THEN sp.student_number
+            WHEN u.role = 'employee' THEN ep.employee_number  
+            WHEN u.role = 'admin' THEN CONCAT('Admin-', u.user_id)
+            ELSE CONCAT('User-', u.user_id)
+        END as identifier,
+        CASE 
+            WHEN u.role = 'student' THEN CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name)
+            WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
+            WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
+            ELSE 'Unknown User'
+        END as full_name
+    FROM users u
+    LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+    LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+    LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id AND u.role = 'admin'
+    WHERE u.status = 'inactive' AND (
+        u.email LIKE :q1 
+        OR sp.student_number LIKE :q2
+        OR ep.employee_number LIKE :q3
+        OR CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name) LIKE :q4
+        OR CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name) LIKE :q5
+        OR CONCAT_WS(' ', ap.first_name, ap.last_name) LIKE :q6
+        OR sp.first_name LIKE :q7
+        OR sp.last_name LIKE :q8
+        OR ep.first_name LIKE :q9
+        OR ep.last_name LIKE :q10
+        OR ap.first_name LIKE :q11
+        OR ap.last_name LIKE :q12
+    )" . $role_sql . " 
+    ORDER BY u.created_at DESC";
 $stmt_inactive = $pdo->prepare($sql_inactive);
 $stmt_inactive->bindValue(':q1', $search_param, PDO::PARAM_STR);
 $stmt_inactive->bindValue(':q2', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q3', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q4', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q5', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q6', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q7', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q8', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q9', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q10', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q11', $search_param, PDO::PARAM_STR);
+$stmt_inactive->bindValue(':q12', $search_param, PDO::PARAM_STR);
 if ($role_filter !== 'all') { $stmt_inactive->bindValue(':role_filter', $role_filter, PDO::PARAM_STR); }
 $stmt_inactive->execute();
 $result_inactive = $stmt_inactive->fetchAll();
@@ -134,7 +281,7 @@ $result_inactive = $stmt_inactive->fetchAll();
             <form method="GET" action="manageuser.php" class="row g-2 align-items-center" style="max-width:800px;">
                 <div class="col-12 col-md-6">
                     <div class="input-group search-bar">
-                        <input class="form-control rounded-pill ps-4" type="search" name="search" placeholder="Search by ID or Email" aria-label="Search" value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius: 50px;">
+                        <input class="form-control rounded-pill ps-4" type="search" name="search" placeholder="Search by Name, Student Number, Employee ID, or Email" aria-label="Search" value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius: 50px;">
                         <button class="btn btn-outline-secondary rounded-pill" type="submit" style="margin-left:-40px; border-radius: 50px;">
                             <i class="bi bi-search"></i>
                         </button>
@@ -178,6 +325,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                                     <th style="width:36px;"><input type="checkbox" class="form-check-input select-all"></th>
                                     <th>#</th>
                                     <th>Student Number/Employee ID</th>
+                                    <th>Name</th>
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Status</th>
@@ -189,7 +337,8 @@ $result_inactive = $stmt_inactive->fetchAll();
                                     <tr>
                                         <td><input type="checkbox" class="form-check-input row-check" name="user_ids[]" value="<?php echo (int)$row['user_id']; ?>"></td>
                                         <td><?php echo htmlspecialchars($row['user_id']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['identifier'] ?? 'N/A'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['full_name'] ?? 'N/A'); ?></td>
                                         <td><?php echo htmlspecialchars($row['email']); ?></td>
                                         <td><?php echo htmlspecialchars(ucfirst($row['role'])); ?></td>
                                         <td><?php echo htmlspecialchars(ucfirst($row['status'])); ?></td>
@@ -229,6 +378,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                                     <th style="width:36px;"><input type="checkbox" class="form-check-input select-all"></th>
                                     <th>#</th>
                                     <th>Student Number/Employee ID</th>
+                                    <th>Name</th>
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Status</th>
@@ -240,7 +390,8 @@ $result_inactive = $stmt_inactive->fetchAll();
                                     <tr>
                                         <td><input type="checkbox" class="form-check-input row-check" name="user_ids[]" value="<?php echo (int)$row['user_id']; ?>"></td>
                                         <td><?php echo htmlspecialchars($row['user_id']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['identifier'] ?? 'N/A'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['full_name'] ?? 'N/A'); ?></td>
                                         <td><?php echo htmlspecialchars($row['email']); ?></td>
                                         <td><?php echo htmlspecialchars(ucfirst($row['role'])); ?></td>
                                         <td><?php echo htmlspecialchars(ucfirst($row['status'])); ?></td>
@@ -280,6 +431,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                                     <th style="width:36px;"><input type="checkbox" class="form-check-input select-all"></th>
                                     <th>#</th>
                                     <th>Student Number/Employee ID</th>
+                                    <th>Name</th>
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Status</th>
@@ -291,7 +443,8 @@ $result_inactive = $stmt_inactive->fetchAll();
                                     <tr>
                                         <td><input type="checkbox" class="form-check-input row-check" name="user_ids[]" value="<?php echo (int)$row['user_id']; ?>"></td>
                                         <td><?php echo htmlspecialchars($row['user_id']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['identifier'] ?? 'N/A'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['full_name'] ?? 'N/A'); ?></td>
                                         <td><?php echo htmlspecialchars($row['email']); ?></td>
                                         <td><?php echo htmlspecialchars(ucfirst($row['role'])); ?></td>
                                         <td><?php echo htmlspecialchars(ucfirst($row['status'])); ?></td>
@@ -333,8 +486,9 @@ $result_inactive = $stmt_inactive->fetchAll();
                                 <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($row['email']); ?>" required>
                             </div>
                             <div class="mb-3">
-                                <label for="student_number" class="form-label">Student Number/Employee ID</label>
-                                <input type="text" class="form-control" id="student_number" name="student_number" value="<?php echo htmlspecialchars($row['student_number']); ?>" required>
+                                <label for="identifier_display" class="form-label">Student Number/Employee ID</label>
+                                <input type="text" class="form-control" id="identifier_display" value="<?php echo htmlspecialchars($row['identifier'] ?? 'N/A'); ?>" readonly>
+                                <small class="text-muted">This field cannot be edited from this interface.</small>
                             </div>
                             <div class="row">
                                 <div class="mb-3 col-6">
@@ -380,6 +534,10 @@ $result_inactive = $stmt_inactive->fetchAll();
                         </div>
                         <form id="profileInfoForm">
                             <div class="mb-3">
+                                <label for="profileAdminName" class="form-label fw-semibold">Name</label>
+                                <input type="text" class="form-control" id="profileAdminName" value="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" required disabled>
+                            </div>
+                            <div class="mb-3">
                                 <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
                                 <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email']); ?>" required disabled>
                             </div>
@@ -414,7 +572,7 @@ $result_inactive = $stmt_inactive->fetchAll();
             </div>
         </div>
     </div>
-    <script src="../javascript/admin-profile.js?v=2" defer></script>
+    <script src="../javascript/admin-profile.js?v=5" defer></script>
     <script src="../javascript/admin-notifications.js?v=1" defer></script>
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
     <script src="../javascript/admin-manageuser.js?v=2" defer></script>

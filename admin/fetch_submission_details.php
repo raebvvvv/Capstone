@@ -32,7 +32,18 @@ try {
     if($requestId==='') { echo json_encode(['success'=>false,'error'=>'Missing request_id']); exit; }
     $isNumeric = ctype_digit($requestId);
     $col = $isNumeric ? 'submission_id' : 'submission_code';
-    $stmt = $pdo->prepare("SELECT * FROM submissions WHERE $col = ? LIMIT 1");
+    $stmt = $pdo->prepare("
+        SELECT s.*, 
+               CASE 
+                   WHEN u.role = 'student' THEN sp.student_number
+                   WHEN u.role = 'employee' THEN ep.employee_number  
+                   ELSE CONCAT('User-', s.user_id)
+               END as identifier
+        FROM submissions s
+        LEFT JOIN users u ON u.user_id = s.user_id
+        LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+        LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+        WHERE $col = ? LIMIT 1");
     $stmt->execute([$isNumeric ? (int)$requestId : $requestId]);
     $sub = $stmt->fetch(PDO::FETCH_ASSOC);
     if(!$sub) { echo json_encode(['success'=>false,'error'=>'Submission not found']); exit; }
@@ -117,7 +128,7 @@ try {
         'submission_id' => $sid,
         'request_id' => $sub['submission_code'],
         'studentName' => $fullName !== '' ? $fullName : trim(($sub['first_name']??'').' '.($sub['last_name']??'')),
-        'studentNumber' => $sub['student_number'] ?? '',
+        'studentNumber' => $sub['identifier'] ?? '',
         'email' => $sub['webmail'] ?? '',
         'homeAddress' => $sub['home_address'] ?? '',
         'campus' => $sub['campus'] ?? '',

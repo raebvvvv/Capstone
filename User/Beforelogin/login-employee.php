@@ -7,30 +7,44 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $student_number = trim(htmlspecialchars($_POST['student_number']));
+    $login_identifier = trim(htmlspecialchars($_POST['student_number'])); // Can be employee_number, admin_number, or email
     $password = $_POST['password'];
 
-    if (!empty($student_number) && !empty($password)) {
-        $query = "SELECT user_id, student_number, email, password, role, status FROM users WHERE student_number = ?";
+    if (!empty($login_identifier) && !empty($password)) {
+        // First, try to find user by email
+        $query = "SELECT user_id, email, password, role, status FROM users WHERE email = ?";
         $stmt = $pdo->prepare($query);
-        $stmt->execute([$student_number]);
+        $stmt->execute([$login_identifier]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // If not found by email, try to find by employee number only
+        if (!$user) {
+            // Try employee_number
+            $query = "SELECT u.user_id, u.email, u.password, u.role, u.status, ep.employee_number as identifier 
+                      FROM users u 
+                      JOIN employee_profiles ep ON u.user_id = ep.user_id 
+                      WHERE ep.employee_number = ?";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([$login_identifier]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
 
         if ($user && password_verify($password, $user['password'])) {
             if ($user['status'] == 'pending' && $user['role'] !== 'admin') {
                 $error = "Please wait for the confirmation of your account.";
             } else {
-                // Only allow employees (and admins) to use this login page
+                // Only allow employees to use this login page (block admins for security)
                 $roleLower = strtolower($user['role']);
-                if (!in_array($roleLower, ['employee','admin'], true)) {
+                if ($roleLower === 'admin') {
+                    $error = 'Admin accounts must use the dedicated admin login page.';
+                } else if (!in_array($roleLower, ['employee'], true)) {
                     $error = 'This login is only for employees. Please use the Student Login page.';
                 } else {
                 session_regenerate_id(true); // Security: Prevent session fixation attacks
                 $_SESSION['user_logged_in'] = true;
                 $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['student_number'] = $user['student_number'];
                 $_SESSION['email'] = $user['email'];
+                $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email']; // Store the number they used to login
                 $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0; // Set admin status
                 $_SESSION['role'] = $user['role']; // Persist role
 
@@ -45,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             }
         } else {
-            $error = "Invalid student number or password.";
+            $error = "Invalid login credentials.";
         }
     } else {
         $error = "Please fill in all fields.";
@@ -123,7 +137,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <button type="submit" class="btn w-100 login-btn-custom">Login</button>
             </form>
-            <a href="<?php echo asset_url('User/Beforelogin/register-student-v2.php'); ?>" class="w-100 d-block"><button class="btn w-100 mt-1 register-btn-custom" type="button">Register</button></a>
+            <a href="<?php echo asset_url('User/Beforelogin/register-employee.php'); ?>" class="w-100 d-block"><button class="btn w-100 mt-1 register-btn-custom" type="button">Register</button></a>
         </div>
     </div>
    

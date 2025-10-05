@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 }
 
 // Fetch profile data for display
-$stmt = $pdo->prepare("SELECT u.email, u.student_number, sp.* FROM users u 
+$stmt = $pdo->prepare("SELECT u.email, sp.* FROM users u 
     JOIN student_profiles sp ON u.user_id = sp.user_id WHERE u.user_id = ?");
 $stmt->execute([$user_id]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);

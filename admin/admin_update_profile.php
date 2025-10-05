@@ -26,11 +26,30 @@ $chk->execute();
 $r = $chk->get_result();
 if($r && $r->fetch_assoc()) { echo json_encode(['success'=>false,'error'=>'Email already in use']); exit(); }
 
-$upd = $conn->prepare('UPDATE users SET username = ?, email = ? WHERE user_id = ?');
-$upd->bind_param('ssi',$name,$email,$user_id);
+// Parse name into first and last name (simple split on last space)
+$nameParts = explode(' ', trim($name));
+$firstName = '';
+$lastName = '';
+if (count($nameParts) >= 2) {
+    $lastName = array_pop($nameParts);
+    $firstName = implode(' ', $nameParts);
+} else {
+    $firstName = $name;
+    $lastName = '';
+}
+
+// Update email in users table
+$upd = $conn->prepare('UPDATE users SET email = ? WHERE user_id = ?');
+$upd->bind_param('si',$email,$user_id);
+
+// Update name in admin_profiles table (if exists)
+$updProfile = $conn->prepare('UPDATE admin_profiles SET first_name = ?, last_name = ? WHERE user_id = ?');
+$updProfile->bind_param('ssi',$firstName,$lastName,$user_id);
+
 if($upd->execute()) {
+    $updProfile->execute(); // Update profile if it exists
     if(function_exists('log_event')) { log_event('ADMIN_PROFILE_UPDATE','Profile updated',['uid'=>$user_id]); }
-    $_SESSION['username'] = $name; $_SESSION['email'] = $email;
+    $_SESSION['email'] = $email;
     echo json_encode(['success'=>true,'name'=>$name,'email'=>$email]);
 } else {
     if(function_exists('log_event')) { log_event('ADMIN_PROFILE_UPDATE_FAIL','DB update failed',['err'=>$upd->error]); }

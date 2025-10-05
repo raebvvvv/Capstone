@@ -13,7 +13,21 @@ if (!in_array($role, $allowed_roles, true)) { $role = 'all'; }
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $q = '%' . $search . '%';
 
-$sql = "SELECT user_id, student_number, email, role, status, created_at FROM users WHERE status = :status AND (student_number LIKE :q1 OR email LIKE :q2)";
+$sql = "SELECT 
+    u.user_id, 
+    u.email, 
+    u.role, 
+    u.status, 
+    u.created_at,
+    CASE 
+        WHEN u.role = 'student' THEN sp.student_number
+        WHEN u.role = 'employee' THEN ep.employee_number  
+        ELSE CONCAT('User-', u.user_id)
+    END as identifier
+FROM users u
+LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+WHERE u.status = :status AND (u.email LIKE :q1 OR COALESCE(sp.student_number, ep.employee_number, CONCAT('User-', u.user_id)) LIKE :q2)";
 if ($role !== 'all') { $sql .= " AND role = :role"; }
 $sql .= " ORDER BY created_at DESC";
 $stmt = $pdo->prepare($sql);
@@ -35,7 +49,7 @@ fputcsv($out, ['User ID','Student/Employee ID','Email','Role','Status','Created 
 foreach ($rows as $r) {
     fputcsv($out, [
         $r['user_id'],
-        $r['student_number'],
+        $r['identifier'],
         $r['email'],
         ucfirst($r['role']),
         ucfirst($r['status']),

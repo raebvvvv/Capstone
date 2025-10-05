@@ -2,8 +2,13 @@
 <?php require __DIR__ . '/../../auth_check.php'; ?>
 <?php $isEmployee = ((($_SESSION['role'] ?? '') === 'employee')); ?>
 <?php
-// Fetch user profile data (reuse student_profiles as source, same as employee-profile.php)
-$stmt = $pdo->prepare("\n    SELECT sp.*, u.student_number, u.email\n    FROM student_profiles sp \n    JOIN users u ON sp.user_id = u.user_id \n    WHERE sp.user_id = ?\n");
+// Fetch employee profile data
+$stmt = $pdo->prepare("
+    SELECT ep.*, u.email
+    FROM employee_profiles ep 
+    JOIN users u ON ep.user_id = u.user_id 
+    WHERE ep.user_id = ?
+");
 $stmt->execute([$_SESSION['user_id']]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
@@ -119,7 +124,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                   <div class="col-md-3">
                     <label class="form-label required">Employee ID</label>
           <input type="text" name="employee_id" class="form-control" placeholder="" required
-            value="<?php echo htmlspecialchars($profile['student_number'] ?? ''); ?>" readonly>
+            value="<?php echo htmlspecialchars($profile['employee_number'] ?? ''); ?>" readonly>
           <small class="text-muted">Format: XXXXX</small>
                   </div>
                 </div>

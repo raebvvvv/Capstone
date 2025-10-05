@@ -4,26 +4,59 @@
   const profileModalEl = document.getElementById('adminProfileModal');
   const passwordForm = document.getElementById('profileChangePasswordForm');
   const alertBox = document.getElementById('profileChangePassAlert');
-  const nameInput = document.getElementById('profileAdminName');
-  const emailInput = document.getElementById('profileAdminEmail');
-  const profileForm = document.getElementById('profileInfoForm');
-  const editBtn = document.getElementById('profileEditBtn');
-  const cancelBtn = document.getElementById('profileCancelBtn');
-  const saveBtn = document.getElementById('profileSaveBtn');
+  const nameInput = profileModalEl?.querySelector('#profileAdminName');
+  const emailInput = profileModalEl?.querySelector('#profileAdminEmail');
+  const profileForm = profileModalEl?.querySelector('#profileInfoForm');
+  const editBtn = profileModalEl?.querySelector('#profileEditBtn');
+  const cancelBtn = profileModalEl?.querySelector('#profileCancelBtn');
+  const saveBtn = profileModalEl?.querySelector('#profileSaveBtn');
   let originalProfile = { name: '', email: '' };
 
-  // Populate name/email from data attributes on button or body
+  // Debug logging
+  console.log('Admin Profile JavaScript loaded');
+  console.log('Elements found:');
+  console.log('- profileModalEl:', profileModalEl);
+  console.log('- passwordForm:', passwordForm);
+  console.log('- alertBox:', alertBox);
+  console.log('- nameInput:', nameInput);
+  console.log('- emailInput:', emailInput);
+  console.log('- profileForm:', profileForm);
+  console.log('- editBtn:', editBtn);
+  console.log('- cancelBtn:', cancelBtn);
+  console.log('- saveBtn:', saveBtn);
+
+  // Populate name/email from data attributes on button or body (only if fields are empty)
   function populateProfile(){
   if(!nameInput || !emailInput) return;
+  
+  // If fields already have values from PHP, don't override them
+  if(nameInput.value.trim() && emailInput.value.trim()) {
+    console.log('Fields already populated by PHP - skipping JavaScript population');
+    originalProfile.name = nameInput.value;
+    originalProfile.email = emailInput.value;
+    return;
+  }
+  
     // Source order of precedence: modal data attributes -> triggering button -> body dataset
     const source = profileModalEl || document.querySelector('[data-admin-name]') || document.body;
     const adminName = source?.getAttribute('data-admin-name') || document.body.getAttribute('data-admin-name');
     const adminEmail = source?.getAttribute('data-admin-email') || document.body.getAttribute('data-admin-email');
+  
+  // Debug logging
+  console.log('Admin Profile Debug:');
+  console.log('Source element:', source);
+  console.log('Admin name from data attribute:', adminName);
+  console.log('Admin email from data attribute:', adminEmail);
+  
+  // Only update if we have valid data attributes
   if(adminName && nameInput.tagName === 'INPUT') nameInput.value = adminName;
   if(adminEmail && emailInput.tagName === 'INPUT') emailInput.value = adminEmail;
+  
   // Capture originals for cancel logic
   originalProfile.name = nameInput.value;
   originalProfile.email = emailInput.value;
+  
+  console.log('Final values - Name:', nameInput.value, 'Email:', emailInput.value);
   }
 
   if(profileModalEl){
@@ -31,7 +64,11 @@
   }
 
   function enterEditMode(){
-    if(!nameInput || !emailInput) return;
+    console.log('enterEditMode called');
+    if(!nameInput || !emailInput) {
+      console.log('Name or email input not found');
+      return;
+    }
     originalProfile.name = nameInput.value;
     originalProfile.email = emailInput.value;
     nameInput.disabled = false;
@@ -40,6 +77,7 @@
     cancelBtn?.classList.remove('d-none');
     saveBtn?.classList.remove('d-none');
     nameInput.focus();
+    console.log('Edit mode enabled');
   }
 
   function exitEditMode(revert){
@@ -55,7 +93,10 @@
     saveBtn?.classList.add('d-none');
   }
 
-  editBtn?.addEventListener('click', enterEditMode);
+  editBtn?.addEventListener('click', () => {
+    console.log('Edit button clicked');
+    enterEditMode();
+  });
   cancelBtn?.addEventListener('click', () => exitEditMode(true));
 
   function showAlert(msg, type='danger'){

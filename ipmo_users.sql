@@ -176,6 +176,7 @@ INSERT INTO `dashboard_summary` (`id`, `last_updated`, `total_users`, `total_app
 CREATE TABLE `student_profiles` (
   `profile_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `student_number` varchar(20) NOT NULL,
   `last_name` varchar(50) NOT NULL,
   `first_name` varchar(50) NOT NULL,
   `middle_name` varchar(50) NOT NULL,
@@ -198,6 +199,54 @@ INSERT INTO `student_profiles` (`profile_id`, `user_id`, `last_name`, `first_nam
 (9, 20, 'Sinyales', 'Sandra', 'Halima', '', '<h1>alert</h1>', '09171234569', 'PUP Main', 'College of Engineering', 'Computer Engineering', 'BS Computer Engineering', '2025-10-04 14:51:30'),
 (10, 21, 'Xander', 'Limo', 'Hixa', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234566', 'PUP Main', 'College of Engineering', 'Computer Engineering', 'BS Computer Engineering', NULL),
 (11, 22, 'Inocentes', 'Raebv Lielmo', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'a', 'a', 'a', 'a', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employee_profiles`
+--
+
+CREATE TABLE `employee_profiles` (
+  `profile_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `employee_number` varchar(10) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `first_name` varchar(50) NOT NULL,
+  `middle_name` varchar(50) NOT NULL,
+  `suffix` varchar(5) DEFAULT NULL,
+  `home_address` varchar(255) NOT NULL,
+  `mobile_number` varchar(15) NOT NULL,
+  `department` varchar(255) NOT NULL,
+  `last_updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `employee_profiles`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_profiles`
+--
+
+CREATE TABLE `admin_profiles` (
+  `profile_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `admin_number` varchar(10) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `first_name` varchar(50) NOT NULL,
+  `middle_name` varchar(50) NOT NULL,
+  `suffix` varchar(5) DEFAULT NULL,
+  `home_address` varchar(255) NOT NULL,
+  `mobile_number` varchar(15) NOT NULL,
+  `department` varchar(255) NOT NULL,
+  `last_updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `admin_profiles`
+--
 
 -- --------------------------------------------------------
 
@@ -599,7 +648,6 @@ CREATE TABLE `ticket_validation_attempts` (
 
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
-  `student_number` varchar(20) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('student','employee','admin') NOT NULL,
@@ -750,6 +798,18 @@ ALTER TABLE `student_profiles`
   MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
+-- AUTO_INCREMENT for table `employee_profiles`
+--
+ALTER TABLE `employee_profiles`
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+
+--
+-- AUTO_INCREMENT for table `admin_profiles`
+--
+ALTER TABLE `admin_profiles`
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+
+--
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
@@ -805,7 +865,19 @@ ALTER TABLE `users`
 -- Constraints for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  ADD CONSTRAINT `student_profiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_student_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_profiles`
+--
+ALTER TABLE `employee_profiles`
+  ADD CONSTRAINT `fk_employee_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `admin_profiles`
+--
+ALTER TABLE `admin_profiles`
+  ADD CONSTRAINT `fk_admin_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `submissions`

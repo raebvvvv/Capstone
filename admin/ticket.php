@@ -70,13 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch admin data
 if (isset($_SESSION['user_id'])) {
     $user_id = (int)$_SESSION['user_id'];
-    $stmt = $pdo->prepare("SELECT email FROM users WHERE user_id = ?");
+    $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name FROM users u 
+        LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ?");
     $stmt->execute([$user_id]);
     $row = $stmt->fetch() ?: [];
     $admin = [
         'email' => $row['email'] ?? '',
-        'username' => ''
+        'username' => trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''))
     ];
+    if (empty($admin['username'])) {
+        $admin['username'] = 'Admin'; // Fallback if no name in profile
+    }
 } else { echo "User ID not set in session."; exit(); }
 
 // Search filter
@@ -95,8 +99,18 @@ if ($search_query !== '') {
     // Build a hyphen/space-stripped version for ID/number matching
     $stripped = preg_replace('/[\s\-]+/', '', $lc);
 
-    // Prepare helpful expressions
-    $nameExpr = "LOWER(CONCAT_WS(' ', TRIM(s.first_name), NULLIF(TRIM(COALESCE(s.middle_name,'')),''), TRIM(s.last_name)))";
+    // Prepare helpful expressions - get names from profile tables instead of submissions
+    $nameExpr = "LOWER(CONCAT_WS(' ', 
+        CASE WHEN u.role = 'student' THEN TRIM(sp.first_name) 
+             WHEN u.role = 'employee' THEN TRIM(ep.first_name) 
+             ELSE 'Unknown' END,
+        CASE WHEN u.role = 'student' THEN NULLIF(TRIM(COALESCE(sp.middle_name,'')),'') 
+             WHEN u.role = 'employee' THEN NULLIF(TRIM(COALESCE(ep.middle_name,'')),'') 
+             ELSE NULL END,
+        CASE WHEN u.role = 'student' THEN TRIM(sp.last_name) 
+             WHEN u.role = 'employee' THEN TRIM(ep.last_name) 
+             ELSE 'User' END
+    ))";
 
     // Tokenized search for names: require all tokens to be present across first/middle/last (AND semantics)
     $tokens = array_values(array_filter(preg_split('/\s+/', $lc)));
@@ -119,10 +133,14 @@ if ($search_query !== '') {
     $whereParts = [];
     // Use unique placeholders for PDO compatibility when emulation is disabled
     $whereParts[] = "$nameExpr LIKE :q_like1";        $params[':q_like1'] = '%' . $lc . '%';
-    $whereParts[] = "LOWER(TRIM(s.first_name)) LIKE :q_like2"; $params[':q_like2'] = '%' . $lc . '%';
-    $whereParts[] = "LOWER(TRIM(s.last_name)) LIKE :q_like3";  $params[':q_like3'] = '%' . $lc . '%';
+    $whereParts[] = "CASE WHEN u.role = 'student' THEN LOWER(TRIM(sp.first_name)) 
+                           WHEN u.role = 'employee' THEN LOWER(TRIM(ep.first_name)) 
+                           ELSE 'unknown' END LIKE :q_like2"; $params[':q_like2'] = '%' . $lc . '%';
+    $whereParts[] = "CASE WHEN u.role = 'student' THEN LOWER(TRIM(sp.last_name)) 
+                           WHEN u.role = 'employee' THEN LOWER(TRIM(ep.last_name)) 
+                           ELSE 'user' END LIKE :q_like3";  $params[':q_like3'] = '%' . $lc . '%';
     if ($tokensAnd !== '') { $whereParts[] = $tokensAnd; }
-    $whereParts[] = "REPLACE(LOWER(s.student_number), '-', '') LIKE :q_strip1";           $params[':q_strip1'] = '%' . $stripped . '%';
+    $whereParts[] = "REPLACE(LOWER(COALESCE(sp.student_number, ep.employee_number, CONCAT('User-', s.user_id))), '-', '') LIKE :q_strip1";           $params[':q_strip1'] = '%' . $stripped . '%';
     $whereParts[] = "REPLACE(REPLACE(LOWER(s.submission_code), '-', ''), ' ', '') LIKE :q_strip2"; $params[':q_strip2'] = '%' . $stripped . '%';
     $whereParts[] = "LOWER(s.submission_code) LIKE :q_like4";  $params[':q_like4'] = '%' . $lc . '%';
     $whereParts[] = "LOWER(s.title) LIKE :q_like5";            $params[':q_like5'] = '%' . $lc . '%';
@@ -178,8 +196,16 @@ try {
     $sql = "SELECT 
                 s.submission_id,
                 s.submission_code AS request_id,
-                s.student_number AS student_id,
-                CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) AS student_name,
+                CASE 
+                    WHEN u.role = 'student' THEN sp.student_number
+                    WHEN u.role = 'employee' THEN ep.employee_number  
+                    ELSE CONCAT('User-', s.user_id)
+                END as student_id,
+                CASE 
+                    WHEN u.role = 'student' THEN CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name)
+                    WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
+                    ELSE 'Unknown User'
+                END AS student_name,
                 u.role AS user_role,
                 s.program,
                 s.created_at AS request_date,
@@ -197,6 +223,8 @@ try {
                 ma.affected_doc_types AS approved_affected_doc_types
             FROM submissions s
             LEFT JOIN users u ON u.user_id = s.user_id
+            LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+            LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
             LEFT JOIN (
                 SELECT submission_id, COUNT(*) AS note_count, MAX(created_at) AS last_note
                 FROM submission_notes
@@ -380,11 +408,11 @@ if ($search_query !== '') {
                     <form id="profileInfoForm">
                         <div class="mb-3">
                             <label for="profileAdminName" class="form-label fw-semibold">Name</label>
-                            <input type="text" class="form-control" id="profileAdminName" required disabled>
+                            <input type="text" class="form-control" id="profileAdminName" value="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" required disabled>
                         </div>
                         <div class="mb-3">
                             <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
-                            <input type="email" class="form-control" id="profileAdminEmail" required disabled>
+                            <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>" required disabled>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary d-none" id="profileSaveBtn">Save Changes</button>
@@ -923,7 +951,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
     </div>
 
 <script src="../javascript/admin-ticket.js?v=8" defer></script>
-<script src="../javascript/admin-profile.js?v=2" defer></script>
+<script src="../javascript/admin-profile.js?v=5" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
 <div class="modal fade" id="authorInfoModal" tabindex="-1" aria-labelledby="authorInfoModalLabel" aria-hidden="true">

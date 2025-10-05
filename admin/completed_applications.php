@@ -8,10 +8,17 @@ require_admin();
 // Fetch admin for profile modal
 if (isset($_SESSION['user_id'])) {
     $user_id = (int)$_SESSION['user_id'];
-    $stmt = $pdo->prepare("SELECT student_number, email FROM users WHERE user_id = ?");
+    $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name FROM users u 
+        LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ?");
     $stmt->execute([$user_id]);
-    $admin = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['student_number' => '', 'email' => ''];
-} else { $admin = ['student_number' => '', 'email' => '']; }
+    $admin = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['email' => '', 'first_name' => '', 'last_name' => ''];
+    
+    // Create full name for display
+    $admin['username'] = trim(($admin['first_name'] ?? '') . ' ' . ($admin['last_name'] ?? ''));
+    if (empty($admin['username'])) {
+        $admin['username'] = 'Admin'; // Fallback if no name in profile
+    }
+} else { $admin = ['email' => '', 'username' => 'Admin']; }
 
 // Load completed applications from DB
 $applications = [];
@@ -20,7 +27,6 @@ try {
                 s.submission_id,
                 s.submission_code AS request_id,
                 s.user_id,
-                s.student_number,
                 s.webmail,
                 s.home_address,
                 s.campus,
@@ -32,11 +38,21 @@ try {
                 s.status_updated_at,
                 s.created_at,
                 s.work_classification,
-                CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) AS student_name,
+                CASE 
+                    WHEN u.role = 'student' THEN CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name)
+                    WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
+                    ELSE 'Unknown User'
+                END AS student_name,
                 u.role AS user_role,
-                u.student_number AS u_student_number
+                CASE 
+                    WHEN u.role = 'student' THEN sp.student_number
+                    WHEN u.role = 'employee' THEN ep.employee_number  
+                    ELSE CONCAT('User-', u.user_id)
+                END as identifier
             FROM submissions s
             LEFT JOIN users u ON u.user_id = s.user_id
+            LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+            LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
             WHERE LOWER(s.status) = 'completed'
             ORDER BY s.status_updated_at DESC, s.created_at DESC";
     $stmt = $pdo->query($sql);
@@ -82,11 +98,8 @@ try {
         $collegeCode = $college;
         if (strpos($college, ' - ') !== false) { $collegeCode = substr($college, 0, strpos($college, ' - ')); }
 
-        // Choose displayed ID (keep same field; label differs for employee)
-        $idNumber = (string)($s['student_number'] ?? '');
-        if ($idNumber === '' && isset($s['u_student_number']) && (string)$s['u_student_number'] !== '') {
-            $idNumber = (string)$s['u_student_number'];
-        }
+        // Use the identifier from the query
+        $idNumber = (string)($s['identifier'] ?? 'N/A');
 
         $applications[] = [
             'description' => $desc,
@@ -151,7 +164,7 @@ try {
 </head>
 <body>
     <div id="dropdown-backdrop" class="dropdown-backdrop"></div>
-     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['student_number']); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
+     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -453,7 +466,7 @@ try {
     </div>
 
     <script src="../javascript/admin-completed-applications.js?v=14"></script>
-<script src="../javascript/admin-profile.js?v=2" defer></script>
+<script src="../javascript/admin-profile.js?v=5" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
 <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileLabel" aria-hidden="true">
@@ -475,11 +488,11 @@ try {
                     <form id="profileInfoForm">
                         <div class="mb-3">
                             <label for="profileAdminName" class="form-label fw-semibold">Name</label>
-                            <input type="text" class="form-control" id="profileAdminName" required disabled>
+                            <input type="text" class="form-control" id="profileAdminName" value="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" required disabled>
                         </div>
                         <div class="mb-3">
                             <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
-                            <input type="email" class="form-control" id="profileAdminEmail" required disabled>
+                            <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>" required disabled>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary d-none" id="profileSaveBtn">Save Changes</button>

@@ -19,14 +19,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($identifier === '' || $password === '') {
         $error = 'Please fill in all fields.';
     } else {
-        // Determine lookup by email or student_number
+        // Determine lookup by email or admin number
         $byEmail = strpos($identifier, '@') !== false;
-        $sql = $byEmail
-            ? "SELECT user_id, student_number, email, password, role, status FROM users WHERE email = ? LIMIT 1"
-            : "SELECT user_id, student_number, email, password, role, status FROM users WHERE student_number = ? LIMIT 1";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$identifier]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        
+        if ($byEmail) {
+            // Login by email
+            $sql = "SELECT user_id, email, password, role, status FROM users WHERE email = ? LIMIT 1";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$identifier]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } else {
+            // Login by admin number
+            $sql = "SELECT u.user_id, u.email, u.password, u.role, u.status, ap.admin_number as identifier 
+                    FROM users u 
+                    JOIN admin_profiles ap ON u.user_id = ap.user_id 
+                    WHERE ap.admin_number = ? LIMIT 1";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$identifier]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        }
 
         if ($user && password_verify($password, $user['password'])) {
             // Only allow admins to log in here
@@ -42,9 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     session_regenerate_id(true);
                     $_SESSION['user_logged_in'] = true;
                     $_SESSION['user_id'] = $user['user_id'];
-                    $_SESSION['username'] = $user['email'] ?? ($user['student_number'] ?? '');
-                    $_SESSION['student_number'] = $user['student_number'] ?? '';
                     $_SESSION['email'] = $user['email'] ?? '';
+                    $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email'];
                     $_SESSION['is_admin'] = 1;
                     $_SESSION['role'] = 'admin';
                     redirect('admin/admin.php');

@@ -1,6 +1,10 @@
 <?php
 // Central security bootstrap: session hardening, security headers, CSRF helpers.
 
+// Include environment and secure session configuration
+require_once __DIR__ . '/env_config.php';
+require_once __DIR__ . '/secure_session_config.php';
+
 // --- mbstring polyfills (graceful fallbacks when mbstring extension is missing) ---
 if (!function_exists('mb_strtolower')) {
     function mb_strtolower($string, $encoding = null) { return strtolower((string)$string); }
@@ -34,58 +38,23 @@ if (!function_exists('mb_convert_case')) {
 
 if (!function_exists('secure_bootstrap')) {
     function secure_bootstrap(): void {
-        // Basic config constants (define once)
+        // Basic config constants with environment variable support
         if (!defined('SESSION_IDLE_TIMEOUT')) {
-            define('SESSION_IDLE_TIMEOUT', 1800); // 30 minutes
+            define('SESSION_IDLE_TIMEOUT', Environment::getInt('SESSION_IDLE_TIMEOUT', 1800)); // 30 minutes
         }
         if (!defined('SESSION_ABSOLUTE_LIFETIME')) {
-            define('SESSION_ABSOLUTE_LIFETIME', 28800); // 8 hours
+            define('SESSION_ABSOLUTE_LIFETIME', Environment::getInt('SESSION_LIFETIME', 28800)); // 8 hours
         }
         if (!defined('AUDIT_LOG_FILE')) {
-            define('AUDIT_LOG_FILE', __DIR__ . DIRECTORY_SEPARATOR . 'audit.log');
+            $audit_log = Environment::get('AUDIT_LOG_FILE', __DIR__ . DIRECTORY_SEPARATOR . 'audit.log');
+            define('AUDIT_LOG_FILE', $audit_log);
         }
-        // Detect HTTPS early so we can set cookie params BEFORE session_start
-        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
-
-        // Session hardening (must occur before session_start for ini settings to apply)
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            ini_set('session.use_strict_mode', '1');
-            ini_set('session.cookie_httponly', '1');
-            ini_set('session.cookie_samesite', 'Lax');
-            if ($isHttps) {
-                ini_set('session.cookie_secure', '1');
-            }
-            session_start();
-        } else {
-            // Session already active (legacy include order). Try to enforce cookie flags retroactively.
-            if ($isHttps && ini_get('session.cookie_secure') != 1) {
-                // Re-issue session cookie with secure flag.
-                $params = session_get_cookie_params();
-                setcookie(session_name(), session_id(), [
-                    'expires' => $params['lifetime'] ? time() + $params['lifetime'] : 0,
-                    'path' => $params['path'] ?? '/',
-                    'domain' => $params['domain'] ?? '',
-                    'secure' => true,
-                    'httponly' => true,
-                    'samesite' => 'Lax'
-                ]);
-            }
-        }
-        // Security headers (idempotent)
-        if (!headers_sent()) {
-            header('X-Frame-Options: DENY');
-            header('X-Content-Type-Options: nosniff');
-            header('Referrer-Policy: no-referrer');
-            header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
-            // Light CSP (adjust as you reduce inline styles/scripts)
-            if (!headers_sent()) {
-                header("Content-Security-Policy: default-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self';");
-            }
-            // If request is HTTPS, enforce HSTS (cookie secure already handled above)
-            if ($isHttps) {
-                header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
-            }
-        }
+        // Configure secure sessions using centralized configuration
+        configure_secure_sessions();
+        
+        // Apply comprehensive security headers
+        require_once __DIR__ . '/security_headers.php';
+        SecurityHeaders::applyHeaders();
         // CSRF token
         if (empty($_SESSION['csrf_token'])) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

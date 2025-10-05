@@ -2,6 +2,9 @@
 // Global path + URL configuration and helper functions.
 // Include this file via: require __DIR__ . '/config.php'; as early as possible (before output).
 
+// Load environment configuration
+require_once __DIR__ . '/env_config.php';
+
 if (!defined('BASE_PATH')) {
     define('BASE_PATH', __DIR__); // Physical root of the project
 }
@@ -13,7 +16,7 @@ if (function_exists('date_default_timezone_set')) {
 }
 
 if (!defined('TICKET_SIGNING_KEY')) {
-    $signingKey = getenv('TICKET_SIGNING_KEY');
+    $signingKey = Environment::get('TICKET_SIGNING_KEY');
     if (!$signingKey) {
         $localKeyFile = BASE_PATH . DIRECTORY_SEPARATOR . 'ticket_signing.key';
         if (is_readable($localKeyFile)) {

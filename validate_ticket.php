@@ -32,7 +32,36 @@ $tokenValid = false;
 
 if ($code !== '') {
   try {
-    $stmt = $pdo->prepare("SELECT submission_code, first_name, middle_name, last_name, status, created_at FROM submissions WHERE submission_code = ? LIMIT 1");
+    $stmt = $pdo->prepare("
+        SELECT 
+            s.submission_code, 
+            s.status, 
+            s.created_at,
+            CASE 
+                WHEN u.role = 'student' THEN CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name)
+                WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
+                ELSE 'Unknown User'
+            END as full_name,
+            CASE 
+                WHEN u.role = 'student' THEN sp.first_name
+                WHEN u.role = 'employee' THEN ep.first_name
+                ELSE 'Unknown'
+            END as first_name,
+            CASE 
+                WHEN u.role = 'student' THEN sp.middle_name
+                WHEN u.role = 'employee' THEN ep.middle_name
+                ELSE ''
+            END as middle_name,
+            CASE 
+                WHEN u.role = 'student' THEN sp.last_name
+                WHEN u.role = 'employee' THEN ep.last_name
+                ELSE 'User'
+            END as last_name
+        FROM submissions s
+        LEFT JOIN users u ON u.user_id = s.user_id
+        LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+        LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+        WHERE s.submission_code = ? LIMIT 1");
     $stmt->execute([$code]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($row) {

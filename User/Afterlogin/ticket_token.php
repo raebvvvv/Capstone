@@ -10,7 +10,31 @@ if ($code === '' || $userId <= 0) { echo json_encode(['success'=>false,'message'
 
 try {
     // Ensure this submission belongs to the logged-in user
-    $stmt = $pdo->prepare("SELECT submission_id, submission_code, first_name, middle_name, last_name, status FROM submissions WHERE submission_code = ? AND user_id = ? LIMIT 1");
+    $stmt = $pdo->prepare("
+        SELECT 
+            s.submission_id, 
+            s.submission_code, 
+            s.status,
+            CASE 
+                WHEN u.role = 'student' THEN sp.first_name
+                WHEN u.role = 'employee' THEN ep.first_name
+                ELSE 'Unknown'
+            END as first_name,
+            CASE 
+                WHEN u.role = 'student' THEN sp.middle_name
+                WHEN u.role = 'employee' THEN ep.middle_name
+                ELSE ''
+            END as middle_name,
+            CASE 
+                WHEN u.role = 'student' THEN sp.last_name
+                WHEN u.role = 'employee' THEN ep.last_name
+                ELSE 'User'
+            END as last_name
+        FROM submissions s
+        LEFT JOIN users u ON u.user_id = s.user_id
+        LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+        LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+        WHERE s.submission_code = ? AND s.user_id = ? LIMIT 1");
     $stmt->execute([$code, $userId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$row) { echo json_encode(['success'=>false,'message'=>'Not found']); exit; }

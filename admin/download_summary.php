@@ -99,7 +99,37 @@ if ($isRmipo) {
 
 // Query completed submissions
 try {
-    $sql = "SELECT submission_id, first_name, middle_name, last_name, campus, program, title, date_accomplished, status_updated_at, created_at, college, academic_level, work_classification FROM submissions WHERE LOWER(status) = 'completed'";
+    $sql = "SELECT 
+                s.submission_id, 
+                s.campus, 
+                s.program, 
+                s.title, 
+                s.date_accomplished, 
+                s.status_updated_at, 
+                s.created_at, 
+                s.college, 
+                s.academic_level, 
+                s.work_classification,
+                CASE 
+                    WHEN u.role = 'student' THEN sp.first_name
+                    WHEN u.role = 'employee' THEN ep.first_name
+                    ELSE 'Unknown'
+                END as first_name,
+                CASE 
+                    WHEN u.role = 'student' THEN sp.middle_name
+                    WHEN u.role = 'employee' THEN ep.middle_name
+                    ELSE ''
+                END as middle_name,
+                CASE 
+                    WHEN u.role = 'student' THEN sp.last_name
+                    WHEN u.role = 'employee' THEN ep.last_name
+                    ELSE 'User'
+                END as last_name
+            FROM submissions s
+            LEFT JOIN users u ON u.user_id = s.user_id
+            LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+            LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+            WHERE LOWER(s.status) = 'completed'";
     $params = [];
     // Date range on COALESCE(status_updated_at, created_at)
     if ($hasRange) {

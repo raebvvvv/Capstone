@@ -389,10 +389,17 @@ try {
 // Fetch admin data
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
-    $stmt = $pdo->prepare("SELECT email FROM users WHERE user_id = ?");
+    $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name FROM users u 
+        LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ?");
     $stmt->execute([$user_id]);
     $admin = $stmt->fetch();
     if (!$admin) { echo "Admin not found."; exit(); }
+    
+    // Create full name for display
+    $admin['username'] = trim(($admin['first_name'] ?? '') . ' ' . ($admin['last_name'] ?? ''));
+    if (empty($admin['username'])) {
+        $admin['username'] = 'Admin User'; // Fallback if no profile data
+    }
 } else {
     echo "User ID not set in session."; exit();
 }
@@ -411,7 +418,7 @@ if (isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="<?php echo asset_url('css/admin-navbar.css'); ?>">
 </head>
 <body>
-    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
+    <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -541,7 +548,7 @@ if (isset($_SESSION['user_id'])) {
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
     <script src="../javascript/admin-dashboard.js?v=8" defer></script>
-    <script src="../javascript/admin-profile.js?v=2" defer></script>
+    <script src="../javascript/admin-profile.js?v=5" defer></script>
     <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
     <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileLabel" aria-hidden="true">
@@ -561,6 +568,10 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                         </div>
                         <form id="profileInfoForm">
+                            <div class="mb-3">
+                                <label for="profileAdminName" class="form-label fw-semibold">Name</label>
+                                <input type="text" class="form-control" id="profileAdminName" value="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" required disabled>
+                            </div>
                             <div class="mb-3">
                                 <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
                                 <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email']); ?>" required disabled>

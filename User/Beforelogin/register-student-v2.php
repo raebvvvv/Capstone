@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
   // Block duplicate full name (first + last) registered under a different student number
   if (!$error) {
-    $stmt = $pdo->prepare("SELECT u.student_number FROM student_profiles sp JOIN users u ON sp.user_id = u.user_id WHERE LOWER(TRIM(sp.first_name)) = LOWER(TRIM(?)) AND LOWER(TRIM(sp.last_name)) = LOWER(TRIM(?)) LIMIT 1");
+    $stmt = $pdo->prepare("SELECT sp.student_number FROM student_profiles sp WHERE LOWER(TRIM(sp.first_name)) = LOWER(TRIM(?)) AND LOWER(TRIM(sp.last_name)) = LOWER(TRIM(?)) LIMIT 1");
     $stmt->execute([$firstName, $lastName]);
     $existingNumber = $stmt->fetchColumn();
     if ($existingNumber && $existingNumber !== $studentNumber) {
@@ -66,9 +66,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
   if (!$error) {
     // Check for duplicate student number or email
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE student_number = ? OR email = ?");
-        $stmt->execute([$studentNumber, $email]);
-        if ($stmt->fetchColumn() > 0) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM student_profiles WHERE student_number = ?");
+        $stmt->execute([$studentNumber]);
+        $studentExists = $stmt->fetchColumn() > 0;
+        
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $emailExists = $stmt->fetchColumn() > 0;
+        
+        if ($studentExists || $emailExists) {
             $error = "Student number or email already registered.";
         } else {
             // Hash password
@@ -79,14 +85,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $code_expires_at = date('Y-m-d H:i:s', strtotime('+1 day'));
 
             // Insert user securely
-            $stmt = $pdo->prepare("INSERT INTO users (student_number, email, password, role, status, verification_code, code_expires_at) VALUES (?, ?, ?, 'student', 'pending', ?, ?)");
-            $stmt->execute([$studentNumber, $email, $hashedPassword, $verification_code, $code_expires_at]);
+            $stmt = $pdo->prepare("INSERT INTO users (email, password, role, status, verification_code, code_expires_at) VALUES (?, ?, 'student', 'pending', ?, ?)");
+            $stmt->execute([$email, $hashedPassword, $verification_code, $code_expires_at]);
             $user_id = $pdo->lastInsertId();
 
             // Insert into student_profiles table
-            $stmt = $pdo->prepare("INSERT INTO student_profiles (user_id, last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department, program) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO student_profiles (user_id, student_number, last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department, program) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $user_id,
+                $studentNumber,
                 $lastName,
                 $firstName,
                 $middleName,
@@ -100,17 +107,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             // Send verification email
+            // Load secure email configuration
+            $email_config = require __DIR__ . '/../../email_config.php';
+            $smtp_config = $email_config['smtp'];
+            
             $mail = new PHPMailer(true);
             try {
                 $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com'; // Set your SMTP server
+                $mail->Host = $smtp_config['host'];
                 $mail->SMTPAuth = true;
-                $mail->Username = 'znixossoxinz@gmail.com'; // SMTP username
-                $mail->Password = 'xkwmdpxqzhwyrcok';   // SMTP password
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
+                $mail->Username = $smtp_config['username'];
+                $mail->Password = $smtp_config['password'];
+                $mail->SMTPSecure = $smtp_config['encryption'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+                $mail->Port = $smtp_config['port'];
 
-                $mail->setFrom('no-reply@yourdomain.com', 'PUP e-IPMO');
+                $mail->setFrom($smtp_config['from_email'], $smtp_config['from_name']);
                 $mail->addAddress($email, $firstName . ' ' . $lastName);
 
                 $mail->isHTML(true);

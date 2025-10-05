@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../auth_check.php';
 
 // Fetch user profile data
 $stmt = $pdo->prepare("
-    SELECT sp.*, u.student_number, u.email
+    SELECT sp.*, u.email
     FROM student_profiles sp 
     JOIN users u ON sp.user_id = u.user_id 
     WHERE sp.user_id = ?
