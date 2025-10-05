@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $college       = trim($_POST['college']);
   // Department removed from registration; keep blank for DB compatibility
   $department    = '';
-    $program       = trim($_POST['program']);
+    $program       = ucwords(strtolower(trim($_POST['program'])));
     $email         = trim($_POST['email']);
     $password      = $_POST['password'];
     $repassword    = $_POST['repassword'];

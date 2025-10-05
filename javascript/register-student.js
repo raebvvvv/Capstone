@@ -48,6 +48,29 @@
     });
   }
 
+  // Auto-capitalize name fields as user types
+  function capitalizeInput(element) {
+    element.addEventListener('input', function(e) {
+      const words = this.value.toLowerCase().split(' ');
+      const capitalizedWords = words.map(word => {
+        if (word.length > 0) {
+          return word.charAt(0).toUpperCase() + word.slice(1);
+        }
+        return word;
+      });
+      this.value = capitalizedWords.join(' ');
+    });
+  }
+  
+  // Apply auto-capitalization to name fields
+  const nameFields = ['lastName', 'firstName', 'middleName', 'suffix'];
+  nameFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      capitalizeInput(field);
+    }
+  });
+
   // Show validation feedback on submit and prevent refresh if invalid
   form.addEventListener('submit', function (event) {
     let blockSubmit = false;

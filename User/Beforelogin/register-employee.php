@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mobileNumber  = trim($_POST['mobileNumber']);
     $campus        = trim($_POST['campus']);
     $college       = trim($_POST['college']);
-    $department    = trim($_POST['department']);
+    $department    = ucwords(strtolower(trim($_POST['department'])));
     $email         = trim($_POST['email']);
     $password      = $_POST['password'];
     $repassword    = $_POST['repassword'];
@@ -288,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   aria-describedby="toggleRepassword"
                 />
                 <button type="button" id="toggleRepassword" tabindex="-1" class="input-group-text rounded-end" style="background:transparent;border:none;outline:none;box-shadow:none;" aria-label="Show password">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3.866-4.477 7-10 7S1 15.866 1 12 5.477 5 11 5s10 3.134 10 7z"/></svg>
+                  <svg id="eyeIconRepassword" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3.866-4.477 7-10 7S1 15.866 1 12 5.477 5 11 5s10 3.134 10 7z"/></svg>
                 </button>
               </div>
               <div class="invalid-feedback">Please fill in this field.</div>
