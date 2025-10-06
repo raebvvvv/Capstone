@@ -29,7 +29,7 @@ function name_to_author_format(?string $first, ?string $middle, ?string $last): 
     return $last . ', ' . $firstPart;
 }
 
-function fetch_submission_people(PDO $pdo, int $sid): array {
+function fetch_submission_people(PDO $pdo, int $sid, string $submitterFullName = ''): array {
     // Returns ['authors' => [..], 'adviser' => '']
     // Include adviser(s) in Author/s list as well, to support cases where adviser is also an author.
     // Note: submission_authors schema observed elsewhere provides first_name, last_name, is_adviser (no middle_name)
@@ -49,6 +49,15 @@ function fetch_submission_people(PDO $pdo, int $sid): array {
         if (!isset($seen[$key])) {
             $seen[$key] = true;
             $authors[] = $formatted;
+        }
+    }
+    // Ensure submitter is included among authors if provided and not already present
+    $submitterFullName = trim($submitterFullName);
+    if ($submitterFullName !== '') {
+        $key = mb_strtolower($submitterFullName);
+        if (!isset($seen[$key])) {
+            $seen[$key] = true;
+            $authors[] = $submitterFullName;
         }
     }
     return ['authors' => $authors, 'adviser' => $adviser];
@@ -133,46 +142,46 @@ try {
     $params = [];
     // Date range on COALESCE(status_updated_at, created_at)
     if ($hasRange) {
-        $sql .= " AND DATE(COALESCE(status_updated_at, created_at)) BETWEEN ? AND ?";
+        $sql .= " AND DATE(COALESCE(s.status_updated_at, s.created_at)) BETWEEN ? AND ?";
         $params[] = $start; $params[] = $end;
     }
     // Academic Level (exact, case-insensitive), skip if 'All'
     if ($level !== '' && strcasecmp($level, 'All') !== 0) {
-        $sql .= " AND LOWER(academic_level) = ?";
+        $sql .= " AND LOWER(s.academic_level) = ?";
         $params[] = strtolower($level);
     }
     // Group: Employee -> academic_level like %employee%; Student -> NOT like %employee%
     if ($group !== '' && strcasecmp($group, 'All') !== 0) {
         if (strcasecmp($group, 'Employee') === 0) {
-            $sql .= " AND LOWER(academic_level) LIKE '%employee%'";
+            $sql .= " AND LOWER(s.academic_level) LIKE '%employee%'";
         } elseif (strcasecmp($group, 'Student') === 0) {
-            $sql .= " AND LOWER(academic_level) NOT LIKE '%employee%'";
+            $sql .= " AND LOWER(s.academic_level) NOT LIKE '%employee%'";
         }
     }
     // College code (accept code in multiple stored formats)
     if ($college !== '' && strcasecmp($college, 'All') !== 0 && strcasecmp($college, 'N/A') !== 0) {
         // Matches: "CODE - ..." OR "...(CODE)" OR exactly "CODE"
-        $sql .= " AND (college LIKE ? OR college LIKE ? OR college = ?)";
+        $sql .= " AND (s.college LIKE ? OR s.college LIKE ? OR s.college = ?)";
         $params[] = $college . ' - %';
         $params[] = '%(' . $college . ')';
         $params[] = $college;
     }
     // Program (exact match, case-insensitive)
     if ($program !== '' && strcasecmp($program, 'All') !== 0) {
-        $sql .= " AND LOWER(program) = ?";
+        $sql .= " AND LOWER(s.program) = ?";
         $params[] = strtolower($program);
     }
     // Campus (substring, case-insensitive)
     if ($campus !== '' && strcasecmp($campus, 'All') !== 0) {
-        $sql .= " AND LOWER(campus) LIKE ?";
+        $sql .= " AND LOWER(s.campus) LIKE ?";
         $params[] = '%' . strtolower($campus) . '%';
     }
     // Types -> map to work_classification
     if ($itype !== '' && strcasecmp($itype, 'All') !== 0) {
-        $sql .= " AND LOWER(work_classification) = ?";
+        $sql .= " AND LOWER(s.work_classification) = ?";
         $params[] = strtolower($itype);
     }
-    $sql .= " ORDER BY COALESCE(status_updated_at, created_at) DESC";
+    $sql .= " ORDER BY COALESCE(s.status_updated_at, s.created_at) DESC";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -187,15 +196,12 @@ try {
 $rows = [];
 foreach ($subs as $s) {
     $sid = (int)$s['submission_id'];
-    $people = fetch_submission_people($pdo, $sid);
+    // Build submitter full name in "Last, First M." format for de-duplication with authors
+    $submitterName = name_to_author_format($s['first_name'] ?? '', $s['middle_name'] ?? '', $s['last_name'] ?? '');
+    $people = fetch_submission_people($pdo, $sid, $submitterName);
     $authors = $people['authors'];
     $adviser = $people['adviser'];
 
-    // Fallback to primary submitter if no authors listed
-    if (count($authors) === 0) {
-        $fallback = name_to_author_format($s['first_name'] ?? '', $s['middle_name'] ?? '', $s['last_name'] ?? '');
-        if ($fallback !== '') { $authors[] = $fallback; }
-    }
     $authorsStr = implode('; ', $authors);
 
     // Preferred date: date_accomplished -> status_updated_at -> created_at

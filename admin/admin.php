@@ -84,9 +84,25 @@ if (!$useSummary) {
 
 // Overview counts (live only when no cached summary)
 if (!$useSummary) {
-    $undergrad = getCount($pdo, 'submissions', "academic_level = ?", ['Undergraduate']);
-    $grad = getCount($pdo, 'submissions', "academic_level = ?", ['Masters']);
-    $open = getCount($pdo, 'submissions', "academic_level = ?", ['Open University']);
+    // Robust classification using case-insensitive patterns
+    $undergrad = getCount(
+        $pdo,
+        'submissions',
+        "(LOWER(academic_level) LIKE ? OR LOWER(academic_level) = ? OR LOWER(academic_level) LIKE ?)",
+        ['undergrad%', 'undergraduate', 'bachelor%']
+    );
+    $grad = getCount(
+        $pdo,
+        'submissions',
+        "(LOWER(academic_level) LIKE ? OR LOWER(academic_level) LIKE ? OR LOWER(academic_level) LIKE ? OR LOWER(academic_level) LIKE ? OR LOWER(academic_level) LIKE ? OR LOWER(academic_level) LIKE ?)",
+        ['master%', '%doctor%', '%doctoral%', '%doctorate%', '%phd%', '%postgrad%']
+    );
+    $open = getCount(
+        $pdo,
+        'submissions',
+        "LOWER(academic_level) LIKE ?",
+        ['%open%']
+    );
     $total_applications_chart = $undergrad + $grad + $open;
 }
 
@@ -185,8 +201,25 @@ function collapse_college_series_to_codes(array $labels, array $values): array {
 function level_label(string $raw): string {
     $t = strtolower(trim($raw));
     if ($t === '') return 'Undergraduate';
+    // Explicit Open University bucket
     if (strpos($t, 'open') !== false) return 'Open University';
-    if (strpos($t, 'master') !== false || strpos($t, 'graduate') !== false || strpos($t, 'grad') !== false) return 'Graduate School';
+    // Ensure 'undergraduate' isn't misclassified as 'graduate'
+    if (strpos($t, 'undergrad') !== false || $t === 'undergraduate' || $t === 'ug' || strpos($t, 'bachelor') === 0) {
+        return 'Undergraduate';
+    }
+    // Masters/Doctorate/PhD/Postgrad => Graduate School
+    if (
+        strpos($t, 'graduate school') !== false ||
+        strpos($t, 'master') !== false ||
+        strpos($t, 'doctor') !== false ||
+        strpos($t, 'doctoral') !== false ||
+        strpos($t, 'doctorate') !== false ||
+        strpos($t, 'phd') !== false ||
+        strpos($t, 'ph.d') !== false ||
+        strpos($t, 'postgrad') !== false
+    ) {
+        return 'Graduate School';
+    }
     return 'Undergraduate';
 }
 

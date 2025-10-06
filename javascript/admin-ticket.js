@@ -105,10 +105,6 @@
       details.additionalAuthors = names.filter(n=>n && n!==primary).map(n=>({ name:n, studentNumber:'', email:'', address:'', phone:'', campus:'', department:'', college:'', program:'' }));
     }
     if(!details.additionalAuthors) details.additionalAuthors=[];
-    if(!details._exampleSeeded && details.additionalAuthors.length===0){
-      details.additionalAuthors.push({ name:'Jane Doe', studentNumber:'2022-08860-MN-0', email:'jane@iskolarngbayan.pup.edu.ph', address:'', phone:'', campus:'PUP Sta. Mesa, Manila', college:'CCIS', program:'Bachelor of Science In Information Technology' });
-      details._exampleSeeded = true;
-    }
 
     const allAuthors = Array.isArray(details.additionalAuthors) ? details.additionalAuthors : [];
     const isAdv = (a)=> (a && (a.is_adviser===1 || a.is_adviser===true || a.is_adviser==='1'));
@@ -606,8 +602,8 @@
           alert('Failed to complete: ' + (data.error || 'Unknown error') + extra);
           return;
         }
-        // Treat idempotent as success if already completed
-        // Find the row in any tab (approved preferred) and move to completed
+    // Treat idempotent as success if already completed
+    // Find the row in any tab (approved preferred) and move to completed
         let row = Array.from(document.querySelectorAll('#approved tbody tr, #pending tbody tr')).find(tr=> (tr.querySelector('td')?.textContent.trim()||'') === requestId);
         if(row){
           const cells = row.querySelectorAll('td');
@@ -621,6 +617,12 @@
           const reqDateText = (cells[3]?.textContent || '').trim();
           const notesHTML = (cells[5]?.innerHTML || '<span class="text-muted small">None</span>');
           const rowData = { requestId: requestIdText, studentName: nameText, studentId: studIdText, userLabel, requestDate: reqDateText, notesHTML };
+          // Carry forward approved-stage attributes so the Completed row shows Comments immediately.
+          // We intentionally ignore any completion-time comment here.
+          const srcAdminComment = (row.getAttribute('data-admin-comment')||'').trim();
+          const srcIncompleteRemark = (row.getAttribute('data-incomplete-remark')||'').trim();
+          const srcResubmit = (row.getAttribute('data-resubmit-files')||'').trim();
+          const shouldShowComments = !!(srcAdminComment || srcIncompleteRemark || srcResubmit);
           row.remove();
           const completedTbody = document.querySelector('#completed tbody');
           if(completedTbody){
@@ -628,7 +630,7 @@
             const placeholder = completedTbody.querySelector('tr td[colspan]');
             if(placeholder && /no completed requests/i.test(placeholder.textContent)){ placeholder.parentElement.remove(); }
             const newRow = document.createElement('tr');
-            const commentsBtnHTML = comment ? '<a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>' : '';
+            const commentsBtnHTML = shouldShowComments ? '<a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>' : '';
             newRow.innerHTML = `
               <td><a href=\"#\" class=\"open-details\" data-request-id=\"${escapeHTML(rowData.requestId)}\"><span style=\"font-weight:600;\">${escapeHTML(rowData.requestId)}</span></a></td>
               <td><div><a href=\"#\" class=\"open-details\" data-request-id=\"${escapeHTML(rowData.requestId)}\">${escapeHTML(rowData.studentName)}</a><div class=\"student-subtext text-muted small\">${escapeHTML(rowData.studentId)}</div></div></td>
@@ -642,7 +644,10 @@
                   ${commentsBtnHTML}
                 </div>
               </td>`;
-            if(comment) newRow.setAttribute('data-admin-comment', comment);
+            // Set attributes so the Comments modal has content immediately
+            if (srcAdminComment) newRow.setAttribute('data-admin-comment', srcAdminComment);
+            if (srcIncompleteRemark) newRow.setAttribute('data-incomplete-remark', srcIncompleteRemark);
+            if (srcResubmit) newRow.setAttribute('data-resubmit-files', srcResubmit);
             completedTbody.prepend(newRow);
           }
         }
@@ -695,14 +700,20 @@
             const reqDateText = (cells[3]?.textContent || '').trim();
             const notesHTML = (cells[5]?.innerHTML || '<span class="text-muted small">None</span>');
             const rowData = { requestId: reqIdText, studentName: nameText, studentId: studIdText, userLabel, requestDate: reqDateText, notesHTML };
-            // Persist comment in the old row (in case needed) then remove
-            if(comment) pendingApproveRow.setAttribute('data-admin-comment', comment);
+            // For Approved row, use only the Approve-time comment (not the pending comment)
+            const approveTimeComment = (comment || '').trim();
+            // Carry forward other attributes (issue label, resubmit files) if any
+            const oldIncompleteRemark = (pendingApproveRow.getAttribute('data-incomplete-remark')||'').trim();
+            const oldResubmit = (pendingApproveRow.getAttribute('data-resubmit-files')||'').trim();
+            const carriedComment = approveTimeComment; // only approval comment should appear in Approved
+            // Approved tab rule: show Comments button only when there is an approval-time comment
+            const shouldShowComments = !!approveTimeComment;
             pendingApproveRow.remove();
             const approvedTbody = document.querySelector('#approved tbody');
             if(approvedTbody){
               const newRow = document.createElement('tr');
               // Build Comments button only if there is a comment (respect visibility rule)
-              const commentsBtnHTML = comment ? `<a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>` : '';
+              const commentsBtnHTML = shouldShowComments ? `<a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>` : '';
               newRow.innerHTML = `
                 <td><a href="#" class="open-details" data-request-id="${escapeHTML(rowData.requestId)}">${escapeHTML(rowData.requestId)}</a></td>
                 <td>
@@ -722,7 +733,9 @@
                     <span class="btn btn-incomplete btn-incomplete-active btn-sm rounded-pill px-3">Incomplete</span>
                   </div>
                 </td>`;
-              if(comment) newRow.setAttribute('data-admin-comment', comment);
+              if(carriedComment) newRow.setAttribute('data-admin-comment', carriedComment);
+              if(oldIncompleteRemark) newRow.setAttribute('data-incomplete-remark', oldIncompleteRemark);
+              if(oldResubmit) newRow.setAttribute('data-resubmit-files', oldResubmit);
               approvedTbody.prepend(newRow);
             }
           }
@@ -863,7 +876,7 @@
       });
     }
 
-    // Comments (open modal) - compose enriched message with remark + file list + admin comment
+    // Comments (open modal)
     document.addEventListener('click', e=>{
       const trigger = e.target.closest('.btn-comments');
       if(!trigger) return; e.preventDefault();
@@ -874,18 +887,22 @@
         const incompleteRemark = tr.getAttribute('data-incomplete-remark') || '';
         const resubmit = tr.getAttribute('data-resubmit-files') || '';
         const resubmitList = resubmit ? resubmit.split('|').filter(Boolean).map(s=> s.replace(/_/g,' ')) : [];
-        if(incompleteRemark || resubmitList.length || adminComment){
+        const inApproved = !!tr.closest('#approved');
+        if (inApproved && adminComment) {
+          // For Approved tab, show exactly the Approve-time comment as requested
+          text = adminComment;
+        } else if(incompleteRemark || resubmitList.length || adminComment){
           const parts = [];
           if(incompleteRemark){ parts.push(`Issue: ${incompleteRemark}`); }
           if(resubmitList.length){
-            const label = tr.closest('#approved') ? 'File(s) to be resubmitted' : 'File(s) to re-upload';
+            const label = inApproved ? 'File(s) to be resubmitted' : 'File(s) to re-upload';
             parts.push(`${label}: ${resubmitList.join(', ')}`);
           }
           if(adminComment){ parts.push(`Comment: ${adminComment}`); }
           text = parts.join('\n');
         } else {
           if(tr.closest('#pending')){ text = 'For Evaluation'; }
-          else if(tr.closest('#approved')){ text = 'No remarks available.'; }
+          else if(inApproved){ text = 'No remarks available.'; }
           else if(tr.closest('#completed')){ text = 'Complete'; }
         }
       }
@@ -899,10 +916,18 @@
     // Initialization scan: Add Comments button for any pending rows already in 'Awaiting Review'
   // Ensure rows already marked 'Awaiting Review' in Pending have a Comments button
   document.querySelectorAll('#pending tbody tr').forEach(tr=>{ const cells = tr.querySelectorAll('td'); const remark = (cells[4]?.textContent || '').trim().toLowerCase(); if(remark === 'awaiting review'){ ensureCommentsButton(tr); } });
-    // Optional cleanup: remove/disable stray Comments buttons in Approved tab without a stored comment attribute
+    // Optional cleanup: sync Comments button presence in Approved tab with any stored remarks/affected files/admin comment
     document.querySelectorAll('#approved tbody tr').forEach(tr=>{
-      const hasComment = (tr.getAttribute('data-admin-comment')||'').trim() !== '';
-      if(!hasComment){ const btn = tr.querySelector('.btn-comments'); if(btn){ btn.remove(); } }
+      const adminComment = (tr.getAttribute('data-admin-comment')||'').trim();
+      const remark = (tr.getAttribute('data-incomplete-remark')||'').trim();
+      const resubmit = (tr.getAttribute('data-resubmit-files')||'').trim();
+      const hasAny = !!(adminComment || remark || resubmit);
+      const btn = tr.querySelector('.btn-comments');
+      if (hasAny) {
+        if (!btn) ensureCommentsButton(tr);
+      } else {
+        if (btn) btn.remove();
+      }
     });
 
     // Table sorting

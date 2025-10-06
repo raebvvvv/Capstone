@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $homeAddress   = trim($_POST['homeAddress']);
     $studentNumber = trim($_POST['studentNumber']);
     $mobileNumber  = trim($_POST['mobileNumber']);
+    $academicLevel = isset($_POST['academic_level']) ? trim($_POST['academic_level']) : '';
     $campus        = trim($_POST['campus']);
     $college       = trim($_POST['college']);
   // Department removed from registration; keep blank for DB compatibility
@@ -33,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Basic validation
     if (
-        !$lastName || !$firstName || !$middleName|| !$homeAddress ||
-  !$studentNumber || !$mobileNumber || !$campus || !$college ||
+    !$lastName || !$firstName || !$middleName|| !$homeAddress ||
+  !$studentNumber || !$mobileNumber || !$academicLevel || !$campus || !$college ||
   !$program || !$email || !$password || !$repassword
     ) {
         $error = "All required fields must be filled.";
@@ -53,6 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($pwdErrors)) {
       $error = "Password does not meet requirements.";
       $errorDetails = $pwdErrors;
+    }
+  }
+  // Validate academic level
+  if (!$error) {
+    $allowedLevels = ['Undergraduate','Masters','Doctorate','Open University'];
+    if (!in_array($academicLevel, $allowedLevels, true)) {
+      $error = 'Invalid academic level selection.';
     }
   }
   // Block duplicate full name (first + last) registered under a different student number
@@ -90,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user_id = $pdo->lastInsertId();
 
             // Insert into student_profiles table
-            $stmt = $pdo->prepare("INSERT INTO student_profiles (user_id, student_number, last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department, program) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+      $stmt = $pdo->prepare("INSERT INTO student_profiles (user_id, student_number, last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, academic_level, college, department, program) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $user_id,
                 $studentNumber,
@@ -100,16 +108,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $suffix,
                 $homeAddress,
                 $mobileNumber,
-                $campus,
+        $campus,
+        $academicLevel,
                 $college,
                 $department,
                 $program
             ]);
 
-            // Send verification email
-            // Load secure email configuration
-            $email_config = require __DIR__ . '/../../email_config.php';
-            $smtp_config = $email_config['smtp'];
+      // Send verification email
+      // Load secure email configuration (prefer email_config.php at project root; fallback to env vars)
+      $smtp_config = null;
+      $projectRoot = realpath(__DIR__ . '/../../');
+      $cfgPath = $projectRoot . DIRECTORY_SEPARATOR . 'email_config.php';
+      if ($projectRoot && is_file($cfgPath)) {
+        $email_config = require $cfgPath;
+        if (is_array($email_config) && isset($email_config['smtp'])) {
+          $smtp_config = $email_config['smtp'];
+        }
+      }
+      if (!$smtp_config) {
+        $get = function ($key, $default = null) {
+          if (class_exists('Environment') && method_exists('Environment', 'get')) {
+            return Environment::get($key, $default);
+          }
+          $val = getenv($key);
+          return ($val !== false && $val !== '') ? $val : $default;
+        };
+        $smtp_config = [
+          'host' => $get('SMTP_HOST', 'smtp.gmail.com'),
+          'port' => (int) $get('SMTP_PORT', '587'),
+          'username' => $get('SMTP_USERNAME'),
+          'password' => $get('SMTP_PASSWORD'),
+          'encryption' => $get('SMTP_ENCRYPTION', 'tls'),
+          'from_email' => $get('SMTP_FROM_EMAIL'),
+          'from_name' => $get('SMTP_FROM_NAME', 'PUP e-IPMO'),
+        ];
+      }
+      // Ensure required SMTP settings are present before attempting to send
+      if (empty($smtp_config['host']) || empty($smtp_config['username']) || empty($smtp_config['password']) || empty($smtp_config['from_email'])) {
+        throw new RuntimeException("SMTP configuration missing. Provide email_config.php at project root or set SMTP_* environment variables.");
+      }
             
             $mail = new PHPMailer(true);
             try {
@@ -236,6 +274,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="invalid-feedback">Please select a campus.</div>
             </div>
             <div class="col-md-4">
+              <label for="academic_level" class="form-label">Academic Level <span class="text-danger">*</span></label>
+              <select class="form-select" id="academic_level" name="academic_level" required>
+                <option value="" selected disabled>Select level</option>
+                <option value="Undergraduate">Undergraduate</option>
+                <option value="Masters">Masters</option>
+                <option value="Doctorate">Doctorate</option>
+                <option value="Open University">Open University</option>
+              </select>
+              <div class="invalid-feedback">Please select an academic level.</div>
+            </div>
+            <div class="col-md-4">
               <label for="college" class="form-label">College <span class="text-danger">*</span></label>
               <select class="form-select" id="college" name="college" required></select>
               <div class="invalid-feedback">Please select a college.</div>
@@ -307,7 +356,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <!-- Footer -->
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?> 
  
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/register-student.js'); ?>" defer></script>
 </body>

@@ -98,8 +98,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         // Send verification email
                         // Load secure email configuration
-                        $email_config = require __DIR__ . '/../../email_config.php';
-                        $smtp_config = $email_config['smtp'];
+            // Load secure email configuration (prefer email_config.php at project root; fallback to env vars)
+            $smtp_config = null;
+            $projectRoot = realpath(__DIR__ . '/../../');
+            $cfgPath = $projectRoot . DIRECTORY_SEPARATOR . 'email_config.php';
+            if ($projectRoot && is_file($cfgPath)) {
+              $email_config = require $cfgPath;
+              if (is_array($email_config) && isset($email_config['smtp'])) {
+                $smtp_config = $email_config['smtp'];
+              }
+            }
+            if (!$smtp_config) {
+              $get = function ($key, $default = null) {
+                if (class_exists('Environment') && method_exists('Environment', 'get')) {
+                  return Environment::get($key, $default);
+                }
+                $val = getenv($key);
+                return ($val !== false && $val !== '') ? $val : $default;
+              };
+              $smtp_config = [
+                'host' => $get('SMTP_HOST', 'smtp.gmail.com'),
+                'port' => (int) $get('SMTP_PORT', '587'),
+                'username' => $get('SMTP_USERNAME'),
+                'password' => $get('SMTP_PASSWORD'),
+                'encryption' => $get('SMTP_ENCRYPTION', 'tls'),
+                'from_email' => $get('SMTP_FROM_EMAIL'),
+                'from_name' => $get('SMTP_FROM_NAME', 'PUP e-IPMO'),
+              ];
+            }
+            if (empty($smtp_config['host']) || empty($smtp_config['username']) || empty($smtp_config['password']) || empty($smtp_config['from_email'])) {
+              throw new RuntimeException("SMTP configuration missing. Provide email_config.php at project root or set SMTP_* environment variables.");
+            }
                         
                         $mail = new PHPMailer(true);
                         try {

@@ -461,8 +461,9 @@ function initCompletedAppsFilters() {
 			const lvl = (el.getAttribute('data-academic-level')||'').trim();
 			if (lvl !== selectedAcademicLevel.toLowerCase()) return false;
 		}
-		// College
-		if (selectedCollegeCode !== 'All') {
+		// College: ignore when grad/open levels are selected or selection is explicitly N/A
+		const isGradLevel = ['masters','doctorate','open university'].includes((selectedAcademicLevel||'').toLowerCase());
+		if (!isGradLevel && selectedCollegeCode !== 'All' && selectedCollegeCode !== 'N/A') {
 			const code = (el.getAttribute('data-college-code')||'').trim();
 			if (code !== selectedCollegeCode.toLowerCase()) return false;
 		}
@@ -900,6 +901,19 @@ function initCompletedAppsFilters() {
 				accomplishmentDate: d.dateAccomplished || '',
 				files_list: Array.isArray(details.files) ? details.files.map(f=>({ label:f.label, url:f.url, size:null, verified:null })) : []
 			};
+			// Include authors and adviser in the shared payload if present
+			try {
+				const add = Array.isArray(details.additionalAuthors) ? details.additionalAuthors : [];
+				shared.additionalAuthors = add.map(a => ({
+					name: (a && a.name) ? a.name : '',
+					is_adviser: (a && (a.is_adviser === 1 || a.is_adviser === true || a.is_adviser === '1')) ? 1 : 0,
+					studentNumber: (a && a.studentNumber) ? a.studentNumber : '',
+					email: (a && a.email) ? a.email : '',
+					address: (a && a.address) ? a.address : '',
+					phone: (a && a.phone) ? a.phone : ''
+				}));
+				shared.adviser = (typeof details.adviser === 'string') ? details.adviser : (details.adviser || '');
+			} catch(_) { /* non-fatal */ }
 			// Determine if submitter is an employee to adjust ID label in modal
 			const itemEl = link.closest('.ipapp-list-item');
 			const groupAttr = itemEl ? (itemEl.getAttribute('data-group')||'').trim().toLowerCase() : '';
@@ -927,6 +941,29 @@ function initCompletedAppsFilters() {
 				};
 			}
 		} catch (_) { /* ignore malformed data */ }
+	});
+
+	// Handle Comments link click to show persisted remarks/comments
+	document.addEventListener('click', (e) => {
+		const cLink = e.target.closest('.ipapp-comments-link');
+		if (!cLink) return;
+		e.preventDefault();
+		const item = cLink.closest('.ipapp-list-item');
+		if (!item) return;
+		const remark = (item.getAttribute('data-incomplete-remark') || '').trim();
+		const adminComment = (item.getAttribute('data-admin-comment') || '').trim();
+		const files = (item.getAttribute('data-resubmit-files') || '').trim();
+		const parts = [];
+		if (remark) parts.push(`Remark: ${remark}`);
+		if (files) parts.push(`Affected document(s): ${files}`);
+		if (adminComment) parts.push(`Comments: ${adminComment}`);
+		const text = parts.join('\n\n');
+		const textarea = document.getElementById('completedCommentText');
+		if (textarea) {
+			textarea.value = text || 'No comments available.';
+		}
+		const modalEl = document.getElementById('completedCommentsModal');
+		if (modalEl) ModalApi.show(modalEl);
 	});
 
 	// Initial render

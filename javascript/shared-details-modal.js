@@ -30,7 +30,7 @@
         const verifiedBadge = (file.verified===1 || file.verified===true) ? `<span class="badge bg-success ms-2">Verified</span>` : '';
         const label = escapeHTML(file.label || file.type || 'File');
         const dtype = String(file.type||'').toLowerCase();
-        const needsReup = flaggedSet.has(dtype) ? `<span class="badge bg-warning text-dark ms-2">Needs reupload</span>` : '';
+  const needsReup = flaggedSet.has(dtype) ? `<span class="badge bg-warning text-dark ms-2">Needs Resubmission</span>` : '';
         return `<li class="d-flex justify-content-between align-items-center mb-2 flex-wrap" data-doc-type="${escapeHTML(file.type||'')}">
           <div><span>${label}</span>${sizePart}${verifiedBadge}${needsReup}</div>
           <div class="d-flex gap-2 mt-2 mt-sm-0">
@@ -60,7 +60,7 @@
   }
 
   function render(containerEl, details, opts){
-    const o = Object.assign({ role: 'admin', showNotes: false, onAuthorDetails: null }, opts||{});
+    const o = Object.assign({ role: 'admin', showNotes: false, onAuthorDetails: null, suppressIpmoComments: false }, opts||{});
     if(!containerEl) return;
     containerEl.classList.remove('text-center');
     containerEl.classList.add('text-start');
@@ -86,6 +86,21 @@
       if (hint) { flaggedTypes = hint.split('|').map(s=>s.trim()).filter(Boolean); }
     } catch(_){}
     const filesHTML = buildFilesHTML(details, { flaggedTypes });
+    // Build IPMO Comments section for user role if available
+    let ipmoCommentsHTML = '';
+    try {
+      const ic = details && details.ipmoComments ? details.ipmoComments : null;
+      const has = !!(ic && (ic.has || ic.issue || ic.affected || ic.comment));
+      if (has && String(o.role||'').toLowerCase() === 'user' && !o.suppressIpmoComments) {
+        const parts = [];
+        if (ic.issue) { parts.push(`<div><strong>Issue:</strong> ${escapeHTML(ic.issue)}</div>`); }
+        if (ic.affected) { parts.push(`<div><strong>Affected document(s):</strong> ${escapeHTML(ic.affected)}</div>`); }
+        if (ic.comment) { parts.push(`<div><strong>Comment:</strong> ${escapeHTML(ic.comment)}</div>`); }
+        if (parts.length) {
+          ipmoCommentsHTML = `<div class="mt-3"><h5>IPMO Comments</h5>${parts.join('')}</div>`;
+        }
+      }
+    } catch(_) { /* ignore */ }
     const authorsHTML = buildAuthorsHTML(details, { onAuthorDetails: !!o.onAuthorDetails });
 
   const bannerText = (o.role === 'user' && details.statusBanner && String(details.statusBanner).trim() !== '') ? String(details.statusBanner) : '';
@@ -122,6 +137,7 @@
         <h5>Uploaded Files</h5>
         ${filesHTML}
       </div>
+      ${ipmoCommentsHTML}
       ${notesHTML}
     `;
 

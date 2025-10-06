@@ -16,6 +16,7 @@ if (!function_exists('mb_strtolower')) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (function_exists('verify_csrf_post')) { verify_csrf_post(); }
     try {
+        $redirectTab = null; // decide which tab to show after action
         // Helper to resolve identifier column
         $resolveIdColumn = function (string $id): string {
             $id = trim($id);
@@ -41,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':rid' => (int)($_SESSION['user_id'] ?? 0),
                     ':id' => ctype_digit($approveId) ? (int)$approveId : $approveId,
                 ]);
+                $redirectTab = 'approved';
             }
         } elseif (!empty($_POST['complete_ticket_id'])) {
             $completeId = trim((string)$_POST['complete_ticket_id']);
@@ -58,13 +60,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':remark' => $remark,
                     ':id' => ctype_digit($completeId) ? (int)$completeId : $completeId,
                 ]);
+                $redirectTab = 'completed';
             }
         }
     } catch (Throwable $e) {
         if (function_exists('log_event')) { log_event('DB_ERROR', 'Ticket action failed', ['err' => $e->getMessage()]); }
     }
     // Post/Redirect/Get
-    redirect('admin/ticket.php');
+    $qs = $redirectTab ? ('?tab=' . urlencode($redirectTab)) : '';
+    redirect('admin/ticket.php' . $qs);
 }
 
 // Fetch admin data
@@ -326,6 +330,68 @@ if ($search_query !== '') {
         }
     }
 }
+
+// Pagination (10 per page) for each tab
+$perPage = 10;
+$pending_total   = count($pending);
+$approved_total  = count($approved);
+$completed_total = count($completed);
+
+// Helper to derive requested page for a given tab (active tab uses ?page=N, others default to 1)
+$requested_page = function(string $tab) use ($active_tab): int {
+    if ($active_tab === $tab) {
+        $p = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        return $p > 0 ? $p : 1;
+    }
+    return 1;
+};
+
+// Compute per-tab pages, clamp, and slice arrays
+$pending_pages  = max(1, (int)ceil($pending_total / $perPage));
+$approved_pages = max(1, (int)ceil($approved_total / $perPage));
+$completed_pages= max(1, (int)ceil($completed_total / $perPage));
+
+$pending_page   = min($pending_pages,  $requested_page('pending'));
+$approved_page  = min($approved_pages, $requested_page('approved'));
+$completed_page = min($completed_pages,$requested_page('completed'));
+
+$pending_items   = array_slice($pending,   ($pending_page   - 1) * $perPage, $perPage);
+$approved_items  = array_slice($approved,  ($approved_page  - 1) * $perPage, $perPage);
+$completed_items = array_slice($completed, ($completed_page - 1) * $perPage, $perPage);
+
+// Helper to build pagination URL preserving filters
+function build_page_url(string $tab, int $page): string {
+    $params = $_GET;
+    $params['tab'] = $tab;
+    $params['page'] = $page;
+    // Normalize has_notes checkbox param (present only when checked)
+    if (!empty($params['has_notes'])) { $params['has_notes'] = 1; }
+    else { unset($params['has_notes']); }
+    $qs = http_build_query($params);
+    return htmlspecialchars($_SERVER['PHP_SELF'] . '?' . $qs);
+}
+
+function render_pagination_controls(string $tab, int $page, int $pages): void {
+    if ($pages <= 1) { return; }
+    echo '<nav aria-label="' . htmlspecialchars(ucfirst($tab)) . ' pagination" class="mt-2">';
+    echo '<ul class="pagination justify-content-center">';
+    // Prev
+    $prevDisabled = $page <= 1 ? ' disabled' : '';
+    $prevUrl = build_page_url($tab, max(1, $page - 1));
+    echo '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Previous</a></li>';
+    // Pages (simple: show all; optimize with ellipsis if large if needed later)
+    for ($i = 1; $i <= $pages; $i++) {
+        $active = $i === $page ? ' active' : '';
+        $url = build_page_url($tab, $i);
+        echo '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
+    }
+    // Next
+    $nextDisabled = $page >= $pages ? ' disabled' : '';
+    $nextUrl = build_page_url($tab, min($pages, $page + 1));
+    echo '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Next</a></li>';
+    echo '</ul>';
+    echo '</nav>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -537,9 +603,9 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($pending)): ?>
+                            <?php if (empty($pending_items)): ?>
                                 <tr><td colspan="8" class="text-center">No pending requests.</td></tr>
-                            <?php else: foreach ($pending as $ticket): ?>
+                            <?php else: foreach ($pending_items as $ticket): ?>
                                 <?php
                                     $pIssue = trim((string)($ticket['pending_issue_label'] ?? ''));
                                     $pComment = trim((string)($ticket['pending_admin_comment'] ?? ''));
@@ -608,6 +674,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                         </tbody>
                     </table>
                 </div>
+                <?php render_pagination_controls('pending', $pending_page, $pending_pages); ?>
             </div>
 
             <div class="tab-pane fade <?php echo $active_tab==='approved' ? 'show active' : ''; ?>" id="approved">
@@ -625,9 +692,9 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($approved)): ?>
+                            <?php if (empty($approved_items)): ?>
                                 <tr><td colspan="8" class="text-center">No approved requests.</td></tr>
-                            <?php else: foreach ($approved as $ticket): ?>
+                            <?php else: foreach ($approved_items as $ticket): ?>
                                 <?php
                                     $aIssue = trim((string)($ticket['approved_issue_label'] ?? ''));
                                     $aComment = trim((string)($ticket['approved_admin_comment'] ?? ''));
@@ -636,11 +703,26 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                                     // - Default: In-Review
                                     // - If admin flagged an issue OR selected files to resubmit (approved scope), show Awaiting Review
                                     $approvedStatusLabel = ($aIssue !== '' || $aAffected !== '') ? 'Awaiting Review' : 'In-Review';
+                                    // Build attributes and Comments visibility with fallback to pending-scope values when approved-scope is empty
+                                    $pIssue = trim((string)($ticket['pending_issue_label'] ?? ''));
+                                    $pComment = trim((string)($ticket['pending_admin_comment'] ?? ''));
+                                    $pAffected = trim((string)($ticket['pending_affected_doc_types'] ?? ''));
+                                    $approveRemark = trim((string)($ticket['remark'] ?? ''));
+                                    $srcIssue    = ($aIssue !== '') ? $aIssue : $pIssue;
+                                    // For Approved tab, prefer the Approve dialog comment (submissions.remarks).
+                                    // If no approval comment exists, fall back to approved-scope meta comment only.
+                                    // Do NOT fall back to pending-scope admin comments.
+                                    // For Approved tab, only consider the Approve dialog comment for 'Comments' visibility and payload.
+                                    // Do not fall back to pending/approved meta for the Comments button rule.
+                                    $srcComment  = ($approveRemark !== '') ? $approveRemark : '';
+                                    $srcAffected = ($aAffected !== '') ? $aAffected : $pAffected;
                                     $approvedAttrs = '';
-                                    if($aIssue !== '') { $approvedAttrs .= ' data-incomplete-remark="'.htmlspecialchars($aIssue, ENT_QUOTES).'"'; }
-                                    if($aComment !== '') { $approvedAttrs .= ' data-admin-comment="'.htmlspecialchars($aComment, ENT_QUOTES).'"'; }
-                                    if($aAffected !== '') { $approvedAttrs .= ' data-resubmit-files="'.htmlspecialchars($aAffected, ENT_QUOTES).'"'; }
-                                    $showComments = ($aIssue !== '' || $aComment !== '' || $aAffected !== '');
+                                    if($srcIssue !== '')    { $approvedAttrs .= ' data-incomplete-remark="'.htmlspecialchars($srcIssue, ENT_QUOTES).'"'; }
+                                    // Attach admin comment attribute only if an approval-time comment exists
+                                    if($srcComment !== '')  { $approvedAttrs .= ' data-admin-comment="'.htmlspecialchars($srcComment, ENT_QUOTES).'"'; }
+                                    if($srcAffected !== '') { $approvedAttrs .= ' data-resubmit-files="'.htmlspecialchars($srcAffected, ENT_QUOTES).'"'; }
+                                    // Show Comments button ONLY when approval-time comment is present
+                                    $showComments = ($srcComment !== '');
                                 ?>
                                 <tr<?php echo $approvedAttrs; ?>>
                                     <td><a href="#" class="open-details text-decoration-underline" title="Open details" data-request-id="<?php echo htmlspecialchars($ticket['request_id']); ?>"><?php echo htmlspecialchars($ticket['request_id']); ?></a></td>
@@ -694,6 +776,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                         </tbody>
                     </table>
                 </div>
+                <?php render_pagination_controls('approved', $approved_page, $approved_pages); ?>
             </div>
 
             <div class="tab-pane fade <?php echo $active_tab==='completed' ? 'show active' : ''; ?>" id="completed">
@@ -711,10 +794,29 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($completed)): ?>
+                            <?php if (empty($completed_items)): ?>
                                 <tr><td colspan="8" class="text-center">No completed requests.</td></tr>
-                            <?php else: foreach ($completed as $ticket): ?>
-                                <tr<?php if(!empty($ticket['approved_admin_comment'])) echo ' data-admin-comment="'.htmlspecialchars($ticket['approved_admin_comment'], ENT_QUOTES).'"'; ?>>
+                            <?php else: foreach ($completed_items as $ticket): ?>
+                                <?php
+                                    // Build persisted attributes for Completed tab so Comments survive reloads
+                                    // Primary source: Approved-stage meta (issue/affected/comment)
+                                    // Additionally, if no approved-stage admin comment exists, fall back to the
+                                    // approval-time remark stored in submissions.remarks so Approve comments
+                                    // remain visible after completion.
+                                    $cIssue    = trim((string)($ticket['approved_issue_label'] ?? ''));
+                                    $cAffected = trim((string)($ticket['approved_affected_doc_types'] ?? ''));
+                                    $cComment  = trim((string)($ticket['approved_admin_comment'] ?? ''));
+                                    $approvalRemark = trim((string)($ticket['remark'] ?? ''));
+                                    if ($cComment === '' && $approvalRemark !== '') {
+                                        $cComment = $approvalRemark; // fallback to approval-time remark
+                                    }
+                                    $completedAttrs = '';
+                                    if ($cIssue !== '')    { $completedAttrs .= ' data-incomplete-remark="'.htmlspecialchars($cIssue, ENT_QUOTES).'"'; }
+                                    if ($cAffected !== '') { $completedAttrs .= ' data-resubmit-files="'.htmlspecialchars($cAffected, ENT_QUOTES).'"'; }
+                                    if ($cComment !== '')  { $completedAttrs .= ' data-admin-comment="'.htmlspecialchars($cComment, ENT_QUOTES).'"'; }
+                                    $showCompletedComments = ($cIssue !== '' || $cAffected !== '' || $cComment !== '');
+                                ?>
+                                <tr<?php echo $completedAttrs; ?>>
                                     <td><a href="#" class="open-details text-decoration-underline" title="Open details" data-request-id="<?php echo htmlspecialchars($ticket['request_id']); ?>"><span style="font-weight:600;">&nbsp;<?php echo htmlspecialchars($ticket['request_id']); ?></span></a></td>
                                     <td>
                                         <div>
@@ -745,8 +847,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                                     <td>
                                         <div class="action-btn-group">
                                             <a href="#" class="btn btn-success btn-sm rounded-pill px-3 btn-view-certificate" data-request-id="<?php echo htmlspecialchars($ticket['request_id']); ?>">View Certificate</a>
-                                            
-                                            <?php if(!empty($ticket['approved_admin_comment'])): ?>
+                                            <?php if($showCompletedComments): ?>
                                                 <a href="#" class="btn btn-comments btn-sm rounded-pill px-3">Comments</a>
                                             <?php endif; ?>
                                         </div>
@@ -756,6 +857,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                         </tbody>
                     </table>
                 </div>
+                <?php render_pagination_controls('completed', $completed_page, $completed_pages); ?>
             </div>
         </div>
     </div>
@@ -950,7 +1052,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
         </div>
     </div>
 
-<script src="../javascript/admin-ticket.js?v=8" defer></script>
+<script src="../javascript/admin-ticket.js?v=12" defer></script>
 <script src="../javascript/admin-profile.js?v=5" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

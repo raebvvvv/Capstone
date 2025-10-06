@@ -328,7 +328,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 </div>
 
 <div class="row mb-3">
-  <div class="col-md-4">
+  <div class="col-md-3">
     <label class="form-label">Campus</label>
     <input type="text" 
            class="form-control bg-light lock <?php echo isset($errors['campus']) ? 'is-invalid' : ''; ?>" 
@@ -340,7 +340,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
     <?php endif; ?>
   </div>
 
-  <div class="col-md-4">
+  <div class="col-md-3">
     <label class="form-label">College</label>
     <input type="text" 
            class="form-control bg-light lock <?php echo isset($errors['college']) ? 'is-invalid' : ''; ?>" 
@@ -352,7 +352,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
     <?php endif; ?>
   </div>
 
-  <div class="col-md-4">
+  <div class="col-md-3">
     <label class="form-label">Program</label>
     <input type="text" 
            class="form-control bg-light lock <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
@@ -361,6 +361,17 @@ if (!empty($errors) && !$hasRestrictionError): ?>
            readonly>
     <?php if (isset($errors['program'])): ?>
       <div class="invalid-feedback"><?php echo $errors['program']; ?></div>
+    <?php endif; ?>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Academic Level</label>
+    <input type="text"
+           class="form-control bg-light lock <?php echo isset($errors['academic_level']) ? 'is-invalid' : ''; ?>"
+           name="academic_level" id="academicLevel"
+           value="<?php echo htmlspecialchars($profile['academic_level'] ?? ''); ?>"
+           readonly>
+    <?php if (isset($errors['academic_level'])): ?>
+      <div class="invalid-feedback"><?php echo $errors['academic_level']; ?></div>
     <?php endif; ?>
   </div>
 </div>

@@ -54,6 +54,58 @@ try {
   $allowStatuses = ['pending','pending_review','under_review','revision_needed','approved'];
   $canNote = in_array($status, $allowStatuses, true);
 
+  // IPMO comments (issue/comment/affected) for user side
+  $ipmoIssuePending = $ipmoCommentPending = $ipmoAffectedPending = '';
+  $ipmoIssueApproved = $ipmoCommentApproved = $ipmoAffectedApproved = '';
+  try {
+    // Ensure meta table exists to avoid join errors on fresh DBs
+    $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
+      submission_id INT NOT NULL,
+      scope ENUM('pending','approved') NOT NULL,
+      issue_label VARCHAR(150) DEFAULT NULL,
+      admin_comment TEXT NULL,
+      affected_doc_types TEXT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (submission_id, scope),
+      CONSTRAINT fk_sim_submission_user FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    // Fetch both scopes in one go
+    $m = $pdo->prepare('SELECT scope, issue_label, admin_comment, affected_doc_types FROM submission_incomplete_meta WHERE submission_id = ?');
+    $m->execute([$sid]);
+    foreach ($m->fetchAll(PDO::FETCH_ASSOC) as $mr) {
+      if (($mr['scope'] ?? '') === 'pending') {
+        $ipmoIssuePending = trim((string)$mr['issue_label']);
+        $ipmoCommentPending = trim((string)$mr['admin_comment']);
+        $ipmoAffectedPending = trim((string)$mr['affected_doc_types']);
+      } elseif (($mr['scope'] ?? '') === 'approved') {
+        $ipmoIssueApproved = trim((string)$mr['issue_label']);
+        $ipmoCommentApproved = trim((string)$mr['admin_comment']);
+        $ipmoAffectedApproved = trim((string)$mr['affected_doc_types']);
+      }
+    }
+  } catch (Throwable $e) { /* ignore; leave as empty */ }
+
+  // Choose what to show based on status with sensible fallbacks
+  $completionRemark = trim((string)($sub['remarks'] ?? ''));
+  $issueSrc = '';
+  $affectedSrc = '';
+  $commentSrc = '';
+  if ($status === 'approved') {
+    $issueSrc = $ipmoIssueApproved !== '' ? $ipmoIssueApproved : $ipmoIssuePending;
+    $affectedSrc = $ipmoAffectedApproved !== '' ? $ipmoAffectedApproved : $ipmoAffectedPending;
+    $commentSrc = $ipmoCommentApproved !== '' ? $ipmoCommentApproved : ($ipmoCommentPending !== '' ? $ipmoCommentPending : $completionRemark);
+  } elseif ($status === 'completed') {
+    $issueSrc = $ipmoIssueApproved; // show latest known issue context
+    $affectedSrc = $ipmoAffectedApproved;
+    $commentSrc = $completionRemark !== '' ? $completionRemark : ($ipmoCommentApproved !== '' ? $ipmoCommentApproved : $ipmoCommentPending);
+  } else { // pending and others
+    $issueSrc = $ipmoIssuePending;
+    $affectedSrc = $ipmoAffectedPending;
+    $commentSrc = $ipmoCommentPending;
+  }
+  $hasIpmoComments = ($issueSrc !== '' || $affectedSrc !== '' || $commentSrc !== '');
+
   // Determine adviser name for user side:
   // 1) submissions.adviser string, else 2) submissions.adviser_id via advisers table, else 3) first co-author with is_adviser=1
   $adviserName = trim((string)($sub['adviser'] ?? ''));
@@ -95,6 +147,12 @@ try {
     'additionalAuthors' => $authors,
     'notes' => $notes,
     'canNote' => $canNote,
+    'ipmoComments' => [
+      'issue' => $issueSrc,
+      'affected' => $affectedSrc,
+      'comment' => $commentSrc,
+      'has' => $hasIpmoComments
+    ],
     // Do not set a banner by default; we will show a success banner only after an actual reupload in client-side flow
     'statusBanner' => ''
   ];

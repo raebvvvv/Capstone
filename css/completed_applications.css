@@ -417,6 +417,14 @@ footer, .site-footer {
     color: #6e0f0f; /* maroon */
 }
 
+/* Scrollable dropdown menus for long lists */
+#collegeMenu,
+#programMenu {
+    max-height: 45vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
 .ipapp-desc-link {
     display: inline-block;
     cursor: pointer;

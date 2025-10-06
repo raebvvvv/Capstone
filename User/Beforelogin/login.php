@@ -18,33 +18,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     if (!empty($login_identifier) && !empty($password)) {
-        // First, try to find user by email
-        $query = "SELECT user_id, email, password, role, status FROM users WHERE email = ?";
-        $stmt = $pdo->prepare($query);
-        $stmt->execute([$login_identifier]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        // If not found by email, try to find by number in appropriate profile table
-        if (!$user) {
-            // Try student_number
-            $query = "SELECT u.user_id, u.email, u.password, u.role, u.status, sp.student_number as identifier 
-                      FROM users u 
-                      JOIN student_profiles sp ON u.user_id = sp.user_id 
-                      WHERE sp.student_number = ?";
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([$login_identifier]);
+        try {
+            // Unified lookup: match by email OR student_number OR employee_number OR admin_number
+            $sql = "SELECT 
+                        u.user_id, u.email, u.password, u.role, u.status,
+                        CASE 
+                            WHEN u.role = 'student'  THEN sp.student_number
+                            WHEN u.role = 'employee' THEN ep.employee_number
+                            WHEN u.role = 'admin'    THEN ap.admin_number
+                            ELSE NULL 
+                        END AS identifier
+                    FROM users u
+                    LEFT JOIN student_profiles sp ON sp.user_id = u.user_id
+                    LEFT JOIN employee_profiles ep ON ep.user_id = u.user_id
+                    LEFT JOIN admin_profiles ap    ON ap.user_id = u.user_id
+                    WHERE u.email = ?
+                       OR sp.student_number = ?
+                       OR ep.employee_number = ?
+                       OR ap.admin_number = ?
+                    LIMIT 1";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$login_identifier, $login_identifier, $login_identifier, $login_identifier]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            // If not found, try employee_number
-            if (!$user) {
-                $query = "SELECT u.user_id, u.email, u.password, u.role, u.status, ep.employee_number as identifier 
-                          FROM users u 
-                          JOIN employee_profiles ep ON u.user_id = ep.user_id 
-                          WHERE ep.employee_number = ?";
-                $stmt = $pdo->prepare($query);
-                $stmt->execute([$login_identifier]);
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            }
+        } catch (Throwable $ex) {
+            // Graceful error; avoid fatal page crash
+            $user = false;
+            $error = 'Login temporarily unavailable. Please try again later.';
         }
 
         if ($user && password_verify($password, $user['password'])) {
@@ -61,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user_logged_in'] = true;
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['email'] = $user['email'];
-                $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email']; // Store the number they used to login
+                $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email']; // Store the number or email used to login
                 $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0; // Set admin status
                 $_SESSION['role'] = $user['role']; // Persist role (student/employee/admin)
 

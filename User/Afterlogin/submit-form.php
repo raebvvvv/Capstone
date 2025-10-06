@@ -33,6 +33,24 @@ if ($role === 'employee') {
     }
 }
 
+// For students, enforce academic level from DB profile, not from client
+if ($role === 'student') {
+    $stmt = $pdo->prepare("SELECT academic_level, campus, college, program FROM student_profiles WHERE user_id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $studentProfile = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($studentProfile && !empty($studentProfile['academic_level'])) {
+        // Override client-submitted values with server-side profile
+        $_POST['academicLevel'] = $studentProfile['academic_level'];
+        // Optionally also enforce other academic fields if you want full consistency
+        if (!empty($studentProfile['campus'])) { $_POST['campus'] = $studentProfile['campus']; }
+        if (array_key_exists('college', $studentProfile)) { $_POST['college'] = $studentProfile['college'] ?? ''; }
+        if (array_key_exists('program', $studentProfile)) { $_POST['program'] = $studentProfile['program'] ?? ''; }
+    } else {
+        // No academic level in DB; force an error
+        $errors[] = 'Missing academic level in your profile. Please contact support.';
+    }
+}
+
 // Required scalar fields
 $requiredFields = [
     'first_name','last_name','student_number','home_address','mobile_number','webmail',

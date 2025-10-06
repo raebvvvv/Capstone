@@ -159,32 +159,64 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                 <div class="row g-3">
                   <div class="col-md-4">
                     <label class="form-label required">Campus</label>
-                    <select name="campus" id="campus" class="form-select" required>
-                      <option value="PUP Main (Sta. Mesa, Manila)" selected>PUP Main (Sta. Mesa, Manila)</option>
-                    </select>
+                    <?php $campusVal = trim((string)($profile['campus'] ?? '')); ?>
+                    <?php if ($campusVal !== ''): ?>
+                      <select id="campus" class="form-select" disabled data-fixed="1">
+                        <option value="<?php echo htmlspecialchars($campusVal, ENT_QUOTES, 'UTF-8'); ?>" selected><?php echo htmlspecialchars($campusVal, ENT_QUOTES, 'UTF-8'); ?></option>
+                      </select>
+                      <input type="hidden" name="campus" value="<?php echo htmlspecialchars($campusVal, ENT_QUOTES, 'UTF-8'); ?>">
+                    <?php else: ?>
+                      <select name="campus" id="campus" class="form-select" required>
+                        <option value="" disabled selected>Choose...</option>
+                      </select>
+                    <?php endif; ?>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label required">Academic Level</label>
-                    <select name="academicLevel" id="academicLevel" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
-                      <!-- Will be populated from JS -->
-                    </select>
+                    <?php $acadLevelVal = trim((string)($profile['academic_level'] ?? '')); ?>
+                    <?php if ($acadLevelVal !== ''): ?>
+                      <select id="academicLevel" class="form-select" disabled data-fixed="1">
+                        <option value="<?php echo htmlspecialchars($acadLevelVal, ENT_QUOTES, 'UTF-8'); ?>" selected><?php echo htmlspecialchars($acadLevelVal, ENT_QUOTES, 'UTF-8'); ?></option>
+                      </select>
+                      <input type="hidden" name="academicLevel" value="<?php echo htmlspecialchars($acadLevelVal, ENT_QUOTES, 'UTF-8'); ?>">
+                    <?php else: ?>
+                      <select name="academicLevel" id="academicLevel" class="form-select" required>
+                        <option value="" disabled selected>Choose...</option>
+                        <!-- Will be populated from JS -->
+                      </select>
+                    <?php endif; ?>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label required">College</label>
-                    <select name="college" id="college" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
-                      <!-- Will be populated from JS -->
-                    </select>
+                    <?php $collegeVal = trim((string)($profile['college'] ?? '')); ?>
+                    <?php if ($collegeVal !== ''): ?>
+                      <select id="college" class="form-select" disabled data-fixed="1">
+                        <option value="<?php echo htmlspecialchars($collegeVal, ENT_QUOTES, 'UTF-8'); ?>" selected><?php echo htmlspecialchars($collegeVal, ENT_QUOTES, 'UTF-8'); ?></option>
+                      </select>
+                      <input type="hidden" name="college" value="<?php echo htmlspecialchars($collegeVal, ENT_QUOTES, 'UTF-8'); ?>">
+                    <?php else: ?>
+                      <select name="college" id="college" class="form-select" required>
+                        <option value="" disabled selected>Choose...</option>
+                        <!-- Will be populated from JS -->
+                      </select>
+                    <?php endif; ?>
                   </div>
                 </div>
                 <div class="row g-3 mt-2">
                   <div class="col-md-6">
                     <label class="form-label required">Program</label>
-                    <select name="program" id="program" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
-                      <!-- Will be populated from JS -->
-                    </select>
+                    <?php $programVal = trim((string)($profile['program'] ?? '')); ?>
+                    <?php if ($programVal !== ''): ?>
+                      <select id="program" class="form-select" disabled data-fixed="1">
+                        <option value="<?php echo htmlspecialchars($programVal, ENT_QUOTES, 'UTF-8'); ?>" selected><?php echo htmlspecialchars($programVal, ENT_QUOTES, 'UTF-8'); ?></option>
+                      </select>
+                      <input type="hidden" name="program" value="<?php echo htmlspecialchars($programVal, ENT_QUOTES, 'UTF-8'); ?>">
+                    <?php else: ?>
+                      <select name="program" id="program" class="form-select" required>
+                        <option value="" disabled selected>Choose...</option>
+                        <!-- Will be populated from JS -->
+                      </select>
+                    <?php endif; ?>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label required">Work Classification</label>

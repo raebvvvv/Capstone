@@ -318,9 +318,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const campusSelect = document.getElementById('campus');
   const workClassificationSelect = document.getElementById('workClassification');
   
-  if (campusSelect) populateDropdown(campusSelect, academicData.campus);
-  if (academicLevelSelect) populateDropdown(academicLevelSelect, academicData.academicLevel);
-  if (collegeSelect) populateDropdown(collegeSelect, academicData.college);
-  if (programSelect) populateDropdown(programSelect, academicData.program.default);
+  // Only populate selects that are not fixed/disabled by server profile values
+  if (campusSelect && !campusSelect.disabled) populateDropdown(campusSelect, academicData.campus);
+  // Only populate academic level if it's not locked by server profile
+  if (academicLevelSelect && !academicLevelSelect.disabled) {
+    populateDropdown(academicLevelSelect, academicData.academicLevel);
+  }
+  if (collegeSelect && !collegeSelect.disabled) populateDropdown(collegeSelect, academicData.college);
+  if (programSelect && !programSelect.disabled) populateDropdown(programSelect, academicData.program.default);
   if (workClassificationSelect) populateDropdown(workClassificationSelect, academicData.workClassification);
+
+  // If college/program are fixed (disabled), ensure their displayed option remains selected
+  if (collegeSelect && collegeSelect.disabled && collegeSelect.options.length === 1) {
+    collegeSelect.selectedIndex = 0;
+  }
+  if (programSelect && programSelect.disabled && programSelect.options.length === 1) {
+    programSelect.selectedIndex = 0;
+  }
+  // Ensure academic level stays on server-provided value when locked
+  if (academicLevelSelect && academicLevelSelect.disabled && academicLevelSelect.options.length === 1) {
+    academicLevelSelect.selectedIndex = 0;
+  }
 });

@@ -23,6 +23,21 @@ if (isset($_SESSION['user_id'])) {
 // Load completed applications from DB
 $applications = [];
 try {
+    // Ensure meta table exists so LEFT JOINs never fail on fresh DBs
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
+            submission_id INT NOT NULL,
+            scope ENUM('pending','approved') NOT NULL,
+            issue_label VARCHAR(150) DEFAULT NULL,
+            admin_comment TEXT NULL,
+            affected_doc_types TEXT NULL,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (submission_id, scope),
+            CONSTRAINT fk_sim_submission_ca FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    } catch (Throwable $eCreate) { /* ignore meta ensure errors */ }
+
     $sql = "SELECT 
                 s.submission_id,
                 s.submission_code AS request_id,
@@ -37,6 +52,7 @@ try {
                 s.date_accomplished,
                 s.status_updated_at,
                 s.created_at,
+                s.remarks AS completion_remark,
                 s.work_classification,
                 CASE 
                     WHEN u.role = 'student' THEN CONCAT_WS(' ', sp.first_name, sp.middle_name, sp.last_name)
@@ -48,19 +64,28 @@ try {
                     WHEN u.role = 'student' THEN sp.student_number
                     WHEN u.role = 'employee' THEN ep.employee_number  
                     ELSE CONCAT('User-', u.user_id)
-                END as identifier
+                END as identifier,
+                mp.issue_label   AS pending_issue_label,
+                mp.admin_comment AS pending_admin_comment,
+                mp.affected_doc_types AS pending_affected_doc_types,
+                ma.issue_label   AS approved_issue_label,
+                ma.admin_comment AS approved_admin_comment,
+                ma.affected_doc_types AS approved_affected_doc_types
             FROM submissions s
             LEFT JOIN users u ON u.user_id = s.user_id
             LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
             LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+            LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope = 'pending'
+            LEFT JOIN submission_incomplete_meta ma ON ma.submission_id = s.submission_id AND ma.scope = 'approved'
             WHERE LOWER(s.status) = 'completed'
             ORDER BY s.status_updated_at DESC, s.created_at DESC";
     $stmt = $pdo->query($sql);
     $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Preload documents for all submissions
+    // Preload documents and authors for all submissions
     $apps = [];
     $fileStmt = $pdo->prepare("SELECT submission_id, doc_type, file_path FROM submission_documents WHERE submission_id = ? ORDER BY doc_type ASC");
+    $authStmt = $pdo->prepare("SELECT first_name, middle_name, last_name, is_adviser FROM submission_authors WHERE submission_id = ? ORDER BY is_adviser DESC, last_name ASC, first_name ASC");
     foreach ($subs as $s) {
         $files = [];
         try {
@@ -77,6 +102,25 @@ try {
                 $files[] = [ 'label' => $label, 'url' => $url, 'name' => $safeFilename, 'exists' => $exists ];
             }
         } catch (Throwable $e) { /* ignore per-submission doc errors */ }
+
+        // Build authors for Details modal (additional authors + adviser)
+        $additionalAuthors = [];
+        $adviserName = '';
+        try {
+            $authStmt->execute([(int)$s['submission_id']]);
+            $arows = $authStmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($arows as $a) {
+                $fname = trim((string)($a['first_name'] ?? ''));
+                $mname = trim((string)($a['middle_name'] ?? ''));
+                $lname = trim((string)($a['last_name'] ?? ''));
+                $mi = $mname !== '' ? (' ' . strtoupper(mb_substr($mname, 0, 1)) . '.') : '';
+                $full = trim($fname . $mi . ' ' . $lname);
+                if ($full === '') continue;
+                $isAdv = (int)($a['is_adviser'] ?? 0) === 1;
+                if ($isAdv && $adviserName === '') { $adviserName = $full; }
+                $additionalAuthors[] = [ 'name' => $full, 'is_adviser' => $isAdv ? 1 : 0 ];
+            }
+        } catch (Throwable $e) { /* ignore authors errors */ }
 
         // Build description/name/date expected by the page
         $desc = (string)($s['title'] ?? 'Untitled');
@@ -95,11 +139,28 @@ try {
             $group = (stripos($rawLevel, 'employee') !== false) ? 'Employee' : 'Student';
         }
         $college = (string)($s['college'] ?? '');
+        // Derive a short college code consistently for filtering
         $collegeCode = $college;
-        if (strpos($college, ' - ') !== false) { $collegeCode = substr($college, 0, strpos($college, ' - ')); }
+        if (strpos($college, ' - ') !== false) {
+            $collegeCode = substr($college, 0, strpos($college, ' - '));
+        } elseif (preg_match('/\(([^)]+)\)\s*$/', $college, $m)) {
+            // e.g., "College of Science (CS)" -> CS
+            $collegeCode = strtoupper(trim($m[1]));
+        }
 
         // Use the identifier from the query
         $idNumber = (string)($s['identifier'] ?? 'N/A');
+
+        // Compute comment/incomplete meta attributes similar to admin/ticket.php Completed tab
+    // Completed tab should only reflect comments/info from the Approved stage
+    // Do not persist Pending comments or Completion-time remarks here
+    $aIssue = trim((string)($s['approved_issue_label'] ?? ''));
+    $aComment = trim((string)($s['approved_admin_comment'] ?? ''));
+    $aAffected = trim((string)($s['approved_affected_doc_types'] ?? ''));
+    $cIssue = $aIssue;
+    $cAffected = $aAffected;
+    $cComment = $aComment;
+    $showComments = ($cIssue !== '' || $cAffected !== '' || $cComment !== '');
 
         $applications[] = [
             'description' => $desc,
@@ -129,6 +190,9 @@ try {
                 'files' => $files,
                 // Certificate preview/download may be wired later; keep placeholder for now
                 'certificateUrl' => '#',
+                // Authors/adviser for Details modal
+                'additionalAuthors' => $additionalAuthors,
+                'adviser' => $adviserName,
             ],
             // Flat attributes to support filtering
             'meta' => [
@@ -138,6 +202,13 @@ try {
                 'group' => $group,
                 'type' => 'Copyright',
                 'campus' => (string)($s['campus'] ?? ''),
+            ],
+            // Attributes for Comments persistence across reloads
+            'attrs' => [
+                'admin_comment' => $cComment,
+                'incomplete_remark' => $cIssue,
+                'resubmit_files' => $cAffected,
+                'show_comments' => $showComments,
             ],
         ];
     }
@@ -158,7 +229,7 @@ try {
     <link rel="stylesheet" href="../css/completed_applications.css?v=7">
     <script src="../javascript/forms/academic-dropdowns.js" defer></script>
     <link rel="stylesheet" href="../css/admin-navbar.css?v=2">
-    <script src="../javascript/shared-details-modal.js?v=1" defer></script>
+    <script src="../javascript/shared-details-modal.js?v=3" defer></script>
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Completed Applications</title>
 </head>
@@ -380,6 +451,11 @@ try {
                     $requestId = isset($app['details']['requestId']) ? (string)$app['details']['requestId'] : '';
                     $detailsAttr = isset($app['details']) ? htmlspecialchars(base64_encode(json_encode($app['details'])), ENT_QUOTES, 'UTF-8') : '';
                     $meta = $app['meta'] ?? [];
+                    $attrs = $app['attrs'] ?? ['admin_comment'=>'','incomplete_remark'=>'','resubmit_files'=>'','show_comments'=>false];
+                    $dataAdminComment = htmlspecialchars((string)($attrs['admin_comment'] ?? ''), ENT_QUOTES, 'UTF-8');
+                    $dataIncRemark = htmlspecialchars((string)($attrs['incomplete_remark'] ?? ''), ENT_QUOTES, 'UTF-8');
+                    $dataResubmit = htmlspecialchars((string)($attrs['resubmit_files'] ?? ''), ENT_QUOTES, 'UTF-8');
+                    $dataShow = !empty($attrs['show_comments']) ? '1' : '0';
                 ?>
              <div class="ipapp-list-item"
                      data-request-id="<?php echo htmlspecialchars($requestId); ?>"
@@ -394,12 +470,19 @@ try {
                  data-group="<?php echo htmlspecialchars(strtolower($meta['group'] ?? '')); ?>"
                      data-type="<?php echo htmlspecialchars(strtolower($meta['type'] ?? '')); ?>"
                      data-campus="<?php echo htmlspecialchars(strtolower($meta['campus'] ?? '')); ?>"
+                     data-admin-comment="<?php echo $dataAdminComment; ?>"
+                     data-incomplete-remark="<?php echo $dataIncRemark; ?>"
+                     data-resubmit-files="<?php echo $dataResubmit; ?>"
+                     data-show-comments="<?php echo $dataShow; ?>"
                 >
                     <a href="#" class="ipapp-desc ipapp-desc-link" data-details="<?php echo $detailsAttr; ?>">
                         <?php echo htmlspecialchars($app['description']); ?>
                     </a>
                     <div class="ipapp-userdate">
                         <a href="#" class="ipapp-user-link"><?php echo htmlspecialchars($app['name']); ?>, <?php echo htmlspecialchars($app['date_pretty'] ?? $app['date']); ?></a>
+                        <?php if (!empty($attrs['show_comments'])): ?>
+                            <a href="#" class="ms-2 small text-decoration-underline ipapp-comments-link">Comments</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -465,7 +548,7 @@ try {
         </div>
     </div>
 
-    <script src="../javascript/admin-completed-applications.js?v=14"></script>
+    <script src="../javascript/admin-completed-applications.js?v=17"></script>
 <script src="../javascript/admin-profile.js?v=5" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
@@ -526,5 +609,21 @@ try {
     </div>
 </div>
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
+    
+    <!-- Comments Modal for Completed Applications -->
+    <div class="modal fade" id="completedCommentsModal" tabindex="-1" aria-labelledby="completedCommentsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="completedCommentsModalLabel">Comments</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="completedCommentText" class="form-label">Comments:</label>
+                    <textarea readonly class="form-control" id="completedCommentText" rows="6" style="resize:none;"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

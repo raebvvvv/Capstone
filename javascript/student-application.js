@@ -86,7 +86,8 @@ document.addEventListener('DOMContentLoaded', function () {
               detailsContent.appendChild(container);
               // Determine context: on employee pages, body has data-user-kind="employee"
               const isEmployee = (document.body && document.body.getAttribute('data-user-kind') === 'employee');
-              const opts = { role: isEmployee ? 'employee' : 'user' };
+              const inApprovedTabForSuppression = !!btn.closest('#approved');
+              const opts = { role: isEmployee ? 'employee' : 'user', suppressIpmoComments: inApprovedTabForSuppression };
               if(resubmitRaw){ opts.flaggedTypes = resubmitRaw; }
               window.renderSubmissionDetails(container, data, opts);
 

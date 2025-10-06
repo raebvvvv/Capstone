@@ -208,6 +208,9 @@
             if(charts.campus){ charts.campus.data.labels = data.byCampus.labels; charts.campus.data.datasets[0].data = data.byCampus.values; charts.campus.update(); }
             if(charts.workClass){ charts.workClass.data.labels = data.workClass.labels; charts.workClass.data.datasets[0].data = data.workClass.values; charts.workClass.update(); }
             setAsOf(data.last_updated_iso || data.last_updated || data.as_of);
+            // After a successful refresh, also reload the page so the whole dashboard reflects latest data/state
+            // (requested behavior). This ensures server-rendered counts and any other UI pieces are in sync.
+            window.location.reload();
           } catch(err){ console.error('Dashboard reload error', err); alert('Network error while reloading metrics'); }
           finally{ reloadBtn.disabled = false; var spin2 = document.getElementById('dashReloadSpin'); if(spin2){ spin2.classList.add('d-none'); } }
         })();
