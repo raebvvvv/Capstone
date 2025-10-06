@@ -158,11 +158,11 @@ class SecurityHeaders {
         // Font sources
         $cspDirectives[] = "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com";
         
-        // Object and embed restrictions
-        $cspDirectives[] = "object-src 'none'";
-        $cspDirectives[] = "embed-src 'none'";
+    // Object/embed restrictions
+    // Note: 'embed-src' is not a valid CSP Level 3 directive; use object-src and frame-src/child-src instead
+    $cspDirectives[] = "object-src 'none'";
         
-        // Frame restrictions
+    // Frame restrictions
         $cspDirectives[] = "frame-ancestors 'none'";
         $cspDirectives[] = "frame-src 'none'";
         
