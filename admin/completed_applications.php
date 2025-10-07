@@ -452,10 +452,6 @@ try {
                     $detailsAttr = isset($app['details']) ? htmlspecialchars(base64_encode(json_encode($app['details'])), ENT_QUOTES, 'UTF-8') : '';
                     $meta = $app['meta'] ?? [];
                     $attrs = $app['attrs'] ?? ['admin_comment'=>'','incomplete_remark'=>'','resubmit_files'=>'','show_comments'=>false];
-                    $dataAdminComment = htmlspecialchars((string)($attrs['admin_comment'] ?? ''), ENT_QUOTES, 'UTF-8');
-                    $dataIncRemark = htmlspecialchars((string)($attrs['incomplete_remark'] ?? ''), ENT_QUOTES, 'UTF-8');
-                    $dataResubmit = htmlspecialchars((string)($attrs['resubmit_files'] ?? ''), ENT_QUOTES, 'UTF-8');
-                    $dataShow = !empty($attrs['show_comments']) ? '1' : '0';
                 ?>
              <div class="ipapp-list-item"
                      data-request-id="<?php echo htmlspecialchars($requestId); ?>"
@@ -470,19 +466,12 @@ try {
                  data-group="<?php echo htmlspecialchars(strtolower($meta['group'] ?? '')); ?>"
                      data-type="<?php echo htmlspecialchars(strtolower($meta['type'] ?? '')); ?>"
                      data-campus="<?php echo htmlspecialchars(strtolower($meta['campus'] ?? '')); ?>"
-                     data-admin-comment="<?php echo $dataAdminComment; ?>"
-                     data-incomplete-remark="<?php echo $dataIncRemark; ?>"
-                     data-resubmit-files="<?php echo $dataResubmit; ?>"
-                     data-show-comments="<?php echo $dataShow; ?>"
                 >
                     <a href="#" class="ipapp-desc ipapp-desc-link" data-details="<?php echo $detailsAttr; ?>">
                         <?php echo htmlspecialchars($app['description']); ?>
                     </a>
                     <div class="ipapp-userdate">
                         <a href="#" class="ipapp-user-link"><?php echo htmlspecialchars($app['name']); ?>, <?php echo htmlspecialchars($app['date_pretty'] ?? $app['date']); ?></a>
-                        <?php if (!empty($attrs['show_comments'])): ?>
-                            <a href="#" class="ms-2 small text-decoration-underline ipapp-comments-link">Comments</a>
-                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -548,7 +537,7 @@ try {
         </div>
     </div>
 
-    <script src="../javascript/admin-completed-applications.js?v=17"></script>
+    <script src="../javascript/admin-completed-applications.js?v=18"></script>
 <script src="../javascript/admin-profile.js?v=5" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 
@@ -610,20 +599,6 @@ try {
 </div>
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
     
-    <!-- Comments Modal for Completed Applications -->
-    <div class="modal fade" id="completedCommentsModal" tabindex="-1" aria-labelledby="completedCommentsModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="completedCommentsModalLabel">Comments</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="completedCommentText" class="form-label">Comments:</label>
-                    <textarea readonly class="form-control" id="completedCommentText" rows="6" style="resize:none;"></textarea>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </body>
 </html>

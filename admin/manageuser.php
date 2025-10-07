@@ -29,6 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     $email = $_POST['email'];
     $role = isset($_POST['role']) ? $_POST['role'] : null;
     $status = isset($_POST['status']) ? $_POST['status'] : null;
+    // Optional student profile fields
+    $student_campus = isset($_POST['student_campus']) ? trim($_POST['student_campus']) : null;
+    $student_college = isset($_POST['student_college']) ? trim($_POST['student_college']) : null;
+    $student_program = isset($_POST['student_program']) ? trim($_POST['student_program']) : null;
     // Validate role and status
     $valid_roles = ['student','employee','admin'];
     $valid_status = ['active','inactive','pending'];
@@ -42,6 +46,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
         $stmt_update = $pdo->prepare("UPDATE users SET email = ? WHERE user_id = ?");
         $stmt_update->execute([$email, $user_id]);
     }
+
+        // If student role, upsert campus/college/program in student_profiles
+        if ($role === 'student') {
+            try {
+                $stmt_check = $pdo->prepare("SELECT profile_id FROM student_profiles WHERE user_id = ? LIMIT 1");
+                $stmt_check->execute([$user_id]);
+                $existing = $stmt_check->fetchColumn();
+                if ($existing) {
+                    $stmt_sp = $pdo->prepare("UPDATE student_profiles SET campus = ?, college = ?, program = ?, last_updated_at = NOW() WHERE user_id = ?");
+                    $stmt_sp->execute([$student_campus, $student_college, $student_program, $user_id]);
+                } else {
+                    $stmt_sp = $pdo->prepare("INSERT INTO student_profiles (user_id, campus, college, program, last_updated_at) VALUES (?,?,?,?, NOW())");
+                    $stmt_sp->execute([$user_id, $student_campus, $student_college, $student_program]);
+                }
+            } catch (Exception $e) {
+                // swallow and continue to avoid breaking the flow; optionally log error
+            }
+        }
 
     header("Location: manageuser.php");
     exit();
@@ -78,7 +100,10 @@ $sql_active = "
             WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
             WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
             ELSE 'Unknown User'
-        END as full_name
+        END as full_name,
+        sp.campus AS student_campus,
+        sp.college AS student_college,
+        sp.program AS student_program
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -134,7 +159,10 @@ $sql_pending = "
             WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
             WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
             ELSE 'Unknown User'
-        END as full_name
+        END as full_name,
+        sp.campus AS student_campus,
+        sp.college AS student_college,
+        sp.program AS student_program
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -190,7 +218,10 @@ $sql_inactive = "
             WHEN u.role = 'employee' THEN CONCAT_WS(' ', ep.first_name, ep.middle_name, ep.last_name)
             WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
             ELSE 'Unknown User'
-        END as full_name
+        END as full_name,
+        sp.campus AS student_campus,
+        sp.college AS student_college,
+        sp.program AS student_program
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -508,6 +539,23 @@ $result_inactive = $stmt_inactive->fetchAll();
                                     </select>
                                 </div>
                             </div>
+                                <?php if (($row['role'] ?? '') === 'student'): ?>
+                                <div class="border rounded p-3 mb-3 bg-light-subtle" style="border-color:#ddd!important;">
+                                    <h6 class="fw-bold mb-3">Student Profile</h6>
+                                    <div class="mb-3">
+                                        <label for="student_campus_<?php echo $row['user_id']; ?>" class="form-label">Campus</label>
+                                        <input type="text" class="form-control" id="student_campus_<?php echo $row['user_id']; ?>" name="student_campus" value="<?php echo htmlspecialchars($row['student_campus'] ?? ''); ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="student_college_<?php echo $row['user_id']; ?>" class="form-label">College</label>
+                                        <input type="text" class="form-control" id="student_college_<?php echo $row['user_id']; ?>" name="student_college" value="<?php echo htmlspecialchars($row['student_college'] ?? ''); ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="student_program_<?php echo $row['user_id']; ?>" class="form-label">Program</label>
+                                        <input type="text" class="form-control" id="student_program_<?php echo $row['user_id']; ?>" name="student_program" value="<?php echo htmlspecialchars($row['student_program'] ?? ''); ?>">
+                                    </div>
+                                </div>
+                                <?php endif; ?>
                             <button type="submit" name="update_user" class="btn btn-success">Update</button>
                         </form>
                     </div>

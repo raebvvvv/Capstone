@@ -617,12 +617,9 @@
           const reqDateText = (cells[3]?.textContent || '').trim();
           const notesHTML = (cells[5]?.innerHTML || '<span class="text-muted small">None</span>');
           const rowData = { requestId: requestIdText, studentName: nameText, studentId: studIdText, userLabel, requestDate: reqDateText, notesHTML };
-          // Carry forward approved-stage attributes so the Completed row shows Comments immediately.
-          // We intentionally ignore any completion-time comment here.
-          const srcAdminComment = (row.getAttribute('data-admin-comment')||'').trim();
-          const srcIncompleteRemark = (row.getAttribute('data-incomplete-remark')||'').trim();
-          const srcResubmit = (row.getAttribute('data-resubmit-files')||'').trim();
-          const shouldShowComments = !!(srcAdminComment || srcIncompleteRemark || srcResubmit);
+          // Completed tab rule: show Comments only when a completion-time comment is provided.
+          const completionComment = (document.getElementById('complete_comments')?.value || '').trim();
+          const shouldShowComments = !!completionComment;
           row.remove();
           const completedTbody = document.querySelector('#completed tbody');
           if(completedTbody){
@@ -644,10 +641,8 @@
                   ${commentsBtnHTML}
                 </div>
               </td>`;
-            // Set attributes so the Comments modal has content immediately
-            if (srcAdminComment) newRow.setAttribute('data-admin-comment', srcAdminComment);
-            if (srcIncompleteRemark) newRow.setAttribute('data-incomplete-remark', srcIncompleteRemark);
-            if (srcResubmit) newRow.setAttribute('data-resubmit-files', srcResubmit);
+            // Set only completion-time comment on the completed row
+            if (completionComment) newRow.setAttribute('data-admin-comment', completionComment);
             completedTbody.prepend(newRow);
           }
         }
@@ -702,9 +697,7 @@
             const rowData = { requestId: reqIdText, studentName: nameText, studentId: studIdText, userLabel, requestDate: reqDateText, notesHTML };
             // For Approved row, use only the Approve-time comment (not the pending comment)
             const approveTimeComment = (comment || '').trim();
-            // Carry forward other attributes (issue label, resubmit files) if any
-            const oldIncompleteRemark = (pendingApproveRow.getAttribute('data-incomplete-remark')||'').trim();
-            const oldResubmit = (pendingApproveRow.getAttribute('data-resubmit-files')||'').trim();
+            // Do NOT carry forward pending-stage attributes into Approved
             const carriedComment = approveTimeComment; // only approval comment should appear in Approved
             // Approved tab rule: show Comments button only when there is an approval-time comment
             const shouldShowComments = !!approveTimeComment;
@@ -734,8 +727,6 @@
                   </div>
                 </td>`;
               if(carriedComment) newRow.setAttribute('data-admin-comment', carriedComment);
-              if(oldIncompleteRemark) newRow.setAttribute('data-incomplete-remark', oldIncompleteRemark);
-              if(oldResubmit) newRow.setAttribute('data-resubmit-files', oldResubmit);
               approvedTbody.prepend(newRow);
             }
           }
@@ -854,7 +845,13 @@
             if(comment) approvedIncompleteTargetRow.setAttribute('data-admin-comment', comment);
             if(remark && remark.toLowerCase() !== 'remarks') approvedIncompleteTargetRow.setAttribute('data-incomplete-remark', remark);
             if(affected.length){ approvedIncompleteTargetRow.setAttribute('data-resubmit-files', affected.join('|')); }
-            ensureCommentsButton(approvedIncompleteTargetRow);
+            // Approved tab: show Comments button only if there's an approval-time comment
+            const existingBtn = approvedIncompleteTargetRow.querySelector('.btn-comments');
+            if (comment) {
+              if (!existingBtn) ensureCommentsButton(approvedIncompleteTargetRow);
+            } else if (existingBtn) {
+              existingBtn.remove();
+            }
             alert('Marked as Incomplete. The request remains in Approved and is flagged for resubmission.');
             // Reset active modal fields
             const ddA = document.getElementById('remarksDropdownActive');
@@ -883,27 +880,29 @@
       let text='';
       const tr = trigger.closest('tr');
       if(tr){
-        const adminComment = tr.getAttribute('data-admin-comment') || '';
-        const incompleteRemark = tr.getAttribute('data-incomplete-remark') || '';
-        const resubmit = tr.getAttribute('data-resubmit-files') || '';
-        const resubmitList = resubmit ? resubmit.split('|').filter(Boolean).map(s=> s.replace(/_/g,' ')) : [];
+        const adminComment = (tr.getAttribute('data-admin-comment')||'').trim();
         const inApproved = !!tr.closest('#approved');
-        if (inApproved && adminComment) {
-          // For Approved tab, show exactly the Approve-time comment as requested
-          text = adminComment;
-        } else if(incompleteRemark || resubmitList.length || adminComment){
-          const parts = [];
-          if(incompleteRemark){ parts.push(`Issue: ${incompleteRemark}`); }
-          if(resubmitList.length){
-            const label = inApproved ? 'File(s) to be resubmitted' : 'File(s) to re-upload';
-            parts.push(`${label}: ${resubmitList.join(', ')}`);
-          }
-          if(adminComment){ parts.push(`Comment: ${adminComment}`); }
-          text = parts.join('\n');
+        const inCompleted = !!tr.closest('#completed');
+        if (inApproved) {
+          // Approved: show only approval-time comment if present
+          text = adminComment || 'No remarks available.';
+        } else if (inCompleted) {
+          // Completed: show only completion-time comment if present
+          text = adminComment || 'No remarks available.';
         } else {
-          if(tr.closest('#pending')){ text = 'For Evaluation'; }
-          else if(inApproved){ text = 'No remarks available.'; }
-          else if(tr.closest('#completed')){ text = 'Complete'; }
+          // Pending: show composite of pending remark/resubmit/admin comment if any
+          const incompleteRemark = tr.getAttribute('data-incomplete-remark') || '';
+          const resubmit = tr.getAttribute('data-resubmit-files') || '';
+          const resubmitList = resubmit ? resubmit.split('|').filter(Boolean).map(s=> s.replace(/_/g,' ')) : [];
+          if(incompleteRemark || resubmitList.length || adminComment){
+            const parts = [];
+            if(incompleteRemark){ parts.push(`Issue: ${incompleteRemark}`); }
+            if(resubmitList.length){ parts.push(`File(s) to re-upload: ${resubmitList.join(', ')}`); }
+            if(adminComment){ parts.push(`Comment: ${adminComment}`); }
+            text = parts.join('\n');
+          } else {
+            text = 'For Evaluation';
+          }
         }
       }
       if(!text) text = 'No remarks available.';
@@ -916,17 +915,14 @@
     // Initialization scan: Add Comments button for any pending rows already in 'Awaiting Review'
   // Ensure rows already marked 'Awaiting Review' in Pending have a Comments button
   document.querySelectorAll('#pending tbody tr').forEach(tr=>{ const cells = tr.querySelectorAll('td'); const remark = (cells[4]?.textContent || '').trim().toLowerCase(); if(remark === 'awaiting review'){ ensureCommentsButton(tr); } });
-    // Optional cleanup: sync Comments button presence in Approved tab with any stored remarks/affected files/admin comment
+    // Optional cleanup: Approved tab should show Comments button only if an approval-time comment exists
     document.querySelectorAll('#approved tbody tr').forEach(tr=>{
       const adminComment = (tr.getAttribute('data-admin-comment')||'').trim();
-      const remark = (tr.getAttribute('data-incomplete-remark')||'').trim();
-      const resubmit = (tr.getAttribute('data-resubmit-files')||'').trim();
-      const hasAny = !!(adminComment || remark || resubmit);
       const btn = tr.querySelector('.btn-comments');
-      if (hasAny) {
+      if (adminComment) {
         if (!btn) ensureCommentsButton(tr);
-      } else {
-        if (btn) btn.remove();
+      } else if (btn) {
+        btn.remove();
       }
     });
 

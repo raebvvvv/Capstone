@@ -696,33 +696,20 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                                 <tr><td colspan="8" class="text-center">No approved requests.</td></tr>
                             <?php else: foreach ($approved_items as $ticket): ?>
                                 <?php
-                                    $aIssue = trim((string)($ticket['approved_issue_label'] ?? ''));
-                                    $aComment = trim((string)($ticket['approved_admin_comment'] ?? ''));
+                                    // Determine status label purely from approved-scope flags
+                                    $aIssue    = trim((string)($ticket['approved_issue_label'] ?? ''));
                                     $aAffected = trim((string)($ticket['approved_affected_doc_types'] ?? ''));
-                                    // Status logic for Approved tab:
-                                    // - Default: In-Review
-                                    // - If admin flagged an issue OR selected files to resubmit (approved scope), show Awaiting Review
                                     $approvedStatusLabel = ($aIssue !== '' || $aAffected !== '') ? 'Awaiting Review' : 'In-Review';
-                                    // Build attributes and Comments visibility with fallback to pending-scope values when approved-scope is empty
-                                    $pIssue = trim((string)($ticket['pending_issue_label'] ?? ''));
-                                    $pComment = trim((string)($ticket['pending_admin_comment'] ?? ''));
-                                    $pAffected = trim((string)($ticket['pending_affected_doc_types'] ?? ''));
+
+                                    // Approved tab Comments should NOT include any Pending remarks.
+                                    // Use ONLY the approval-time remark (submissions.remarks) for the Comments payload.
                                     $approveRemark = trim((string)($ticket['remark'] ?? ''));
-                                    $srcIssue    = ($aIssue !== '') ? $aIssue : $pIssue;
-                                    // For Approved tab, prefer the Approve dialog comment (submissions.remarks).
-                                    // If no approval comment exists, fall back to approved-scope meta comment only.
-                                    // Do NOT fall back to pending-scope admin comments.
-                                    // For Approved tab, only consider the Approve dialog comment for 'Comments' visibility and payload.
-                                    // Do not fall back to pending/approved meta for the Comments button rule.
-                                    $srcComment  = ($approveRemark !== '') ? $approveRemark : '';
-                                    $srcAffected = ($aAffected !== '') ? $aAffected : $pAffected;
                                     $approvedAttrs = '';
-                                    if($srcIssue !== '')    { $approvedAttrs .= ' data-incomplete-remark="'.htmlspecialchars($srcIssue, ENT_QUOTES).'"'; }
-                                    // Attach admin comment attribute only if an approval-time comment exists
-                                    if($srcComment !== '')  { $approvedAttrs .= ' data-admin-comment="'.htmlspecialchars($srcComment, ENT_QUOTES).'"'; }
-                                    if($srcAffected !== '') { $approvedAttrs .= ' data-resubmit-files="'.htmlspecialchars($srcAffected, ENT_QUOTES).'"'; }
-                                    // Show Comments button ONLY when approval-time comment is present
-                                    $showComments = ($srcComment !== '');
+                                    if ($approveRemark !== '') {
+                                        $approvedAttrs .= ' data-admin-comment="'.htmlspecialchars($approveRemark, ENT_QUOTES).'"';
+                                    }
+                                    // Do NOT attach data-incomplete-remark or data-resubmit-files here to avoid surfacing Pending meta.
+                                    $showComments = ($approveRemark !== '');
                                 ?>
                                 <tr<?php echo $approvedAttrs; ?>>
                                     <td><a href="#" class="open-details text-decoration-underline" title="Open details" data-request-id="<?php echo htmlspecialchars($ticket['request_id']); ?>"><?php echo htmlspecialchars($ticket['request_id']); ?></a></td>
@@ -798,23 +785,15 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                                 <tr><td colspan="8" class="text-center">No completed requests.</td></tr>
                             <?php else: foreach ($completed_items as $ticket): ?>
                                 <?php
-                                    // Build persisted attributes for Completed tab so Comments survive reloads
-                                    // Primary source: Approved-stage meta (issue/affected/comment)
-                                    // Additionally, if no approved-stage admin comment exists, fall back to the
-                                    // approval-time remark stored in submissions.remarks so Approve comments
-                                    // remain visible after completion.
-                                    $cIssue    = trim((string)($ticket['approved_issue_label'] ?? ''));
-                                    $cAffected = trim((string)($ticket['approved_affected_doc_types'] ?? ''));
-                                    $cComment  = trim((string)($ticket['approved_admin_comment'] ?? ''));
-                                    $approvalRemark = trim((string)($ticket['remark'] ?? ''));
-                                    if ($cComment === '' && $approvalRemark !== '') {
-                                        $cComment = $approvalRemark; // fallback to approval-time remark
-                                    }
+                                    // Completed tab: show Comments button ONLY if a comment was provided
+                                    // in the Complete action (completion-time remark stored in submissions.remarks).
+                                    $completionRemark = trim((string)($ticket['remark'] ?? ''));
                                     $completedAttrs = '';
-                                    if ($cIssue !== '')    { $completedAttrs .= ' data-incomplete-remark="'.htmlspecialchars($cIssue, ENT_QUOTES).'"'; }
-                                    if ($cAffected !== '') { $completedAttrs .= ' data-resubmit-files="'.htmlspecialchars($cAffected, ENT_QUOTES).'"'; }
-                                    if ($cComment !== '')  { $completedAttrs .= ' data-admin-comment="'.htmlspecialchars($cComment, ENT_QUOTES).'"'; }
-                                    $showCompletedComments = ($cIssue !== '' || $cAffected !== '' || $cComment !== '');
+                                    if ($completionRemark !== '') {
+                                        $completedAttrs .= ' data-admin-comment="'.htmlspecialchars($completionRemark, ENT_QUOTES).'"';
+                                    }
+                                    // Do not surface issue/affected meta in Completed tab per requirement.
+                                    $showCompletedComments = ($completionRemark !== '');
                                 ?>
                                 <tr<?php echo $completedAttrs; ?>>
                                     <td><a href="#" class="open-details text-decoration-underline" title="Open details" data-request-id="<?php echo htmlspecialchars($ticket['request_id']); ?>"><span style="font-weight:600;">&nbsp;<?php echo htmlspecialchars($ticket['request_id']); ?></span></a></td>
@@ -1052,7 +1031,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
         </div>
     </div>
 
-<script src="../javascript/admin-ticket.js?v=12" defer></script>
+<script src="../javascript/admin-ticket.js?v=13" defer></script>
 <script src="../javascript/admin-profile.js?v=5" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

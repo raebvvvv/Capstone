@@ -943,27 +943,12 @@ function initCompletedAppsFilters() {
 		} catch (_) { /* ignore malformed data */ }
 	});
 
-	// Handle Comments link click to show persisted remarks/comments
+	// Comments UI is disabled on Completed Applications; no-op handler retained to avoid errors if legacy elements exist
 	document.addEventListener('click', (e) => {
 		const cLink = e.target.closest('.ipapp-comments-link');
 		if (!cLink) return;
 		e.preventDefault();
-		const item = cLink.closest('.ipapp-list-item');
-		if (!item) return;
-		const remark = (item.getAttribute('data-incomplete-remark') || '').trim();
-		const adminComment = (item.getAttribute('data-admin-comment') || '').trim();
-		const files = (item.getAttribute('data-resubmit-files') || '').trim();
-		const parts = [];
-		if (remark) parts.push(`Remark: ${remark}`);
-		if (files) parts.push(`Affected document(s): ${files}`);
-		if (adminComment) parts.push(`Comments: ${adminComment}`);
-		const text = parts.join('\n\n');
-		const textarea = document.getElementById('completedCommentText');
-		if (textarea) {
-			textarea.value = text || 'No comments available.';
-		}
-		const modalEl = document.getElementById('completedCommentsModal');
-		if (modalEl) ModalApi.show(modalEl);
+		// Intentionally do nothing; comments view removed per requirements
 	});
 
 	// Initial render
