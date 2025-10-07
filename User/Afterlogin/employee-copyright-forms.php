@@ -100,18 +100,30 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
             <!-- Employees Information  -->
             <form id="submissionForm" class="mt-2" method="post" action="submit-form.php" enctype="multipart/form-data">
               <?php if (function_exists('csrf_input')) { csrf_input(); } ?>
-              <!-- NEW hidden acceptance flag -->
+                <div class="row g-3 mt-2">
+                  <div class="col-md-6">
+                    <label class="form-label required">Department</label>
+                    <select name="department" id="department" class="form-select" required>
+                      <!-- options populated by JS based on College -->
+                    </select>
+                  </div>
               <input type="hidden" name="accepted_terms" id="accepted_terms" value="">
               <h2 class="section-heading mb-3">Employee Information</h2>
               <fieldset>
                 <legend>Personal Details</legend>
-                <div class="row g-3">
-                  <div class="col-md-3">
-                    <label class="form-label required">First name</label>
+                <div class="row g-3 mt-2">
+                  <div class="col-md-6">
+                  <div class="col-md-4 d-none">
           <input type="text" name="first_name" class="form-control" required
             value="<?php echo htmlspecialchars($profile['first_name'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-3">
+                  <div class="col-md-6">
+                    <label class="form-label required">Program</label>
+                    <select name="program" id="program" class="form-select" required>
+                      <!-- options populated by JS based on Academic Level / College -->
+                    </select>
+                  </div>
                     <label class="form-label">Middle name</label>
           <input type="text" name="middle_name" class="form-control"
             value="<?php echo htmlspecialchars($profile['middle_name'] ?? ''); ?>" readonly>
@@ -203,7 +215,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                     <input type="text" name="title" class="form-control" required>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label required">Author(s)</label>
+                    <label class="form-label">Author(s)</label>
                     <div id="authorsList" class="mb-2 small text-muted">No authors added yet.</div>
                     <div id="authorsHidden"></div>
                     <button type="button" id="addAuthorBtn" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#authorModal">+ Add Author</button>
@@ -211,7 +223,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                   </div>
                   <div class="col-md-3">
                     <label class="form-label">Adviser</label>
-                    <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser" required>
+                    <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser">
                     <div class="form-check mt-2">
                     <input class="form-check-input" type="checkbox" name="adviser_coauthor" id="adviserCoauthor">
                     <label class="form-check-label" for="adviserCoauthor">
@@ -280,31 +292,25 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
           <form id="authorForm">
             <div class="row g-3">
               <div class="col-md-3">
-                <label class="form-label required">First name</label>
-                <input type="text" name="first_name" class="form-control" required>
+                <label class="form-label">First name</label>
+                <input type="text" name="first_name" class="form-control">
               </div>
               <div class="col-md-3">
-                <label class="form-label required">Last name</label>
-                <input type="text" name="last_name" class="form-control" required>
+                <label class="form-label">Last name</label>
+                <input type="text" name="last_name" class="form-control">
               </div>
-              <div class="col-md-2">
-                <label class="form-label required">Middle Initial</label>
+                <div class="row g-3 mt-2">
+                  <div class="col-md-12">
                 <input type="text" name="middle_initial" maxlength="1" class="form-control text-uppercase">
               </div>
               <div class="col-md-4">
                 <label class="form-label required">Employee ID</label>
                 <input type="text" name="employee_id" class="form-control">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">Campus</label>
-                <select name="campus" class="form-select">
-                  <option value="">Campus</option>
-                  <option>PUP MAIN</option>
-                  <option>CEA</option>
+                  <div class="col-md-4 d-none">
                 </select>
               </div>
               <div class="col-md-3">
-                <label class="form-label required">College</label>
+                <label class="form-label">College</label>
                 <select name="college" class="form-select">
                   <option value="">College</option>
                   <option>CCIS</option>
@@ -312,23 +318,23 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                 </select>
               </div>
               <div class="col-md-3">
-                <label class="form-label required">Program</label>
+                <label class="form-label">Program</label>
                 <input type="text" name="program" class="form-control" placeholder="e.g. BSIT">
               </div>
               <div class="col-md-3">
-                <label class="form-label required">Department</label>
+                <label class="form-label">Department</label>
                 <input type="text" name="department" class="form-control" placeholder="Dept.">
               </div>
               <div class="col-md-4">
-                <label class="form-label required">Mobile Number</label>
+                <label class="form-label">Mobile Number</label>
                 <input type="text" name="mobile" class="form-control">
               </div>
               <div class="col-md-8">
-                <label class="form-label required">Home Address</label>
+                <label class="form-label">Home Address</label>
                 <input type="text" name="home_address" class="form-control">
               </div>
               <div class="col-12">
-                <label class="form-label required">Webmail Address</label>
+                <label class="form-label">Webmail Address</label>
                 <input type="email" name="webmail" class="form-control" placeholder="email@domain.com">
               </div>
             </div>

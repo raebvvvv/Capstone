@@ -803,3 +803,20 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- =============================================
+-- Schema migration additions (idempotent guards)
+-- Add academic_level and program to employee_profiles if missing
+-- Run these manually if your MySQL client doesn't allow dynamic SQL in dumps
+-- =============================================
+-- Add academic_level column (nullable, to mirror student_profiles behavior plus 'Not Studying')
+ALTER TABLE `employee_profiles`
+  ADD COLUMN IF NOT EXISTS `academic_level` VARCHAR(50) NULL AFTER `campus`;
+
+-- Add program column
+ALTER TABLE `employee_profiles`
+  ADD COLUMN IF NOT EXISTS `program` VARCHAR(255) NULL AFTER `department`;
+
+-- Optional: backfill existing rows where academic_level is NULL to 'Not Studying' and program to 'N/A'
+UPDATE `employee_profiles` SET `academic_level` = 'Not Studying' WHERE `academic_level` IS NULL;
+UPDATE `employee_profiles` SET `program` = 'N/A' WHERE `program` IS NULL OR `program` = '';

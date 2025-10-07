@@ -18,6 +18,8 @@
 // Password confirmation validation
 document.addEventListener('DOMContentLoaded', function() {
     const repasswordField = document.getElementById('repassword');
+    const passwordField = document.getElementById('password');
+    const passwordErrors = document.getElementById('passwordErrors');
     if (repasswordField) {
         repasswordField.addEventListener('input', function() {
             const password = document.getElementById('password').value;
@@ -33,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Auto-capitalize name fields as user types
     function capitalizeInput(element) {
+        // Only apply to text-like inputs, never to <select> elements
+        if (element && element.tagName === 'SELECT') return;
         element.addEventListener('input', function(e) {
             const words = this.value.toLowerCase().split(' ');
             const capitalizedWords = words.map(word => {
@@ -46,7 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Apply auto-capitalization to name fields
-    const nameFields = ['lastName', 'firstName', 'middleName', 'suffix', 'department'];
+    // Exclude 'department' (it's a <select>) from auto-capitalization
+    const nameFields = ['lastName', 'firstName', 'middleName', 'suffix'];
     nameFields.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) {
@@ -87,4 +92,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up password toggles
     setupPasswordToggle('togglePassword', 'password', 'eyeIcon');
     setupPasswordToggle('toggleRepassword', 'repassword', 'eyeIconRepassword');
+
+    // Dynamic password requirement feedback (mirror server-side rules)
+    function getPasswordIssues(pwd) {
+        const issues = [];
+        if (pwd.length < 12) issues.push('Must be at least 12 characters long.');
+        if (!/[a-z]/.test(pwd)) issues.push('Must contain at least one lowercase letter.');
+        if (!/[A-Z]/.test(pwd)) issues.push('Must contain at least one uppercase letter.');
+        if (!/\d/.test(pwd)) issues.push('Must contain at least one number.');
+        if (!/[^a-zA-Z\d]/.test(pwd)) issues.push('Must contain at least one special character.');
+        return issues;
+    }
+
+    function renderPasswordIssues(issues) {
+        if (!passwordErrors) return;
+        passwordErrors.innerHTML = '';
+        if (!issues.length) {
+            passwordErrors.classList.add('d-none');
+            return;
+        }
+        issues.forEach(msg => {
+            const li = document.createElement('li');
+            li.textContent = msg;
+            passwordErrors.appendChild(li);
+        });
+        passwordErrors.classList.remove('d-none');
+    }
+
+    if (passwordField) {
+        const maybeRenderPasswordIssues = () => {
+            const val = passwordField.value || '';
+            if (!val.length) {
+                if (passwordErrors) {
+                    passwordErrors.classList.add('d-none');
+                    passwordErrors.innerHTML = '';
+                }
+                return;
+            }
+            renderPasswordIssues(getPasswordIssues(val));
+        };
+
+        passwordField.addEventListener('input', maybeRenderPasswordIssues);
+        // On load: only show if browser autofilled with a non-empty value
+        maybeRenderPasswordIssues();
+    }
 });

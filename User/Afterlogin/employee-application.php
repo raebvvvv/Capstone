@@ -1,6 +1,42 @@
 <?php 
 require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache headers
+// Active tab and pagination helpers
+$active_tab = isset($_GET['tab']) ? strtolower(trim((string)$_GET['tab'])) : 'pending';
+if (!in_array($active_tab, ['pending','approved','completed'], true)) { $active_tab = 'pending'; }
+$perPage = 10;
+$requested_page_emp = function(string $tab) use ($active_tab): int {
+  if ($active_tab === $tab) {
+    $p = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    return $p > 0 ? $p : 1;
+  }
+  return 1;
+};
+function build_page_url_emp(string $tab, int $page): string {
+  $params = $_GET;
+  $params['tab'] = $tab;
+  $params['page'] = $page;
+  $qs = http_build_query($params);
+  return htmlspecialchars($_SERVER['PHP_SELF'] . '?' . $qs);
+}
+function render_pagination_controls_emp(string $tab, int $page, int $pages): void {
+  if ($pages <= 1) { return; }
+  echo '<nav aria-label="' . htmlspecialchars(ucfirst($tab)) . ' pagination" class="mt-2">';
+  echo '<ul class="pagination justify-content-center">';
+  $prevDisabled = $page <= 1 ? ' disabled' : '';
+  $prevUrl = build_page_url_emp($tab, max(1, $page - 1));
+  echo '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Previous</a></li>';
+  for ($i = 1; $i <= $pages; $i++) {
+    $active = $i === $page ? ' active' : '';
+    $url = build_page_url_emp($tab, $i);
+    echo '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
+  }
+  $nextDisabled = $page >= $pages ? ' disabled' : '';
+  $nextUrl = build_page_url_emp($tab, min($pages, $page + 1));
+  echo '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Next</a></li>';
+  echo '</ul>';
+  echo '</nav>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,13 +92,13 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth and no-cache hea
 
   </div>
   <ul class="nav nav-tabs mb-3" id="applicationTabs">
-      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#pending">Pending</a></li>
-      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#approved">Approved</a></li>
-      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#completed">Completed</a></li>
+      <li class="nav-item"><a class="nav-link <?php echo $active_tab==='pending' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#pending">Pending</a></li>
+      <li class="nav-item"><a class="nav-link <?php echo $active_tab==='approved' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#approved">Approved</a></li>
+      <li class="nav-item"><a class="nav-link <?php echo $active_tab==='completed' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#completed">Completed</a></li>
     </ul>
     <div class="tab-content mt-3">
       <!-- Pending Tab -->
-      <div class="tab-pane fade show active" id="pending">
+      <div class="tab-pane fade <?php echo $active_tab==='pending' ? 'show active' : ''; ?>" id="pending">
         <div class="table-responsive">
           <table class="table align-middle bg-white mb-0">
             <thead class="table-light">
@@ -89,42 +125,58 @@ try {
   $sql = "SELECT 
       s.submission_id,
       s.submission_code,
-      s.student_number,
+    s.student_number AS employee_number,
       s.title,
       s.work_classification,
       s.status,
       s.remarks,
-    s.created_at,
-  mp.admin_comment AS pending_admin_comment,
-  mp.issue_label   AS pending_issue_label,
-  mp.affected_doc_types AS pending_affected_doc_types,
-    ma.admin_comment AS approved_admin_comment,
-    ma.issue_label   AS approved_issue_label,
-    ma.affected_doc_types AS approved_affected_doc_types
+      s.created_at,
+      mp.admin_comment AS pending_admin_comment,
+      mp.issue_label   AS pending_issue_label,
+      mp.affected_doc_types AS pending_affected_doc_types,
+      ma.admin_comment AS approved_admin_comment,
+      ma.issue_label   AS approved_issue_label,
+      ma.affected_doc_types AS approved_affected_doc_types
     FROM submissions s
     LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope='pending'
     LEFT JOIN submission_incomplete_meta ma ON ma.submission_id = s.submission_id AND ma.scope='approved'
     WHERE s.user_id = ?
     ORDER BY s.created_at DESC";
-    $stAll = $pdo->prepare($sql);
-    $stAll->execute([$user_id]);
-    $all = $stAll->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    foreach($all as $r){
-        $st = strtolower((string)$r['status']);
-        if(in_array($st,['pending','pending_review','under_review','revision_needed'])){ $pendingRows[] = $r; }
-        elseif($st==='approved'){ $approvedRows[] = $r; }
-        elseif($st==='completed'){ $completedRows[] = $r; }
-    }
+  $stAll = $pdo->prepare($sql);
+  $stAll->execute([$user_id]);
+  $all = $stAll->fetchAll(PDO::FETCH_ASSOC) ?: [];
+  foreach($all as $r){
+      $st = strtolower((string)$r['status']);
+      if(in_array($st,['pending','pending_review','under_review','revision_needed'])){ $pendingRows[] = $r; }
+      elseif($st==='approved'){ $approvedRows[] = $r; }
+      elseif($st==='completed'){ $completedRows[] = $r; }
+  }
 } catch(Throwable $e){ $pendingRows = $approvedRows = $completedRows = []; }
+// Pagination calculations per tab
+$pending_total   = count($pendingRows);
+$approved_total  = count($approvedRows);
+$completed_total = count($completedRows);
+
+$pending_pages   = max(1, (int)ceil($pending_total / $perPage));
+$approved_pages  = max(1, (int)ceil($approved_total / $perPage));
+$completed_pages = max(1, (int)ceil($completed_total / $perPage));
+
+$pending_page   = min($pending_pages,  $requested_page_emp('pending'));
+$approved_page  = min($approved_pages, $requested_page_emp('approved'));
+$completed_page = min($completed_pages,$requested_page_emp('completed'));
+
+$pending_items   = array_slice($pendingRows,   ($pending_page   - 1) * $perPage, $perPage);
+$approved_items  = array_slice($approvedRows,  ($approved_page  - 1) * $perPage, $perPage);
+$completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage, $perPage);
 ?>
-<?php if (count($pendingRows) === 0): ?>
+<?php if (count($pending_items) === 0): ?>
   <tr>
     <td colspan="5" class="text-center text-muted py-5">
       You have not applied for anything yet.
     </td>
   </tr>
 <?php else: ?>
-  <?php foreach ($pendingRows as $row): ?>
+  <?php foreach ($pending_items as $row): ?>
   <?php
   $pendingIssue = trim((string)($row['pending_issue_label'] ?? ''));
   $pendingComment = trim((string)($row['pending_admin_comment'] ?? ''));
@@ -139,21 +191,36 @@ try {
 >
   <?php
     // Pending remarks mapping:
-    // - Default: "For evaluation"
-    // - If admin incompletes the ticket in Pending tab, map issue label to either:
-    //   "Error in document" or "Incorrect Document/Upload" (exact strings as requested)
-    $displayRemark = 'For evaluation';
-    $pIssue = strtolower($pendingIssue);
-    if ($pIssue !== '') {
-      if (str_contains($pIssue, 'incorrect') || str_contains($pIssue, 'upload')) {
-        $displayRemark = 'Incorrect Document/Upload';
-      } elseif (str_contains($pIssue, 'error')) {
-        $displayRemark = 'Error in document';
+    // - Default: "For Evaluation"
+    // - After successful resubmission (status 'pending_review' or 'under_review'), show "Pending Review"
+    // - If admin marks incomplete in Pending tab, prefer issue_label mapping; if absent, fall back to s.remarks
+    //   Mapping values: "Error in Document" or "Incorrect Document/Upload"
+    $stLower = strtolower((string)$row['status']);
+    $displayRemark = 'For Evaluation';
+    if ($stLower === 'pending_review' || $stLower === 'under_review') {
+      $displayRemark = 'Pending Review';
+    } else {
+      $pIssue = strtolower($pendingIssue);
+      if ($pIssue !== '') {
+        if (str_contains($pIssue, 'error')) {
+          $displayRemark = 'Error in Document/Upload';
+        } elseif (str_contains($pIssue, 'incorrect') || str_contains($pIssue, 'upload')) {
+          $displayRemark = 'Incorrect Document/Upload';
+        }
+      } else {
+        $rawRemarksLower = strtolower(trim((string)$row['remarks']));
+        if ($rawRemarksLower !== '') {
+          if (str_contains($rawRemarksLower, 'error')) {
+            $displayRemark = 'Error in Document/Upload';
+          } elseif (str_contains($rawRemarksLower, 'incorrect') || str_contains($rawRemarksLower, 'upload')) {
+            $displayRemark = 'Incorrect Document/Upload';
+          }
+        }
       }
     }
   ?>
   <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
-  <td class="text-nowrap"><?php echo htmlspecialchars($row['student_number']); ?></td>
+  <td class="text-nowrap"><?php echo htmlspecialchars($row['employee_number']); ?></td>
   <td>
     <span class="d-inline-block text-truncate" style="max-width: 420px;">
       <?php echo htmlspecialchars($row['title']); ?>
@@ -177,7 +244,9 @@ try {
           // Include files to be resubmitted in the comments content when available (Pending scope)
           $pendingCommentText = (string)$pendingComment;
           if ($pendingAffected !== '') {
-            $pendingCommentText = trim($pendingCommentText . "\n\nFile(s) to be resubmitted: " . $pendingAffected);
+            $parts = array_filter(array_map('trim', explode('|', $pendingAffected)));
+            $pretty = array_map(function($s){ return ucwords(str_replace('_',' ', $s)); }, $parts);
+            $pendingCommentText = trim($pendingCommentText . "\n\nFile(s) to be resubmitted: " . implode(', ', $pretty));
           }
         ?>
         <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($pendingCommentText, ENT_QUOTES); ?>">Comments</a>
@@ -193,9 +262,10 @@ try {
 </tbody>
           </table>
         </div>
+        <?php render_pagination_controls_emp('pending', $pending_page, $pending_pages); ?>
       </div>
       <!-- Approved Tab -->
-      <div class="tab-pane fade" id="approved">
+      <div class="tab-pane fade <?php echo $active_tab==='approved' ? 'show active' : ''; ?>" id="approved">
         <div class="table-responsive">
           <table class="table align-middle bg-white mb-0">
             <thead class="table-light">
@@ -209,9 +279,9 @@ try {
               </tr>
             </thead>
             <tbody>
-            <?php if(count($approvedRows)===0): ?>
+            <?php if(count($approved_items)===0): ?>
               <tr><td colspan="6" class="text-center text-muted py-5">No approved applications.</td></tr>
-            <?php else: foreach($approvedRows as $row): ?>
+            <?php else: foreach($approved_items as $row): ?>
               <?php $approvedAffected = trim((string)($row['approved_affected_doc_types'] ?? '')); ?>
               <?php $approvedIssue = trim((string)($row['approved_issue_label'] ?? '')); ?>
               <?php
@@ -252,7 +322,7 @@ try {
               ?>
               <tr<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>
                 <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
-                <td class="text-nowrap"><?php echo htmlspecialchars($row['student_number']); ?></td>
+                <td class="text-nowrap"><?php echo htmlspecialchars($row['employee_number']); ?></td>
                 <td>
                   <span class="d-inline-block text-truncate" style="max-width: 420px;">
                     <?php echo htmlspecialchars($row['title']); ?>
@@ -274,7 +344,9 @@ try {
                         // Include files to be resubmitted in the comments content when available
                         $commentText = (string)$row['approved_admin_comment'];
                         if ($approvedAffected !== '') {
-                          $commentText = trim($commentText . "\n\nFile(s) to be resubmitted: " . $approvedAffected);
+                          $aParts = array_filter(array_map('trim', explode('|', $approvedAffected)));
+                          $aPretty = array_map(function($s){ return ucwords(str_replace('_',' ', $s)); }, $aParts);
+                          $commentText = trim($commentText . "\n\nFile(s) to be resubmitted: " . implode(', ', $aPretty));
                         }
                       ?>
                       <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($commentText, ENT_QUOTES); ?>">Comments</a>
@@ -288,9 +360,10 @@ try {
             </tbody>
           </table>
         </div>
-      </div>
+  </div>
+  <?php render_pagination_controls_emp('approved', $approved_page, $approved_pages); ?>
       <!-- Completed Tab -->
-      <div class="tab-pane fade" id="completed">
+      <div class="tab-pane fade <?php echo $active_tab==='completed' ? 'show active' : ''; ?>" id="completed">
         <div class="table-responsive">
           <table class="table align-middle bg-white mb-0">
             <thead class="table-light">
@@ -304,12 +377,12 @@ try {
               </tr>
             </thead>
             <tbody>
-            <?php if(count($completedRows)===0): ?>
+            <?php if(count($completed_items)===0): ?>
               <tr><td colspan="6" class="text-center text-muted py-5">No completed applications.</td></tr>
-            <?php else: foreach($completedRows as $row): ?>
+            <?php else: foreach($completed_items as $row): ?>
               <tr<?php if(!empty($row['approved_admin_comment'])) echo ' data-admin-comment="'.htmlspecialchars($row['approved_admin_comment'], ENT_QUOTES).'"'; ?>>
                 <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
-                <td class="text-nowrap"><?php echo htmlspecialchars($row['student_number']); ?></td>
+                <td class="text-nowrap"><?php echo htmlspecialchars($row['employee_number']); ?></td>
                 <td>
                   <span class="d-inline-block text-truncate" style="max-width: 420px;">
                     <?php echo htmlspecialchars($row['title']); ?>
@@ -334,6 +407,7 @@ try {
             </tbody>
           </table>
         </div>
+        <?php render_pagination_controls_emp('completed', $completed_page, $completed_pages); ?>
       </div>
     </div>
   </main>

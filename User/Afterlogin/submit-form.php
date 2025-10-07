@@ -54,8 +54,8 @@ if ($role === 'student') {
 // Required scalar fields
 $requiredFields = [
     'first_name','last_name','student_number','home_address','mobile_number','webmail',
-    'campus','academicLevel','program','workClassification','title','date_accomplished'
-    // 'college' is handled separately below
+    'campus','academicLevel','workClassification','title','date_accomplished'
+    // 'college' and 'program' handled separately based on role/level
 ];
 $errors = [];
 $data = [];
@@ -71,6 +71,7 @@ foreach ($requiredFields as $f) {
 // Special handling for college
 $academicLevel = $_POST['academicLevel'] ?? '';
 $college = trim($_POST['college'] ?? '');
+$program = trim($_POST['program'] ?? '');
 
 if ($academicLevel === 'Undergraduate') {
     if ($college === '' || $college === 'N/A') {
@@ -79,8 +80,28 @@ if ($academicLevel === 'Undergraduate') {
         $data['college'] = $college;
     }
 } else {
-    // For Masters, Doctorate, Open University, accept "N/A" as valid
+    // For Masters, Doctorate, Open University, or Not Studying, accept N/A
     $data['college'] = $college !== '' ? $college : 'N/A';
+}
+
+// Program requirements by role/level
+if ($role === 'student') {
+    if ($program === '') {
+        $errors[] = "Missing required field: program";
+    } else {
+        $data['program'] = $program;
+    }
+} else {
+    // employee: require program unless Academic Level is Not Studying; if Not Studying, force N/A
+    if ($academicLevel === 'Not Studying') {
+        $data['program'] = 'N/A';
+    } else {
+        if ($program === '') {
+            $errors[] = "Missing required field: program";
+        } else {
+            $data['program'] = $program;
+        }
+    }
 }
 
 // Adviser / authors handling

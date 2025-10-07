@@ -357,7 +357,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?> 
  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>" defer></script>
+  <script src="<?php echo asset_url('javascript/forms/student-academic-dropdowns.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/register-student.js'); ?>" defer></script>
 </body>
 </html>

@@ -238,7 +238,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                     <input type="text" name="title" class="form-control" required>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label required">Author(s)</label>
+                    <label class="form-label">Author(s)</label>
                     <div id="authorsList" class="mb-2 small text-muted">No authors added yet.</div>
                     <div id="authorsHidden"></div>
                     <button type="button" id="addAuthorBtn" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#authorModal">+ Add Author</button>
@@ -246,7 +246,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                   </div>
                   <div class="col-md-3">
                     <label class="form-label">Adviser</label>
-                    <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser" required>
+                    <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser">
                     <div class="form-check mt-2">
                       <input class="form-check-input" type="checkbox" name="adviser_Coauthor" id="adviser_Coauthor">
                       <label class="form-check-label" for="adviser_Coauthor">
@@ -319,43 +319,43 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
           <!-- Name Fields -->
           <div class="row g-3 mb-3">
             <div class="col-md-4">
-              <label class="form-label required">First Name</label>
-              <input type="text" name="first_name" class="form-control" required>
+              <label class="form-label">First Name</label>
+              <input type="text" name="first_name" class="form-control">
             </div>
             <div class="col-md-4">
               <label class="form-label">Middle Name</label>
               <input type="text" name="middle_name" class="form-control" maxlength="50">
             </div>
             <div class="col-md-4">
-              <label class="form-label required">Last Name</label>
-              <input type="text" name="last_name" class="form-control" required>
+              <label class="form-label">Last Name</label>
+              <input type="text" name="last_name" class="form-control">
             </div>
           </div>
 
           <!-- Student Number -->
           <div class="mb-3">
-            <label class="form-label required">Student Number</label>
-            <input type="text" name="student_id" class="form-control" required
+            <label class="form-label">Student Number</label>
+            <input type="text" name="student_id" class="form-control"
                    pattern="\d{4}-\d{5}-[A-Z]{2}-\d{1}">
             <div class="form-text">Format: YYYY-XXXXX-MN-0</div>
           </div>
 
           <!-- Contact Details -->
           <div class="mb-3">
-            <label class="form-label required">Mobile Number</label>
-            <input type="tel" name="mobile" class="form-control" required
+            <label class="form-label">Mobile Number</label>
+            <input type="tel" name="mobile" class="form-control"
                    pattern="^09\d{9}$">
             <div class="form-text">Format: 09XXXXXXXXX</div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label required">Home Address</label>
-            <input type="text" name="home_address" class="form-control" required>
+            <label class="form-label">Home Address</label>
+            <input type="text" name="home_address" class="form-control">
           </div>
 
           <div class="mb-3">
-            <label class="form-label required">PUP Webmail</label>
-            <input type="email" name="webmail" class="form-control" required>
+            <label class="form-label">PUP Webmail</label>
+            <input type="email" name="webmail" class="form-control">
             <div class="form-text">Format: firstnamelastname@iskolarngbayan.pup.edu.ph</div>
           </div>
         </form>

@@ -7,27 +7,21 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $login_identifier = trim(htmlspecialchars($_POST['student_number'])); // Can be employee_number, admin_number, or email
+    $login_identifier = trim(htmlspecialchars($_POST['student_number'])); // email or employee number
     $password = $_POST['password'];
 
     if (!empty($login_identifier) && !empty($password)) {
-        // First, try to find user by email
-        $query = "SELECT user_id, email, password, role, status FROM users WHERE email = ?";
-        $stmt = $pdo->prepare($query);
-        $stmt->execute([$login_identifier]);
+        // Unified lookup: email OR employee_number using JOINs
+    $sql = "SELECT 
+            u.user_id, u.email, u.password, u.role, u.status,
+            ep.employee_number AS identifier
+        FROM users u
+        LEFT JOIN employee_profiles ep ON ep.user_id = u.user_id
+        WHERE u.email = :id1 OR ep.employee_number = :id2
+        LIMIT 1";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':id1' => $login_identifier, ':id2' => $login_identifier]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        // If not found by email, try to find by employee number only
-        if (!$user) {
-            // Try employee_number
-            $query = "SELECT u.user_id, u.email, u.password, u.role, u.status, ep.employee_number as identifier 
-                      FROM users u 
-                      JOIN employee_profiles ep ON u.user_id = ep.user_id 
-                      WHERE ep.employee_number = ?";
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([$login_identifier]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        }
 
         if ($user && password_verify($password, $user['password'])) {
             if ($user['status'] == 'pending' && $user['role'] !== 'admin') {

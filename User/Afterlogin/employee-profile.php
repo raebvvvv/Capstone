@@ -40,39 +40,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         }
     }
 
-    // Validation logic
-    if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $firstName)) {
-        $errors[] = "First name should only contain letters and single spaces between words";
-    }
-    if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $lastName)) {
-        $errors[] = "Last name should only contain letters and single spaces between words";
-    }
+  // Validation logic
+  if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $firstName)) {
+    $errors[] = "First name should only contain letters and single spaces between words";
+  }
+  if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $lastName)) {
+    $errors[] = "Last name should only contain letters and single spaces between words";
+  }
 
-    // Validate middle initial (single uppercase letter, optional)
-    if ($middleName && !preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $middleName)) {
-        $errors[] = "Middle initial should only contain letters and single spaces between words";
-    }
+  // Validate middle name (optional)
+  if ($middleName && !preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $middleName)) {
+    $errors[] = "Middle name should only contain letters and single spaces between words";
+  }
 
-    // Validate suffix (optional, but must be valid if provided)
-    if ($suffix) {
-        $validSuffixes = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
-        if (!in_array($suffix, $validSuffixes)) {
-            $errors[] = "Enter a valid suffix (Jr., Sr., I, II, III, IV, V) or leave it blank";
-        }
+  // Validate suffix (optional, but must be valid if provided)
+  if ($suffix) {
+    $validSuffixes = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
+    if (!in_array($suffix, $validSuffixes)) {
+      $errors[] = "Enter a valid suffix (Jr., Sr., I, II, III, IV, V) or leave it blank";
     }
+  }
 
-    // Validate mobile number (PH format: 09xxxxxxxxx or +639xxxxxxxxx)
-    if (!preg_match('/^(09\d{9}|\+639\d{9})$/', $mobileNumber)) {
-        $errors[] = "Invalid mobile number format (use 09XXXXXXXXX or +639XXXXXXXXX)";
-    }
+  // Validate mobile number (PH format: 09xxxxxxxxx or +639xxxxxxxxx)
+  if (!preg_match('/^(09\d{9}|\+639\d{9})$/', $mobileNumber)) {
+    $errors[] = "Invalid mobile number format (use 09XXXXXXXXX or +639XXXXXXXXX)";
+  }
 
-    // Required fields (suffix & middle initial optional)
+  // Required fields (suffix & middle name optional)
   if (empty($firstName) || empty($lastName) || empty($homeAddress) ||
     empty($mobileNumber) || empty($campus) || empty($college) || empty($department)) {
     $errors[] = "All fields except suffix and middle name are required";
   }
 
-    // Fetch current profile data
+  // Fetch current profile data
   $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department FROM employee_profiles WHERE user_id = ?");
     $stmt->execute([$user_id]);
     $current = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
 // Fetch profile data for display
 $stmt = $pdo->prepare("SELECT u.email, ep.* FROM users u 
-    JOIN employee_profiles ep ON u.user_id = ep.user_id WHERE u.user_id = ?");
+  JOIN employee_profiles ep ON u.user_id = ep.user_id WHERE u.user_id = ?");
 $stmt->execute([$user_id]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -326,6 +326,14 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 
 <div class="row mb-3">
   <div class="col-md-4">
+    <label class="form-label">Academic Level</label>
+    <input type="text" 
+           class="form-control bg-light lock" 
+           id="academicLevel"
+           value="<?php echo htmlspecialchars($profile['academic_level'] ?? 'Not Studying'); ?>" 
+           readonly>
+  </div>
+  <div class="col-md-4">
     <label class="form-label">Campus</label>
     <input type="text" 
            class="form-control bg-light lock <?php echo isset($errors['campus']) ? 'is-invalid' : ''; ?>" 
@@ -335,6 +343,14 @@ if (!empty($errors) && !$hasRestrictionError): ?>
     <?php if (isset($errors['campus'])): ?>
       <div class="invalid-feedback"><?php echo $errors['campus']; ?></div>
     <?php endif; ?>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Program</label>
+    <input type="text" 
+           class="form-control bg-light lock" 
+           id="program"
+           value="<?php echo htmlspecialchars($profile['program'] ?? 'N/A'); ?>" 
+           readonly>
   </div>
 
   <div class="col-md-4">
