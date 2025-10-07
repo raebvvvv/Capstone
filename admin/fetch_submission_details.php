@@ -4,6 +4,9 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 header('Content-Type: application/json');
+// Avoid stale caches for details
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 try {
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
     // Read-only endpoint: allow GET without CSRF; require CSRF only for POST
@@ -44,6 +47,21 @@ try {
         LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
         LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
         WHERE $col = ? LIMIT 1");
+        $stmt = $pdo->prepare("
+            SELECT s.*, 
+                   CASE 
+                       WHEN u.role = 'student' THEN sp.student_number
+                       WHEN u.role = 'employee' THEN ep.employee_number  
+                       ELSE CONCAT('User-', s.user_id)
+                   END as identifier,
+                   ep.academic_level AS ep_level, ep.program AS ep_program,
+                   sp.academic_level AS sp_level, sp.program AS sp_program,
+                   u.role AS user_role
+            FROM submissions s
+            LEFT JOIN users u ON u.user_id = s.user_id
+            LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+            LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+            WHERE $col = ? LIMIT 1");
     $stmt->execute([$isNumeric ? (int)$requestId : $requestId]);
     $sub = $stmt->fetch(PDO::FETCH_ASSOC);
     if(!$sub) { echo json_encode(['success'=>false,'error'=>'Submission not found']); exit; }
@@ -123,6 +141,34 @@ try {
         }
     }
 
+    // Determine Academic Level with robust fallbacks/inference
+    $rawLevel = trim((string)($sub['academic_level'] ?? ''));
+    $profileLevel = '';
+    $userRole = (string)($sub['user_role'] ?? '');
+    if ($userRole === 'employee') {
+        $profileLevel = trim((string)($sub['ep_level'] ?? ''));
+    } elseif ($userRole === 'student') {
+        $profileLevel = trim((string)($sub['sp_level'] ?? ''));
+    }
+    $level = $rawLevel !== '' ? $rawLevel : $profileLevel;
+    $program = trim((string)($sub['program'] ?? ''));
+    if ($program === '') {
+        $program = trim((string)($sub['ep_program'] ?? $sub['sp_program'] ?? ''));
+    }
+    $lvlLow = strtolower($level);
+    if ($level === '' || $lvlLow === 'employee' || $lvlLow === 'n/a' || $lvlLow === 'na' || $lvlLow === '-') {
+        $p = strtolower($program);
+        if ($p === 'n/a' || $p === 'na' || $p === '' || strpos($p,'not study') !== false) {
+            $level = 'Not Studying';
+        } elseif (strpos($p,'open') !== false) {
+            $level = 'Open University';
+        } elseif (strpos($p,'doctor') !== false || strpos($p,'doctoral') !== false || strpos($p,'doctorate') !== false || strpos($p,'phd') !== false || strpos($p,'ph.d') !== false || strpos($p,'master') !== false || strpos($p,'postgrad') !== false) {
+            $level = 'Graduate School';
+        } else {
+            $level = 'Undergraduate';
+        }
+    }
+
     $response = [
         'success' => true,
         'submission_id' => $sid,
@@ -134,8 +180,10 @@ try {
         'campus' => $sub['campus'] ?? '',
         'department' => $sub['college'] ?? '',
         'college' => $sub['college'] ?? '',
-        'program' => $sub['program'] ?? '',
-    'academicLevel' => $sub['academic_level'] ?? '',
+    'program' => $sub['program'] ?? '',
+            // Provide both camelCase and snake_case for front-end tolerance
+            'academicLevel' => $level,
+            'academic_level' => $level,
         'documentTitle' => $sub['title'] ?? '',
     // Adviser fields (string name stored on submission table; fallback to first co-author with is_adviser=1)
     'adviser' => $adviserName,

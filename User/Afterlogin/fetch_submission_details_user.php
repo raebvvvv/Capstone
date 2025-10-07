@@ -2,6 +2,10 @@
 require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php';
 header('Content-Type: application/json');
+// Prevent caching so details always reflect latest server-side fallbacks
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 try {
   $code = trim((string)($_GET['code'] ?? $_POST['code'] ?? ''));
@@ -127,6 +131,48 @@ try {
     }
   }
 
+  // Robust academic level resolution with fallbacks
+  $academicLevelOut = trim((string)($sub['academic_level'] ?? ''));
+  if ($academicLevelOut === '') {
+    // Try employee profile
+    try {
+      $p = $pdo->prepare('SELECT academic_level FROM employee_profiles WHERE user_id = ? LIMIT 1');
+      $p->execute([$user_id]);
+      $profLevel = $p->fetchColumn();
+      if (!empty($profLevel)) { $academicLevelOut = trim((string)$profLevel); }
+    } catch (Throwable $e) { /* ignore missing table/col */ }
+    // Infer Not Studying when program was explicitly N/A (case-insensitive)
+    if ($academicLevelOut === '') {
+      $prog = trim((string)($sub['program'] ?? ''));
+      if ($prog !== '' && strcasecmp($prog, 'N/A') === 0) { $academicLevelOut = 'Not Studying'; }
+    }
+    // As a last resort, infer from program naming patterns
+    if ($academicLevelOut === '') {
+      $prog = trim((string)($sub['program'] ?? ''));
+      if ($prog === '') {
+        // Try to use employee profile program for inference
+        try {
+          $pp = $pdo->prepare('SELECT program FROM employee_profiles WHERE user_id = ? LIMIT 1');
+          $pp->execute([$user_id]);
+          $pProg = $pp->fetchColumn();
+          if (!empty($pProg)) { $prog = trim((string)$pProg); }
+        } catch (Throwable $e) { /* ignore */ }
+      }
+      if ($prog !== '' && strcasecmp($prog, 'N/A') !== 0) {
+        $pl = strtolower($prog);
+        if (strpos($pl, 'doctor') !== false || strpos($pl, 'phd') !== false || strpos($pl, "d.") !== false) {
+          $academicLevelOut = 'Doctorate';
+        } elseif (strpos($pl, 'master') !== false || preg_match('/\bma\b|\bmba\b|\bms\b|\bmpa\b|\bmem\b|\bmit\b/i', $prog)) {
+          $academicLevelOut = 'Masters';
+        } elseif (strpos($pl, 'open university') !== false) {
+          $academicLevelOut = 'Open University';
+        } else {
+          $academicLevelOut = 'Undergraduate';
+        }
+      }
+    }
+  }
+
   $resp = [
     'success' => true,
     'submissionCode' => $sub['submission_code'],
@@ -137,7 +183,9 @@ try {
     'campus' => $sub['campus'] ?? '',
     'college' => $sub['college'] ?? '',
     'program' => $sub['program'] ?? '',
-    'academicLevel' => $sub['academic_level'] ?? '',
+  'academicLevel' => $academicLevelOut,
+  // provide snake_case alias for maximal compatibility across clients
+  'academic_level' => $academicLevelOut,
     'documentTitle' => $sub['title'] ?? '',
   'adviser' => $adviserName,
     'adviser_coauthor' => isset($sub['adviser_coauthor']) ? (int)$sub['adviser_coauthor'] : 0,

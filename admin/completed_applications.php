@@ -227,9 +227,10 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/completed_applications.css?v=7">
-    <script src="../javascript/forms/academic-dropdowns.js" defer></script>
+    <script src="../javascript/forms/employee-academic-dropdowns.js" defer></script>
+   
     <link rel="stylesheet" href="../css/admin-navbar.css?v=2">
-    <script src="../javascript/shared-details-modal.js?v=3" defer></script>
+    <script src="../javascript/shared-details-modal.js?v=4" defer></script>
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Completed Applications</title>
 </head>

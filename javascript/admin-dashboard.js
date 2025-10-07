@@ -71,9 +71,10 @@
       var u = parseInt(overviewCanvas.dataset.undergrad||'0',10);
       var g = parseInt(overviewCanvas.dataset.grad||'0',10);
       var o = parseInt(overviewCanvas.dataset.open||'0',10);
+      var n = parseInt(overviewCanvas.dataset.notstudying||'0',10);
       charts.overview = new Chart(overviewCanvas,{
         type:'doughnut',
-        data:{ labels:['Undergraduate','Graduate School','Open University'], datasets:[{ data:[u,g,o], backgroundColor:['#870000','#FFD54F','gray'] }] },
+        data:{ labels:['Undergraduate','Graduate School','Open University','Not Studying'], datasets:[{ data:[u,g,o,n], backgroundColor:['#870000','#FFD54F','gray','#6f42c1'] }] },
         options:{
           cutout:'70%',
           plugins:{
@@ -181,10 +182,11 @@
             var data = null; try { data = await res.json(); } catch(e) {}
             if(!data || !data.success){ var txt=''; try{ txt = await res.text(); }catch(e){} alert('Failed to reload summary' + (data && data.error? (': '+data.error):'') + (txt?'\n'+txt:'')); return; }
             // Update charts and counters
-            if(charts.overview){ charts.overview.data.datasets[0].data = [data.overview.undergrad, data.overview.grad, data.overview.open]; charts.overview.update(); }
+            if(charts.overview){ charts.overview.data.labels = ['Undergraduate','Graduate School','Open University','Not Studying']; charts.overview.data.datasets[0].data = [data.overview.undergrad, data.overview.grad, data.overview.open, data.overview.notStudying||0]; charts.overview.update(); }
             var elU = document.getElementById('countUndergrad'); if(elU){ elU.textContent = String(data.overview.undergrad); }
             var elG = document.getElementById('countGrad'); if(elG){ elG.textContent = String(data.overview.grad); }
             var elO = document.getElementById('countOpen'); if(elO){ elO.textContent = String(data.overview.open); }
+            var elN = document.getElementById('countNotStudying'); if(elN){ elN.textContent = String(data.overview.notStudying||0); }
             var elT = document.getElementById('countTotalApplications'); if(elT){ elT.textContent = String(data.overview.total); }
             // Update top summary cards if present
             if (data.totals) {

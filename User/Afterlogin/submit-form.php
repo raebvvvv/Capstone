@@ -348,7 +348,7 @@ if (empty($errors)) {
                     $authorStmt->execute([
                         $submission_id,
                         normalize_name($author['first_name']),
-                        normalize_name($author['middle_name']), // <-- use middle_name
+                        normalize_name(isset($author['middle_name']) ? $author['middle_name'] : (isset($author['middle_initial']) ? $author['middle_initial'] : '')),
                         normalize_name($author['last_name']),
                         $author['student_id'],
                         $author['mobile'],
@@ -384,7 +384,7 @@ if (empty($errors)) {
                 // Skip if this coauthor is the adviser (already inserted as adviser)
                 if (
                     trim(strtolower($coauthor['first_name'])) === trim(strtolower($adviserFirstName)) &&
-                    trim(strtolower($coauthor['middle_name'])) === trim(strtolower($adviserMiddleName)) &&
+                    trim(strtolower(isset($coauthor['middle_name']) ? $coauthor['middle_name'] : (isset($coauthor['middle_initial']) ? $coauthor['middle_initial'] : ''))) === trim(strtolower($adviserMiddleName)) &&
                     trim(strtolower($coauthor['last_name'])) === trim(strtolower($adviserLastName))
                 ) {
                     continue;
@@ -392,7 +392,7 @@ if (empty($errors)) {
                 $authorStmt->execute([
                     $submission_id,
                     normalize_name($coauthor['first_name']),
-                    normalize_name($coauthor['middle_name']),
+                    normalize_name(isset($coauthor['middle_name']) ? $coauthor['middle_name'] : (isset($coauthor['middle_initial']) ? $coauthor['middle_initial'] : '')),
                     normalize_name($coauthor['last_name']),
                     $coauthor['student_id'],
                     $coauthor['mobile'],

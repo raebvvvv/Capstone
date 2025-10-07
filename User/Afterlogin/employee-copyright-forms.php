@@ -236,13 +236,12 @@ if ($profile) {
                     <label class="form-label">Adviser</label>
                     <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser">
                     <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" name="adviser_coauthor" id="adviserCoauthor">
-                    <label class="form-check-label" for="adviserCoauthor">
+                    <input class="form-check-input" type="checkbox" name="adviser_coauthor" id="adviser_Coauthor">
+                    <label class="form-check-label" for="adviser_Coauthor">
                       Adviser is a Co-author
                     </label>
                   </div>
-                  <!-- mirror checkbox state for server if needed (kept hidden, doesn't change UI) -->
-                  <input type="hidden" name="adviser_Coauthor" id="adviser_Coauthor_hidden" value="">
+                  
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Date Accomplished</label>
@@ -293,67 +292,59 @@ if ($profile) {
 
   <!-- Author Modal -->
   <div class="modal fade" id="authorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header py-2">
-          <h5 class="modal-title">Author Information</h5>
+        <div class="modal-header">
+          <h5 class="modal-title">Add Co-Author</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="authorForm">
-            <div class="row g-3">
-              <div class="col-md-3">
-                <label class="form-label">First name</label>
-                <input type="text" name="first_name" class="form-control">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Last name</label>
-                <input type="text" name="last_name" class="form-control">
-              </div>
-                <div class="row g-3 mt-2">
-                  <div class="col-md-12">
-                <input type="text" name="middle_initial" maxlength="1" class="form-control text-uppercase">
+          <form id="authorForm" class="needs-validation" novalidate>
+            <!-- Name Fields -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">First Name</label>
+                <input type="text" name="first_name" class="form-control" />
               </div>
               <div class="col-md-4">
-                <label class="form-label required">Employee ID</label>
-                <input type="text" name="employee_id" class="form-control">
-                  <div class="col-md-4 d-none">
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">College</label>
-                <select name="college" class="form-select">
-                  <option value="">College</option>
-                  <option>CCIS</option>
-                  <option>CAF</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Program</label>
-                <input type="text" name="program" class="form-control" placeholder="e.g. BSIT">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Department</label>
-                <input type="text" name="department" class="form-control" placeholder="Dept.">
+                <label class="form-label">Middle Name</label>
+                <input type="text" name="middle_name" class="form-control" maxlength="50" />
               </div>
               <div class="col-md-4">
-                <label class="form-label">Mobile Number</label>
-                <input type="text" name="mobile" class="form-control">
+                <label class="form-label">Last Name</label>
+                <input type="text" name="last_name" class="form-control" />
               </div>
-              <div class="col-md-8">
-                <label class="form-label">Home Address</label>
-                <input type="text" name="home_address" class="form-control">
-              </div>
-              <div class="col-12">
-                <label class="form-label">Webmail Address</label>
-                <input type="email" name="webmail" class="form-control" placeholder="email@domain.com">
-              </div>
+            </div>
+
+            <!-- Employee ID/Number -->
+            <div class="mb-3">
+              <label class="form-label">Employee ID/Number</label>
+              <input type="text" name="student_id" class="form-control" pattern="^\d{5}$">
+              <div class="form-text">5-digit employee number</div>
+            </div>
+
+            <!-- Contact Details -->
+            <div class="mb-3">
+              <label class="form-label">Mobile Number</label>
+              <input type="tel" name="mobile" class="form-control" pattern="^09\d{9}$">
+              <div class="form-text">Format: 09XXXXXXXXX</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Home Address</label>
+              <input type="text" name="home_address" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">PUP Webmail</label>
+              <input type="email" name="webmail" class="form-control">
+              <div class="form-text">Format: firstnamelastname@iskolarngbayan.pup.edu.ph</div>
             </div>
           </form>
         </div>
-        <div class="modal-footer py-2">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-          <button type="button" id="saveAuthorBtn" class="btn btn-primary btn-sm">Add Author</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveAuthorBtn">Add Author</button>
         </div>
       </div>
     </div>
@@ -363,7 +354,7 @@ if ($profile) {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-academic-dropdowns.js'); ?>" defer></script>
-  <script src="<?php echo asset_url('javascript/forms/employee-authors.js'); ?>" defer></script>
+  <script src="<?php echo asset_url('javascript/forms/employee-author-modal.js'); ?>" defer></script>
   <script>
     // Prefill Academic Affiliation fields (except Work Classification) from employee profile
     (function() {
@@ -393,13 +384,10 @@ if ($profile) {
         return true;
       }
 
-      function setWhenReady(id, value, tries = 25) {
+      function ensureNow(id, value) {
         const el = document.getElementById(id);
         if (!el || !value) return;
-        const ready = el.options && el.options.length > 0;
-        if (!ready && tries > 0) {
-          return setTimeout(() => setWhenReady(id, value, tries - 1), 120);
-        }
+        // Immediately select or insert a fallback option so UI shows correct value without delay
         setSelectMatch(el, value);
       }
 
@@ -419,33 +407,37 @@ if ($profile) {
       }
 
       document.addEventListener('DOMContentLoaded', function() {
-        // Order: campus -> college -> department, and academicLevel -> program
-        setWhenReady('campus', prefill.campus);
-        // After campus, populate and set college/department
+        // Immediately set visible values so there's no initial flicker/lag
+        ensureNow('campus', prefill.campus);
+        ensureNow('academicLevel', prefill.academicLevel);
+        ensureNow('college', prefill.college);
+        ensureNow('department', prefill.department);
+        ensureNow('program', prefill.program);
+
+        // Then wire minimal chaining in case population scripts adjust options
         const campusEl = document.getElementById('campus');
         campusEl && campusEl.addEventListener('change', function() {
-          setTimeout(() => setWhenReady('college', prefill.college), 160);
+          setTimeout(() => ensureNow('college', prefill.college), 160);
         }, { once: true });
 
         const collegeEl = document.getElementById('college');
         collegeEl && collegeEl.addEventListener('change', function() {
-          setTimeout(() => setWhenReady('department', prefill.department), 160);
+          setTimeout(() => ensureNow('department', prefill.department), 160);
         });
 
-        // Level can be set independently; program may depend on level and college
-        setWhenReady('academicLevel', prefill.academicLevel);
         const levelEl = document.getElementById('academicLevel');
         levelEl && levelEl.addEventListener('change', function() {
-          setTimeout(() => setWhenReady('program', prefill.program), 200);
+          setTimeout(() => ensureNow('program', prefill.program), 200);
         });
 
-        // Final safety pass in case events didn't chain as expected
+        // Quick follow-up to reconcile selection after any async population completes
         setTimeout(() => {
-          setWhenReady('college', prefill.college);
-          setWhenReady('department', prefill.department);
-          setWhenReady('program', prefill.program);
+          ensureNow('campus', prefill.campus);
+          ensureNow('college', prefill.college);
+          ensureNow('department', prefill.department);
+          ensureNow('program', prefill.program);
           mirrorToHidden();
-        }, 800);
+        }, 400);
 
         // Also mirror on form submit to ensure latest values are posted
         const form = document.getElementById('submissionForm');

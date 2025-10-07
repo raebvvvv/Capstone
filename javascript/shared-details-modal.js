@@ -65,6 +65,16 @@
     containerEl.classList.remove('text-center');
     containerEl.classList.add('text-start');
     const v = (x,d='—') => (x==null||x==='')?d:x;
+    // Helper to safely resolve the first non-empty value among potential keys
+    function firstNonEmpty(obj, keys, d='—'){
+      try {
+        for (const k of keys) {
+          const val = obj && (obj[k] !== undefined && obj[k] !== null) ? String(obj[k]).trim() : '';
+          if (val !== '') return val;
+        }
+      } catch(_) { /* ignore */ }
+      return d;
+    }
 
     const studentName = v(details.studentName);
     const num = v(details.studentNumber);
@@ -72,8 +82,9 @@
     const addr = v(details.homeAddress);
     const campus = v(details.campus);
     const college = v(details.college);
-    const program = v(details.program);
-    const level = v(details.academicLevel);
+  const program = v(details.program);
+  // Academic Level can arrive under different keys depending on endpoint/source
+  const level = firstNonEmpty(details, ['academicLevel','academic_level','level']);
 
     const title = v(details.documentTitle);
     const wc = v(details.workClassification);

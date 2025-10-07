@@ -23,7 +23,12 @@
     var div = document.createElement('div');
     div.className = 'author-pill';
     div.dataset.idx = idx;
-    var middle = data.middle_initial ? data.middle_initial + '. ' : '';
+    var midRaw = (data.middle_name || data.middle_initial || '').toString().trim();
+    var middle = '';
+    if (midRaw) {
+      // if user provided a full middle name, show as-is; if initial, append a dot
+      middle = (midRaw.length === 1 ? (midRaw.toUpperCase() + '. ') : (midRaw + ' '));
+    }
     div.innerHTML = '<span class="fw-semibold">' + (data.first_name||'') + ' ' + middle + (data.last_name||'') + '</span>' +
                     '<small class="text-muted ms-2">' + (data.program||'') + '</small>';
     authorsList.appendChild(div);

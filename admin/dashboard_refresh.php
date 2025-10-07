@@ -77,7 +77,7 @@ $dt = new DateTime('now', new DateTimeZone('Asia/Manila'));
 $now = $dt->format('Y-m-d H:i:s'); // for DB
 $now_iso = $dt->format(DateTime::ATOM); // ISO 8601 with timezone
 $total_users = 0; $total_apps = 0; $pending = 0; $approved = 0; $completed = 0;
-$undergrad = 0; $grad = 0; $open = 0;
+$undergrad = 0; $grad = 0; $open = 0; $notStudying = 0;
 $byCollege = ['labels'=>[], 'values'=>[]];
 $byCampus  = ['labels'=>[], 'values'=>[]];
 $workClass = ['labels'=>[], 'values'=>[]];
@@ -103,6 +103,12 @@ try {
         $undergrad = (int)($agg['Undergraduate'] ?? 0);
         $grad      = (int)($agg['Graduate School'] ?? 0);
         $open      = (int)($agg['Open University'] ?? 0);
+        // Compute Not Studying separately (not part of existing buckets)
+        try {
+            $stmtNs = $pdo->prepare("SELECT COUNT(*) FROM submissions WHERE LOWER(academic_level) = ? OR LOWER(academic_level) LIKE ?");
+            $stmtNs->execute(['not studying', 'not stud%']);
+            $notStudying = (int)$stmtNs->fetchColumn();
+        } catch (Throwable $eNs) { $notStudying = 0; }
 
         // By College (top 10 + Others)
         $acc = [];$unknown=0;
@@ -180,7 +186,8 @@ echo json_encode([
         'undergrad' => $undergrad,
         'grad' => $grad,
         'open' => $open,
-        'total' => $undergrad + $grad + $open,
+        'notStudying' => $notStudying,
+        'total' => $undergrad + $grad + $open + $notStudying,
     ],
     'byCollege' => $byCollege,
     'byCampus' => $byCampus,

@@ -17,7 +17,7 @@ $useSummary = false;
 $summary_last_updated = '';
 $summary_last_updated_iso = '';
 $total_users = 0; $total_applications = 0; $pending_applications = 0; $approved_applications = 0; $completed_applications = 0;
-$undergrad = 0; $grad = 0; $open = 0; $total_applications_chart = 0;
+$undergrad = 0; $grad = 0; $open = 0; $not_studying = 0; $total_applications_chart = 0;
 $collegeLabels = []; $collegeValues = [];
 $campusLabels = []; $campusValues = [];
 $wcLabels = []; $wcValues = [];
@@ -43,6 +43,7 @@ try {
             $undergrad = (int)$row['overview_undergrad'];
             $grad = (int)$row['overview_grad'];
             $open = (int)$row['overview_open'];
+            // Total for chart will be recalculated after we compute Not Studying (which isn't cached yet)
             $total_applications_chart = $undergrad + $grad + $open;
             $bc = json_decode($row['by_college_json'] ?? '{}', true) ?: ['labels'=>[], 'values'=>[]];
             $collegeLabels = $bc['labels']; $collegeValues = $bc['values'];
@@ -103,8 +104,24 @@ if (!$useSummary) {
         "LOWER(academic_level) LIKE ?",
         ['%open%']
     );
-    $total_applications_chart = $undergrad + $grad + $open;
+    // Will include Not Studying after we compute it below
 }
+
+// Not Studying count (robust: recognize blank/N-A levels paired with N/A program or 'not stud' text)
+$not_studying = getCount(
+    $pdo,
+    'submissions',
+    "(TRIM(LOWER(COALESCE(academic_level,''))) IN ('not studying','n/a','na','-','') OR LOWER(academic_level) LIKE ?)
+      AND (TRIM(LOWER(COALESCE(program,''))) IN ('n/a','na','') OR LOWER(program) LIKE ?)",
+    ['%not stud%', '%not stud%']
+);
+// Recompute Undergrad to be disjoint: total - grad - open - not_studying
+try {
+    $total_all_subs = $total_applications ?: (int)$pdo->query("SELECT COUNT(*) FROM submissions")->fetchColumn();
+} catch (Throwable $e) { $total_all_subs = (int)$total_applications; }
+$undergrad = max(0, (int)$total_all_subs - (int)$grad - (int)$open - (int)$not_studying);
+// Total applications for chart equals total submissions
+$total_applications_chart = (int)$total_all_subs;
 
 // Build real datasets for charts
 // Optional filters: status and date range (created_at)
@@ -270,10 +287,18 @@ try {
         $lvl = level_label((string)($r['academic_level'] ?? ''));
         $agg[$lvl] = ($agg[$lvl] ?? 0) + (int)$r['c'];
     }
-    $undergrad = $agg['Undergraduate'] ?? 0;
-    $grad = $agg['Graduate School'] ?? 0;
-    $open = $agg['Open University'] ?? 0;
-    $total_applications_chart = $undergrad + $grad + $open;
+    $undergrad = (int)($agg['Undergraduate'] ?? 0);
+    $grad = (int)($agg['Graduate School'] ?? 0);
+    $open = (int)($agg['Open University'] ?? 0);
+    // Compute Not Studying within same filter window and subtract from Undergrad
+    $nsParams = $p; $nsWhere = $where;
+    $nsClause = "(TRIM(LOWER(COALESCE(academic_level,''))) IN ('not studying','n/a','na','-','') OR LOWER(academic_level) LIKE ?) AND (TRIM(LOWER(COALESCE(program,''))) IN ('n/a','na','') OR LOWER(program) LIKE ?)";
+    if ($nsWhere) { $nsWhere .= ' AND ' . $nsClause; } else { $nsWhere = ' WHERE ' . $nsClause; }
+    $stmtNs = $pdo->prepare("SELECT COUNT(*) FROM submissions $nsWhere");
+    $stmtNs->execute(array_merge($nsParams, ['%not stud%','%not stud%']));
+    $nsLocal = (int)$stmtNs->fetchColumn();
+    $undergrad = max(0, $undergrad - $nsLocal);
+    $total_applications_chart = (int)($undergrad + $grad + $open + $nsLocal);
 } catch (Throwable $e) {
     if (function_exists('log_event')) { log_event('DB_WARN', 'Overview chart query failed', ['err'=>$e->getMessage()]); }
 }
@@ -533,16 +558,18 @@ if (isset($_SESSION['user_id'])) {
                     <canvas id="applicationOverviewChart"
                             data-undergrad="<?= (int)$undergrad ?>"
                             data-grad="<?= (int)$grad ?>"
-                                data-open="<?= (int)$open ?>"
-                                data-total="<?= (int)$total_applications_chart ?>">
+                            data-open="<?= (int)$open ?>"
+                            data-notstudying="<?= (int)$not_studying ?>"
+                            data-total="<?= (int)$total_applications_chart ?>">
                     </canvas>
                 </div>
                 <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
                     <div style="font-size: 1.2rem;">
                         <span style="color:#870000;">Undergraduate</span> <b id="countUndergrad"><?= $undergrad ?></b> &nbsp;
                         <span style="color:#FFD54F;">Graduate School</span> <b id="countGrad"><?= $grad ?></b> &nbsp;
-                        <span style="color:gray;">Open University</span> <b id="countOpen"><?= $open ?></b> &nbsp; <br><br>
-                         <span style="font-weight:600;">| <span id="countTotalApplications"><?= $total_applications_chart ?></span> Total Applications</span>
+                        <span style="color:gray;">Open University</span> <b id="countOpen"><?= $open ?></b> &nbsp;
+                        <span style="color:#6f42c1;">Not Studying</span> <b id="countNotStudying"><?= $not_studying ?></b> &nbsp; <br><br>
+                        <span style="font-weight:600;">| <span id="countTotalApplications"><?= $total_applications_chart ?></span> Total Applications</span>
                     </div>
                 </div>
             </div>
@@ -580,7 +607,7 @@ if (isset($_SESSION['user_id'])) {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-    <script src="../javascript/admin-dashboard.js?v=8" defer></script>
+    <script src="../javascript/admin-dashboard.js?v=9" defer></script>
     <script src="../javascript/admin-profile.js?v=5" defer></script>
     <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

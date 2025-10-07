@@ -236,47 +236,25 @@
                 <input type="text" name="last_name" class="form-control" required>
               </div>
               <div class="col-md-2">
-                <label class="form-label required">Middle Initial</label>
+                <label class="form-label">Middle Initial</label>
                 <input type="text" name="middle_initial" maxlength="1" class="form-control text-uppercase">
               </div>
               <div class="col-md-4">
-                <label class="form-label required">Student ID</label>
-                <input type="text" name="student_id" class="form-control">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">Campus</label>
-                <select name="campus" class="form-select">
-                  <option value="">Campus</option>
-                  <option>PUP MAIN</option>
-                  <option>CEA</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">College</label>
-                <select name="college" class="form-select">
-                  <option value="">College</option>
-                  <option>CCIS</option>
-                  <option>CAF</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">Program</label>
-                <input type="text" name="program" class="form-control" placeholder="e.g. BSIT">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label required">Department</label>
-                <input type="text" name="department" class="form-control" placeholder="Dept.">
+                <label class="form-label">Employee ID</label>
+                <input type="text" name="student_id" class="form-control" pattern="^\d{5}$">
+                <div class="form-text">5-digit employee number</div>
               </div>
               <div class="col-md-4">
-                <label class="form-label required">Mobile Number</label>
-                <input type="text" name="mobile" class="form-control">
+                <label class="form-label">Mobile Number</label>
+                <input type="tel" name="mobile" class="form-control" pattern="^09\d{9}$">
+                <div class="form-text">Format: 09XXXXXXXXX</div>
               </div>
               <div class="col-md-8">
-                <label class="form-label required">Home Address</label>
+                <label class="form-label">Home Address</label>
                 <input type="text" name="home_address" class="form-control">
               </div>
               <div class="col-12">
-                <label class="form-label required">Webmail Address</label>
+                <label class="form-label">Webmail Address</label>
                 <input type="email" name="webmail" class="form-control" placeholder="email@domain.com">
               </div>
             </div>

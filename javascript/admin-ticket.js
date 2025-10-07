@@ -138,7 +138,19 @@
       `<p><strong>Campus:</strong> ${editMode? `<input type='text' id='editCampus' value='${escapeHTML(v(details.campus,''))}' />` : escapeHTML(v(details.campus,'—'))}</p>`+
       `<p><strong>College:</strong> ${editMode? `<input type='text' id='editCollege' value='${escapeHTML(v(details.college,''))}' />` : escapeHTML(v(details.college,'—'))}</p>`+
       `<p><strong>Program:</strong> ${editMode? `<input type='text' id='editProgram' value='${escapeHTML(v(details.program,''))}' />` : escapeHTML(v(details.program,'—'))}</p></div>`+
-  `<p><strong>Academic Level:</strong> ${escapeHTML(v(details.academicLevel,'—'))}</p>`+
+  (function(){
+    // Compute academic level with client-side fallback across possible keys
+    var level = details.academicLevel || details.academic_level || details.level || '';
+    if (!level || /^employee$/i.test(level)) {
+      // Try to infer lightly from program if still missing
+      var prog = (details.program||'').toLowerCase();
+      if (!prog || /not\s*stud/i.test(prog) || prog==='n/a' || prog==='na') level = 'Not Studying';
+      else if (prog.indexOf('open') !== -1) level = 'Open University';
+      else if (/doctor|doctoral|doctorate|phd|ph\.d|master|postgrad/i.test(prog)) level = 'Graduate School';
+      else level = 'Undergraduate';
+    }
+    return `<p><strong>Academic Level:</strong> ${escapeHTML(level || '—')}</p>`;
+  })()+
   `<div><h5>Document Information</h5>`+
       `<p><strong>Title:</strong> ${editMode? `<input type='text' id='editDocumentTitle' value='${escapeHTML(v(details.documentTitle,''))}' />` : escapeHTML(v(details.documentTitle,'—'))}</p>`+
   `<p><strong>Type (Work Classification):</strong> ${escapeHTML(v(details.workClassification,'—'))}</p>`+
