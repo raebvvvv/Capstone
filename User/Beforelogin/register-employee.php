@@ -205,8 +205,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                               $mail->isHTML(true);
                               $mail->Subject = 'Verify your email address';
+                              // Build verification URL using configured BASE_URL to respect subfolder paths (e.g., /fix/Capstone)
+                              $verifyUrl = asset_url('User/Beforelogin/verify.php') . '?code=' . urlencode($verification_code) . '&email=' . urlencode($email);
                               $mail->Body    = "Dear $firstName,<br><br>Please verify your email by clicking the link below:<br>
-                              <a href='http://localhost/Capstone/User/Beforelogin/verify.php?code=$verification_code&email=$email'>Verify Email</a><br><br>
+                              <a href='$verifyUrl'>Verify Email</a><br><br>
                               This link will expire in 24 hours.<br><br>Thank you!";
 
                               $mail->send();

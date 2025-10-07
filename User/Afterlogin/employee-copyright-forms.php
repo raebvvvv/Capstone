@@ -11,6 +11,23 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$_SESSION['user_id']]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Backfill academic_level and program from the user's most recent submission if not present in profile
+if ($profile) {
+  if (empty($profile['academic_level']) || empty($profile['program'])) {
+    $s = $pdo->prepare("SELECT academic_level, program FROM submissions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
+    $s->execute([$_SESSION['user_id']]);
+    $last = $s->fetch(PDO::FETCH_ASSOC);
+    if ($last) {
+      if (empty($profile['academic_level']) && !empty($last['academic_level'])) {
+        $profile['academic_level'] = $last['academic_level'];
+      }
+      if (empty($profile['program']) && !empty($last['program'])) {
+        $profile['program'] = $last['program'];
+      }
+    }
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -100,44 +117,32 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
             <!-- Employees Information  -->
             <form id="submissionForm" class="mt-2" method="post" action="submit-form.php" enctype="multipart/form-data">
               <?php if (function_exists('csrf_input')) { csrf_input(); } ?>
-                <div class="row g-3 mt-2">
-                  <div class="col-md-6">
-                    <label class="form-label required">Department</label>
-                    <select name="department" id="department" class="form-select" required>
-                      <!-- options populated by JS based on College -->
-                    </select>
-                  </div>
               <input type="hidden" name="accepted_terms" id="accepted_terms" value="">
+
               <h2 class="section-heading mb-3">Employee Information</h2>
               <fieldset>
                 <legend>Personal Details</legend>
                 <div class="row g-3 mt-2">
-                  <div class="col-md-6">
-                  <div class="col-md-4 d-none">
-          <input type="text" name="first_name" class="form-control" required
-            value="<?php echo htmlspecialchars($profile['first_name'] ?? ''); ?>" readonly>
+                  <div class="col-md-3">
+                    <label class="form-label required">First name</label>
+                    <input type="text" name="first_name" class="form-control" required
+                      value="<?php echo htmlspecialchars($profile['first_name'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-3">
-                  <div class="col-md-6">
-                    <label class="form-label required">Program</label>
-                    <select name="program" id="program" class="form-select" required>
-                      <!-- options populated by JS based on Academic Level / College -->
-                    </select>
-                  </div>
                     <label class="form-label">Middle name</label>
-          <input type="text" name="middle_name" class="form-control"
-            value="<?php echo htmlspecialchars($profile['middle_name'] ?? ''); ?>" readonly>
+                    <input type="text" name="middle_name" class="form-control"
+                      value="<?php echo htmlspecialchars($profile['middle_name'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Last name</label>
-          <input type="text" name="last_name" class="form-control" required
-            value="<?php echo htmlspecialchars($profile['last_name'] ?? ''); ?>" readonly>
+                    <input type="text" name="last_name" class="form-control" required
+                      value="<?php echo htmlspecialchars($profile['last_name'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Employee ID</label>
-          <input type="text" name="employee_id" class="form-control" placeholder="" required
-            value="<?php echo htmlspecialchars($profile['employee_number'] ?? ''); ?>" readonly>
-          <small class="text-muted">Format: XXXXX</small>
+                    <input type="text" name="employee_id" class="form-control" required
+                      value="<?php echo htmlspecialchars($profile['employee_number'] ?? ''); ?>" readonly>
+                    <small class="text-muted">Format: XXXXX</small>
                   </div>
                 </div>
               </fieldset>
@@ -166,39 +171,45 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                 <div class="row g-3">
                   <div class="col-md-4">
                     <label class="form-label required">Campus</label>
-                    <select name="campus" id="campus" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
-                      <option>PUP Main</option>
-                      <option>CEA</option>
+                    <select name="campus" id="campus" class="form-select" required disabled aria-disabled="true" title="Locked from editing">
+                      <!-- populated by JS -->
                     </select>
+                    <input type="hidden" name="campus" id="campus_hidden" value="">
                   </div>
                   <div class="col-md-4">
                     <label class="form-label required">Academic Level</label>
-                    <select name="academicLevel" id="academicLevel" class="form-select" required>
+                    <select name="academicLevel" id="academicLevel" class="form-select" required disabled aria-disabled="true" title="Locked from editing">
                       <option value="" disabled selected>Choose...</option>
                       <!-- Will be populated from JS -->
                     </select>
+                    <input type="hidden" name="academicLevel" id="academicLevel_hidden" value="">
                   </div>
                   <div class="col-md-4">
                     <label class="form-label required">College</label>
-                    <select name="college" id="college" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
+                    <select name="college" id="college" class="form-select" required disabled aria-disabled="true" title="Locked from editing">
                       <!-- Will be populated from JS -->
                     </select>
+                    <input type="hidden" name="college" id="college_hidden" value="">
                   </div>
                 </div>
                 <div class="row g-3 mt-2">
-                  <div class="col-md-6">
+                  <div class="col-md-4">
+                    <label class="form-label required">Department</label>
+                    <select name="department" id="department" class="form-select" required disabled aria-disabled="true" title="Locked from editing">
+                      <!-- Will be populated from JS based on College -->
+                    </select>
+                    <input type="hidden" name="department" id="department_hidden" value="">
+                  </div>
+                  <div class="col-md-4">
                     <label class="form-label required">Program</label>
-                    <select name="program" id="program" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
+                    <select name="program" id="program" class="form-select" required disabled aria-disabled="true" title="Locked from editing">
                       <!-- Will be populated from JS -->
                     </select>
+                    <input type="hidden" name="program" id="program_hidden" value="">
                   </div>
                   <div class="col-md-4">
                     <label class="form-label required">Work Classification</label>
                     <select name="workClassification" id="workClassification" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
                       <!-- Will be populated from JS -->
                     </select>
                     <small class="text-muted">Type O (Original), Type A (Adaptation), Type B (Based on Public Domain)</small>
@@ -351,7 +362,96 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>" defer></script>
-  <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>" defer></script>
+  <script src="<?php echo asset_url('javascript/forms/employee-academic-dropdowns.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-authors.js'); ?>" defer></script>
+  <script>
+    // Prefill Academic Affiliation fields (except Work Classification) from employee profile
+    (function() {
+      const prefill = {
+        campus: <?php echo json_encode($profile['campus'] ?? ''); ?>,
+        academicLevel: <?php echo json_encode($profile['academic_level'] ?? ''); ?>,
+        college: <?php echo json_encode($profile['college'] ?? ''); ?>,
+        department: <?php echo json_encode($profile['department'] ?? ''); ?>,
+        program: <?php echo json_encode($profile['program'] ?? ''); ?>
+      };
+
+      function setSelectMatch(select, value) {
+        if (!select || !value) return false;
+        let match = null;
+        for (const opt of Array.from(select.options)) {
+          if (opt.value === value || opt.text.trim() === value.trim()) { match = opt.value; break; }
+        }
+        if (match !== null) {
+          select.value = match;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          return true;
+        }
+        // Fallback: if no matching option exists yet, insert a synthetic one so value is shown and submitted
+        const opt = new Option(value, value, true, true);
+        select.add(opt);
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
+
+      function setWhenReady(id, value, tries = 25) {
+        const el = document.getElementById(id);
+        if (!el || !value) return;
+        const ready = el.options && el.options.length > 0;
+        if (!ready && tries > 0) {
+          return setTimeout(() => setWhenReady(id, value, tries - 1), 120);
+        }
+        setSelectMatch(el, value);
+      }
+
+      function mirrorToHidden() {
+        const map = [
+          ['campus','campus_hidden'],
+          ['academicLevel','academicLevel_hidden'],
+          ['college','college_hidden'],
+          ['department','department_hidden'],
+          ['program','program_hidden']
+        ];
+        for (const [sid, hid] of map) {
+          const sel = document.getElementById(sid);
+          const hidEl = document.getElementById(hid);
+          if (sel && hidEl) hidEl.value = sel.value || '';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        // Order: campus -> college -> department, and academicLevel -> program
+        setWhenReady('campus', prefill.campus);
+        // After campus, populate and set college/department
+        const campusEl = document.getElementById('campus');
+        campusEl && campusEl.addEventListener('change', function() {
+          setTimeout(() => setWhenReady('college', prefill.college), 160);
+        }, { once: true });
+
+        const collegeEl = document.getElementById('college');
+        collegeEl && collegeEl.addEventListener('change', function() {
+          setTimeout(() => setWhenReady('department', prefill.department), 160);
+        });
+
+        // Level can be set independently; program may depend on level and college
+        setWhenReady('academicLevel', prefill.academicLevel);
+        const levelEl = document.getElementById('academicLevel');
+        levelEl && levelEl.addEventListener('change', function() {
+          setTimeout(() => setWhenReady('program', prefill.program), 200);
+        });
+
+        // Final safety pass in case events didn't chain as expected
+        setTimeout(() => {
+          setWhenReady('college', prefill.college);
+          setWhenReady('department', prefill.department);
+          setWhenReady('program', prefill.program);
+          mirrorToHidden();
+        }, 800);
+
+        // Also mirror on form submit to ensure latest values are posted
+        const form = document.getElementById('submissionForm');
+        form && form.addEventListener('submit', function() { mirrorToHidden(); });
+      });
+    })();
+  </script>
 </body>
 </html>

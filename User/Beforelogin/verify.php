@@ -11,16 +11,28 @@ $email = isset($_GET['email']) ? $_GET['email'] : '';
 if (!$code || !$email) {
     $error = "Invalid verification link.";
 } else {
-    // Find user with matching code and email, and not expired
-    $stmt = $pdo->prepare("SELECT user_id, code_expires_at, status FROM users WHERE email = ? AND verification_code = ?");
-    $stmt->execute([$email, $code]);
-    $user = $stmt->fetch();
+    // Normalize inputs
+    $normEmail = trim($email);
+    $normCode  = trim($code);
+
+    // Find user by email (case-insensitive)
+    $stmt = $pdo->prepare("SELECT user_id, status, verification_code, code_expires_at FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))");
+    $stmt->execute([$normEmail]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        $error = "Invalid or expired verification link.";
+        $error = "Invalid verification link.";
     } elseif ($user['status'] === 'active') {
+        // Already verified
         $success = "Your email is already verified.";
-    } elseif (strtotime($user['code_expires_at']) < time()) {
+    } elseif (empty($user['verification_code'])) {
+        // No active code on record for this user
+        $error = "Invalid or expired verification link.";
+    } elseif ($user['verification_code'] !== $normCode) {
+        // Code does not match (likely a previous/rotated code)
+        $error = "Invalid or expired verification link.";
+    } elseif (!empty($user['code_expires_at']) && strtotime($user['code_expires_at']) < time()) {
+        // Code expired
         $error = "Verification link has expired.";
     } else {
         // Mark email as verified
@@ -40,13 +52,18 @@ if (!$code || !$email) {
 <body class="bg-light d-flex flex-column min-vh-100">
     <main class="flex-grow-1 d-flex justify-content-center align-items-center py-4">
         <div class="card shadow p-4" style="max-width: 500px;">
-            <h3 class="mb-4">Email Verification</h3>
+            <h3 class="mb-4 text-center">Email Verification</h3>
+
             <?php if ($error): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+                <?php if ($email): ?>
+                    <a class="btn btn-outline-secondary mt-2" href="resend_verification.php?email=<?php echo urlencode($email); ?>">Resend verification email</a>
+                <?php endif; ?>
             <?php elseif ($success): ?>
                 <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
             <?php endif; ?>
-            <a href="login.php" class="btn btn-primary mt-3">Go to Login</a>
+
+            <a href="login.php" class="btn btn-primary w-100 mt-3">Go to Login</a>
         </div>
     </main>
 </body>
