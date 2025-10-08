@@ -374,13 +374,14 @@ if ($profile) {
         }
         if (match !== null) {
           select.value = match;
-          select.dispatchEvent(new Event('change', { bubbles: true }));
+          // Avoid firing change for disabled/locked selects to reduce work
+          if (!select.disabled) select.dispatchEvent(new Event('change', { bubbles: true }));
           return true;
         }
         // Fallback: if no matching option exists yet, insert a synthetic one so value is shown and submitted
         const opt = new Option(value, value, true, true);
         select.add(opt);
-        select.dispatchEvent(new Event('change', { bubbles: true }));
+        if (!select.disabled) select.dispatchEvent(new Event('change', { bubbles: true }));
         return true;
       }
 
@@ -406,7 +407,7 @@ if ($profile) {
         }
       }
 
-      document.addEventListener('DOMContentLoaded', function() {
+      function prefillOnce(){
         // Immediately set visible values so there's no initial flicker/lag
         ensureNow('campus', prefill.campus);
         ensureNow('academicLevel', prefill.academicLevel);
@@ -431,17 +432,20 @@ if ($profile) {
         });
 
         // Quick follow-up to reconcile selection after any async population completes
-        setTimeout(() => {
-          ensureNow('campus', prefill.campus);
-          ensureNow('college', prefill.college);
-          ensureNow('department', prefill.department);
-          ensureNow('program', prefill.program);
-          mirrorToHidden();
-        }, 400);
+        setTimeout(() => { mirrorToHidden(); }, 300);
 
         // Also mirror on form submit to ensure latest values are posted
         const form = document.getElementById('submissionForm');
         form && form.addEventListener('submit', function() { mirrorToHidden(); });
+      }
+
+      // Defer the heavier prefill until the Terms gate is passed to reduce initial lag
+      let prefilled = false;
+      document.addEventListener('ipmo:form:show', function(){ if(!prefilled){ prefilled = true; prefillOnce(); } });
+      document.addEventListener('DOMContentLoaded', function(){
+        // In case the page is loaded with terms already accepted (rare), run once
+        const section = document.getElementById('formSection');
+        if(section && !section.classList.contains('d-none') && !prefilled){ prefilled = true; prefillOnce(); }
       });
     })();
   </script>

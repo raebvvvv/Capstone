@@ -24,6 +24,7 @@
             if(gate){ gate.classList.add('d-none'); }
             section.classList.remove('d-none');
             try { section.scrollIntoView({behavior:'smooth', block:'start'}); } catch(e) {}
+            try { document.dispatchEvent(new CustomEvent('ipmo:form:show')); } catch(_) {}
           }
         }
       });

@@ -231,6 +231,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const collegeSelect = document.getElementById('college');
   const programSelect = document.getElementById('program');
   const departmentSelect = document.getElementById('department');
+  // Remember which fields were disabled when page loaded; never unlock them client-side
+  const initiallyLocked = new Set();
+  [academicLevelSelect, collegeSelect, programSelect, departmentSelect].forEach(el=>{ if(el && el.disabled){ initiallyLocked.add(el.id); el.dataset.locked = '1'; } });
   
   // When academic level changes
   if (academicLevelSelect) {
@@ -241,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Do not touch College or Department. Only update Program based on level.
       if (programSelect) {
+        const progLocked = programSelect && programSelect.dataset.locked === '1';
         if (isNotStudying) {
           programSelect.disabled = true;
           programSelect.innerHTML = '';
@@ -249,7 +253,8 @@ document.addEventListener('DOMContentLoaded', function() {
           progNA.textContent = 'N/A';
           programSelect.appendChild(progNA);
         } else if (isGradOrOU) {
-          programSelect.disabled = false;
+          // Only enable if it wasn't locked initially
+          programSelect.disabled = progLocked ? true : false;
           let options = academicData.program[selectedLevel] || academicData.program.default;
           if (selectedLevel === 'Open University') {
             options = options.filter(p => !/(\(BSIT\)|\(BSBA\))$/.test(p));
@@ -257,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
           populateDropdown(programSelect, options);
         } else {
           // Undergraduate/other: program depends on currently selected college
-          programSelect.disabled = false;
+          programSelect.disabled = progLocked ? true : false;
           const selCollege = collegeSelect ? collegeSelect.value : null;
           const options = (selCollege && academicData.program[selCollege]) ? academicData.program[selCollege] : academicData.program.default;
           populateDropdown(programSelect, options);
@@ -286,9 +291,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Update departments dropdown (lock to N/A when no mapping exists)
       if (departmentSelect) {
+        const depLocked = departmentSelect && departmentSelect.dataset.locked === '1';
         const deps = academicData.department[selectedCollege];
         if (Array.isArray(deps) && deps.length) {
-          departmentSelect.disabled = false;
+          // Only enable if it wasn't locked initially
+          departmentSelect.disabled = depLocked ? true : false;
           populateDropdown(departmentSelect, deps);
         } else {
           departmentSelect.disabled = true;
