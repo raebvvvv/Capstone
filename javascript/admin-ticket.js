@@ -597,13 +597,27 @@
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
   const payload = { request_id: requestId, comment };
   console.debug('[complete_request] sending', payload, 'csrf:', csrf);
-          const res = await fetch('../admin/complete_request.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify(payload) });
+          const res = await fetch('../admin/complete_request.php',{
+            method:'POST',
+            credentials:'same-origin',
+            headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},
+            body: JSON.stringify(payload)
+          });
         let data = {};
-        try { data = await res.json(); } catch(parseErr){ console.error('complete_request parse error', parseErr); }
+        try { data = await res.json(); } catch(parseErr){
+          console.error('complete_request parse error', parseErr);
+          try {
+            const txt = await res.text();
+            data = { error: 'Non-JSON response', detail: txt?.slice(0,500) };
+          } catch(_) {}
+        }
   console.debug('[complete_request] response status', res.status, 'body', data);
         if(!res.ok){
           console.error('Complete request HTTP error', res.status, data);
-          alert('Failed to complete: ' + (data.error || ('HTTP '+res.status)));
+          const extra = (data && (data.phase || data.detail))
+            ? (`\n${data.phase ? ('Phase: ' + data.phase + '\n') : ''}${data.detail ? ('Detail: ' + data.detail) : ''}`)
+            : '';
+          alert('Failed to complete: ' + (data.error || ('HTTP ' + res.status)) + extra);
           return;
         }
         if(!data.success && !data.idempotent){
@@ -707,10 +721,9 @@
             const reqDateText = (cells[3]?.textContent || '').trim();
             const notesHTML = (cells[5]?.innerHTML || '<span class="text-muted small">None</span>');
             const rowData = { requestId: reqIdText, studentName: nameText, studentId: studIdText, userLabel, requestDate: reqDateText, notesHTML };
-            // For Approved row, use only the Approve-time comment (not the pending comment)
+            // For Approved row, use ONLY the Approve-time comment; do not carry Pending comments forward
             const approveTimeComment = (comment || '').trim();
-            // Do NOT carry forward pending-stage attributes into Approved
-            const carriedComment = approveTimeComment; // only approval comment should appear in Approved
+            const carriedComment = approveTimeComment;
             // Approved tab rule: show Comments button only when there is an approval-time comment
             const shouldShowComments = !!approveTimeComment;
             pendingApproveRow.remove();

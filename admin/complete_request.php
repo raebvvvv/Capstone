@@ -26,9 +26,11 @@ try {
     $idCol = ctype_digit($requestId) ? 'submission_id' : 'submission_code';
 
     // Prepare update
+    // Use NULLIF to avoid repeating the same named placeholder twice, which can
+    // trigger SQLSTATE[HY093] with native prepared statements.
     $sql = "UPDATE submissions
             SET status='completed',
-                remarks = COALESCE(NULLIF(:remark,''), remarks),
+                remarks = NULLIF(:remark, ''),
                 status_updated_at = NOW()
             WHERE $idCol = :id";
     $stmt = $pdo->prepare($sql);

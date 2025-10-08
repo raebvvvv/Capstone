@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $col = $resolveIdColumn($approveId);
                 $sql = "UPDATE submissions
                         SET status = 'approved',
-                            remarks = CASE WHEN :remark <> '' THEN :remark ELSE remarks END,
+                            remarks = COALESCE(NULLIF(:remark, ''), remarks),
                             reviewer_id = :rid,
                             reviewed_at = NOW(),
                             status_updated_at = NOW()
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $col = $resolveIdColumn($completeId);
                 $sql = "UPDATE submissions
                         SET status = 'completed',
-                            remarks = CASE WHEN :remark <> '' THEN :remark ELSE remarks END,
+                            remarks = COALESCE(NULLIF(:remark, ''), remarks),
                             status_updated_at = NOW()
                         WHERE $col = :id";
                 $stmt = $pdo->prepare($sql);
@@ -701,15 +701,15 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                                     $aAffected = trim((string)($ticket['approved_affected_doc_types'] ?? ''));
                                     $approvedStatusLabel = ($aIssue !== '' || $aAffected !== '') ? 'Awaiting Review' : 'In-Review';
 
-                                    // Approved tab Comments should NOT include any Pending remarks.
-                                    // Use ONLY the approval-time remark (submissions.remarks) for the Comments payload.
-                                    $approveRemark = trim((string)($ticket['remark'] ?? ''));
+                                    // Approved tab Comments should reflect ONLY the admin comment captured when marking Incomplete in Approved scope
+                                    // or the approval-time comment (stored in approved meta), NOT the generic submissions.remarks field.
+                                    $approveComment = trim((string)($ticket['approved_admin_comment'] ?? ''));
                                     $approvedAttrs = '';
-                                    if ($approveRemark !== '') {
-                                        $approvedAttrs .= ' data-admin-comment="'.htmlspecialchars($approveRemark, ENT_QUOTES).'"';
+                                    if ($approveComment !== '') {
+                                        $approvedAttrs .= ' data-admin-comment="'.htmlspecialchars($approveComment, ENT_QUOTES).'"';
                                     }
                                     // Do NOT attach data-incomplete-remark or data-resubmit-files here to avoid surfacing Pending meta.
-                                    $showComments = ($approveRemark !== '');
+                                    $showComments = ($approveComment !== '');
                                 ?>
                                 <tr<?php echo $approvedAttrs; ?>>
                                     <td><a href="#" class="open-details text-decoration-underline" title="Open details" data-request-id="<?php echo htmlspecialchars($ticket['request_id']); ?>"><?php echo htmlspecialchars($ticket['request_id']); ?></a></td>

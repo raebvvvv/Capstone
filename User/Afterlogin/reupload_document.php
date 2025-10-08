@@ -32,8 +32,14 @@ if($submissionCode === '' || $docType === ''){
 
 // Basic allowed doc types whitelist (can be expanded)
 $ALLOWED_DOC_TYPES = [
-    'journal_publication_format', 'notarized_copyright', 'receipt_payment', 'full_manuscript',
-    'notarized_coauthorship', 'approval_sheet', 'record_copyright'
+    'journal_publication_format',
+    'notarized_copyright',
+    'receipt_payment',
+    'full_manuscript',
+    'presentation',
+    'notarized_coauthorship',
+    'approval_sheet',
+    'record_copyright'
 ];
 if(!in_array($docType, $ALLOWED_DOC_TYPES, true)){
     http_response_code(422);

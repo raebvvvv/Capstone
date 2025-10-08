@@ -23,6 +23,14 @@ if ($requestId === '') { respond_error('Invalid request'); }
 try {
     // Determine identifier column: numeric -> submission_id, else submission_code
     $idCol = ctype_digit($requestId) ? 'submission_id' : 'submission_code';
+    // Resolve the numeric submission_id for downstream meta updates
+    $sid = null;
+    try {
+        $stmtSid = $pdo->prepare("SELECT submission_id FROM submissions WHERE $idCol = :id LIMIT 1");
+        $stmtSid->execute([':id' => ctype_digit($requestId) ? (int)$requestId : $requestId]);
+        $sid = (int)$stmtSid->fetchColumn();
+        if (!$sid) { $sid = null; }
+    } catch (Throwable $e) { $sid = null; }
     // Step 1: update status + reviewer (no remarks logic) to minimize placeholder complexity
     $sqlStatus = "UPDATE submissions
                   SET status = 'approved',
@@ -62,6 +70,30 @@ try {
             $errInfo = $stmtRemarks->errorInfo();
             $safeMsg = isset($errInfo[2]) ? substr($errInfo[2],0,200) : 'DB execute error';
             respond_error('Execute failed', ['phase'=>'execute-remarks','detail'=>$safeMsg]);
+        }
+
+        // Also persist approval-time comment into approved-scope meta so UI can render Comments after refresh
+        if ($sid) {
+            try {
+                // Ensure meta table exists
+                $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
+                    submission_id INT NOT NULL,
+                    scope ENUM('pending','approved') NOT NULL,
+                    issue_label VARCHAR(150) DEFAULT NULL,
+                    admin_comment TEXT NULL,
+                    affected_doc_types TEXT NULL,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (submission_id, scope),
+                    CONSTRAINT fk_sim_submission_x FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                $upMeta = $pdo->prepare("INSERT INTO submission_incomplete_meta (submission_id, scope, issue_label, admin_comment, affected_doc_types) VALUES (:sid, 'approved', NULL, :cmt, NULL)
+                    ON DUPLICATE KEY UPDATE admin_comment = VALUES(admin_comment)");
+                $upMeta->execute([':sid' => $sid, ':cmt' => $comment]);
+            } catch (Throwable $eMeta) {
+                // Non-fatal; log if logger available
+                if (function_exists('log_event')) { log_event('DB_WARN', 'Approve meta persist failed', ['sid'=>$sid, 'err'=>substr($eMeta->getMessage(),0,120)]); }
+            }
         }
     }
     if ($affected === 0) {
