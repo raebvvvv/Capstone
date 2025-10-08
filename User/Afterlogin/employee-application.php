@@ -194,20 +194,24 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
     // - Default: "For Evaluation"
     // - After successful resubmission (status 'pending_review' or 'under_review'), show "Pending Review"
     // - If admin marks incomplete in Pending tab, prefer issue_label mapping; if absent, fall back to s.remarks
-    //   Mapping values: "Error in Document" or "Incorrect Document/Upload"
+    //   Mapping values: "Error in Document/Upload" or "Incorrect Document/Upload"
     $stLower = strtolower((string)$row['status']);
     $displayRemark = 'For Evaluation';
-    if ($stLower === 'pending_review' || $stLower === 'under_review') {
+    $hasPendingMeta = ($pendingIssue !== '' || $pendingComment !== '' || $pendingAffected !== '');
+    if (($stLower === 'pending_review' || $stLower === 'under_review') && $hasPendingMeta) {
+      // Show "Pending Review" only when there's evidence of prior incomplete & resubmission
       $displayRemark = 'Pending Review';
     } else {
       $pIssue = strtolower($pendingIssue);
       if ($pIssue !== '') {
+        // Prioritize explicit 'error' markers over generic 'incorrect/upload'
         if (str_contains($pIssue, 'error')) {
           $displayRemark = 'Error in Document/Upload';
         } elseif (str_contains($pIssue, 'incorrect') || str_contains($pIssue, 'upload')) {
           $displayRemark = 'Incorrect Document/Upload';
         }
       } else {
+        // Fallback to raw remarks if issue label is not set
         $rawRemarksLower = strtolower(trim((string)$row['remarks']));
         if ($rawRemarksLower !== '') {
           if (str_contains($rawRemarksLower, 'error')) {
@@ -215,6 +219,15 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
           } elseif (str_contains($rawRemarksLower, 'incorrect') || str_contains($rawRemarksLower, 'upload')) {
             $displayRemark = 'Incorrect Document/Upload';
           }
+        }
+        // If admin provided a comment but chose no specific remarks option, show "Others"
+        // Now triggers regardless of whether affected files were specified.
+        if (
+          $displayRemark === 'For Evaluation'
+          && $pendingComment !== ''
+          && $pIssue === ''
+        ) {
+          $displayRemark = 'Others';
         }
       }
     }
@@ -317,6 +330,12 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
                     str_contains($aIssueNorm, 'mismatched')
                   ) {
                     $approvedRemark = "Documents don't match";
+                  }
+                } else {
+                  // If admin provided a comment but chose no specific remarks option, show "Others"
+                  $approvedAdminCommentCheck = trim((string)($row['approved_admin_comment'] ?? ''));
+                  if ($approvedAdminCommentCheck !== '') {
+                    $approvedRemark = 'Others';
                   }
                 }
               ?>

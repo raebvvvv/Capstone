@@ -439,9 +439,9 @@ if ($profile) {
         form && form.addEventListener('submit', function() { mirrorToHidden(); });
       }
 
-      // Defer the heavier prefill until the Terms gate is passed to reduce initial lag
-      let prefilled = false;
-      document.addEventListener('ipmo:form:show', function(){ if(!prefilled){ prefilled = true; prefillOnce(); } });
+  // Defer the heavier prefill until the academic selects are populated to avoid races
+  let prefilled = false;
+  document.addEventListener('ipmo:form:academics:ready', function(){ if(!prefilled){ prefilled = true; prefillOnce(); } });
       document.addEventListener('DOMContentLoaded', function(){
         // In case the page is loaded with terms already accepted (rare), run once
         const section = document.getElementById('formSection');

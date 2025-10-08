@@ -377,7 +377,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
- <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>"></script>
+ <script src="<?php echo asset_url('javascript/forms/student-academic-dropdowns.js'); ?>"></script>
  
 
 </body>

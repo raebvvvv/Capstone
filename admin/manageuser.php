@@ -33,6 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     $student_campus = isset($_POST['student_campus']) ? trim($_POST['student_campus']) : null;
     $student_college = isset($_POST['student_college']) ? trim($_POST['student_college']) : null;
     $student_program = isset($_POST['student_program']) ? trim($_POST['student_program']) : null;
+    // Optional employee profile fields
+    $employee_campus = isset($_POST['employee_campus']) ? trim($_POST['employee_campus']) : null;
+    $employee_college = isset($_POST['employee_college']) ? trim($_POST['employee_college']) : null;
+    $employee_department = isset($_POST['employee_department']) ? trim($_POST['employee_department']) : null;
+    $employee_program = isset($_POST['employee_program']) ? trim($_POST['employee_program']) : null;
     // Validate role and status
     $valid_roles = ['student','employee','admin'];
     $valid_status = ['active','inactive','pending'];
@@ -62,6 +67,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
                 }
             } catch (Exception $e) {
                 // swallow and continue to avoid breaking the flow; optionally log error
+            }
+        }
+
+        // If employee role, upsert campus/college/department/program in employee_profiles
+        if ($role === 'employee') {
+            try {
+                $stmt_check_e = $pdo->prepare("SELECT profile_id FROM employee_profiles WHERE user_id = ? LIMIT 1");
+                $stmt_check_e->execute([$user_id]);
+                $existing_e = $stmt_check_e->fetchColumn();
+                if ($existing_e) {
+                    $stmt_ep = $pdo->prepare("UPDATE employee_profiles SET campus = ?, college = ?, department = ?, program = ?, last_updated_at = NOW() WHERE user_id = ?");
+                    $stmt_ep->execute([$employee_campus, $employee_college, $employee_department, $employee_program, $user_id]);
+                } else {
+                    $stmt_ep = $pdo->prepare("INSERT INTO employee_profiles (user_id, campus, college, department, program, last_updated_at) VALUES (?,?,?,?,?, NOW())");
+                    $stmt_ep->execute([$user_id, $employee_campus, $employee_college, $employee_department, $employee_program]);
+                }
+            } catch (Exception $e) {
+                // swallow and continue; optionally log
             }
         }
 
@@ -101,9 +124,13 @@ $sql_active = "
             WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
             ELSE 'Unknown User'
         END as full_name,
-        sp.campus AS student_campus,
-        sp.college AS student_college,
-        sp.program AS student_program
+    sp.campus AS student_campus,
+    sp.college AS student_college,
+    sp.program AS student_program,
+    ep.campus AS employee_campus,
+    ep.college AS employee_college,
+    ep.department AS employee_department,
+    ep.program AS employee_program
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -160,9 +187,13 @@ $sql_pending = "
             WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
             ELSE 'Unknown User'
         END as full_name,
-        sp.campus AS student_campus,
-        sp.college AS student_college,
-        sp.program AS student_program
+    sp.campus AS student_campus,
+    sp.college AS student_college,
+    sp.program AS student_program,
+    ep.campus AS employee_campus,
+    ep.college AS employee_college,
+    ep.department AS employee_department,
+    ep.program AS employee_program
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -219,9 +250,13 @@ $sql_inactive = "
             WHEN u.role = 'admin' THEN CONCAT_WS(' ', ap.first_name, ap.last_name)
             ELSE 'Unknown User'
         END as full_name,
-        sp.campus AS student_campus,
-        sp.college AS student_college,
-        sp.program AS student_program
+    sp.campus AS student_campus,
+    sp.college AS student_college,
+    sp.program AS student_program,
+    ep.campus AS employee_campus,
+    ep.college AS employee_college,
+    ep.department AS employee_department,
+    ep.program AS employee_program
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -540,19 +575,54 @@ $result_inactive = $stmt_inactive->fetchAll();
                                 </div>
                             </div>
                                 <?php if (($row['role'] ?? '') === 'student'): ?>
-                                <div class="border rounded p-3 mb-3 bg-light-subtle" style="border-color:#ddd!important;">
+                                <div class="border rounded p-3 mb-3 bg-light-subtle student-profile-section" style="border-color:#ddd!important;">
                                     <h6 class="fw-bold mb-3">Student Profile</h6>
                                     <div class="mb-3">
                                         <label for="student_campus_<?php echo $row['user_id']; ?>" class="form-label">Campus</label>
-                                        <input type="text" class="form-control" id="student_campus_<?php echo $row['user_id']; ?>" name="student_campus" value="<?php echo htmlspecialchars($row['student_campus'] ?? ''); ?>">
+                                        <select class="form-select acad-campus" id="student_campus_<?php echo $row['user_id']; ?>" name="student_campus" data-current="<?php echo htmlspecialchars($row['student_campus'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
                                     </div>
                                     <div class="mb-3">
                                         <label for="student_college_<?php echo $row['user_id']; ?>" class="form-label">College</label>
-                                        <input type="text" class="form-control" id="student_college_<?php echo $row['user_id']; ?>" name="student_college" value="<?php echo htmlspecialchars($row['student_college'] ?? ''); ?>">
+                                        <select class="form-select acad-college" id="student_college_<?php echo $row['user_id']; ?>" name="student_college" data-current="<?php echo htmlspecialchars($row['student_college'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
                                     </div>
                                     <div class="mb-3">
                                         <label for="student_program_<?php echo $row['user_id']; ?>" class="form-label">Program</label>
-                                        <input type="text" class="form-control" id="student_program_<?php echo $row['user_id']; ?>" name="student_program" value="<?php echo htmlspecialchars($row['student_program'] ?? ''); ?>">
+                                        <select class="form-select acad-program" id="student_program_<?php echo $row['user_id']; ?>" name="student_program" data-current="<?php echo htmlspecialchars($row['student_program'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (($row['role'] ?? '') === 'employee'): ?>
+                                <div class="border rounded p-3 mb-3 bg-light-subtle employee-profile-section" style="border-color:#ddd!important;">
+                                    <h6 class="fw-bold mb-3">Employee Profile</h6>
+                                    <div class="mb-3">
+                                        <label for="employee_campus_<?php echo $row['user_id']; ?>" class="form-label">Campus</label>
+                                        <select class="form-select emp-campus" id="employee_campus_<?php echo $row['user_id']; ?>" name="employee_campus" data-current="<?php echo htmlspecialchars($row['employee_campus'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="employee_college_<?php echo $row['user_id']; ?>" class="form-label">College</label>
+                                        <select class="form-select emp-college" id="employee_college_<?php echo $row['user_id']; ?>" name="employee_college" data-current="<?php echo htmlspecialchars($row['employee_college'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="employee_department_<?php echo $row['user_id']; ?>" class="form-label">Department</label>
+                                        <select class="form-select emp-department" id="employee_department_<?php echo $row['user_id']; ?>" name="employee_department" data-current="<?php echo htmlspecialchars($row['employee_department'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="employee_program_<?php echo $row['user_id']; ?>" class="form-label">Program</label>
+                                        <select class="form-select emp-program" id="employee_program_<?php echo $row['user_id']; ?>" name="employee_program" data-current="<?php echo htmlspecialchars($row['employee_program'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <?php endif; ?>
@@ -624,5 +694,140 @@ $result_inactive = $stmt_inactive->fetchAll();
     <script src="../javascript/admin-notifications.js?v=1" defer></script>
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
     <script src="../javascript/admin-manageuser.js?v=2" defer></script>
+        <!-- Academic data and modal dropdown initializer (use employee dataset for both) -->
+        <script src="../javascript/forms/employee-academic-dropdowns.js?v=1" defer></script>
+        <script defer>
+            // Populate campus/college/program selects in Edit User modals using academicData
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof academicData === 'undefined') return;
+
+                function populateSelect(selectEl, options, currentValue) {
+                    if (!selectEl) return;
+                    // Clear existing options
+                    selectEl.innerHTML = '';
+                    // Default prompt
+                    const def = document.createElement('option');
+                    def.value = '';
+                    def.disabled = true;
+                    def.selected = true;
+                    def.textContent = 'Choose...';
+                    selectEl.appendChild(def);
+                    // Add options
+                    (options || []).forEach(opt => {
+                        const o = document.createElement('option');
+                        o.value = opt;
+                        o.textContent = opt;
+                        if (currentValue && currentValue === opt) {
+                            o.selected = true;
+                            def.selected = false;
+                        }
+                        selectEl.appendChild(o);
+                    });
+                }
+
+                function getCollegeListFromPrograms() {
+                    const exclude = new Set(['Masters','Doctorate','Open University','default']);
+                    return Object.keys(academicData.program || {}).filter(k => !exclude.has(k)).sort();
+                }
+
+                function initStudentSection(section) {
+                    const campusSel = section.querySelector('.acad-campus');
+                    const collegeSel = section.querySelector('.acad-college');
+                    const programSel = section.querySelector('.acad-program');
+                    if (!campusSel || !collegeSel || !programSel) return;
+
+                    const campusCurrent = campusSel.dataset.current || '';
+                    const collegeCurrent = collegeSel.dataset.current || '';
+                    const programCurrent = programSel.dataset.current || '';
+
+                    populateSelect(campusSel, academicData.campus || [], campusCurrent);
+                    populateSelect(collegeSel, getCollegeListFromPrograms(), collegeCurrent);
+
+                    const initialCollege = collegeCurrent || collegeSel.value;
+                    const programList = (academicData.program && academicData.program[initialCollege])
+                        ? academicData.program[initialCollege]
+                        : (academicData.program && academicData.program.default) || [];
+                    populateSelect(programSel, programList, programCurrent);
+
+                    collegeSel.addEventListener('change', function () {
+                        const list = (academicData.program && academicData.program[this.value])
+                            ? academicData.program[this.value]
+                            : (academicData.program && academicData.program.default) || [];
+                        populateSelect(programSel, list, '');
+                    });
+                }
+
+                function initEmployeeSection(section) {
+                    const campusSel = section.querySelector('.emp-campus');
+                    const collegeSel = section.querySelector('.emp-college');
+                    const deptSel = section.querySelector('.emp-department');
+                    const programSel = section.querySelector('.emp-program');
+                    if (!campusSel || !collegeSel || !deptSel || !programSel) return;
+
+                    const campusCurrent = campusSel.dataset.current || '';
+                    const collegeCurrent = collegeSel.dataset.current || '';
+                    const deptCurrent = deptSel.dataset.current || '';
+                    const programCurrent = programSel.dataset.current || '';
+
+                    populateSelect(campusSel, academicData.campus || [], campusCurrent);
+                    populateSelect(collegeSel, getCollegeListFromPrograms(), collegeCurrent);
+
+                    const initialCollege = collegeCurrent || collegeSel.value;
+                    const depList = (academicData.department && academicData.department[initialCollege])
+                        ? academicData.department[initialCollege]
+                        : null;
+                    if (Array.isArray(depList) && depList.length) {
+                        deptSel.disabled = false;
+                        populateSelect(deptSel, depList, deptCurrent);
+                    } else {
+                        // No departments for this college: lock to N/A
+                        deptSel.disabled = true;
+                        deptSel.innerHTML = '';
+                        const na = document.createElement('option');
+                        na.value = 'N/A';
+                        na.textContent = 'N/A';
+                        deptSel.appendChild(na);
+                    }
+
+                    const progList = (academicData.program && academicData.program[initialCollege])
+                        ? academicData.program[initialCollege]
+                        : (academicData.program && academicData.program.default) || [];
+                    populateSelect(programSel, progList, programCurrent);
+
+                    collegeSel.addEventListener('change', function () {
+                        const c = this.value;
+                        const deps = (academicData.department && academicData.department[c])
+                            ? academicData.department[c]
+                            : null;
+                        if (Array.isArray(deps) && deps.length) {
+                            deptSel.disabled = false;
+                            populateSelect(deptSel, deps, '');
+                        } else {
+                            deptSel.disabled = true;
+                            deptSel.innerHTML = '';
+                            const na = document.createElement('option');
+                            na.value = 'N/A';
+                            na.textContent = 'N/A';
+                            deptSel.appendChild(na);
+                        }
+
+                        const progs = (academicData.program && academicData.program[c])
+                            ? academicData.program[c]
+                            : (academicData.program && academicData.program.default) || [];
+                        populateSelect(programSel, progs, '');
+                    });
+                }
+
+                // Initialize sections when their modal is first shown
+                document.querySelectorAll('.modal[id^="editUserModal"]').forEach(modal => {
+                    modal.addEventListener('shown.bs.modal', function () {
+                        const sSec = modal.querySelector('.student-profile-section');
+                        if (sSec && !sSec.dataset.initialized) { initStudentSection(sSec); sSec.dataset.initialized = '1'; }
+                        const eSec = modal.querySelector('.employee-profile-section');
+                        if (eSec && !eSec.dataset.initialized) { initEmployeeSection(eSec); eSec.dataset.initialized = '1'; }
+                    });
+                });
+            });
+        </script>
 </body>
 </html>

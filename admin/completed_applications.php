@@ -151,6 +151,51 @@ try {
         // Use the identifier from the query
         $idNumber = (string)($s['identifier'] ?? 'N/A');
 
+        // Normalize Academic Level for details/filtering
+        $academicLevelRaw = (string)($s['academic_level'] ?? '');
+        $academicLevel = '';
+        if ($role === 'employee') {
+            // Employees: reflect either Not Studying, Masters, Doctorate, or Open University
+            $lvl = strtolower(trim($academicLevelRaw));
+            if ($lvl === '' || str_contains($lvl, 'not') || str_contains($lvl, 'none') || str_contains($lvl, 'n/a')) {
+                $academicLevel = 'Not Studying';
+            } elseif (str_contains($lvl, 'master')) {
+                $academicLevel = 'Masters';
+            } elseif (str_contains($lvl, 'doctor')) {
+                $academicLevel = 'Doctorate';
+            } elseif (str_contains($lvl, 'open') && str_contains($lvl, 'univers')) {
+                $academicLevel = 'Open University';
+            } else {
+                // Unknown or custom values default to Not Studying for employees
+                $academicLevel = 'Not Studying';
+            }
+        } else {
+            $lvl = strtolower(trim($academicLevelRaw));
+            if ($lvl === '') {
+                // Try to infer Open University from program/campus when missing
+                $prog = strtolower((string)($s['program'] ?? ''));
+                $camp = strtolower((string)($s['campus'] ?? ''));
+                if (str_contains($prog, 'open university') || str_contains($camp, 'open university')) {
+                    $academicLevel = 'Open University';
+                } else {
+                    $academicLevel = '';
+                }
+            } else {
+                if (str_contains($lvl, 'under')) {
+                    $academicLevel = 'Undergraduate';
+                } elseif (str_contains($lvl, 'master')) {
+                    $academicLevel = 'Masters';
+                } elseif (str_contains($lvl, 'doctor')) {
+                    $academicLevel = 'Doctorate';
+                } elseif (str_contains($lvl, 'open') && str_contains($lvl, 'univers')) {
+                    $academicLevel = 'Open University';
+                } else {
+                    // Fallback to original (first letter uppercase) for any custom values
+                    $academicLevel = ucfirst(trim($academicLevelRaw));
+                }
+            }
+        }
+
         // Compute comment/incomplete meta attributes similar to admin/ticket.php Completed tab
     // Completed tab should only reflect comments/info from the Approved stage
     // Do not persist Pending comments or Completion-time remarks here
@@ -178,7 +223,7 @@ try {
                     'department' => '',
                     'college' => $college,
                     'program' => (string)($s['program'] ?? ''),
-                    'academicLevel' => (string)($s['academic_level'] ?? ''),
+                    'academicLevel' => $academicLevel,
                 ],
                 'document' => [
                     'title' => $desc,
@@ -305,6 +350,7 @@ try {
                     <button class="dropdown-item" type="button">Masters</button>
                     <button class="dropdown-item" type="button">Doctorate</button>
                     <button class="dropdown-item" type="button">Open University</button>
+                    <button class="dropdown-item" type="button">Not Studying</button>
                 </div>
             </div>
             <div class="ipapp-mini-dropdown" style="position:relative;">

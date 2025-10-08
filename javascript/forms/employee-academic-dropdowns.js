@@ -351,17 +351,17 @@ document.addEventListener('DOMContentLoaded', function() {
       .sort();
   }
   
-  // Only populate selects that are not fixed/disabled by server profile values
-  if (campusSelect && !campusSelect.disabled) populateDropdown(campusSelect, academicData.campus);
+  // Populate selects even if disabled (we keep them locked but with visible options)
+  if (campusSelect) populateDropdown(campusSelect, academicData.campus);
   // Populate academic level options
-  if (academicLevelSelect && !academicLevelSelect.disabled) {
+  if (academicLevelSelect) {
     // For employee pages (id 'academicLevel'), show requested options only
     const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"];
     populateDropdown(academicLevelSelect, employeeLevelOptions);
   }
-  if (collegeSelect && !collegeSelect.disabled) populateDropdown(collegeSelect, getDynamicCollegeList());
-  if (programSelect && !programSelect.disabled) populateDropdown(programSelect, academicData.program.default);
-  if (departmentSelect && !departmentSelect.disabled) populateDropdown(departmentSelect, academicData.department.default);
+  if (collegeSelect) populateDropdown(collegeSelect, getDynamicCollegeList());
+  if (programSelect) populateDropdown(programSelect, academicData.program.default);
+  if (departmentSelect) populateDropdown(departmentSelect, academicData.department.default);
   if (workClassificationSelect) populateDropdown(workClassificationSelect, academicData.workClassification);
 
   // Apply department N/A lock if initial college has no mapping
@@ -391,4 +391,32 @@ document.addEventListener('DOMContentLoaded', function() {
   if (academicLevelSelect && academicLevelSelect.disabled && academicLevelSelect.options.length === 1) {
     academicLevelSelect.selectedIndex = 0;
   }
+
+  // Re-initialize after terms acceptance if form was hidden initially
+  document.addEventListener('ipmo:form:show', function () {
+    if (campusSelect) populateDropdown(campusSelect, academicData.campus);
+    if (academicLevelSelect) {
+      const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"];
+      populateDropdown(academicLevelSelect, employeeLevelOptions);
+    }
+    if (collegeSelect) populateDropdown(collegeSelect, getDynamicCollegeList());
+    if (programSelect) populateDropdown(programSelect, academicData.program.default);
+    if (departmentSelect) populateDropdown(departmentSelect, academicData.department.default);
+
+    // If a college is preselected (by server or future prefill), adjust department/program lists accordingly
+    const selectedCollege = collegeSelect && collegeSelect.value ? collegeSelect.value : null;
+    if (selectedCollege) {
+      if (departmentSelect) {
+        const deps = (academicData.department && academicData.department[selectedCollege]) ? academicData.department[selectedCollege] : academicData.department.default;
+        populateDropdown(departmentSelect, deps);
+      }
+      if (programSelect) {
+        const progs = (academicData.program && academicData.program[selectedCollege]) ? academicData.program[selectedCollege] : academicData.program.default;
+        populateDropdown(programSelect, progs);
+      }
+    }
+
+    // Notify other scripts that academic selects are populated
+    document.dispatchEvent(new CustomEvent('ipmo:form:academics:ready'));
+  });
 });

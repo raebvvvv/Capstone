@@ -339,4 +339,23 @@ document.addEventListener('DOMContentLoaded', function() {
   if (academicLevelSelect && academicLevelSelect.disabled && academicLevelSelect.options.length === 1) {
     academicLevelSelect.selectedIndex = 0;
   }
+
+  // Re-initialize after terms acceptance if form was hidden initially
+  document.addEventListener('ipmo:form:show', function () {
+    if (campusSelect && !campusSelect.disabled && campusSelect.options.length <= 1) {
+      populateDropdown(campusSelect, academicData.campus);
+    }
+    if (academicLevelSelect && !academicLevelSelect.disabled && academicLevelSelect.options.length <= 1) {
+      populateDropdown(academicLevelSelect, academicData.academicLevel);
+    }
+    if (collegeSelect && !collegeSelect.disabled && collegeSelect.options.length <= 1) {
+      populateDropdown(collegeSelect, academicData.college);
+    }
+    if (programSelect && !programSelect.disabled && programSelect.options.length <= 1) {
+      populateDropdown(programSelect, academicData.program.default);
+    }
+    if (workClassificationSelect && workClassificationSelect.options.length <= 1) {
+      populateDropdown(workClassificationSelect, academicData.workClassification);
+    }
+  });
 });
