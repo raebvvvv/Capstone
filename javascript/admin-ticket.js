@@ -790,10 +790,29 @@
           const title = (data.documentTitle || data.title || 'Certificate');
           const owner = data.studentName || '';
           const code = data.request_id || requestId;
-          const html = `<div class="certificate-preview"><iframe src="completed_applications.php?code=${encodeURIComponent(code)}&preview=1" width="100%" height="500" style="border:none;"></iframe></div>`;
+          // Updated: use dedicated certificate endpoint (server generates PDF via FPDI)
+          const iframeId = 'certFrame_' + Date.now();
+          const html = `<div class="certificate-preview"><iframe id="${iframeId}" src="view_certificate.php?id=${encodeURIComponent(code)}" width="100%" height="500" style="border:none;" loading="lazy" referrerpolicy="no-referrer"></iframe><div class="small text-muted mt-2" id="${iframeId}_status">Loading certificate...</div></div>`;
           if(body) body.innerHTML = html;
           const dl = modalEl.querySelector('#downloadCertificateBtn');
-          if(dl) dl.href = 'completed_applications.php?code=' + encodeURIComponent(code) + '&download=1';
+          if(dl) dl.href = 'view_certificate.php?id=' + encodeURIComponent(code) + '&mode=download';
+          // Fallback detection: if iframe blocked by CSP/X-Frame-Options, offer new-tab link
+          setTimeout(()=>{
+            const iframe = document.getElementById(iframeId);
+            const statusEl = document.getElementById(iframeId + '_status');
+            if(!iframe) return;
+            let loaded = false;
+            try {
+              if (iframe.contentDocument || iframe.contentWindow?.document) {
+                loaded = true;
+              }
+            } catch(_) { /* blocked */ }
+            if(!loaded) {
+              if(statusEl) statusEl.innerHTML = 'Embedded preview blocked. <a href="view_certificate.php?id='+encodeURIComponent(code)+'" target="_blank" rel="noopener">Open in new tab</a>.';
+            } else if(statusEl) {
+              statusEl.textContent = '';
+            }
+          }, 1200);
         }
       } catch(err){
         if(body) body.innerHTML = '<div class="text-danger">Network error.</div>';

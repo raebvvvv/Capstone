@@ -55,8 +55,8 @@ class SecurityHeaders {
         // Prevent content type sniffing
         header('X-Content-Type-Options: nosniff');
         
-        // Prevent clickjacking
-        header('X-Frame-Options: DENY');
+    // Prevent clickjacking (allow same-origin embedding for internal PDF iframes)
+    header('X-Frame-Options: SAMEORIGIN');
         
         // Control referrer information
         header('Referrer-Policy: strict-origin-when-cross-origin');
@@ -162,9 +162,19 @@ class SecurityHeaders {
     // Note: 'embed-src' is not a valid CSP Level 3 directive; use object-src and frame-src/child-src instead
     $cspDirectives[] = "object-src 'none'";
         
-    // Frame restrictions
-        $cspDirectives[] = "frame-ancestors 'none'";
-        $cspDirectives[] = "frame-src 'none'";
+    // Frame restrictions (allow internal certificate iframe only)
+        $currentPath = $_SERVER['REQUEST_URI'] ?? '';
+        $isCertViewer = (strpos($currentPath, 'admin/view_certificate.php') !== false);
+        // We embed the PDF inside an iframe from admin/ticket.php, so permit same-origin frame embedding for that viewer
+        if ($isCertViewer) {
+            // The viewer itself does not need to be framed by other sites, only by same-origin admin pages
+            $cspDirectives[] = "frame-ancestors 'self'"; // allow same-origin only
+            $cspDirectives[] = "frame-src 'self'";       // allow loading internal frames (future expansion)
+        } else {
+            $cspDirectives[] = "frame-ancestors 'self'"; // keep same-origin so internal pages can iframe certs
+            // Default: no external frames. If later you need YouTube/Vimeo add them here.
+            $cspDirectives[] = "frame-src 'self'";
+        }
         
         // Base URI restrictions
         $cspDirectives[] = "base-uri 'self'";
@@ -224,7 +234,8 @@ class SecurityHeaders {
         
         // Basic security headers
         header('X-Content-Type-Options: nosniff');
-        header('X-Frame-Options: DENY');
+    // X-Frame-Options: use SAMEORIGIN so admin pages can embed internal certificate PDF
+    header('X-Frame-Options: SAMEORIGIN');
         
         // Cache control for static files
         if ($fileType) {

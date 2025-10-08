@@ -46,7 +46,14 @@ if (!headers_sent()) {
     header('Expires: 0');
 
     // Additional security headers
-    header('X-Frame-Options: DENY');
+    // Allow same-origin framing so admin pages can embed internal certificate PDFs.
+    // If you want to force DENY on a specific page, define FRAME_OPT_DENY before including this file.
+    // Safely resolve optional override constant without triggering notices
+    $__frameDeny = false;
+    if (defined('FRAME_OPT_DENY')) {
+        try { $__frameDeny = (constant('FRAME_OPT_DENY') === true); } catch (Throwable $____e) { $__frameDeny = false; }
+    }
+    header('X-Frame-Options: ' . ($__frameDeny ? 'DENY' : 'SAMEORIGIN'));
     header('X-XSS-Protection: 1; mode=block');
     header('X-Content-Type-Options: nosniff');
 }
