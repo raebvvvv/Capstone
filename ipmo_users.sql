@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 08, 2025 at 10:44 AM
+-- Generation Time: Oct 08, 2025 at 07:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.4.12
 
@@ -114,7 +114,9 @@ CREATE TABLE `admin_profiles` (
 --
 
 INSERT INTO `admin_profiles` (`profile_id`, `user_id`, `admin_number`, `last_name`, `first_name`, `middle_name`, `suffix`, `home_address`, `mobile_number`, `department`, `last_updated_at`) VALUES
-(2, 4, 'ADM-001', 'Administrator', 'System', 'IPMO', NULL, 'IPMO Office, Main Campus', '09171234567', 'Intellectual Property Management Office', '2025-10-06 03:55:43');
+(2, 4, 'ADM-001', 'Dela Cruz', 'Juan', 'IPMO', NULL, 'IPMO Office, Main Campus', '09171234567', 'Intellectual Property Management Office', '2025-10-06 03:55:43'),
+(3, 4, 'ADM-002', 'Kanin', 'Manang', 'IPMO', NULL, 'IPMO Office, Main Campus', '09171234567', 'Intellectual Property Management Office', '2025-10-06 03:55:43'),
+(4, 4, 'ADM-003', 'Sabaw', 'Manong', 'IPMO', NULL, 'IPMO Office, Main Campus', '09171234567', 'Intellectual Property Management Office', '2025-10-06 03:55:43');
 
 -- --------------------------------------------------------
 
@@ -179,7 +181,7 @@ CREATE TABLE `dashboard_summary` (
 --
 
 INSERT INTO `dashboard_summary` (`id`, `last_updated`, `total_users`, `total_apps`, `pending_apps`, `approved_apps`, `completed_apps`, `overview_undergrad`, `overview_grad`, `overview_open`, `by_college_json`, `by_campus_json`, `work_class_json`) VALUES
-(1, '2025-10-08 15:42:09', 3, 39, 3, 7, 29, 21, 17, 1, '{\"labels\":[\"College of Social Sciences and Development (CSSD)\",\"College of Human Kinetics (CHK)\",\"College of Education (COED)\",\"College of Accountancy and Finance (CAF)\",\"College of Science (CS)\",\"College of Computer and Information Sciences (CCIS)\"],\"values\":[19,9,3,1,1,1]}', '{\"labels\":[\"PUP Main (Sta. Mesa, Manila)\"],\"values\":[39]}', '{\"labels\":[\"(a) Books, Pamphlets, articles and other writings\",\"(b) Periodicals and newspaper\",\"(p) Sound recordings\",\"(m) Pictorial illustrations and advertisements\",\"(q) Broadcast recordings\",\"(n) Computer Programs\",\"(o) Other literary, scholarly, scientific and artistic works\",\"(k) Photographic works including works produced by a process analogous to photography\",\"(l) Audiovisual works and cinematographic works\",\"(c) Lectures, sermons, addresses, dissertations for oral delivery\"],\"values\":[10,8,5,4,3,2,2,2,2,1]}');
+(1, '2025-10-08 22:08:41', 3, 43, 5, 7, 31, 22, 20, 1, '{\"labels\":[\"College of Social Sciences and Development (CSSD)\",\"College of Human Kinetics (CHK)\",\"College of Education (COED)\",\"College of Computer and Information Sciences (CCIS)\",\"College of Accountancy and Finance (CAF)\",\"College of Science (CS)\"],\"values\":[19,9,6,2,1,1]}', '{\"labels\":[\"PUP Main (Sta. Mesa, Manila)\"],\"values\":[43]}', '{\"labels\":[\"(a) Books, Pamphlets, articles and other writings\",\"(b) Periodicals and newspaper\",\"(p) Sound recordings\",\"(m) Pictorial illustrations and advertisements\",\"(n) Computer Programs\",\"(q) Broadcast recordings\",\"(o) Other literary, scholarly, scientific and artistic works\",\"(k) Photographic works including works produced by a process analogous to photography\",\"(l) Audiovisual works and cinematographic works\",\"(c) Lectures, sermons, addresses, dissertations for oral delivery\"],\"values\":[10,8,7,4,4,3,2,2,2,1]}');
 
 -- --------------------------------------------------------
 
@@ -331,7 +333,9 @@ INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first
 (91, 'ERID-2025-20251008-23', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(b) Periodicals and newspaper', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:42:53', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:36:40', '2025-10-08 15:43:09', NULL, NULL, 35),
 (92, 'SRID-2025-20251008-24', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(p) Sound recordings', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:50:52', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:48:29', '2025-10-08 15:51:00', NULL, NULL, 35),
 (93, 'SRID-2025-20251008-25', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(n) Computer Programs', 'test', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 15:51:20', '2025-10-08 15:51:20', NULL, NULL, 35),
-(94, 'SRID-2025-20251008-26', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(p) Sound recordings', 't', '2025-10-08', 1, 'pending', '2025-10-08 16:08:44', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:55:46', '2025-10-08 16:08:44', NULL, NULL, 35);
+(94, 'SRID-2025-20251008-26', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(p) Sound recordings', 't', '2025-10-08', 1, 'completed', '2025-10-08 18:02:27', NULL, 1, 1, 'copyright', '2025-10-08 15:55:46', '2025-10-08 18:02:27', 4, '2025-10-08 18:02:21', 35),
+(95, 'ERID-2025-20251008-27', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(n) Computer Programs', 'test', '2025-10-08', 1, 'completed', '2025-10-08 20:55:15', NULL, 1, 1, 'copyright', '2025-10-08 20:55:01', '2025-10-08 20:55:15', 4, '2025-10-08 20:55:09', 35),
+(96, 'ERID-2025-20251008-28', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(p) Sound recordings', 'test', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 22:36:17', '2025-10-08 22:36:17', NULL, NULL, 32);
 
 -- --------------------------------------------------------
 
@@ -676,7 +680,19 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (270, 94, 'full_manuscript', 'full_manuscript_1759910146_850a31e2.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL),
 (271, 94, 'notarized_coauthorship', 'notarized_coauthorship_1759910146_81ef4df4.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL),
 (272, 94, 'approval_sheet', 'approval_sheet_1759910456_b1de4772.pdf', '2025-10-08 16:00:56', 66396, 'application/pdf', 0, NULL, NULL),
-(273, 94, 'record_copyright', 'record_copyright_1759910146_d3a189e2.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL);
+(273, 94, 'record_copyright', 'record_copyright_1759910146_d3a189e2.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL),
+(274, 95, 'journal_publication_format', 'journal_publication_format_1759928101_c44d06dc.pdf', '2025-10-08 20:55:01', 1649, 'application/pdf', 0, NULL, NULL),
+(275, 95, 'notarized_copyright', 'notarized_copyright_1759928101_22d9c125.pdf', '2025-10-08 20:55:01', 1649, 'application/pdf', 0, NULL, NULL),
+(276, 95, 'receipt_payment', 'receipt_payment_1759928101_f1d2d1dd.pdf', '2025-10-08 20:55:01', 1649, 'application/pdf', 0, NULL, NULL),
+(277, 95, 'presentation', 'presentation_1759928101_fc62447d.pdf', '2025-10-08 20:55:01', 1649, 'application/pdf', 0, NULL, NULL),
+(278, 95, 'notarized_coauthorship', 'notarized_coauthorship_1759928101_d79bf687.pdf', '2025-10-08 20:55:01', 1649, 'application/pdf', 0, NULL, NULL),
+(279, 95, 'record_copyright', 'record_copyright_1759928101_3a19d058.pdf', '2025-10-08 20:55:01', 1649, 'application/pdf', 0, NULL, NULL),
+(280, 96, 'journal_publication_format', 'journal_publication_format_1759934177_ac647bbb.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
+(281, 96, 'notarized_copyright', 'notarized_copyright_1759934177_95b1234c.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
+(282, 96, 'receipt_payment', 'receipt_payment_1759934177_57066133.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
+(283, 96, 'presentation', 'presentation_1759934177_0e2414c0.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
+(284, 96, 'notarized_coauthorship', 'notarized_coauthorship_1759934177_8080ab7c.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
+(285, 96, 'record_copyright', 'record_copyright_1759934177_3c481c68.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -972,7 +988,7 @@ ALTER TABLE `admin_notifications`
 -- AUTO_INCREMENT for table `admin_profiles`
 --
 ALTER TABLE `admin_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `advisers`
@@ -996,7 +1012,7 @@ ALTER TABLE `student_profiles`
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
@@ -1008,7 +1024,7 @@ ALTER TABLE `submission_authors`
 -- AUTO_INCREMENT for table `submission_documents`
 --
 ALTER TABLE `submission_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=274;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=286;
 
 --
 -- AUTO_INCREMENT for table `submission_notes`

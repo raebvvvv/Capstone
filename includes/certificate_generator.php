@@ -114,15 +114,15 @@ if (!function_exists('generate_certificate')) {
         }
 
         // 4. PDF Composition
-        $titleFontSize   = (int)($opts['title_font_size'] ?? 18);
+        $titleFontSize   = (int)($opts['title_font_size'] ?? 15);
         $authorsFontSize = (int)($opts['authors_font_size'] ?? 12);
-        $dateFontSize    = (int)($opts['date_font_size'] ?? 11);
+        $dateFontSize    = (int)($opts['date_font_size'] ?? 12);
         $lineHeight      = (float)($opts['line_height'] ?? 6.0);
         $coords = $opts['coords'] ?? [];
-        // Default coordinates (mm) — placeholder guesses; adjust after first visual test
-        $titlePos   = $coords['title']   ?? ['x'=>50,'y'=>110,'w'=>170];
-        $authorsPos = $coords['authors'] ?? ['x'=>20,'y'=>130,'w'=>170];
-        $datePos    = $coords['date']    ?? ['x'=>20,'y'=>150,'w'=>170];
+    // Final default coordinates (mm) — tuned layout
+    $titlePos   = $coords['title']   ?? ['x'=>48,'y'=>95,'w'=>180];
+    $authorsPos = $coords['authors'] ?? ['x'=>2,'y'=>110,'w'=>180];
+    $datePos    = $coords['date']    ?? ['x'=>15,'y'=>163.5,'w'=>120];
 
         // Safety sanitize strings for FPDF (basic ASCII fallback if needed)
         $sanitize = function(string $s): string {
