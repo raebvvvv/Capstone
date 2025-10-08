@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 07, 2025 at 08:14 PM
+-- Generation Time: Oct 08, 2025 at 10:44 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.4.12
 
@@ -62,7 +62,32 @@ INSERT INTO `admin_notifications` (`id`, `submission_id`, `submission_code`, `us
 (80, 69, 'ERID-2025-20251008-1', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
 (81, 69, 'ERID-2025-20251008-1', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
 (82, 69, 'ERID-2025-20251008-1', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
-(83, 69, 'ERID-2025-20251008-1', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1);
+(83, 69, 'ERID-2025-20251008-1', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
+(84, 74, 'ERID-2025-20251008-6', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-6)', '2025-10-08 04:49:38', 1),
+(85, 75, 'ERID-2025-20251008-7', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-7)', '2025-10-08 05:05:25', 1),
+(86, 80, 'ERID-2025-20251008-12', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
+(87, 80, 'ERID-2025-20251008-12', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
+(88, 80, 'ERID-2025-20251008-12', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
+(89, 80, 'ERID-2025-20251008-12', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
+(90, 80, 'ERID-2025-20251008-12', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
+(91, 80, 'ERID-2025-20251008-12', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
+(92, 85, 'ERID-2025-20251008-17', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
+(93, 85, 'ERID-2025-20251008-17', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
+(94, 85, 'ERID-2025-20251008-17', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
+(95, 85, 'ERID-2025-20251008-17', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
+(96, 85, 'ERID-2025-20251008-17', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
+(97, 85, 'ERID-2025-20251008-17', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
+(98, 91, 'ERID-2025-20251008-23', 6, 'journal_publication_format', 'User #6 re-uploaded journal publication format (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
+(99, 91, 'ERID-2025-20251008-23', 6, 'notarized_coauthorship', 'User #6 re-uploaded notarized coauthorship (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
+(100, 91, 'ERID-2025-20251008-23', 6, 'notarized_copyright', 'User #6 re-uploaded notarized copyright (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
+(101, 91, 'ERID-2025-20251008-23', 6, 'presentation', 'User #6 re-uploaded presentation (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
+(102, 91, 'ERID-2025-20251008-23', 6, 'receipt_payment', 'User #6 re-uploaded receipt payment (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
+(103, 91, 'ERID-2025-20251008-23', 6, 'record_copyright', 'User #6 re-uploaded record copyright (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
+(104, 88, 'SRID-2025-20251008-20', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-20)', '2025-10-08 07:44:26', 1),
+(105, 90, 'SRID-2025-20251008-22', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-22)', '2025-10-08 07:44:38', 1),
+(106, 92, 'SRID-2025-20251008-24', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-24)', '2025-10-08 07:51:00', 1),
+(107, 94, 'SRID-2025-20251008-26', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-26)', '2025-10-08 07:56:08', 1),
+(108, 94, 'SRID-2025-20251008-26', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-26)', '2025-10-08 08:00:56', 1);
 
 -- --------------------------------------------------------
 
@@ -118,7 +143,14 @@ INSERT INTO `advisers` (`adviser_id`, `first_name`, `middle_name`, `last_name`, 
 (25, 'A', '', '', NULL, NULL, NULL, '2025-10-06 21:02:50'),
 (26, 'C', '', '', NULL, NULL, NULL, '2025-10-06 23:16:53'),
 (27, 'Ra', '', '', NULL, NULL, NULL, '2025-10-07 00:35:24'),
-(28, 'John', '', '', NULL, NULL, NULL, '2025-10-07 01:51:55');
+(28, 'John', '', '', NULL, NULL, NULL, '2025-10-07 01:51:55'),
+(29, 'Csd', '', '', NULL, NULL, NULL, '2025-10-08 13:14:26'),
+(30, 'Cs', '', '', NULL, NULL, NULL, '2025-10-08 13:15:26'),
+(31, 'S', '', '', NULL, NULL, NULL, '2025-10-08 13:18:59'),
+(32, 'Ac', '', '', NULL, NULL, NULL, '2025-10-08 13:40:31'),
+(33, 'D', '', '', NULL, NULL, NULL, '2025-10-08 13:41:56'),
+(34, 'Sdf', '', '', NULL, NULL, NULL, '2025-10-08 13:43:05'),
+(35, '', '', '', NULL, NULL, NULL, '2025-10-08 13:44:39');
 
 -- --------------------------------------------------------
 
@@ -147,7 +179,7 @@ CREATE TABLE `dashboard_summary` (
 --
 
 INSERT INTO `dashboard_summary` (`id`, `last_updated`, `total_users`, `total_apps`, `pending_apps`, `approved_apps`, `completed_apps`, `overview_undergrad`, `overview_grad`, `overview_open`, `by_college_json`, `by_campus_json`, `work_class_json`) VALUES
-(1, '2025-10-08 02:13:23', 3, 22, 4, 0, 18, 7, 14, 1, '{\"labels\":[\"College of Human Kinetics (CHK)\",\"College of Social Sciences and Development (CSSD)\",\"College of Accountancy and Finance (CAF)\",\"College of Science (CS)\"],\"values\":[9,6,1,1]}', '{\"labels\":[\"PUP Main (Sta. Mesa, Manila)\"],\"values\":[22]}', '{\"labels\":[\"(a) Books, Pamphlets, articles and other writings\",\"(p) Sound recordings\",\"(b) Periodicals and newspaper\",\"(m) Pictorial illustrations and advertisements\",\"(q) Broadcast recordings\",\"(o) Other literary, scholarly, scientific and artistic works\",\"(k) Photographic works including works produced by a process analogous to photography\",\"(l) Audiovisual works and cinematographic works\",\"(n) Computer Programs\"],\"values\":[6,4,3,3,2,1,1,1,1]}');
+(1, '2025-10-08 15:42:09', 3, 39, 3, 7, 29, 21, 17, 1, '{\"labels\":[\"College of Social Sciences and Development (CSSD)\",\"College of Human Kinetics (CHK)\",\"College of Education (COED)\",\"College of Accountancy and Finance (CAF)\",\"College of Science (CS)\",\"College of Computer and Information Sciences (CCIS)\"],\"values\":[19,9,3,1,1,1]}', '{\"labels\":[\"PUP Main (Sta. Mesa, Manila)\"],\"values\":[39]}', '{\"labels\":[\"(a) Books, Pamphlets, articles and other writings\",\"(b) Periodicals and newspaper\",\"(p) Sound recordings\",\"(m) Pictorial illustrations and advertisements\",\"(q) Broadcast recordings\",\"(n) Computer Programs\",\"(o) Other literary, scholarly, scientific and artistic works\",\"(k) Photographic works including works produced by a process analogous to photography\",\"(l) Audiovisual works and cinematographic works\",\"(c) Lectures, sermons, addresses, dissertations for oral delivery\"],\"values\":[10,8,5,4,3,2,2,2,2,1]}');
 
 -- --------------------------------------------------------
 
@@ -179,7 +211,7 @@ CREATE TABLE `employee_profiles` (
 
 INSERT INTO `employee_profiles` (`profile_id`, `user_id`, `employee_number`, `last_name`, `first_name`, `middle_name`, `suffix`, `home_address`, `mobile_number`, `campus`, `academic_level`, `college`, `department`, `program`, `last_updated_at`) VALUES
 (1, 2, '12345', 'Lino', 'Mata', 'Bale', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'PUP Main (Sta. Mesa, Manila)', 'Not Studying', 'College of Social Sciences and Development (CSSD)', 'College Of Science', 'N/A', NULL),
-(2, 6, '54321', 'Inocentes', 'Raebv Lielmo', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Department of Computer Science', 'Doctor of Philosophy in Communication (PhD Com)', NULL);
+(2, 6, '54321', 'Inocentes', 'Raebv Lielmo', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Department of Computer Science', 'Bachelor of Science in Computer Science (BSCS)', '2025-10-08 14:56:13');
 
 -- --------------------------------------------------------
 
@@ -210,7 +242,7 @@ CREATE TABLE `student_profiles` (
 --
 
 INSERT INTO `student_profiles` (`profile_id`, `user_id`, `student_number`, `last_name`, `first_name`, `middle_name`, `suffix`, `home_address`, `mobile_number`, `campus`, `academic_level`, `college`, `department`, `program`, `last_updated_at`) VALUES
-(16, 1, '2025-12346-MN-0', 'Minamo', 'Marisa', 'Mliinaw', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', '', 'Bachelor Of Physical Education (bpe)', NULL),
+(16, 1, '2025-12346-MN-0', 'Minamo', 'Marisa', 'Mliinaw', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', '', 'Bachelor of Secondary Education - English (BSEd)', '2025-10-08 15:03:38'),
 (17, 5, '2022-00880-MN-0', 'Inocentes', 'Raebv Lielmo', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Architecture, Design and the Built Environment (CADBE)', '', 'Bachelor Of Science In Architecture (bs-arch)', NULL),
 (18, 7, '2022-08379-MN-0', 'Cruz', 'Juan', 'Dela', '', '4334A V. Francisco St.', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Accountancy and Finance (CAF)', '', 'Bachelor Of Science In Accountancy (bsa)', NULL),
 (25, 14, '2022-99999-MN-0', 'Cruz', 'Bo', 'Dela', '', '4334A V. Francisco St.', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Architecture, Design and the Built Environment (CADBE)', '', 'Bachelor Of Science In Architecture (bs-arch)', NULL);
@@ -275,11 +307,31 @@ INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first
 (67, 'SRID-2025-20251007-7', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(m) Pictorial illustrations and advertisements', 'a', '2025-10-07', 1, 'completed', '2025-10-07 01:42:07', 'hey3', 1, 1, 'copyright', '2025-10-07 01:39:36', '2025-10-07 01:42:07', 4, '2025-10-07 01:41:55', 25),
 (68, 'SRID-2025-20251007-8', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(a) Books, Pamphlets, articles and other writings', 'BOOM', '2025-10-07', 1, 'completed', '2025-10-07 01:53:24', 'testttt', 1, 1, 'copyright', '2025-10-07 01:51:55', '2025-10-07 01:53:24', 4, '2025-10-07 01:52:00', 28),
 (69, 'ERID-2025-20251008-1', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(p) Sound recordings', 'TESTTTING1', '2025-10-08', 1, 'completed', '2025-10-08 01:09:24', 'GOGOGO', 1, 1, 'copyright', '2025-10-08 00:57:49', '2025-10-08 01:14:35', 4, '2025-10-08 01:06:29', 25),
-(70, 'ERID-2025-20251008-2', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(k) Photographic works including works produced by a process analogous to photography', '2TEST', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 01:16:30', '2025-10-08 01:16:30', NULL, NULL, 25),
+(70, 'ERID-2025-20251008-2', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(k) Photographic works including works produced by a process analogous to photography', '2TEST', '2025-10-08', 1, 'approved', '2025-10-08 13:04:02', 'for evaluation', 1, 1, 'copyright', '2025-10-08 01:16:30', '2025-10-08 13:04:02', 4, '2025-10-08 13:04:02', 25),
 (71, 'ERID-2025-20251008-3', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'College of Social Sciences and Development (CSSD)', 'N/A', '(a) Books, Pamphlets, articles and other writings', 'test3', '2025-10-08', 1, 'completed', '2025-10-08 01:41:35', 'for evaluation', 1, 1, 'copyright', '2025-10-08 01:40:51', '2025-10-08 01:41:35', 4, '2025-10-08 01:41:23', 25),
-(72, 'ERID-2025-20251008-4', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'College of Social Sciences and Development (CSSD)', 'N/A', '(l) Audiovisual works and cinematographic works', 'test4', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 01:42:59', '2025-10-08 01:42:59', NULL, NULL, 25),
-(73, 'ERID-2025-20251008-5', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(a) Books, Pamphlets, articles and other writings', 'test5', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 01:52:43', '2025-10-08 01:52:43', NULL, NULL, 25),
-(74, 'ERID-2025-20251008-6', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(p) Sound recordings', 'test6', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 02:07:39', '2025-10-08 02:07:39', NULL, NULL, 25);
+(72, 'ERID-2025-20251008-4', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'College of Social Sciences and Development (CSSD)', 'N/A', '(l) Audiovisual works and cinematographic works', 'test4', '2025-10-08', 1, 'approved', '2025-10-08 12:59:16', 'testtt', 1, 1, 'copyright', '2025-10-08 01:42:59', '2025-10-08 12:59:16', 4, '2025-10-08 12:59:16', 25),
+(73, 'ERID-2025-20251008-5', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(a) Books, Pamphlets, articles and other writings', 'test5', '2025-10-08', 1, 'approved', '2025-10-08 12:58:58', 'testtttiungg', 1, 1, 'copyright', '2025-10-08 01:52:43', '2025-10-08 12:58:58', 4, '2025-10-08 12:58:58', 25),
+(74, 'ERID-2025-20251008-6', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(p) Sound recordings', 'test6', '2025-10-08', 1, 'approved', '2025-10-08 12:58:46', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 02:07:39', '2025-10-08 12:58:46', 4, '2025-10-08 12:58:46', 25),
+(75, 'ERID-2025-20251008-7', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(a) Books, Pamphlets, articles and other writings', 'testfor2', '2025-10-08', 1, 'approved', '2025-10-08 13:05:36', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 13:05:01', '2025-10-08 13:05:36', 4, '2025-10-08 13:05:36', 25),
+(76, 'ERID-2025-20251008-8', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(q) Broadcast recordings', 'test3', '2025-10-08', 1, 'approved', '2025-10-08 13:09:33', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 13:07:58', '2025-10-08 13:09:33', 4, '2025-10-08 13:09:33', 25),
+(77, 'ERID-2025-20251008-9', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(a) Books, Pamphlets, articles and other writings', 'pentest', '2025-10-08', 1, 'completed', '2025-10-08 13:39:36', 'testset', 1, 1, 'copyright', '2025-10-08 13:08:26', '2025-10-08 13:39:36', 4, '2025-10-08 13:09:12', 24),
+(78, 'ERID-2025-20251008-10', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(a) Books, Pamphlets, articles and other writings', 'banh', '2025-10-08', 1, 'completed', '2025-10-08 13:17:18', 'test3', 1, 1, 'copyright', '2025-10-08 13:13:11', '2025-10-08 13:17:18', 4, '2025-10-08 13:13:55', 26),
+(79, 'ERID-2025-20251008-11', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(b) Periodicals and newspaper', 'bang2', '2025-10-08', 1, 'completed', '2025-10-08 13:39:25', NULL, 1, 1, 'copyright', '2025-10-08 13:13:31', '2025-10-08 13:39:25', 4, '2025-10-08 13:14:03', 25),
+(80, 'ERID-2025-20251008-12', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(o) Other literary, scholarly, scientific and artistic works', 'bang3', '2025-10-08', 1, 'completed', '2025-10-08 13:16:20', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 13:14:26', '2025-10-08 13:16:20', 4, '2025-10-08 13:15:02', 29),
+(81, 'ERID-2025-20251008-13', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(a) Books, Pamphlets, articles and other writings', 'bang5', '2025-10-08', 1, 'completed', '2025-10-08 13:16:59', 'test2', 1, 1, 'copyright', '2025-10-08 13:15:26', '2025-10-08 13:16:59', 4, '2025-10-08 13:15:55', 30),
+(82, 'ERID-2025-20251008-14', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(p) Sound recordings', 'bang6t', '2025-10-08', 1, 'completed', '2025-10-08 13:19:30', 'for evaluation', 1, 1, 'copyright', '2025-10-08 13:18:59', '2025-10-08 13:19:30', 4, '2025-10-08 13:19:04', 31),
+(83, 'ERID-2025-20251008-15', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(k) Photographic works including works produced by a process analogous to photography', 'BANG1', '2025-10-08', 1, 'completed', '2025-10-08 13:41:33', NULL, 1, 1, 'copyright', '2025-10-08 13:40:12', '2025-10-08 13:41:33', 4, '2025-10-08 13:41:06', 25),
+(84, 'ERID-2025-20251008-16', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(b) Periodicals and newspaper', 'BANG2', '2025-10-08', 1, 'completed', '2025-10-08 13:41:16', NULL, 1, 1, 'copyright', '2025-10-08 13:40:31', '2025-10-08 13:41:16', 4, '2025-10-08 13:40:52', 32),
+(85, 'ERID-2025-20251008-17', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(m) Pictorial illustrations and advertisements', 'bagn3', '2025-10-08', 1, 'completed', '2025-10-08 13:42:34', NULL, 1, 1, 'copyright', '2025-10-08 13:41:56', '2025-10-08 13:42:34', 4, '2025-10-08 13:42:28', 33),
+(86, 'ERID-2025-20251008-18', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(c) Lectures, sermons, addresses, dissertations for oral delivery', 'bang5', '2025-10-08', 1, 'completed', '2025-10-08 13:44:12', NULL, 1, 1, 'copyright', '2025-10-08 13:43:05', '2025-10-08 13:44:12', 4, '2025-10-08 13:43:47', 34),
+(87, 'ERID-2025-20251008-19', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(b) Periodicals and newspaper', 'bahn3', '2025-10-08', 1, 'completed', '2025-10-08 13:47:53', 'mark2', 1, 1, 'copyright', '2025-10-08 13:44:39', '2025-10-08 13:47:53', 4, '2025-10-08 13:44:58', 35),
+(88, 'SRID-2025-20251008-20', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(l) Audiovisual works and cinematographic works', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:26:46', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:10:02', '2025-10-08 15:44:26', NULL, NULL, 35),
+(89, 'SRID-2025-20251008-21', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(b) Periodicals and newspaper', 'test', '2025-10-08', 1, 'approved', '2025-10-08 16:13:04', 'ttt', 1, 1, 'copyright', '2025-10-08 15:21:06', '2025-10-08 16:13:04', 4, '2025-10-08 15:21:24', 35),
+(90, 'SRID-2025-20251008-22', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(n) Computer Programs', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:27:23', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:27:08', '2025-10-08 15:44:38', NULL, NULL, 35),
+(91, 'ERID-2025-20251008-23', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(b) Periodicals and newspaper', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:42:53', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:36:40', '2025-10-08 15:43:09', NULL, NULL, 35),
+(92, 'SRID-2025-20251008-24', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(p) Sound recordings', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:50:52', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:48:29', '2025-10-08 15:51:00', NULL, NULL, 35),
+(93, 'SRID-2025-20251008-25', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(n) Computer Programs', 'test', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 15:51:20', '2025-10-08 15:51:20', NULL, NULL, 35),
+(94, 'SRID-2025-20251008-26', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(p) Sound recordings', 't', '2025-10-08', 1, 'pending', '2025-10-08 16:08:44', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:55:46', '2025-10-08 16:08:44', NULL, NULL, 35);
 
 -- --------------------------------------------------------
 
@@ -496,9 +548,135 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (142, 74, 'journal_publication_format', 'journal_publication_format_1759860459_8db5cec3.pdf', '2025-10-08 02:07:39', 86468, 'application/pdf', 0, NULL, NULL),
 (143, 74, 'notarized_copyright', 'notarized_copyright_1759860459_6cca432d.pdf', '2025-10-08 02:07:39', 86468, 'application/pdf', 0, NULL, NULL),
 (144, 74, 'receipt_payment', 'receipt_payment_1759860459_d9d7213c.pdf', '2025-10-08 02:07:39', 86468, 'application/pdf', 0, NULL, NULL),
-(145, 74, 'presentation', 'presentation_1759860459_e127ead7.pdf', '2025-10-08 02:07:39', 86468, 'application/pdf', 0, NULL, NULL),
+(145, 74, 'presentation', 'presentation_1759898978_a2373a7d.pdf', '2025-10-08 12:49:38', 86468, 'application/pdf', 0, NULL, NULL),
 (146, 74, 'notarized_coauthorship', 'notarized_coauthorship_1759860459_0e01e89e.pdf', '2025-10-08 02:07:39', 86468, 'application/pdf', 0, NULL, NULL),
-(147, 74, 'record_copyright', 'record_copyright_1759860459_4de2aa04.pdf', '2025-10-08 02:07:39', 86468, 'application/pdf', 0, NULL, NULL);
+(147, 74, 'record_copyright', 'record_copyright_1759860459_4de2aa04.pdf', '2025-10-08 02:07:39', 86468, 'application/pdf', 0, NULL, NULL),
+(148, 75, 'journal_publication_format', 'journal_publication_format_1759899901_ffc7481a.pdf', '2025-10-08 13:05:01', 86468, 'application/pdf', 0, NULL, NULL),
+(149, 75, 'notarized_copyright', 'notarized_copyright_1759899901_a7b85a66.pdf', '2025-10-08 13:05:01', 86468, 'application/pdf', 0, NULL, NULL),
+(150, 75, 'receipt_payment', 'receipt_payment_1759899901_58fcb6ce.pdf', '2025-10-08 13:05:01', 86468, 'application/pdf', 0, NULL, NULL),
+(151, 75, 'presentation', 'presentation_1759899925_76f25dec.pdf', '2025-10-08 13:05:25', 86468, 'application/pdf', 0, NULL, NULL),
+(152, 75, 'notarized_coauthorship', 'notarized_coauthorship_1759899901_12dc6629.pdf', '2025-10-08 13:05:01', 86468, 'application/pdf', 0, NULL, NULL),
+(153, 75, 'record_copyright', 'record_copyright_1759899901_d7033d4d.pdf', '2025-10-08 13:05:01', 86468, 'application/pdf', 0, NULL, NULL),
+(154, 76, 'journal_publication_format', 'journal_publication_format_1759900078_874506bb.pdf', '2025-10-08 13:07:58', 66396, 'application/pdf', 0, NULL, NULL),
+(155, 76, 'notarized_copyright', 'notarized_copyright_1759900078_184f33ba.pdf', '2025-10-08 13:07:58', 66396, 'application/pdf', 0, NULL, NULL),
+(156, 76, 'receipt_payment', 'receipt_payment_1759900078_1c5f16cc.pdf', '2025-10-08 13:07:58', 66396, 'application/pdf', 0, NULL, NULL),
+(157, 76, 'presentation', 'presentation_1759900078_49e5db3c.pdf', '2025-10-08 13:07:58', 66396, 'application/pdf', 0, NULL, NULL),
+(158, 76, 'notarized_coauthorship', 'notarized_coauthorship_1759900078_7abe7fe5.pdf', '2025-10-08 13:07:58', 66396, 'application/pdf', 0, NULL, NULL),
+(159, 76, 'record_copyright', 'record_copyright_1759900078_45f9c608.pdf', '2025-10-08 13:07:58', 66396, 'application/pdf', 0, NULL, NULL),
+(160, 77, 'journal_publication_format', 'journal_publication_format_1759900106_0392599b.pdf', '2025-10-08 13:08:26', 86468, 'application/pdf', 0, NULL, NULL),
+(161, 77, 'notarized_copyright', 'notarized_copyright_1759900106_c6672534.pdf', '2025-10-08 13:08:26', 86468, 'application/pdf', 0, NULL, NULL),
+(162, 77, 'receipt_payment', 'receipt_payment_1759900106_0e826fd2.pdf', '2025-10-08 13:08:26', 66396, 'application/pdf', 0, NULL, NULL),
+(163, 77, 'presentation', 'presentation_1759900106_22298404.pdf', '2025-10-08 13:08:26', 86468, 'application/pdf', 0, NULL, NULL),
+(164, 77, 'notarized_coauthorship', 'notarized_coauthorship_1759900106_216faf62.pdf', '2025-10-08 13:08:26', 66396, 'application/pdf', 0, NULL, NULL),
+(165, 77, 'record_copyright', 'record_copyright_1759900106_64e4ebbb.pdf', '2025-10-08 13:08:26', 66396, 'application/pdf', 0, NULL, NULL),
+(166, 78, 'journal_publication_format', 'journal_publication_format_1759900391_a391efe0.pdf', '2025-10-08 13:13:11', 66396, 'application/pdf', 0, NULL, NULL),
+(167, 78, 'notarized_copyright', 'notarized_copyright_1759900391_4fc36f47.pdf', '2025-10-08 13:13:11', 66396, 'application/pdf', 0, NULL, NULL),
+(168, 78, 'receipt_payment', 'receipt_payment_1759900391_b5afb2d8.pdf', '2025-10-08 13:13:11', 66396, 'application/pdf', 0, NULL, NULL),
+(169, 78, 'presentation', 'presentation_1759900391_48583f24.pdf', '2025-10-08 13:13:11', 66396, 'application/pdf', 0, NULL, NULL),
+(170, 78, 'notarized_coauthorship', 'notarized_coauthorship_1759900391_f3e0e2e0.pdf', '2025-10-08 13:13:11', 66396, 'application/pdf', 0, NULL, NULL),
+(171, 78, 'record_copyright', 'record_copyright_1759900391_5f9e7b07.pdf', '2025-10-08 13:13:11', 66396, 'application/pdf', 0, NULL, NULL),
+(172, 79, 'journal_publication_format', 'journal_publication_format_1759900411_70428d58.pdf', '2025-10-08 13:13:31', 66396, 'application/pdf', 0, NULL, NULL),
+(173, 79, 'notarized_copyright', 'notarized_copyright_1759900411_39185702.pdf', '2025-10-08 13:13:31', 66396, 'application/pdf', 0, NULL, NULL),
+(174, 79, 'receipt_payment', 'receipt_payment_1759900411_0fc8922f.pdf', '2025-10-08 13:13:31', 66396, 'application/pdf', 0, NULL, NULL),
+(175, 79, 'presentation', 'presentation_1759900411_4cc55b1a.pdf', '2025-10-08 13:13:31', 66396, 'application/pdf', 0, NULL, NULL),
+(176, 79, 'notarized_coauthorship', 'notarized_coauthorship_1759900411_82d76df1.pdf', '2025-10-08 13:13:31', 66396, 'application/pdf', 0, NULL, NULL),
+(177, 79, 'record_copyright', 'record_copyright_1759900411_6fbd898f.pdf', '2025-10-08 13:13:31', 66396, 'application/pdf', 0, NULL, NULL),
+(178, 80, 'journal_publication_format', 'journal_publication_format_1759900489_8d5fd99c.pdf', '2025-10-08 13:14:49', 86468, 'application/pdf', 0, NULL, NULL),
+(179, 80, 'notarized_copyright', 'notarized_copyright_1759900489_4a792d5e.pdf', '2025-10-08 13:14:49', 86468, 'application/pdf', 0, NULL, NULL),
+(180, 80, 'receipt_payment', 'receipt_payment_1759900489_c021b64d.pdf', '2025-10-08 13:14:49', 86468, 'application/pdf', 0, NULL, NULL),
+(181, 80, 'presentation', 'presentation_1759900489_ea9dfb23.pdf', '2025-10-08 13:14:49', 86468, 'application/pdf', 0, NULL, NULL),
+(182, 80, 'notarized_coauthorship', 'notarized_coauthorship_1759900489_9e6366d3.pdf', '2025-10-08 13:14:49', 86468, 'application/pdf', 0, NULL, NULL),
+(183, 80, 'record_copyright', 'record_copyright_1759900489_021c4b1f.pdf', '2025-10-08 13:14:49', 86468, 'application/pdf', 0, NULL, NULL),
+(184, 81, 'journal_publication_format', 'journal_publication_format_1759900526_118b601b.pdf', '2025-10-08 13:15:26', 66396, 'application/pdf', 0, NULL, NULL),
+(185, 81, 'notarized_copyright', 'notarized_copyright_1759900526_dd05cc99.pdf', '2025-10-08 13:15:26', 66396, 'application/pdf', 0, NULL, NULL),
+(186, 81, 'receipt_payment', 'receipt_payment_1759900526_48db76f3.pdf', '2025-10-08 13:15:26', 66396, 'application/pdf', 0, NULL, NULL),
+(187, 81, 'presentation', 'presentation_1759900526_3223a38c.pdf', '2025-10-08 13:15:26', 66396, 'application/pdf', 0, NULL, NULL),
+(188, 81, 'notarized_coauthorship', 'notarized_coauthorship_1759900526_ae1d2d90.pdf', '2025-10-08 13:15:26', 86468, 'application/pdf', 0, NULL, NULL),
+(189, 81, 'record_copyright', 'record_copyright_1759900526_ab3b6bf0.pdf', '2025-10-08 13:15:26', 66396, 'application/pdf', 0, NULL, NULL),
+(190, 82, 'journal_publication_format', 'journal_publication_format_1759900739_598283a5.pdf', '2025-10-08 13:18:59', 66396, 'application/pdf', 0, NULL, NULL),
+(191, 82, 'notarized_copyright', 'notarized_copyright_1759900739_019f8628.pdf', '2025-10-08 13:18:59', 86468, 'application/pdf', 0, NULL, NULL),
+(192, 82, 'receipt_payment', 'receipt_payment_1759900739_76a4ec0a.pdf', '2025-10-08 13:18:59', 86468, 'application/pdf', 0, NULL, NULL),
+(193, 82, 'presentation', 'presentation_1759900739_6f29eb05.pdf', '2025-10-08 13:18:59', 86468, 'application/pdf', 0, NULL, NULL),
+(194, 82, 'notarized_coauthorship', 'notarized_coauthorship_1759900739_ddfe5f3a.pdf', '2025-10-08 13:18:59', 86468, 'application/pdf', 0, NULL, NULL),
+(195, 82, 'record_copyright', 'record_copyright_1759900739_1abc4ecd.pdf', '2025-10-08 13:18:59', 86468, 'application/pdf', 0, NULL, NULL),
+(196, 83, 'journal_publication_format', 'journal_publication_format_1759902012_85ddbdcc.pdf', '2025-10-08 13:40:12', 66396, 'application/pdf', 0, NULL, NULL),
+(197, 83, 'notarized_copyright', 'notarized_copyright_1759902012_741c037d.pdf', '2025-10-08 13:40:12', 66396, 'application/pdf', 0, NULL, NULL),
+(198, 83, 'receipt_payment', 'receipt_payment_1759902012_03068b7d.pdf', '2025-10-08 13:40:12', 66396, 'application/pdf', 0, NULL, NULL),
+(199, 83, 'presentation', 'presentation_1759902012_f58c81ba.pdf', '2025-10-08 13:40:12', 66396, 'application/pdf', 0, NULL, NULL),
+(200, 83, 'notarized_coauthorship', 'notarized_coauthorship_1759902012_1f873c42.pdf', '2025-10-08 13:40:12', 66396, 'application/pdf', 0, NULL, NULL),
+(201, 83, 'record_copyright', 'record_copyright_1759902012_3102eabb.pdf', '2025-10-08 13:40:12', 66396, 'application/pdf', 0, NULL, NULL),
+(202, 84, 'journal_publication_format', 'journal_publication_format_1759902031_3afc17c0.pdf', '2025-10-08 13:40:31', 86468, 'application/pdf', 0, NULL, NULL),
+(203, 84, 'notarized_copyright', 'notarized_copyright_1759902031_422e765b.pdf', '2025-10-08 13:40:31', 66396, 'application/pdf', 0, NULL, NULL),
+(204, 84, 'receipt_payment', 'receipt_payment_1759902031_8214d7d0.pdf', '2025-10-08 13:40:31', 66396, 'application/pdf', 0, NULL, NULL),
+(205, 84, 'presentation', 'presentation_1759902031_0a5ee1eb.pdf', '2025-10-08 13:40:31', 66396, 'application/pdf', 0, NULL, NULL),
+(206, 84, 'notarized_coauthorship', 'notarized_coauthorship_1759902031_9263017d.pdf', '2025-10-08 13:40:31', 66396, 'application/pdf', 0, NULL, NULL),
+(207, 84, 'record_copyright', 'record_copyright_1759902031_086af607.pdf', '2025-10-08 13:40:31', 66396, 'application/pdf', 0, NULL, NULL),
+(208, 85, 'journal_publication_format', 'journal_publication_format_1759902137_875588df.pdf', '2025-10-08 13:42:17', 86468, 'application/pdf', 0, NULL, NULL),
+(209, 85, 'notarized_copyright', 'notarized_copyright_1759902137_f617ed49.pdf', '2025-10-08 13:42:17', 86468, 'application/pdf', 0, NULL, NULL),
+(210, 85, 'receipt_payment', 'receipt_payment_1759902137_82554793.pdf', '2025-10-08 13:42:17', 86468, 'application/pdf', 0, NULL, NULL),
+(211, 85, 'presentation', 'presentation_1759902137_53f9736e.pdf', '2025-10-08 13:42:17', 86468, 'application/pdf', 0, NULL, NULL),
+(212, 85, 'notarized_coauthorship', 'notarized_coauthorship_1759902137_0778b8bb.pdf', '2025-10-08 13:42:17', 86468, 'application/pdf', 0, NULL, NULL),
+(213, 85, 'record_copyright', 'record_copyright_1759902137_f5f80621.pdf', '2025-10-08 13:42:17', 86468, 'application/pdf', 0, NULL, NULL),
+(214, 86, 'journal_publication_format', 'journal_publication_format_1759902185_56b499e1.pdf', '2025-10-08 13:43:05', 66396, 'application/pdf', 0, NULL, NULL),
+(215, 86, 'notarized_copyright', 'notarized_copyright_1759902185_04b41aaf.pdf', '2025-10-08 13:43:05', 86468, 'application/pdf', 0, NULL, NULL),
+(216, 86, 'receipt_payment', 'receipt_payment_1759902185_3cde2cbc.pdf', '2025-10-08 13:43:05', 86468, 'application/pdf', 0, NULL, NULL),
+(217, 86, 'presentation', 'presentation_1759902185_95fab0f0.pdf', '2025-10-08 13:43:05', 86468, 'application/pdf', 0, NULL, NULL),
+(218, 86, 'notarized_coauthorship', 'notarized_coauthorship_1759902185_3749f2ed.pdf', '2025-10-08 13:43:05', 86468, 'application/pdf', 0, NULL, NULL),
+(219, 86, 'record_copyright', 'record_copyright_1759902185_9c896d23.pdf', '2025-10-08 13:43:05', 86468, 'application/pdf', 0, NULL, NULL),
+(220, 87, 'journal_publication_format', 'journal_publication_format_1759902279_d11067c1.pdf', '2025-10-08 13:44:39', 86468, 'application/pdf', 0, NULL, NULL),
+(221, 87, 'notarized_copyright', 'notarized_copyright_1759902279_b58591e1.pdf', '2025-10-08 13:44:39', 66396, 'application/pdf', 0, NULL, NULL),
+(222, 87, 'receipt_payment', 'receipt_payment_1759902279_31a095c9.pdf', '2025-10-08 13:44:39', 86468, 'application/pdf', 0, NULL, NULL),
+(223, 87, 'presentation', 'presentation_1759902279_7ea1311e.pdf', '2025-10-08 13:44:39', 66396, 'application/pdf', 0, NULL, NULL),
+(224, 87, 'notarized_coauthorship', 'notarized_coauthorship_1759902279_dbd21055.pdf', '2025-10-08 13:44:39', 86468, 'application/pdf', 0, NULL, NULL),
+(225, 87, 'record_copyright', 'record_copyright_1759902279_8532b5d9.pdf', '2025-10-08 13:44:39', 66396, 'application/pdf', 0, NULL, NULL),
+(226, 88, 'journal_publication_format', 'journal_publication_format_1759907402_09b21907.pdf', '2025-10-08 15:10:02', 66396, 'application/pdf', 0, NULL, NULL),
+(227, 88, 'notarized_copyright', 'notarized_copyright_1759907402_538b5126.pdf', '2025-10-08 15:10:02', 66396, 'application/pdf', 0, NULL, NULL),
+(228, 88, 'receipt_payment', 'receipt_payment_1759907402_65de1c0d.pdf', '2025-10-08 15:10:02', 66396, 'application/pdf', 0, NULL, NULL),
+(229, 88, 'full_manuscript', 'full_manuscript_1759907402_b39161dd.pdf', '2025-10-08 15:10:02', 86468, 'application/pdf', 0, NULL, NULL),
+(230, 88, 'notarized_coauthorship', 'notarized_coauthorship_1759907402_9589839d.pdf', '2025-10-08 15:10:02', 66396, 'application/pdf', 0, NULL, NULL),
+(231, 88, 'approval_sheet', 'approval_sheet_1759909466_43f170f1.pdf', '2025-10-08 15:44:26', 66396, 'application/pdf', 0, NULL, NULL),
+(232, 88, 'record_copyright', 'record_copyright_1759907402_51c49a56.pdf', '2025-10-08 15:10:02', 66396, 'application/pdf', 0, NULL, NULL),
+(233, 89, 'journal_publication_format', 'journal_publication_format_1759908066_f6fdad9f.pdf', '2025-10-08 15:21:06', 66396, 'application/pdf', 0, NULL, NULL),
+(234, 89, 'notarized_copyright', 'notarized_copyright_1759908066_3fcac808.pdf', '2025-10-08 15:21:06', 66396, 'application/pdf', 0, NULL, NULL),
+(235, 89, 'receipt_payment', 'receipt_payment_1759908066_38087db4.pdf', '2025-10-08 15:21:06', 66396, 'application/pdf', 0, NULL, NULL),
+(236, 89, 'full_manuscript', 'full_manuscript_1759908066_eae4cd07.pdf', '2025-10-08 15:21:06', 66396, 'application/pdf', 0, NULL, NULL),
+(237, 89, 'notarized_coauthorship', 'notarized_coauthorship_1759908066_5ebac6c2.pdf', '2025-10-08 15:21:07', 66396, 'application/pdf', 0, NULL, NULL),
+(238, 89, 'approval_sheet', 'approval_sheet_1759908066_5039e4b7.pdf', '2025-10-08 15:21:07', 66396, 'application/pdf', 0, NULL, NULL),
+(239, 89, 'record_copyright', 'record_copyright_1759908066_97504f20.pdf', '2025-10-08 15:21:07', 66396, 'application/pdf', 0, NULL, NULL),
+(240, 90, 'journal_publication_format', 'journal_publication_format_1759908428_789d9f9f.pdf', '2025-10-08 15:27:08', 66396, 'application/pdf', 0, NULL, NULL),
+(241, 90, 'notarized_copyright', 'notarized_copyright_1759908428_2cadc374.pdf', '2025-10-08 15:27:08', 66396, 'application/pdf', 0, NULL, NULL),
+(242, 90, 'receipt_payment', 'receipt_payment_1759908428_75f88104.pdf', '2025-10-08 15:27:08', 66396, 'application/pdf', 0, NULL, NULL),
+(243, 90, 'full_manuscript', 'full_manuscript_1759908428_5b165b40.pdf', '2025-10-08 15:27:08', 66396, 'application/pdf', 0, NULL, NULL),
+(244, 90, 'notarized_coauthorship', 'notarized_coauthorship_1759908428_f1f4b2ee.pdf', '2025-10-08 15:27:08', 66396, 'application/pdf', 0, NULL, NULL),
+(245, 90, 'approval_sheet', 'approval_sheet_1759909478_c6c62336.pdf', '2025-10-08 15:44:38', 66396, 'application/pdf', 0, NULL, NULL),
+(246, 90, 'record_copyright', 'record_copyright_1759908428_e8898b1b.pdf', '2025-10-08 15:27:08', 66396, 'application/pdf', 0, NULL, NULL),
+(247, 91, 'journal_publication_format', 'journal_publication_format_1759909389_ac798c3d.pdf', '2025-10-08 15:43:09', 66396, 'application/pdf', 0, NULL, NULL),
+(248, 91, 'notarized_copyright', 'notarized_copyright_1759909389_14f2a86e.pdf', '2025-10-08 15:43:09', 66396, 'application/pdf', 0, NULL, NULL),
+(249, 91, 'receipt_payment', 'receipt_payment_1759909389_3c883e8c.pdf', '2025-10-08 15:43:09', 66396, 'application/pdf', 0, NULL, NULL),
+(250, 91, 'presentation', 'presentation_1759909389_15a198d4.pdf', '2025-10-08 15:43:09', 66396, 'application/pdf', 0, NULL, NULL),
+(251, 91, 'notarized_coauthorship', 'notarized_coauthorship_1759909389_f515db14.pdf', '2025-10-08 15:43:09', 66396, 'application/pdf', 0, NULL, NULL),
+(252, 91, 'record_copyright', 'record_copyright_1759909389_54295efb.pdf', '2025-10-08 15:43:09', 66396, 'application/pdf', 0, NULL, NULL),
+(253, 92, 'journal_publication_format', 'journal_publication_format_1759909709_e2fbc272.pdf', '2025-10-08 15:48:29', 86468, 'application/pdf', 0, NULL, NULL),
+(254, 92, 'notarized_copyright', 'notarized_copyright_1759909709_33559646.pdf', '2025-10-08 15:48:29', 86468, 'application/pdf', 0, NULL, NULL),
+(255, 92, 'receipt_payment', 'receipt_payment_1759909709_c1c7ad36.pdf', '2025-10-08 15:48:29', 66396, 'application/pdf', 0, NULL, NULL),
+(256, 92, 'full_manuscript', 'full_manuscript_1759909709_a486e49c.pdf', '2025-10-08 15:48:29', 66396, 'application/pdf', 0, NULL, NULL),
+(257, 92, 'notarized_coauthorship', 'notarized_coauthorship_1759909709_45825bff.pdf', '2025-10-08 15:48:29', 66396, 'application/pdf', 0, NULL, NULL),
+(258, 92, 'approval_sheet', 'approval_sheet_1759909860_efd084b2.pdf', '2025-10-08 15:51:00', 86468, 'application/pdf', 0, NULL, NULL),
+(259, 92, 'record_copyright', 'record_copyright_1759909709_43cf692d.pdf', '2025-10-08 15:48:29', 86468, 'application/pdf', 0, NULL, NULL),
+(260, 93, 'journal_publication_format', 'journal_publication_format_1759909880_73b53f3f.pdf', '2025-10-08 15:51:20', 66396, 'application/pdf', 0, NULL, NULL),
+(261, 93, 'notarized_copyright', 'notarized_copyright_1759909880_91c1c536.pdf', '2025-10-08 15:51:20', 66396, 'application/pdf', 0, NULL, NULL),
+(262, 93, 'receipt_payment', 'receipt_payment_1759909880_66e16c6a.pdf', '2025-10-08 15:51:20', 86468, 'application/pdf', 0, NULL, NULL),
+(263, 93, 'full_manuscript', 'full_manuscript_1759909880_b3b6e6a7.pdf', '2025-10-08 15:51:20', 86468, 'application/pdf', 0, NULL, NULL),
+(264, 93, 'notarized_coauthorship', 'notarized_coauthorship_1759909880_43e3411d.pdf', '2025-10-08 15:51:20', 86468, 'application/pdf', 0, NULL, NULL),
+(265, 93, 'approval_sheet', 'approval_sheet_1759909880_83bb9162.pdf', '2025-10-08 15:51:20', 66396, 'application/pdf', 0, NULL, NULL),
+(266, 93, 'record_copyright', 'record_copyright_1759909880_4d214546.pdf', '2025-10-08 15:51:20', 66396, 'application/pdf', 0, NULL, NULL),
+(267, 94, 'journal_publication_format', 'journal_publication_format_1759910146_9ccd2df5.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL),
+(268, 94, 'notarized_copyright', 'notarized_copyright_1759910146_629eccac.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL),
+(269, 94, 'receipt_payment', 'receipt_payment_1759910146_51e52cbc.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL),
+(270, 94, 'full_manuscript', 'full_manuscript_1759910146_850a31e2.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL),
+(271, 94, 'notarized_coauthorship', 'notarized_coauthorship_1759910146_81ef4df4.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL),
+(272, 94, 'approval_sheet', 'approval_sheet_1759910456_b1de4772.pdf', '2025-10-08 16:00:56', 66396, 'application/pdf', 0, NULL, NULL),
+(273, 94, 'record_copyright', 'record_copyright_1759910146_d3a189e2.pdf', '2025-10-08 15:55:46', 66396, 'application/pdf', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -534,7 +712,26 @@ INSERT INTO `submission_incomplete_meta` (`submission_id`, `scope`, `issue_label
 (66, 'pending', 'Incorrect Document/Upload', 'test', 'approval_sheet|full_manuscript', '2025-10-07 01:36:29', '2025-10-07 01:36:29', NULL, 0),
 (67, 'pending', 'Incorrect Document/Upload', 'hey1', 'approval_sheet|full_manuscript', '2025-10-07 01:41:40', '2025-10-07 01:41:40', NULL, 0),
 (69, 'pending', 'Incorrect Document/Upload', 'testtt', '', '2025-10-08 01:06:03', '2025-10-08 01:01:25', NULL, 0),
-(69, 'approved', 'Documents don’t match', 'test', 'journal_publication_format|notarized_coauthorship|notarized_copyright|presentation|receipt_payment|record_copyright', '2025-10-08 01:09:08', '2025-10-08 01:07:45', NULL, 0);
+(69, 'approved', 'Documents don’t match', 'test', 'journal_publication_format|notarized_coauthorship|notarized_copyright|presentation|receipt_payment|record_copyright', '2025-10-08 01:09:08', '2025-10-08 01:07:45', NULL, 0),
+(74, 'pending', 'Incorrect Document/Upload', 'test', '', '2025-10-08 12:49:38', '2025-10-08 12:42:02', NULL, 0),
+(75, 'pending', 'Incorrect Document/Upload', 'test', '', '2025-10-08 13:05:25', '2025-10-08 13:05:17', NULL, 0),
+(76, 'pending', 'Incorrect Document/Upload', 'test', 'notarized_coauthorship', '2025-10-08 13:09:28', '2025-10-08 13:09:28', NULL, 0),
+(78, 'approved', NULL, 'testttt', NULL, '2025-10-08 13:13:55', '2025-10-08 13:13:55', NULL, 0),
+(80, 'pending', 'Error in Document/Upload', 'tes', '', '2025-10-08 13:14:49', '2025-10-08 13:14:36', NULL, 0),
+(81, 'pending', 'Incorrect Document/Upload', 'test1', 'journal_publication_format|notarized_coauthorship|notarized_copyright|presentation|receipt_payment|record_copyright', '2025-10-08 13:15:35', '2025-10-08 13:15:35', NULL, 0),
+(81, 'approved', NULL, 'test2', NULL, '2025-10-08 13:15:55', '2025-10-08 13:15:55', NULL, 0),
+(83, 'approved', NULL, 'test', NULL, '2025-10-08 13:41:06', '2025-10-08 13:41:06', NULL, 0),
+(85, 'pending', 'Error in Document/Upload', 'test', '', '2025-10-08 13:42:17', '2025-10-08 13:42:04', NULL, 0),
+(86, 'pending', 'Incorrect Document/Upload', 'tes1', 'journal_publication_format', '2025-10-08 13:43:16', '2025-10-08 13:43:16', NULL, 0),
+(86, 'approved', 'Missing Document', 'mark1', 'journal_publication_format', '2025-10-08 13:44:04', '2025-10-08 13:43:47', NULL, 0),
+(87, 'pending', 'Error in Document/Upload', 'test1', 'journal_publication_format', '2025-10-08 13:44:49', '2025-10-08 13:44:49', NULL, 0),
+(87, 'approved', 'Error in Document', 'mark1', 'journal_publication_format', '2025-10-08 13:47:34', '2025-10-08 13:44:58', NULL, 0),
+(88, 'pending', 'Incorrect Document/Upload', 'test', '', '2025-10-08 15:44:26', '2025-10-08 15:13:26', NULL, 0),
+(89, 'approved', NULL, 'ttt', 'full_manuscript', '2025-10-08 16:13:04', '2025-10-08 16:12:19', NULL, 0),
+(90, 'pending', 'Error in Document/Upload', 'test', '', '2025-10-08 15:44:38', '2025-10-08 15:27:23', NULL, 0),
+(91, 'pending', 'Error in Document/Upload', 'test', '', '2025-10-08 15:43:09', '2025-10-08 15:42:53', NULL, 0),
+(92, 'pending', 'Incorrect Document/Upload', 'test', '', '2025-10-08 15:51:00', '2025-10-08 15:50:52', NULL, 0),
+(94, 'pending', 'Incorrect Document/Upload', 'test', 'approval_sheet', '2025-10-08 16:08:44', '2025-10-08 15:55:58', NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -555,7 +752,8 @@ CREATE TABLE `submission_notes` (
 --
 
 INSERT INTO `submission_notes` (`id`, `submission_id`, `user_id`, `note`, `created_at`) VALUES
-(1, 58, 1, 'test', '2025-10-06 21:09:12');
+(1, 58, 1, 'test', '2025-10-06 21:09:12'),
+(2, 86, 2, 'test', '2025-10-08 13:43:34');
 
 -- --------------------------------------------------------
 
@@ -575,7 +773,8 @@ CREATE TABLE `submission_notes_admin_views` (
 --
 
 INSERT INTO `submission_notes_admin_views` (`id`, `submission_id`, `admin_id`, `last_viewed_at`) VALUES
-(1, 58, 4, '2025-10-07 01:06:44');
+(1, 58, 4, '2025-10-07 01:06:44'),
+(5, 86, 4, '2025-10-08 13:44:16');
 
 -- --------------------------------------------------------
 
@@ -767,7 +966,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
 -- AUTO_INCREMENT for table `admin_profiles`
@@ -779,7 +978,7 @@ ALTER TABLE `admin_profiles`
 -- AUTO_INCREMENT for table `advisers`
 --
 ALTER TABLE `advisers`
-  MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `employee_profiles`
@@ -797,7 +996,7 @@ ALTER TABLE `student_profiles`
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
@@ -809,19 +1008,19 @@ ALTER TABLE `submission_authors`
 -- AUTO_INCREMENT for table `submission_documents`
 --
 ALTER TABLE `submission_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=274;
 
 --
 -- AUTO_INCREMENT for table `submission_notes`
 --
 ALTER TABLE `submission_notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `submission_notes_admin_views`
 --
 ALTER TABLE `submission_notes_admin_views`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `ticket_tokens`
