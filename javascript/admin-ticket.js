@@ -127,8 +127,10 @@
     // Determine user type from Request ID prefix (ERID = Employee, SRID = Student)
     const rid = String(v(details.request_id, ''));
     const isEmployee = /^ERID-/i.test(rid);
-    const infoHeader = isEmployee ? 'Employee Information' : 'Student Information';
-    const idLabel = isEmployee ? 'Employee ID/Number' : 'Student Number';
+  const infoHeader = isEmployee ? 'Employee Information' : 'Student Information';
+  const idLabel = isEmployee ? 'Employee ID/Number' : 'Student Number';
+  // Resolve department from possible keys (server may return different naming)
+  const deptVal = (details.department || details.employee_department || '').toString().trim();
 
   modalBody.innerHTML = `<div><h5>${infoHeader}</h5>`+
       `<p><strong>Name:</strong> ${editMode? `<input type='text' id='editStudentName' value='${escapeHTML(v(details.studentName,''))}' />` : escapeHTML(v(details.studentName,'—'))}</p>`+
@@ -136,7 +138,8 @@
       `<p><strong>Email Address:</strong> ${editMode? `<input type='email' id='editEmail' value='${escapeHTML(v(details.email,''))}' />` : escapeHTML(v(details.email,'—'))}</p>`+
       `<p><strong>Home Address:</strong> ${editMode? `<input type='text' id='editHomeAddress' value='${escapeHTML(v(details.homeAddress,''))}' />` : escapeHTML(v(details.homeAddress,'—'))}</p>`+
       `<p><strong>Campus:</strong> ${editMode? `<input type='text' id='editCampus' value='${escapeHTML(v(details.campus,''))}' />` : escapeHTML(v(details.campus,'—'))}</p>`+
-      `<p><strong>College:</strong> ${editMode? `<input type='text' id='editCollege' value='${escapeHTML(v(details.college,''))}' />` : escapeHTML(v(details.college,'—'))}</p>`+
+  `<p><strong>College:</strong> ${editMode? `<input type='text' id='editCollege' value='${escapeHTML(v(details.college,''))}' />` : escapeHTML(v(details.college,'—'))}</p>`+
+  `${isEmployee && deptVal ? `<p><strong>Department:</strong> ${escapeHTML(deptVal)}</p>` : ''}`+
       `<p><strong>Program:</strong> ${editMode? `<input type='text' id='editProgram' value='${escapeHTML(v(details.program,''))}' />` : escapeHTML(v(details.program,'—'))}</p></div>`+
   (function(){
     // Compute academic level with client-side fallback across possible keys

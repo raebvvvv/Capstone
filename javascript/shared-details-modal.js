@@ -81,7 +81,8 @@
     const email = v(details.email);
     const addr = v(details.homeAddress);
     const campus = v(details.campus);
-    const college = v(details.college);
+  const college = v(details.college);
+  const department = (details.department || '').toString().trim();
   const program = v(details.program);
   // Academic Level can arrive under different keys depending on endpoint/source
   const level = firstNonEmpty(details, ['academicLevel','academic_level','level']);
@@ -120,8 +121,8 @@
 
     // Determine labels based on role/page: Employees should see Employee ID/Number and Employee Information
     const isEmployeeContext = (String(o.role||'').toLowerCase()==='employee') || (document.body && document.body.getAttribute('data-user-kind')==='employee');
-    const infoHeader = isEmployeeContext ? 'Employee Information' : 'Student Information';
-    const idLabel = isEmployeeContext ? 'Employee ID/Number' : 'Student Number';
+  const infoHeader = isEmployeeContext ? 'Employee Information' : 'Student Information';
+  const idLabel = isEmployeeContext ? 'Employee ID/Number' : 'Student Number';
 
     containerEl.innerHTML = `
       ${statusHTML}
@@ -132,7 +133,8 @@
         <p><strong>Email Address:</strong> ${escapeHTML(email)}</p>
         <p><strong>Home Address:</strong> ${escapeHTML(addr)}</p>
         <p><strong>Campus:</strong> ${escapeHTML(campus)}</p>
-        <p><strong>College:</strong> ${escapeHTML(college)}</p>
+  <p><strong>College:</strong> ${escapeHTML(college)}</p>
+  ${isEmployeeContext && department ? `<p><strong>Department:</strong> ${escapeHTML(department)}</p>` : ''}
         <p><strong>Program:</strong> ${escapeHTML(program)}</p>
         <p><strong>Academic Level:</strong> ${escapeHTML(level)}</p>
       </div>

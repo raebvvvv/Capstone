@@ -894,6 +894,7 @@ function initCompletedAppsFilters() {
 				homeAddress: s.homeAddress || '',
 				campus: s.campus || '',
 				college: s.college || '',
+				department: s.department || '',
 				program: s.program || '',
 				academicLevel: s.academicLevel || '',
 				documentTitle: d.title || '',

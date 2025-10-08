@@ -60,6 +60,7 @@ try {
                     ELSE 'Unknown User'
                 END AS student_name,
                 u.role AS user_role,
+                ep.department AS employee_department,
                 CASE 
                     WHEN u.role = 'student' THEN sp.student_number
                     WHEN u.role = 'employee' THEN ep.employee_number  
@@ -220,7 +221,7 @@ try {
                     'email' => (string)($s['webmail'] ?? ''),
                     'homeAddress' => (string)($s['home_address'] ?? ''),
                     'campus' => (string)($s['campus'] ?? ''),
-                    'department' => '',
+                    'department' => ($role === 'employee' ? (string)($s['employee_department'] ?? '') : ''),
                     'college' => $college,
                     'program' => (string)($s['program'] ?? ''),
                     'academicLevel' => $academicLevel,
