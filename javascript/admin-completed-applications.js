@@ -927,18 +927,46 @@ function initCompletedAppsFilters() {
 			const el = document.getElementById('detailsGModal');
 			if (el) ModalApi.show(el);
 
-			// Wire the View Certificate button for this selection
+			// Wire the View Certificate button for this selection (embed PDF like ticket page)
 			const certBtn = document.getElementById('gViewCertBtn');
 			if (certBtn) {
-				const certUrl = details.certificateUrl || '#';
+				const certUrlBase = details.certificateUrl || '#';
+				const requestId = (details.request_id || details.document?.requestId || '').trim();
 				certBtn.onclick = () => {
-					const cEl = document.getElementById('certificateModalCA');
-					const dl = document.getElementById('downloadCertificateBtnCA');
-					if (dl) {
-						if (certUrl && certUrl !== '#') { dl.href = certUrl; dl.style.display = ''; dl.setAttribute('download','certificate.pdf'); }
-						else { dl.removeAttribute('href'); dl.style.display = 'none'; dl.removeAttribute('download'); }
+					const modal = document.getElementById('certificateModalCA');
+					if (!modal) return;
+					const body = modal.querySelector('.modal-body');
+					if (body) body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+					// Build iframe URL. If certUrlBase already has query params append debug/override later if needed
+					const viewUrl = certUrlBase === '#' ? '#' : certUrlBase + (certUrlBase.includes('?') ? '' : '');
+					if (certUrlBase === '#') {
+						if (body) body.innerHTML = '<div class="text-danger">Certificate unavailable.</div>';
+					} else {
+						const iframeId = 'certCA_' + Date.now();
+						const html = `<div class="certificate-preview"><iframe id="${iframeId}" src="${viewUrl}" width="100%" height="500" style="border:none;" loading="lazy" referrerpolicy="no-referrer"></iframe><div class="small text-muted mt-2" id="${iframeId}_status">Loading certificate...</div></div>`;
+						if (body) body.innerHTML = html;
+						const dl = document.getElementById('downloadCertificateBtnCA');
+						if (dl) {
+							dl.href = viewUrl + (viewUrl.includes('?') ? '&' : '?') + 'mode=download';
+							dl.style.display = '';
+							dl.setAttribute('download','certificate.pdf');
+						}
+						setTimeout(() => {
+							const iframe = document.getElementById(iframeId);
+							const statusEl = document.getElementById(iframeId + '_status');
+							if (!iframe) return;
+							let loaded = false;
+							try {
+								if (iframe.contentDocument || iframe.contentWindow?.document) { loaded = true; }
+							} catch (_) {}
+							if(!loaded) {
+								if (statusEl) statusEl.innerHTML = 'Embedded preview blocked. <a href="'+viewUrl+'" target="_blank" rel="noopener">Open in new tab</a>.';
+							} else if (statusEl) {
+								statusEl.textContent = '';
+							}
+						}, 1200);
 					}
-					if (cEl) ModalApi.show(cEl);
+					ModalApi.show(modal);
 				};
 			}
 		} catch (_) { /* ignore malformed data */ }

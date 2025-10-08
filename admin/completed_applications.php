@@ -235,7 +235,9 @@ try {
                 ],
                 'files' => $files,
                 // Certificate preview/download may be wired later; keep placeholder for now
-                'certificateUrl' => '#',
+                // Provide direct certificate generation endpoint (FPDI PDF). Uses submission code (request_id)
+                // The view_certificate.php script accepts ?id=<submission_code> and optional &mode=download
+                'certificateUrl' => 'view_certificate.php?id=' . rawurlencode((string)($s['request_id'] ?? '')),
                 // Authors/adviser for Details modal
                 'additionalAuthors' => $additionalAuthors,
                 'adviser' => $adviserName,
