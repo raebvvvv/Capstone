@@ -23,9 +23,10 @@ if ($sid <= 0) { http_response_code(404); echo 'Submission not found'; exit; }
 // Example: &tx=20&ty=95&tw=170&ax=20&ay=125&aw=170&dx=20&dy=155&dw=170&debug=1&force=1
 $coords = [];
 $map = [
-    'title'=>['tx','ty','tw'],
-    'authors'=>['ax','ay','aw'],
-    'date'=>['dx','dy','dw']
+    'title'   => ['tx','ty','tw'],
+    'authors' => ['ax','ay','aw'],
+    'date'    => ['dx','dy','dw'],
+    'receiver'=> ['rx','ry','rw'] // reviewer/admin name block
 ];
 foreach ($map as $key=>$params) {
         [$px,$py,$pw] = $params;
@@ -45,6 +46,7 @@ if (!empty($_GET['force'])) { $options['force_regen'] = true; }
 if (isset($_GET['tfs'])) { $options['title_font_size'] = (int)$_GET['tfs']; }
 if (isset($_GET['afs'])) { $options['authors_font_size'] = (int)$_GET['afs']; }
 if (isset($_GET['dfs'])) { $options['date_font_size'] = (int)$_GET['dfs']; }
+if (isset($_GET['rfs'])) { $options['receiver_font_size'] = (int)$_GET['rfs']; }
 
 try {
         $pdfPath = generate_certificate($pdo, $sid, $options);

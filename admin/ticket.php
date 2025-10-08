@@ -29,6 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strlen($remark) > 1000) { $remark = substr($remark, 0, 1000); }
             if ($approveId !== '') {
                 $col = $resolveIdColumn($approveId);
+                // Resolve admin profile_id for reviewer_id (admin_profiles.profile_id)
+                $adminProfileId = null;
+                try {
+                    $profStmt = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? ORDER BY profile_id ASC LIMIT 1");
+                    if ($profStmt && $profStmt->execute([ (int)($_SESSION['user_id'] ?? 0) ])) {
+                        $val = $profStmt->fetchColumn();
+                        if ($val !== false) { $adminProfileId = (int)$val; }
+                    }
+                } catch (Throwable $e) { $adminProfileId = null; }
                 $sql = "UPDATE submissions
                         SET status = 'approved',
                             remarks = COALESCE(NULLIF(:remark, ''), remarks),
@@ -39,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     ':remark' => $remark,
-                    ':rid' => (int)($_SESSION['user_id'] ?? 0),
+                    ':rid' => $adminProfileId,
                     ':id' => ctype_digit($approveId) ? (int)$approveId : $approveId,
                 ]);
                 $redirectTab = 'approved';
@@ -54,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         SET status = 'completed',
                             remarks = COALESCE(NULLIF(:remark, ''), remarks),
                             status_updated_at = NOW()
-                        WHERE $col = :id";
+                        WHERE $col = :id"; // completed_by/at removed from schema
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     ':remark' => $remark,

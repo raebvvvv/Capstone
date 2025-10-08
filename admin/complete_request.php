@@ -32,7 +32,7 @@ try {
             SET status='completed',
                 remarks = NULLIF(:remark, ''),
                 status_updated_at = NOW()
-            WHERE $idCol = :id";
+            WHERE $idCol = :id"; // completed_by & completed_at removed from schema
     $stmt = $pdo->prepare($sql);
     if(!$stmt){
         $info = method_exists($pdo,'errorInfo') ? implode(' | ', array_filter($pdo->errorInfo() ?: [])) : 'prepare failed';

@@ -90,13 +90,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Referrer-Policy" content="no-referrer">
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self';">
+    <?php
+    // Security headers should be sent via PHP header() BEFORE output, not as meta http-equiv; remove noisy ineffective meta directives.
+    // If a global header injector (e.g., security_headers.php) is available, rely on it; else set minimal headers here.
+    if (!headers_sent()) {
+        header("X-Frame-Options: DENY");
+        header("Frame-Options: DENY"); // legacy
+        header("Referrer-Policy: no-referrer");
+        header("X-Content-Type-Options: nosniff");
+        header("Permissions-Policy: camera=(), microphone=(), geolocation=()");
+        // Strict CSP: no inline scripts; allow required CDNs for bootstrap + fonts
+        $csp = "default-src 'self'; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data:; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self';";
+        header("Content-Security-Policy: $csp");
+    }
+    ?>
     <?php /* Intentionally no links in app UI to this page */ ?>
     <!-- Honeypot field against bots -->
     <style> .hp-field { position: absolute; left: -9999px; top: -9999px; } </style>
     <?php $token = function_exists('csrf_token') ? csrf_token() : ''; ?>
-    <script>window.__CSRF_TOKEN__ = '<?php echo htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>';</script>
+    <?php // CSRF token will be set via external script to comply with CSP (no inline JS) ?>
     <meta name="csrf-token" content="<?php echo htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>">
     <noscript><style>.js-only{display:none!important}</style></noscript>
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
@@ -144,22 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-    <script>
-    // Simple toggle password - wait for DOM to load
-    document.addEventListener('DOMContentLoaded', function() {
-        const btn = document.querySelector('.toggle-password');
-        if (btn) {
-            btn.addEventListener('click', function(){
-                const input = document.querySelector(this.getAttribute('data-target'));
-                if (!input) return;
-                const isPw = input.getAttribute('type') === 'password';
-                input.setAttribute('type', isPw ? 'text' : 'password');
-                this.querySelector('.icon-eye')?.classList.toggle('d-none', !isPw);
-                this.querySelector('.icon-eye-off')?.classList.toggle('d-none', isPw);
-            });
-        }
-    });
-    </script>
+    <script src="<?php echo asset_url('javascript/login.js'); ?>" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 <!-- No links to this page exist in the UI. Access is by direct URL only. -->

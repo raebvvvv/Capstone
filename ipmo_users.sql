@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 08, 2025 at 07:00 PM
+-- Generation Time: Oct 08, 2025 at 07:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.4.12
 
@@ -152,7 +152,8 @@ INSERT INTO `advisers` (`adviser_id`, `first_name`, `middle_name`, `last_name`, 
 (32, 'Ac', '', '', NULL, NULL, NULL, '2025-10-08 13:40:31'),
 (33, 'D', '', '', NULL, NULL, NULL, '2025-10-08 13:41:56'),
 (34, 'Sdf', '', '', NULL, NULL, NULL, '2025-10-08 13:43:05'),
-(35, '', '', '', NULL, NULL, NULL, '2025-10-08 13:44:39');
+(35, '', '', '', NULL, NULL, NULL, '2025-10-08 13:44:39'),
+(36, 'Janellee', '', 'Sagum', NULL, NULL, NULL, '2025-10-09 01:57:01');
 
 -- --------------------------------------------------------
 
@@ -292,7 +293,7 @@ CREATE TABLE `submissions` (
 --
 
 INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first_name`, `middle_name`, `last_name`, `student_number`, `home_address`, `mobile_number`, `webmail`, `campus`, `academic_level`, `college`, `program`, `work_classification`, `title`, `date_accomplished`, `accepted_terms`, `status`, `status_updated_at`, `remarks`, `version`, `is_latest`, `submission_type`, `created_at`, `updated_at`, `reviewer_id`, `reviewed_at`, `adviser_id`) VALUES
-(53, 'SRID-2025-20251006-1', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Accountancy and Finance (CAF)', 'Bachelor of Science in Accountancy (BSA)', '(a) Books, Pamphlets, articles and other writings', 'Mindfulness on the Night Shift: A Longitudinal Study on the Impacts of Meditation on Nurse Productivity and Well-being', '2025-10-06', 1, 'completed', '2025-10-06 20:32:47', 'test', 1, 1, 'copyright', '2025-10-06 20:22:31', '2025-10-06 20:32:47', 4, '2025-10-06 20:28:12', 23),
+(53, 'SRID-2025-20251006-1', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Accountancy and Finance (CAF)', 'Bachelor of Science in Accountancy (BSA)', '(a) Books, Pamphlets, articles and other writings', 'Mindfulness on the Night Shift: A Longitudinal Study on the Impacts of Meditation on Nurse Productivity and Well-being', '2025-10-06', 1, 'completed', '2025-10-06 20:32:47', 'test', 1, 1, 'copyright', '2025-10-06 20:22:31', '2025-10-09 01:22:58', 4, '2025-10-06 20:28:12', 23),
 (54, 'SRID-2025-20251006-2', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'N/A', 'Doctor of Philosophy in Communication (PhD Com)', '(m) Pictorial illustrations and advertisements', 'BLABLA', '2025-10-01', 1, 'completed', '2025-10-06 20:59:42', 'test3', 1, 1, 'copyright', '2025-10-06 20:54:41', '2025-10-06 20:59:42', 4, '2025-10-06 20:59:10', 24),
 (55, 'SRID-2025-20251006-3', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Masters', 'N/A', 'Master of Science in Construction Management (MSCM)', '(q) Broadcast recordings', 'a', '2025-10-06', 1, 'completed', '2025-10-06 21:03:28', 'testttt', 1, 1, 'copyright', '2025-10-06 21:02:50', '2025-10-06 21:03:28', 4, '2025-10-06 21:02:56', 25),
 (56, 'SRID-2025-20251006-4', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'N/A', 'Doctor of Philosophy in Economics (PhD Econ)', '(q) Broadcast recordings', 'a', '2025-09-19', 1, 'completed', '2025-10-07 00:23:45', 'oi', 1, 1, 'copyright', '2025-10-06 21:04:52', '2025-10-07 00:23:45', 4, '2025-10-07 00:08:52', 25),
@@ -302,7 +303,7 @@ INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first
 (60, 'ERID-2025-20251006-8', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'N/A', 'Doctor of Philosophy in Communication (PhD Com)', '(o) Other literary, scholarly, scientific and artistic works', 'a', '2025-10-06', 1, 'completed', '2025-10-07 00:02:41', 'test', 1, 1, 'copyright', '2025-10-06 23:25:53', '2025-10-07 00:02:41', 4, '2025-10-06 23:44:34', 25),
 (61, 'SRID-2025-20251007-1', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(b) Periodicals and newspaper', 'a', '2025-10-07', 1, 'completed', '2025-10-07 01:24:40', 'mARKG', 1, 1, 'copyright', '2025-10-07 00:32:01', '2025-10-07 01:24:40', 4, '2025-10-07 01:11:45', 25),
 (62, 'SRID-2025-20251007-2', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(a) Books, Pamphlets, articles and other writings', 'a', '2025-10-07', 1, 'completed', '2025-10-07 00:57:53', 'matoy', 1, 1, 'copyright', '2025-10-07 00:35:24', '2025-10-07 00:57:53', 4, '2025-10-07 00:35:43', 27),
-(63, 'SRID-2025-20251007-3', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(a) Books, Pamphlets, articles and other writings', 'test', '2025-10-07', 1, 'completed', '2025-10-07 01:03:53', 'tset', 1, 1, 'copyright', '2025-10-07 00:51:16', '2025-10-07 01:03:53', 4, '2025-10-07 01:03:16', 25),
+(63, 'SRID-2025-20251007-3', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(a) Books, Pamphlets, articles and other writings', 'test', '2025-10-07', 1, 'completed', '2025-10-07 01:03:53', 'tset', 1, 1, 'copyright', '2025-10-07 00:51:16', '2025-10-09 01:53:14', 2, '2025-10-07 01:03:16', 25),
 (64, 'SRID-2025-20251007-4', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(b) Periodicals and newspaper', 'a', '2025-10-07', 1, 'completed', '2025-10-07 01:33:38', 'MARKGO', 1, 1, 'copyright', '2025-10-07 01:18:46', '2025-10-07 01:33:38', 4, '2025-10-07 01:32:49', 25),
 (65, 'SRID-2025-20251007-5', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(p) Sound recordings', 'tes1', '2025-10-07', 1, 'completed', '2025-10-07 01:50:51', 'test11', 1, 1, 'copyright', '2025-10-07 01:35:45', '2025-10-07 01:50:51', 4, '2025-10-07 01:35:56', 25),
 (66, 'SRID-2025-20251007-6', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Human Kinetics (CHK)', 'Bachelor Of Physical Education (bpe)', '(b) Periodicals and newspaper', 'test', '2025-10-07', 1, 'completed', '2025-10-07 01:50:04', 'make', 1, 1, 'copyright', '2025-10-07 01:36:22', '2025-10-07 01:50:04', 4, '2025-10-07 01:36:46', 25),
@@ -328,14 +329,15 @@ INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first
 (86, 'ERID-2025-20251008-18', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(c) Lectures, sermons, addresses, dissertations for oral delivery', 'bang5', '2025-10-08', 1, 'completed', '2025-10-08 13:44:12', NULL, 1, 1, 'copyright', '2025-10-08 13:43:05', '2025-10-08 13:44:12', 4, '2025-10-08 13:43:47', 34),
 (87, 'ERID-2025-20251008-19', 2, 'Mata', 'Bale', 'Lino', '12345', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'errorloading19990@gmail.com', 'PUP Main (Sta. Mesa, Manila)', '', 'College of Social Sciences and Development (CSSD)', 'N/A', '(b) Periodicals and newspaper', 'bahn3', '2025-10-08', 1, 'completed', '2025-10-08 13:47:53', 'mark2', 1, 1, 'copyright', '2025-10-08 13:44:39', '2025-10-08 13:47:53', 4, '2025-10-08 13:44:58', 35),
 (88, 'SRID-2025-20251008-20', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(l) Audiovisual works and cinematographic works', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:26:46', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:10:02', '2025-10-08 15:44:26', NULL, NULL, 35),
-(89, 'SRID-2025-20251008-21', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(b) Periodicals and newspaper', 'test', '2025-10-08', 1, 'approved', '2025-10-08 16:13:04', 'ttt', 1, 1, 'copyright', '2025-10-08 15:21:06', '2025-10-08 16:13:04', 4, '2025-10-08 15:21:24', 35),
+(89, 'SRID-2025-20251008-21', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(b) Periodicals and newspaper', 'test', '2025-10-08', 1, 'completed', '2025-10-09 01:41:18', NULL, 1, 1, 'copyright', '2025-10-08 15:21:06', '2025-10-09 01:41:18', 4, '2025-10-08 15:21:24', 35),
 (90, 'SRID-2025-20251008-22', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(n) Computer Programs', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:27:23', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:27:08', '2025-10-08 15:44:38', NULL, NULL, 35),
 (91, 'ERID-2025-20251008-23', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(b) Periodicals and newspaper', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:42:53', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:36:40', '2025-10-08 15:43:09', NULL, NULL, 35),
 (92, 'SRID-2025-20251008-24', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(p) Sound recordings', 'test', '2025-10-08', 1, 'pending_review', '2025-10-08 15:50:52', 'For Evaluation', 1, 1, 'copyright', '2025-10-08 15:48:29', '2025-10-08 15:51:00', NULL, NULL, 35),
 (93, 'SRID-2025-20251008-25', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(n) Computer Programs', 'test', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 15:51:20', '2025-10-08 15:51:20', NULL, NULL, 35),
 (94, 'SRID-2025-20251008-26', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(p) Sound recordings', 't', '2025-10-08', 1, 'completed', '2025-10-08 18:02:27', NULL, 1, 1, 'copyright', '2025-10-08 15:55:46', '2025-10-08 18:02:27', 4, '2025-10-08 18:02:21', 35),
 (95, 'ERID-2025-20251008-27', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(n) Computer Programs', 'test', '2025-10-08', 1, 'completed', '2025-10-08 20:55:15', NULL, 1, 1, 'copyright', '2025-10-08 20:55:01', '2025-10-08 20:55:15', 4, '2025-10-08 20:55:09', 35),
-(96, 'ERID-2025-20251008-28', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(p) Sound recordings', 'test', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 22:36:17', '2025-10-08 22:36:17', NULL, NULL, 32);
+(96, 'ERID-2025-20251008-28', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(p) Sound recordings', 'test', '2025-10-08', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-08 22:36:17', '2025-10-08 22:36:17', NULL, NULL, 32),
+(97, 'ERID-2025-20251009-1', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(n) Computer Programs', 'ENHANCING INTELLECTUAL PROPERTY APPLICATIONS: PUP’S E-IPMO SERVICES FOR ACADEMIC WORKS', '2025-10-09', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-09 01:57:01', '2025-10-09 01:57:01', NULL, NULL, 36);
 
 -- --------------------------------------------------------
 
@@ -382,7 +384,10 @@ INSERT INTO `submission_authors` (`author_id`, `submission_id`, `first_name`, `m
 (16, 67, 'A', '', '', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-10-07 01:39:36', 25),
 (17, 68, 'John', '', '', NULL, NULL, NULL, NULL, 'Adviser', 1, '2025-10-07 01:51:55', 28),
 (18, 68, 'Raebv Lielmo', '', 'Inocentes', '2020-09121-MN-0', '09156574831', '4334A V. Francisco St. Sta. Mesa, Manila', 'inocentesraebv@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-07 01:51:55', NULL),
-(19, 69, 'Raebv Lielmo', '', 'Inocentes', '25222', '09156574831', '4334A V. Francisco St. Sta. Mesa, Manila', 'firstnamelastname@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-08 00:57:49', NULL);
+(19, 69, 'Raebv Lielmo', '', 'Inocentes', '25222', '09156574831', '4334A V. Francisco St. Sta. Mesa, Manila', 'firstnamelastname@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-08 00:57:49', NULL),
+(20, 97, 'Raebv Lielmo', '', 'Inocentes', '52522', '09156574831', '4334A V. Francisco St. Sta. Mesa, Manila', 'inocentesraebv@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-09 01:57:02', NULL),
+(21, 97, 'Mark', '', 'Garcia', '12986', '09156574831', '4334A V. Francisco St. Sta. Mesa, Manila', 'inocentesraebv@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-09 01:57:02', NULL),
+(22, 97, 'Criselle', '', 'Trinidad', '02141', '09156574831', '4334A V. Francisco St. Sta. Mesa, Manila', 'inocentesraebv@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-09 01:57:02', NULL);
 
 -- --------------------------------------------------------
 
@@ -692,7 +697,13 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (282, 96, 'receipt_payment', 'receipt_payment_1759934177_57066133.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
 (283, 96, 'presentation', 'presentation_1759934177_0e2414c0.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
 (284, 96, 'notarized_coauthorship', 'notarized_coauthorship_1759934177_8080ab7c.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
-(285, 96, 'record_copyright', 'record_copyright_1759934177_3c481c68.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL);
+(285, 96, 'record_copyright', 'record_copyright_1759934177_3c481c68.pdf', '2025-10-08 22:36:17', 1653, 'application/pdf', 0, NULL, NULL),
+(286, 97, 'journal_publication_format', 'journal_publication_format_1759946221_1e1df058.pdf', '2025-10-09 01:57:01', 1653, 'application/pdf', 0, NULL, NULL),
+(287, 97, 'notarized_copyright', 'notarized_copyright_1759946221_5ccc02a7.pdf', '2025-10-09 01:57:01', 1653, 'application/pdf', 0, NULL, NULL),
+(288, 97, 'receipt_payment', 'receipt_payment_1759946221_4ce636fb.pdf', '2025-10-09 01:57:01', 1653, 'application/pdf', 0, NULL, NULL),
+(289, 97, 'presentation', 'presentation_1759946221_76ded77d.pdf', '2025-10-09 01:57:01', 1653, 'application/pdf', 0, NULL, NULL),
+(290, 97, 'notarized_coauthorship', 'notarized_coauthorship_1759946221_385dddd9.pdf', '2025-10-09 01:57:02', 1653, 'application/pdf', 0, NULL, NULL),
+(291, 97, 'record_copyright', 'record_copyright_1759946221_1a18d8c2.pdf', '2025-10-09 01:57:02', 1653, 'application/pdf', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -994,7 +1005,7 @@ ALTER TABLE `admin_profiles`
 -- AUTO_INCREMENT for table `advisers`
 --
 ALTER TABLE `advisers`
-  MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `employee_profiles`
@@ -1012,19 +1023,19 @@ ALTER TABLE `student_profiles`
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `submission_documents`
 --
 ALTER TABLE `submission_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=286;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=292;
 
 --
 -- AUTO_INCREMENT for table `submission_notes`
@@ -1077,6 +1088,12 @@ ALTER TABLE `employee_profiles`
 --
 ALTER TABLE `student_profiles`
   ADD CONSTRAINT `fk_student_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `submissions`
+--
+ALTER TABLE `submissions`
+  ADD CONSTRAINT `fk_submissions_reviewer_id` FOREIGN KEY (`reviewer_id`) REFERENCES `admin_profiles` (`profile_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
