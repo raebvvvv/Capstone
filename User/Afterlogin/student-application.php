@@ -418,6 +418,7 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
                 <td class="align-middle text-nowrap">
                   <div class="d-flex gap-2 align-items-center flex-nowrap justify-content-start">
                     <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
+                    <a href="#" class="btn btn-outline-primary btn-sm btn-view-certificate" data-code="<?php echo htmlspecialchars($row['submission_code']); ?>">View Certificate</a>
                     <?php if($completedApprovedAdminComment !== ''): ?>
                       <a href="#" class="btn btn-outline-secondary btn-sm btn-comments">Comments</a>
                     <?php else: ?>
@@ -503,6 +504,24 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   <script src="<?php echo asset_url('javascript/student-application.js'); ?>"></script>
+  <!-- Certificate Preview Modal (shared for student/employee pages) -->
+  <div class="modal fade" id="certificateModalUser" tabindex="-1" aria-labelledby="certificateModalUserLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="certificateModalUserLabel">Certificate</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="certificateModalUserBody">
+          <div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a id="downloadCertificateUserBtn" href="#" class="btn btn-primary" style="display:none;">Download PDF</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 

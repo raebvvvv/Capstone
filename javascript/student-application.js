@@ -28,6 +28,38 @@ document.addEventListener('click', function(e){
     modalEl.style.display='block';
   }
 });
+// Delegated handler for viewing certificate (Completed tab)
+document.addEventListener('click', function(e){
+  const certBtn = e.target.closest('.btn-view-certificate');
+  if(!certBtn) return;
+  e.preventDefault();
+  const code = certBtn.getAttribute('data-code') || certBtn.getAttribute('data-id') || '';
+  if(!code) return;
+  const modalEl = document.getElementById('certificateModalUser');
+  const body = document.getElementById('certificateModalUserBody');
+  const dl = document.getElementById('downloadCertificateUserBtn');
+  if(body) body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+  try {
+    if(window.bootstrap && modalEl){ window.bootstrap.Modal.getOrCreateInstance(modalEl).show(); }
+    else if(modalEl){ modalEl.style.display='block'; }
+  } catch(_) { if(modalEl) modalEl.style.display='block'; }
+  // Build endpoint (user-facing certificate viewer which validates ownership)
+  const baseUrl = 'view_certificate_user.php?id=' + encodeURIComponent(code);
+  const iframeId = 'certUser_' + Date.now();
+  const html = '<div class="certificate-preview"><iframe id="'+iframeId+'" src="'+baseUrl+'" width="100%" height="500" style="border:none;" loading="lazy" referrerpolicy="no-referrer"></iframe><div class="small text-muted mt-2" id="'+iframeId+'_status">Loading certificate...</div></div>';
+  if(body) body.innerHTML = html;
+  if(dl){ dl.href = baseUrl + '&mode=download'; dl.style.display=''; dl.setAttribute('download','certificate.pdf'); }
+  // Fallback detection if iframe blocks
+  setTimeout(()=>{
+    const iframe = document.getElementById(iframeId);
+    const statusEl = document.getElementById(iframeId + '_status');
+    if(!iframe) return;
+    let loaded=false;
+    try { if(iframe.contentDocument || iframe.contentWindow?.document){ loaded=true; } } catch(_) {}
+    if(!loaded){ if(statusEl) statusEl.innerHTML = 'Preview blocked. <a href="'+baseUrl+'" target="_blank" rel="noopener">Open in new tab</a>.'; }
+    else if(statusEl){ statusEl.textContent=''; }
+  }, 1200);
+});
 document.addEventListener('DOMContentLoaded', function () {
   // Reupload state cache persists across modal openings this session
   // Structure: { submissionCode: { locked:boolean, done:Set<string>, sig:string } }

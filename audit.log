@@ -881,3 +881,5 @@
 {"ts":"2025-10-09T02:51:35+08:00","type":"APPROVE_REQUEST","user_id":4,"ip":"127.0.0.1","msg":"Request approved","ctx":{"request_id":"ERID-2025-20251009-1","rows":1,"id_column":"submission_code","comment_set":false}}
 {"ts":"2025-10-09T02:51:55+08:00","type":"COMPLETE_REQUEST","user_id":4,"ip":"127.0.0.1","msg":"Request completed","ctx":{"request_id":"ERID-2025-20251009-1","rows":1,"id_column":"submission_code","comment_set":false}}
 {"ts":"2025-10-09T02:52:11+08:00","type":"CERT_GENERATED","user_id":4,"ip":"127.0.0.1","msg":"Certificate generated","ctx":{"submission_id":98,"file":"C:\\xampp\\htdocs\\fix\\Capstone\\uploads\/certificates\\ERID-2025-20251009-1.pdf"}}
+{"ts":"2025-10-09T03:01:11+08:00","type":"AUTH","user_id":4,"ip":"127.0.0.1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
+{"ts":"2025-10-09T03:16:06+08:00","type":"CERT_GENERATED","user_id":6,"ip":"127.0.0.1","msg":"Certificate generated","ctx":{"submission_id":95,"file":"C:\\xampp\\htdocs\\fix\\Capstone\\uploads\/certificates\\ERID-2025-20251008-27.pdf"}}
