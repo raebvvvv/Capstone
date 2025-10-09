@@ -29,26 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strlen($remark) > 1000) { $remark = substr($remark, 0, 1000); }
             if ($approveId !== '') {
                 $col = $resolveIdColumn($approveId);
-                // Resolve admin profile_id for reviewer_id (admin_profiles.profile_id)
-                $adminProfileId = null;
-                try {
-                    $profStmt = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? ORDER BY profile_id ASC LIMIT 1");
-                    if ($profStmt && $profStmt->execute([ (int)($_SESSION['user_id'] ?? 0) ])) {
-                        $val = $profStmt->fetchColumn();
-                        if ($val !== false) { $adminProfileId = (int)$val; }
-                    }
-                } catch (Throwable $e) { $adminProfileId = null; }
                 $sql = "UPDATE submissions
                         SET status = 'approved',
                             remarks = COALESCE(NULLIF(:remark, ''), remarks),
-                            reviewer_id = :rid,
                             reviewed_at = NOW(),
                             status_updated_at = NOW()
                         WHERE $col = :id";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     ':remark' => $remark,
-                    ':rid' => $adminProfileId,
                     ':id' => ctype_digit($approveId) ? (int)$approveId : $approveId,
                 ]);
                 $redirectTab = 'approved';
@@ -59,14 +48,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strlen($remark) > 1000) { $remark = substr($remark, 0, 1000); }
             if ($completeId !== '') {
                 $col = $resolveIdColumn($completeId);
+                // Resolve admin profile_id for reviewer_id (set based on who completes the ticket)
+                $adminProfileId = null;
+                try {
+                    $uid = (int)($_SESSION['user_id'] ?? 0);
+                    $anum = trim((string)($_SESSION['admin_number'] ?? ''));
+                    if ($uid > 0) {
+                        if ($anum !== '') {
+                            // Prefer the specific admin_number profile for this admin
+                            $profStmt = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? AND admin_number = ? LIMIT 1");
+                            if ($profStmt && $profStmt->execute([ $uid, $anum ])) {
+                                $val = $profStmt->fetchColumn();
+                                if ($val !== false) { $adminProfileId = (int)$val; }
+                            }
+                        }
+                        if ($adminProfileId === null) {
+                            // Fallback to latest profile for this user (DESC to avoid picking an old record)
+                            $profStmt = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? ORDER BY profile_id DESC LIMIT 1");
+                            if ($profStmt && $profStmt->execute([ $uid ])) {
+                                $val = $profStmt->fetchColumn();
+                                if ($val !== false) { $adminProfileId = (int)$val; }
+                            }
+                        }
+                    }
+                } catch (Throwable $e) { $adminProfileId = null; }
+                if (function_exists('log_event')) { log_event('COMPLETE_RESOLVE_REVIEWER', 'Resolved reviewer for completion (server POST)', [
+                    'uid' => (int)($_SESSION['user_id'] ?? 0),
+                    'admin_number' => (string)($_SESSION['admin_number'] ?? ''),
+                    'profile_id' => $adminProfileId,
+                    'submission' => $completeId,
+                ]); }
                 $sql = "UPDATE submissions
                         SET status = 'completed',
                             remarks = COALESCE(NULLIF(:remark, ''), remarks),
+                            reviewer_id = :rid,
                             status_updated_at = NOW()
-                        WHERE $col = :id"; // completed_by/at removed from schema
+                        WHERE $col = :id"; // completed_by/at removed from schema; reviewer_id now reflects completer
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     ':remark' => $remark,
+                    ':rid' => $adminProfileId,
                     ':id' => ctype_digit($completeId) ? (int)$completeId : $completeId,
                 ]);
                 $redirectTab = 'completed';
@@ -407,6 +428,40 @@ function render_pagination_controls(string $tab, int $page, int $pages): void {
     echo '</ul>';
     echo '</nav>';
 }
+// Fetch admin data (robust session validation)
+if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empty($_SESSION['is_admin'])) {
+    $user_id = (int)$_SESSION['user_id'];
+    try {
+        if (!empty($_SESSION['admin_number'])) {
+            $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name, ap.admin_number FROM users u 
+                INNER JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? AND ap.admin_number = ? LIMIT 1");
+            $stmt->execute([$user_id, $_SESSION['admin_number']]);
+        } else {
+            // Fallback: first admin profile (if multiple exist, explicit admin_number should always be set by login)
+            $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name, ap.admin_number FROM users u 
+                LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? LIMIT 1");
+            $stmt->execute([$user_id]);
+        }
+        $admin = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    } catch (Throwable $e) {
+        if (function_exists('log_event')) { log_event('DB_ERR', 'Admin profile fetch failed', ['err'=>$e->getMessage(), 'user_id'=>$user_id]); }
+        $admin = [];
+    }
+    if (!$admin) {
+        // If profile missing, redirect to a setup page if it exists; else show a controlled message.
+        if (function_exists('redirect') && file_exists(__DIR__ . '/setup_admin_profile.php')) {
+            redirect('admin/setup_admin_profile.php');
+        }
+        echo 'Admin profile not found.'; exit();
+    }
+    // Derive display fields
+    $admin['username'] = trim(($admin['first_name'] ?? '') . ' ' . ($admin['last_name'] ?? '')) ?: 'Admin User';
+    $admin['admin_number'] = $admin['admin_number'] ?? ($_SESSION['admin_number'] ?? '');
+} else {
+    // Session invalid or expired; rely on require_admin earlier, but double safety redirect
+    if (function_exists('redirect')) { redirect('admin/login.php'); }
+    echo 'Session invalid.'; exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -495,6 +550,10 @@ function render_pagination_controls(string $tab, int $page, int $pages): void {
                             <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
                             <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>" required disabled>
                         </div>
+                         <div class="mb-3">
+                                <label for="profileAdminNumber" class="form-label fw-semibold">Admin Number</label>
+                                <input type="text" class="form-control" id="profileAdminNumber" value="<?php echo htmlspecialchars($admin['admin_number'] ?? ''); ?>" disabled>
+                            </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary d-none" id="profileSaveBtn">Save Changes</button>
                         </div>
@@ -1118,5 +1177,6 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
     </div>
 
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
+    
 </body>
 </html>

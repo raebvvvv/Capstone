@@ -5,21 +5,39 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
-// Fetch admin data for navbar/profile
-$user_id = $_SESSION['user_id'];
-    if (!empty($_SESSION['admin_number'])) {
-        $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name, ap.admin_number FROM users u 
-            INNER JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? AND ap.admin_number = ? LIMIT 1");
-        $stmt->execute([$user_id, $_SESSION['admin_number']]);
-    } else {
-        $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name, ap.admin_number FROM users u 
-            LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? LIMIT 1");
-        $stmt->execute([$user_id]);
+// Fetch admin data (robust session validation)
+if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empty($_SESSION['is_admin'])) {
+    $user_id = (int)$_SESSION['user_id'];
+    try {
+        if (!empty($_SESSION['admin_number'])) {
+            $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name, ap.admin_number FROM users u 
+                INNER JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? AND ap.admin_number = ? LIMIT 1");
+            $stmt->execute([$user_id, $_SESSION['admin_number']]);
+        } else {
+            // Fallback: first admin profile (if multiple exist, explicit admin_number should always be set by login)
+            $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name, ap.admin_number FROM users u 
+                LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? LIMIT 1");
+            $stmt->execute([$user_id]);
+        }
+        $admin = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    } catch (Throwable $e) {
+        if (function_exists('log_event')) { log_event('DB_ERR', 'Admin profile fetch failed', ['err'=>$e->getMessage(), 'user_id'=>$user_id]); }
+        $admin = [];
     }
-$admin = $stmt->fetch();
-if (!$admin) {
-    echo "Admin not found.";
-    exit();
+    if (!$admin) {
+        // If profile missing, redirect to a setup page if it exists; else show a controlled message.
+        if (function_exists('redirect') && file_exists(__DIR__ . '/setup_admin_profile.php')) {
+            redirect('admin/setup_admin_profile.php');
+        }
+        echo 'Admin profile not found.'; exit();
+    }
+    // Derive display fields
+    $admin['username'] = trim(($admin['first_name'] ?? '') . ' ' . ($admin['last_name'] ?? '')) ?: 'Admin User';
+    $admin['admin_number'] = $admin['admin_number'] ?? ($_SESSION['admin_number'] ?? '');
+} else {
+    // Session invalid or expired; rely on require_admin earlier, but double safety redirect
+    if (function_exists('redirect')) { redirect('admin/login.php'); }
+    echo 'Session invalid.'; exit();
 }
 
 // Create full name for display
@@ -664,6 +682,10 @@ $result_inactive = $stmt_inactive->fetchAll();
                             <div class="mb-3">
                                 <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
                                 <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email']); ?>" required disabled>
+                            </div>
+                             <div class="mb-3">
+                                <label for="profileAdminNumber" class="form-label fw-semibold">Admin Number</label>
+                                <input type="text" class="form-control" id="profileAdminNumber" value="<?php echo htmlspecialchars($admin['admin_number'] ?? ''); ?>" disabled>
                             </div>
                             <div class="d-flex justify-content-end">
                                 <button type="submit" class="btn btn-primary d-none" id="profileSaveBtn">Save Changes</button>

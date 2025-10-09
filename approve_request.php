@@ -31,21 +31,9 @@ try {
         $sid = (int)$stmtSid->fetchColumn();
         if (!$sid) { $sid = null; }
     } catch (Throwable $e) { $sid = null; }
-    // Step 1: update status + reviewer (no remarks logic) to minimize placeholder complexity
-    // Map current admin session user_id to admin_profiles.profile_id for reviewer_id
-    $adminProfileId = null;
-    try {
-        if (isset($_SESSION['user_id'])) {
-            $p = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? ORDER BY profile_id ASC LIMIT 1");
-            if ($p && $p->execute([ (int)$_SESSION['user_id'] ])) {
-                $tmp = $p->fetchColumn();
-                if ($tmp !== false) { $adminProfileId = (int)$tmp; }
-            }
-        }
-    } catch (Throwable $e) { $adminProfileId = null; }
+    // Step 1: update status (do NOT set reviewer_id on approval; reviewer_id reflects completer)
     $sqlStatus = "UPDATE submissions
                   SET status = 'approved',
-                      reviewer_id = :rid,
                       reviewed_at = NOW(),
                       status_updated_at = NOW()
                   WHERE $idCol = :id";
@@ -55,7 +43,6 @@ try {
         respond_error('Prepare failed', ['phase'=>'prepare-status','detail'=>$info]);
     }
     $okStatus = $stmtStatus->execute([
-        ':rid' => $adminProfileId,
         ':id' => ctype_digit($requestId) ? (int)$requestId : $requestId
     ]);
     if(!$okStatus){

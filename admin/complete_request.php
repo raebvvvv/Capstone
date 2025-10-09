@@ -28,11 +28,41 @@ try {
     // Prepare update
     // Use NULLIF to avoid repeating the same named placeholder twice, which can
     // trigger SQLSTATE[HY093] with native prepared statements.
+    // Resolve admin profile_id to set reviewer_id as the completer
+    $adminProfileId = null;
+    try {
+        $uid = (int)($_SESSION['user_id'] ?? 0);
+        $anum = trim((string)($_SESSION['admin_number'] ?? ''));
+        if ($uid > 0) {
+            if ($anum !== '') {
+                $p = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? AND admin_number = ? LIMIT 1");
+                if ($p && $p->execute([ $uid, $anum ])) {
+                    $tmp = $p->fetchColumn();
+                    if ($tmp !== false) { $adminProfileId = (int)$tmp; }
+                }
+            }
+            if ($adminProfileId === null) {
+                $p = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? ORDER BY profile_id DESC LIMIT 1");
+                if ($p && $p->execute([ $uid ])) {
+                    $tmp = $p->fetchColumn();
+                    if ($tmp !== false) { $adminProfileId = (int)$tmp; }
+                }
+            }
+        }
+    } catch (Throwable $e) { $adminProfileId = null; }
+
+    if (function_exists('log_event')) { log_event('COMPLETE_RESOLVE_REVIEWER', 'Resolved reviewer for completion (JSON endpoint)', [
+        'uid' => (int)($_SESSION['user_id'] ?? 0),
+        'admin_number' => (string)($_SESSION['admin_number'] ?? ''),
+        'profile_id' => $adminProfileId,
+        'request_id' => $requestId,
+    ]); }
     $sql = "UPDATE submissions
             SET status='completed',
                 remarks = NULLIF(:remark, ''),
+                reviewer_id = :rid,
                 status_updated_at = NOW()
-            WHERE $idCol = :id"; // completed_by & completed_at removed from schema
+            WHERE $idCol = :id"; // completed_by & completed_at removed from schema; reviewer_id reflects completer
     $stmt = $pdo->prepare($sql);
     if(!$stmt){
         $info = method_exists($pdo,'errorInfo') ? implode(' | ', array_filter($pdo->errorInfo() ?: [])) : 'prepare failed';
@@ -40,6 +70,7 @@ try {
     }
     $ok = $stmt->execute([
         ':remark' => $comment,
+        ':rid' => $adminProfileId,
         ':id' => ctype_digit($requestId) ? (int)$requestId : $requestId
     ]);
     if(!$ok){
