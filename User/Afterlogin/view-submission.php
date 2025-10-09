@@ -139,8 +139,8 @@ function pup_modal_body($submission, $authors, $files, $notes = [], $noteSaved =
             <div class="d-flex justify-content-between align-items-center gap-2">
               <span class="fw-semibold text-capitalize flex-grow-1"><?php echo htmlspecialchars(str_replace('_', ' ', $file['doc_type'])); ?></span>
               <div class="btn-group btn-group-sm" role="group" aria-label="File actions">
-                <a href="<?php echo $fileUrl; ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary" title="Open file in a new tab">View File</a>
-                <a href="<?php echo $fileUrl; ?>" download class="btn btn-outline-primary" title="Download this file">Download File</a>
+                <a href="<?php echo $fileUrl; ?>" target="_blank" rel="noopener noreferrer" class="btn btn-view-file" title="Open file in a new tab">View File</a>
+                <a href="<?php echo $fileUrl; ?>" download class="btn btn-download" title="Download this file">Download File</a>
               </div>
             </div>
           </li>
@@ -223,7 +223,8 @@ if ($isModal) {
     <div class="card shadow-sm">
         <div class="card-body">
             <?php pup_modal_body($submission, $authors, $files, $notes, $noteSaved); ?>
-            <a href="student-application.php" class="btn btn-secondary mt-4">Back to My Applications</a>
+            <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+            <a href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>" class="btn btn-secondary mt-4">Back to My Applications</a>
         </div>
     </div>
 </div>

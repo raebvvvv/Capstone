@@ -11,6 +11,18 @@
     margin-top: 2px;
 }
 
+/* Minimalist table polish (no logic changes) */
+.table thead th{
+    background: #fafafa; /* a bit lighter */
+    border-bottom: 2px solid #f0f2f5;
+}
+.table tr{ border-bottom: 1px solid #f0f2f5; }
+.table tbody tr:hover{ background: #fafafa; }
+.table th, .table td{ padding-top: .55rem; padding-bottom: .55rem; }
+
+/* Align digits nicely for dates */
+.col-date{ font-variant-numeric: tabular-nums; }
+
 /* Status badges */
 .status-badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; line-height:1.2; font-weight:600; }
 .status-pending{ background:#eee; color:#444; }
@@ -64,6 +76,32 @@ footer, .site-footer {
     text-align: center;
 }
 
+/* Sticky footer behavior: push footer to bottom when content is short */
+footer.standard-footer {
+    position: static !important;
+    margin-top: auto !important;
+}
+
+/* Match site standard footer look and feel */
+footer.standard-footer {
+    background: #fff !important;
+    border-top: 1px solid #dee2e6 !important;
+    padding: 1rem 0 !important;
+    font-size: 0.875rem !important;
+    color: #6c757d !important;
+}
+footer.standard-footer .container {
+    text-align: center !important;
+}
+footer.standard-footer a {
+    color: #0d6efd !important;
+    text-decoration: none !important;
+}
+footer.standard-footer a:hover {
+    color: #0a58ca !important;
+    text-decoration: underline !important;
+}
+
 .navbar-brand {
     font-weight: bold;
 }
@@ -89,6 +127,18 @@ img {
     transform: translateY(-50%);
     z-index: 2;
 }
+
+/* Admin: make the Has Notes switch red/maroon when ON (no logic changes) */
+.form-switch .form-check-input:checked {
+    background-color: #900c0c !important; /* PUP maroon */
+    border-color: #900c0c !important;
+}
+.form-switch .form-check-input:focus {
+    box-shadow: 0 0 0 .2rem rgba(144, 12, 12, 0.25) !important; /* subtle maroon focus ring */
+}
+.form-switch .form-check-input:active {
+    filter: brightness(95%);
+}
 .btn-light.rounded-pill {
     border: 1px solid #ddd;
     background: #f8f8f8;
@@ -102,10 +152,13 @@ img {
     color: #222;
     margin-right: 8px;
 }
+.nav-tabs { border-bottom: none !important; }
+.nav-tabs .nav-link { border: none !important; }
 .nav-tabs .nav-link.active {
-    color: #6c2eb7;
-    border-bottom: 2px solid #6c2eb7;
-    background: none;
+    color: #900c0c !important; /* PUP maroon */
+    background: transparent !important;
+    border: none !important;               /* clear any bootstrap borders */
+    border-bottom: 3px solid #900c0c !important; /* solid underline */
 }
 .nav-tabs {
     margin-left: -100px;
@@ -187,13 +240,35 @@ img {
     color: #fff !important;
 }
 .btn-comments {
-    background: #ffe066 !important;
-    color: #222 !important;
-    border: none !important;
+    /* Softer, less heavy than solid yellow */
+    background: #fffbe6 !important;   /* light pastel */
+    color: #8b5e00 !important;        /* readable text */
+    border: 1px solid #ffe58f !important;
 }
+.btn-comments:hover{ background:#fff3bf !important; border-color:#ffd666 !important; color:#614700 !important; }
 /* Ensure the View Notes button is always clickable even with the unread dot overlay */
 .view-notes { position: relative; z-index: 3; }
 .view-notes > .position-absolute { pointer-events: none; }
+
+/* Notes as a lightweight chip without changing its behavior */
+.view-notes.btn{
+    background: #eef2ff;              /* indigo-50 */
+    color: #3730a3;                   /* indigo-800 */
+    border: 1px solid #c7d2fe;        /* indigo-200 */
+    padding: 2px 10px;
+    line-height: 1.2;
+    font-size: .85rem;
+    font-weight: 600;
+    border-radius: 999px;
+}
+.view-notes.btn:hover{
+    background:#e0e7ff;
+    border-color:#a5b4fc;
+    color:#1e3a8a;
+}
+
+/* Action buttons: slightly smaller by default to reduce visual weight */
+.action-btn-group .btn{ padding:.25rem .6rem; font-size:.88rem; border-radius:999px; }
 /* Removed: using flex on .action created extra header height */
 .details-modal-content {
     border-radius: 12px;
@@ -213,19 +288,21 @@ img {
     color: #222;
 }
 .btn-download {
-    background: #7c3aed;
-    color: #fff;
-    font-weight: 500;
+    background-color: #ffd54f; /* PUP yellow */
+    border-color: #ffca28;
+    color: #222;
+    font-weight: 600;
     border: none;
     border-radius: 8px;
     padding: 2px 14px;
     font-size: 0.95rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 .btn-download:hover {
-    background: #5b21b6;
-    color: #fff;
+    background-color: #ffca28;
+    border-color: #ffc107;
+    color: #222;
 }
 /* Modal header and button improvements */
 .modal-header {
@@ -234,18 +311,18 @@ img {
     padding-bottom: 0;
 }
 .btn-edit-modal {
-    background: #3b82f6 !important;
+    background: #900c0c !important; /* PUP maroon */
     color: #fff !important;
     border-radius: 6px !important;
     font-size: 0.93rem;
     padding: 3px 13px;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     font-weight: 500;
     border: none;
     transition: background 0.18s;
 }
 .btn-edit-modal:hover {
-    background: #2563eb !important;
+    background: #7b0a0a !important;
 }
 hr {
     border: 0;
@@ -399,6 +476,15 @@ th.action {
 #successModal .btn-primary:hover {
     background-color: #574bff;
 }
+/* Request ID link (SRID-...) in admin tables */
+.open-details {
+    color: #900c0c !important;
+    text-decoration: underline;
+    font-weight: 600;
+}
+.open-details:hover {
+    color: #7b0a0a !important;
+}
 #commentModal .modal-body {
     text-align: left;
     font-size: 1rem;
@@ -438,19 +524,21 @@ th.action {
     background-color: #495057;
 }
 .btn-view-file {
-    background: #6c63ff;
+    background-color: #900c0c; /* PUP maroon */
+    border-color: #900c0c;
     color: #fff;
-    font-weight: 500;
+    font-weight: 600;
     border: none;
     border-radius: 8px;
     padding: 2px 14px;
     font-size: 0.95rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    transition: background 0.2s;
+    transition: background 0.2s, border-color 0.2s;
 }
 .btn-view-file:hover {
     color: #fff;
-    background: #574bff;
+    background-color: #7b0a0a;
+    border-color: #7b0a0a;
 }
 
 /* Author list styles in Details modal */
@@ -493,14 +581,14 @@ th.action {
 }
 
 #certificateModal .btn-download-pdf {
-    background: #7c3aed;
-    color: #fff;
+    background: #ffd54f; /* PUP yellow for downloads */
+    color: #222;
     border: none;
     border-radius: 6px;
     padding: 8px 20px;
-    font-weight: 500;
+    font-weight: 600;
 }
 #certificateModal .btn-download-pdf:hover {
-    background: #5b21b6;
-    color: #fff;
+    background: #ffca28;
+    color: #222;
 }

@@ -132,3 +132,15 @@ img{
     border-color: maroon !important;
     box-shadow: none !important;
 }
+
+/* Dashboard: Reload data button (PUP outline) */
+#dashReloadBtn.btn.btn-sm.btn-outline-primary {
+    border-color: #900c0c !important;
+    color: #900c0c !important;
+}
+#dashReloadBtn.btn.btn-sm.btn-outline-primary:hover,
+#dashReloadBtn.btn.btn-sm.btn-outline-primary:focus {
+    background-color: #900c0c !important;
+    border-color: #900c0c !important;
+    color: #fff !important;
+}

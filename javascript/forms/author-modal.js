@@ -11,6 +11,31 @@ document.addEventListener('DOMContentLoaded', function () {
   let authors = []; // Only user-added authors (not adviser)
   let adviser_Coauthor = null; // Adviser as co-author object or null
 
+  // --- Helpers: Title Case for names ---
+  function titleCase(str) {
+    if (!str) return '';
+    // Normalize whitespace and lowercase, then capitalize word starts
+    const lowered = str.toLowerCase().replace(/\s+/g, ' ').trim();
+    // Handle hyphenated and apostrophe names as separate word boundaries
+    return lowered.replace(/\b([a-z])/g, (m, c) => c.toUpperCase())
+                  .replace(/-([a-z])/g, (m, c) => '-' + c.toUpperCase())
+                  .replace(/'([a-z])/g, (m, c) => "'" + c.toUpperCase());
+  }
+
+  // Auto-format name inputs in the modal
+  if (authorForm) {
+    ['first_name','middle_name','last_name'].forEach((n) => {
+      const el = authorForm.querySelector(`[name="${n}"]`);
+      if (el) {
+        el.addEventListener('blur', () => { el.value = titleCase(el.value); });
+      }
+    });
+  }
+  // Auto-format adviser field too
+  if (adviserInput) {
+    adviserInput.addEventListener('blur', () => { adviserInput.value = titleCase(adviserInput.value); });
+  }
+
   // --- Email validation ---
   function isValidPupWebmail(email) {
     const studentPattern = /^[a-z]+(\.[a-z]+)?@iskolarngbayan\.pup\.edu\.ph$/i;
@@ -53,9 +78,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // If validation passes, create author object
     const coauthor = {
-      first_name: authorForm.querySelector('[name="first_name"]').value.trim(),
-      middle_name: authorForm.querySelector('[name="middle_name"]').value.trim(),
-      last_name: authorForm.querySelector('[name="last_name"]').value.trim(),
+      first_name: titleCase(authorForm.querySelector('[name="first_name"]').value.trim()),
+      middle_name: titleCase(authorForm.querySelector('[name="middle_name"]').value.trim()),
+      last_name: titleCase(authorForm.querySelector('[name="last_name"]').value.trim()),
       student_id: studentId,
       mobile: mobile,
       webmail: webmail,
@@ -85,8 +110,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         // Split adviser name into first/middle/last (simple logic, can be improved)
         const nameParts = adviserName.split(' ');
-        const firstName = nameParts[0] || adviserName;
-        const lastName = nameParts.length > 1 ? nameParts.slice(-1)[0] : '';
+        const firstName = titleCase(nameParts[0] || adviserName);
+        const lastName = titleCase(nameParts.length > 1 ? nameParts.slice(-1)[0] : '');
         const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).map((n) => n[0]).join('') : '';
 
         adviser_Coauthor = {

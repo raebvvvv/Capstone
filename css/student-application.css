@@ -2,12 +2,15 @@
 body {
   background: #f7f7f7;
   min-height: 100vh;
-  /* display: flex; */
-  /* flex-direction: column; */
+  /* Sticky footer: body as a flex column */
+  display: flex;
+  flex-direction: column;
 }
 
 main {
   flex: 1 0 auto;
+  /* Ensure content doesn't get hidden behind the footer */
+  padding-bottom: 3.5rem;
 }
 
 footer, .site-footer { 
@@ -15,6 +18,17 @@ footer, .site-footer {
   width: 100%;
   text-align: center;
   margin-left: 0;
+}
+
+/* Ensure footer sits at the bottom when content is short */
+footer.standard-footer {
+  position: static !important;
+  margin-top: auto !important;
+}
+
+/* Stronger guarantee that the shared footer is not fixed on this page */
+footer.standard-footer {
+  position: static !important;
 }
 
 /* Center and limit width of main content area */
@@ -81,9 +95,9 @@ h1 {
   border-radius: 0;
 }
 .nav-tabs .nav-link.active {
-  color: #3b36ff;
+  color: #900c0c; /* PUP maroon */
   font-weight: bold;
-  border-bottom: 2px solid #3b36ff;
+  border-bottom: 2px solid #900c0c; /* underline in maroon */
   background: none;
 }
 
@@ -96,14 +110,95 @@ h1 {
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   overflow: hidden;
 }
-.table th, .table td {
-  vertical-align: middle;
-  font-size: 1.08rem;
-}
+.table th, .table td { vertical-align: middle; font-size: 1.02rem; }
 .table th {
   font-weight: bold;
 }
 .table td.text-muted {
   color: #6c757d !important;
+}
+
+/* Minimalist polish */
+.table thead { background:#fafafa; border-bottom:2px solid #f0f2f5; }
+.table tbody tr { border-bottom:1px solid #f0f2f5; }
+.table tbody tr:hover { background:#fafafa; }
+.table th, .table td { padding-top:.55rem; padding-bottom:.55rem; }
+.table .text-truncate { max-width: 480px; }
+
+/* Dates: aligned digits */
+.table .col-date, .table td:nth-child(5) { font-variant-numeric: tabular-nums; }
+
+/* Action buttons a bit lighter and tighter */
+.table .btn { border-radius:999px; }
+.table .btn.btn-success { background: maroon; border:none; }
+.table .btn.btn-outline-secondary { border-color:#cfd8ea; color:#1e3a8a; }
+.table .btn.btn-outline-secondary:hover { background:#eef2ff; border-color:#a5b4fc; color:#1e3a8a; }
+
+/* Notes-like chip (applies to the existing View button in Notes column if present) */
+.table .view-notes, .table .btn-notes-chip { background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; padding:2px 10px; line-height:1.2; font-size:.85rem; font-weight:600; border-radius:999px; }
+.table .view-notes:hover, .table .btn-notes-chip:hover { background:#e0e7ff; border-color:#a5b4fc; color:#1e3a8a; }
+
+/* PUP button convention for file actions */
+.btn-view-file {
+  background-color: #900c0c; /* PUP maroon */
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 2px 14px;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: background 0.2s;
+}
+.btn-view-file:hover { background-color: #7b0a0a; color:#fff; }
+
+.btn-download {
+  background-color: #ffd54f; /* PUP yellow */
+  color: #222;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 2px 14px;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: background 0.2s, color 0.2s;
+}
+.btn-download:hover { background-color: #ffca28; color:#222; }
+
+/* Align Action column buttons centered (match admin) */
+table.table td.align-middle.text-nowrap > .d-flex.flex-nowrap {
+  width: 100%;
+  justify-content: center;   /* center the action buttons like admin tables */
+  align-items: center;        /* keep vertical center alignment */
+}
+/* Do not reserve space for placeholder buttons */
+table.table td.align-middle.text-nowrap > .d-flex.flex-nowrap .btn.invisible { display: none !important; }
+/* Match header alignment for the Action column */
+table.table thead th:last-child { text-align: center; }
+
+/* PUP chip style for Comments and Request ID */
+.btn-comments,
+.btn-request-id {
+  background-color: #fff8e1;        /* soft yellow */
+  border: 1px solid #ffd54f;        /* PUP yellow border */
+  color: #8d6e00;                   /* readable amber text */
+  font-weight: 600;
+}
+.btn-comments:hover,
+.btn-request-id:hover {
+  background-color: #ffecb3;        /* slightly deeper on hover */
+  border-color: #ffca28;
+  color: #6d4c00;
+}
+/* Increase specificity inside tables to override outline-secondary defaults */
+.table .btn.btn-outline-secondary.btn-comments { 
+  background-color: #fff8e1;
+  border-color: #ffd54f;
+  color: #8d6e00;
+}
+.table .btn.btn-outline-secondary.btn-comments:hover {
+  background-color: #ffecb3;
+  border-color: #ffca28;
+  color: #6d4c00;
 }
 

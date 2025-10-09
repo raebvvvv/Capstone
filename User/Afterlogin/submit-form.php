@@ -23,6 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('index.php');
 }
 
+// Determine role (default to 'student')
+$role = $_SESSION['role'] ?? 'student';
+
+// Alias employee_id -> student_number for employees
+if ($role === 'employee') {
+    if (empty($_POST['student_number']) && !empty($_POST['employee_id'])) {
+        $_POST['student_number'] = $_POST['employee_id'];
+    }
+}
+
 // Required scalar fields
 $requiredFields = [
     'first_name','last_name','student_number','home_address','mobile_number','webmail',
@@ -63,16 +73,29 @@ if (!$data['accepted_terms']) {
     $errors[] = 'Terms not accepted.';
 }
 
-// Files expected
-$fileFields = [
-    'journal_publication_format',
-    'notarized_copyright',
-    'receipt_payment',
-    'full_manuscript',
-    'notarized_coauthorship',
-    'approval_sheet',
-    'record_copyright'
-];
+// Files expected (role-aware)
+if ($role === 'employee') {
+    // Employees: same set as students but 'presentation' replaces 'full_manuscript' and no 'approval_sheet'
+    $fileFields = [
+        'journal_publication_format',
+        'notarized_copyright',
+        'receipt_payment',
+        'presentation',
+        'notarized_coauthorship',
+        'record_copyright'
+    ];
+} else {
+    // Students
+    $fileFields = [
+        'journal_publication_format',
+        'notarized_copyright',
+        'receipt_payment',
+        'full_manuscript',
+        'notarized_coauthorship',
+        'approval_sheet',
+        'record_copyright'
+    ];
+}
 
 $uploadDir = app_path('uploads');
 if (!is_dir($uploadDir)) {
@@ -86,7 +109,6 @@ foreach ($fileFields as $ff) {
         continue;
     }
     $fileInfo = $_FILES[$ff];
-    // Simple MIME/type safeguard (basic)
     $ext = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
     if ($ext !== 'pdf') {
         $errors[] = "$ff must be a PDF.";
@@ -103,7 +125,6 @@ foreach ($fileFields as $ff) {
 
 if ($errors) {
     http_response_code(400);
-    // Attempt a safe referrer fallback
     $back = isset($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER'], ENT_QUOTES, 'UTF-8') : asset_url('index.php');
     echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Submission Errors</title>';
     echo '<meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light">';
@@ -111,12 +132,11 @@ if ($errors) {
     foreach ($errors as $e) { echo '<li>' . htmlspecialchars($e, ENT_QUOTES, 'UTF-8') . '</li>'; }
     echo '</ul><a class="btn btn-sm btn-secondary" href="' . $back . '">Go Back</a> ';
     echo '<a class="btn btn-sm btn-outline-primary" href="' . asset_url('index.php') . '">Home</a></div></div></body></html>';
-    // Cleanup any stored files if partial failure
     foreach ($storedFiles as $sf) { @unlink($uploadDir . DIRECTORY_SEPARATOR . $sf); }
     exit;
 }
 
-// For now: append a log line (could be DB insert in future)
+// Append an audit log line
 $logLine = date('c') . ' | SUBMISSION | ' . json_encode([
     'user_id' => $_SESSION['user_id'] ?? null,
     'data' => $data,
@@ -124,16 +144,35 @@ $logLine = date('c') . ' | SUBMISSION | ' . json_encode([
 ]) . PHP_EOL;
 file_put_contents(app_path('audit.log'), $logLine, FILE_APPEND);
 
+// Helper: title-case capitalization for names (handles hyphens and apostrophes)
+function normalize_name($s) {
+    $s = trim((string)$s);
+    if ($s === '') return '';
+    $s = strtolower(preg_replace('/\s+/', ' ', $s));
+    $s = preg_replace_callback('/\b([a-z])/', function($m){ return strtoupper($m[1]); }, $s);
+    $s = preg_replace_callback('/-([a-z])/', function($m){ return '-'.strtoupper($m[1]); }, $s);
+    $s = preg_replace_callback("/'([a-z])/", function($m){ return "'".strtoupper($m[1]); }, $s);
+    return $s;
+}
+
+// Normalize submitter names
+$data['first_name'] = normalize_name($data['first_name'] ?? '');
+$data['last_name'] = normalize_name($data['last_name'] ?? '');
+$_POST['middle_name'] = normalize_name($_POST['middle_name'] ?? '');
+
+// Normalize adviser field
+$data['adviser'] = normalize_name($data['adviser']);
+
 if (empty($errors)) {
     try {
         $pdo->beginTransaction();
 
         // --- Adviser handling: insert/get adviser_id ---
-        $adviserFullName = trim($_POST['adviser'] ?? '');
+    $adviserFullName = trim($data['adviser'] ?? '');
         $nameParts = preg_split('/\s+/', $adviserFullName);
-        $firstName = $nameParts[0] ?? '';
-        $lastName = count($nameParts) > 1 ? array_pop($nameParts) : '';
-        $middleName = count($nameParts) > 1 ? implode(' ', $nameParts) : '';
+    $firstName = normalize_name($nameParts[0] ?? '');
+    $lastName = normalize_name(count($nameParts) > 1 ? array_pop($nameParts) : '');
+    $middleName = normalize_name(count($nameParts) > 1 ? implode(' ', $nameParts) : '');
 
         $adviserStmt = $pdo->prepare("SELECT adviser_id FROM advisers WHERE first_name = ? AND last_name = ? AND middle_name = ?");
         $adviserStmt->execute([$firstName, $lastName, $middleName]);
@@ -145,16 +184,15 @@ if (empty($errors)) {
             $adviser_id = $pdo->lastInsertId();
         }
 
-        // --- MOVE THIS BLOCK HERE ---
-        // Generate submission_code
+    // Generate submission_code with role-aware prefix (SRID for students, ERID for employees)
         $today = date('Y-m-d');
         $today_code = date('Ymd');
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM submissions WHERE DATE(created_at) = ?");
         $stmt->execute([$today]);
         $count_today = $stmt->fetchColumn();
         $next_count = $count_today + 1;
-        $submission_code = sprintf('SRID-%s-%d', date('Y').'-'.$today_code, $next_count);
-        // --- END MOVE ---
+    $prefix = ($role === 'employee') ? 'ERID' : 'SRID';
+    $submission_code = sprintf('%s-%s-%d', $prefix, date('Y').'-'.$today_code, $next_count);
 
         // Insert main submission
         $stmt = $pdo->prepare("
@@ -222,12 +260,31 @@ if (empty($errors)) {
 
         foreach ($storedFiles as $type => $filename) {
             $filepath = $uploadDir . DIRECTORY_SEPARATOR . $filename;
+            // Determine MIME type safely even if fileinfo/mime_content_type is unavailable
+            $mimeType = 'application/pdf'; // default; uploads are PDFs only
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            // Prefer finfo when available (fileinfo extension)
+            if (function_exists('finfo_open')) {
+                $fi = @finfo_open(FILEINFO_MIME_TYPE);
+                if ($fi) {
+                    $detected = @finfo_file($fi, $filepath);
+                    if (!empty($detected)) { $mimeType = $detected; }
+                    @finfo_close($fi);
+                }
+            } elseif (function_exists('mime_content_type')) {
+                // Older function; may not exist if fileinfo disabled
+                $detected = @mime_content_type($filepath);
+                if (!empty($detected)) { $mimeType = $detected; }
+            } elseif ($ext === 'pdf') {
+                $mimeType = 'application/pdf';
+            }
+
             $docStmt->execute([
                 $submission_id,
                 $type,
                 $filename,
                 filesize($filepath),
-                mime_content_type($filepath)
+                $mimeType
             ]);
         }
 
@@ -251,9 +308,9 @@ if (empty($errors)) {
                 try {
                     $authorStmt->execute([
                         $submission_id,
-                        $author['first_name'],
-                        $author['middle_name'], // <-- use middle_name
-                        $author['last_name'],
+                        normalize_name($author['first_name']),
+                        normalize_name($author['middle_name']), // <-- use middle_name
+                        normalize_name($author['last_name']),
                         $author['student_id'],
                         $author['mobile'],
                         $author['home_address'],
@@ -295,9 +352,9 @@ if (empty($errors)) {
                 }
                 $authorStmt->execute([
                     $submission_id,
-                    $coauthor['first_name'],
-                    $coauthor['middle_name'],
-                    $coauthor['last_name'],
+                    normalize_name($coauthor['first_name']),
+                    normalize_name($coauthor['middle_name']),
+                    normalize_name($coauthor['last_name']),
                     $coauthor['student_id'],
                     $coauthor['mobile'],
                     $coauthor['home_address'],
@@ -316,8 +373,10 @@ if (empty($errors)) {
         ];
         error_log(date('Y-m-d\TH:i:sP') . ' | SUBMISSION | ' . json_encode($logData));
 
-        $pdo->commit();
-        header('Location: student-application.php?status=success');
+    $pdo->commit();
+    // Redirect based on role
+    $target = ($role === 'employee') ? 'employee-application.php' : 'student-application.php';
+    header('Location: ' . $target . '?status=success');
         exit;
 
     } catch (Exception $e) {
@@ -344,7 +403,7 @@ if (empty($errors)) {
       <h4 class="alert-heading">Submission Received</h4>
       <p>Your documents were uploaded successfully and are pending evaluation.</p>
       <hr />
-      <p class="mb-0"><a class="btn btn-sm btn-primary" href="<?php echo asset_url('User/Afterlogin/student-application.php'); ?>">View My Applications</a>
+    <p class="mb-0"><a class="btn btn-sm btn-primary" href="<?php echo asset_url('User/Afterlogin/' . ((isset($_SESSION['role']) && $_SESSION['role'] === 'employee') ? 'employee-application.php' : 'student-application.php')); ?>">View My Applications</a>
       <a class="btn btn-sm btn-secondary ms-2" href="<?php echo asset_url('index.php'); ?>">Return Home</a></p>
     </div>
   </div>

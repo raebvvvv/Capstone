@@ -4,21 +4,52 @@
   font-weight: 600;
 }
 
-/* Ensure left alignment inside rendered content */
-#submissionDetailsContent {
+/* Center the overall content; align text within a centered block for readability */
+#submissionDetailsContent { 
   text-align: left;
+  line-height: 2;
+ }
+/* Each top-level section (Student, Document, Files) flows as a full-width block */
+#submissionDetailsContent > div {
+  display: block;
+  max-width: 760px;
+  width: 100%;
 }
 
 /* Section headings */
 #submissionDetailsContent h5 {
   font-weight: 600;
   margin: 0 0 .5rem 0;
+  text-align: left;
 }
 
 /* Tidy paragraph spacing */
-#submissionDetailsContent p {
-  margin-bottom: .4rem;
+#submissionDetailsContent p { 
+  margin-bottom: .35rem; 
 }
+/* Labels stack inline but keep modest spacing before values */
+#submissionDetailsContent p > strong {
+  display: inline-block;
+  min-width: auto;
+  text-align: left;
+  margin-right: .4rem;
+}
+@media (max-width: 576px){
+  #submissionDetailsContent p > strong { margin-right: .35rem; }
+}
+
+/* Additional Author(s) block alignment */
+#submissionDetailsContent .mt-2 > .fw-semibold.mb-1 {
+  display: block;
+  text-align: left;
+  margin-bottom: .25rem;
+}
+#submissionDetailsContent .author-entry {
+  display: block;
+  margin-left: 0;
+  margin-bottom: .25rem;
+}
+#submissionDetailsContent .author-entry .badge { vertical-align: middle; }
 
 /* Uploaded files list layout */
 #submissionDetailsContent ul {
@@ -35,25 +66,32 @@
   border-bottom: none;
 }
 
-/* Maroon action buttons scoped to the submission details modal */
-#submissionDetailsModal .btn-download,
+/* Action buttons: Download (PUP yellow), View (PUP maroon) */
+#submissionDetailsModal .btn-download {
+  background-color: #ffd54f; /* PUP yellow */
+  border-color: #ffca28;
+  color: #222;
+  font-weight: 600;
+}
+#submissionDetailsModal .btn-download:hover {
+  background-color: #ffca28;
+  border-color: #ffc107;
+  color: #222;
+}
+#submissionDetailsModal .btn-download:focus { box-shadow: 0 0 0 .2rem rgba(255, 202, 40, .4); }
+
 #submissionDetailsModal .btn-view-file {
-  background-color: #900c0c;
+  background-color: #900c0c; /* PUP maroon */
   border-color: #900c0c;
   color: #fff;
+  font-weight: 600;
 }
-
-#submissionDetailsModal .btn-download:hover,
 #submissionDetailsModal .btn-view-file:hover {
   background-color: #7b0a0a;
   border-color: #7b0a0a;
   color: #fff;
 }
-
-#submissionDetailsModal .btn-download:focus,
-#submissionDetailsModal .btn-view-file:focus {
-  box-shadow: 0 0 0 .2rem rgba(144,12,12,.3);
-}
+#submissionDetailsModal .btn-view-file:focus { box-shadow: 0 0 0 .2rem rgba(144,12,12,.3); }
 
 /* Author View Details button styled maroon like admin */
 #submissionDetailsModal .author-view-btn {

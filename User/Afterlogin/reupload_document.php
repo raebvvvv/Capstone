@@ -1,5 +1,7 @@
 <?php
 require __DIR__ . '/../../config.php';
+// Ensure DB connection is available
+require app_path('conn.php');
 require_once __DIR__ . '/../../auth_check.php';
 header('Content-Type: application/json');
 
@@ -7,6 +9,15 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success'=>false,'error'=>'Method not allowed']);
     exit;
+}
+
+// Optional CSRF check
+if (function_exists('verify_csrf_post')) {
+    try { verify_csrf_post(); } catch (Throwable $e) {
+        http_response_code(419);
+        echo json_encode(['success'=>false,'error'=>'CSRF token invalid']);
+        exit;
+    }
 }
 
 $user_id = (int)($_SESSION['user_id'] ?? 0);
@@ -71,16 +82,44 @@ try {
         exit;
     }
 
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime = finfo_file($finfo, $file['tmp_name']);
-    finfo_close($finfo);
-    if($mime !== 'application/pdf'){
+    // Robust MIME detection with fallbacks
+    $mime = null;
+    if (function_exists('finfo_open')) {
+        $f = @finfo_open(FILEINFO_MIME_TYPE);
+        if ($f) {
+            $mime = @finfo_file($f, $file['tmp_name']);
+            @finfo_close($f);
+        }
+    }
+    if (!$mime && function_exists('mime_content_type')) {
+        $mime = @mime_content_type($file['tmp_name']);
+    }
+    if (!$mime) { $mime = 'application/pdf'; }
+
+    // Accept PDFs and common octet-stream fallback when extension is pdf
+    if(!($mime === 'application/pdf' || ($mime === 'application/octet-stream' && $ext === 'pdf'))){
         http_response_code(422);
         echo json_encode(['success'=>false,'error'=>'Invalid MIME type']);
         exit;
     }
 
     // Ensure this document type is requested for resubmission. Accept either pending or approved scope.
+    // Create meta table if it doesn't exist (prevents 500 on fresh DB)
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
+            submission_id INT NOT NULL,
+            scope ENUM('pending','approved') NOT NULL,
+            issue_label VARCHAR(150) DEFAULT NULL,
+            admin_comment TEXT NULL,
+            affected_doc_types TEXT NULL,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (submission_id, scope),
+            CONSTRAINT fk_sim_submission_u FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    } catch (Throwable $e) {
+        // best-effort; continue to query and let outer catch handle if needed
+    }
     // Prefer approved scope when present (keeps item in Approved while allowing re-upload).
     $metaStmt = $pdo->prepare('SELECT affected_doc_types FROM submission_incomplete_meta WHERE submission_id=? AND scope IN ("pending","approved") ORDER BY FIELD(scope,"approved","pending") LIMIT 1');
     $metaStmt->execute([(int)$sub['submission_id']]);

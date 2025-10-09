@@ -16,8 +16,9 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Afterlogin/about.php'); ?>">About Us</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Afterlogin/student-application.php'); ?>">My Application</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Afterlogin/student-profile.php'); ?>">My Profile</a></li>
+  <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+  <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Afterlogin/' . ($isEmployee ? 'employee-application.php' : 'student-application.php')); ?>">My Application</a></li>
+  <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Afterlogin/' . ($isEmployee ? 'employee-profile.php' : 'student-profile.php')); ?>">My Profile</a></li>
       </ul>
       <a href="<?php echo asset_url('User/Afterlogin/e-services.php'); ?>" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
     </div>

@@ -1,4 +1,12 @@
-<?php require __DIR__ . '/config.php'; ?>
+<?php require __DIR__ . '/../../config.php'; ?>
+<?php require __DIR__ . '/../../auth_check.php'; ?>
+<?php $isEmployee = ((($_SESSION['role'] ?? '') === 'employee')); ?>
+<?php
+// Fetch user profile data (reuse student_profiles as source, same as employee-profile.php)
+$stmt = $pdo->prepare("\n    SELECT sp.*, u.student_number, u.email\n    FROM student_profiles sp \n    JOIN users u ON sp.user_id = u.user_id \n    WHERE sp.user_id = ?\n");
+$stmt->execute([$_SESSION['user_id']]);
+$profile = $stmt->fetch(PDO::FETCH_ASSOC);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,13 +15,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/forms.css'); ?>">
 </head>
-<body>
+<body class="forms-page">
   <!-- Navbar -->
 <nav class="navbar navbar-expand-lg bg-white border-bottom">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
+  <a class="navbar-brand d-flex align-items-center" href="../../index.php">
   <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
@@ -22,44 +32,59 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="User/Afterlogin/about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-profile.php">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
         </ul>
       </div>
     </div>
   </nav>
- <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
-            </li>
-            <li class="mb-2">
-              <strong>Accuracy</strong><br>
-              All information provided is true and complete to the best of your knowledge.
-            </li>
-            <li class="mb-2">
-              <strong>Confidentiality</strong><br>
-              Submitted information may be reviewed internally for IP evaluation and protection.
-            </li>
-            <li class="mb-2">
-              <strong>Compliance</strong><br>
-              You agree to comply with PUP policies, national IP laws, and related regulations.
-            </li>
-            <li class="mb-2">
-              <strong>Authorization</strong><br>
-              You authorize PUP to process the data for evaluation, filing, and administrative purposes.
-            </li>
-          </ol>
-          <div class="d-flex align-items-center flex-wrap gap-3">
-            <div class="form-check m-0">
-              <input class="form-check-input" type="checkbox" id="termsAgree">
-              <label class="form-check-label fw-semibold" for="termsAgree">
-                I accept and agree to the Terms &amp; Conditions.
-              </label>
+
+  <main class="py-4">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+          <!-- Terms & Conditions (match student structure) -->
+          <div id="termsGate" class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white py-2">
+              <strong>Terms &amp; Conditions</strong>
             </div>
-            <button type="button" id="termsNext" class="btn btn-primary btn-sm px-4" disabled>Next</button>
+            <div class="card-body small">
+              <p class="mb-2">By filling in this form, you agree to the following:</p>
+              <ol class="mb-3 ps-3">
+                <li class="mb-2">
+                  <strong>Purpose</strong><br>
+                  This form is for disclosing inventions, creative works, or other intellectual property created by students, faculty, staff, or collaborators of the Polytechnic University of the Philippines.
+                </li>
+                <li class="mb-2">
+                  <strong>Accuracy</strong><br>
+                  All information provided is true and complete to the best of your knowledge.
+                </li>
+                <li class="mb-2">
+                  <strong>Confidentiality</strong><br>
+                  Submitted information may be reviewed internally for IP evaluation and protection.
+                </li>
+                <li class="mb-2">
+                  <strong>Compliance</strong><br>
+                  You agree to comply with PUP policies, national IP laws, and related regulations.
+                </li>
+                <li class="mb-2">
+                  <strong>Authorization</strong><br>
+                  You authorize PUP to process the data for evaluation, filing, and administrative purposes.
+                </li>
+              </ol>
+              <div class="d-flex align-items-center flex-wrap gap-3">
+                <div class="form-check m-0">
+                  <input class="form-check-input" type="checkbox" id="termsAgree">
+                  <label class="form-check-label fw-semibold" for="termsAgree">
+                    I accept and agree to the Terms &amp; Conditions.
+                  </label>
+                </div>
+                <button type="button" id="termsNext" class="btn btn-primary btn-sm px-4" disabled>Next</button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
       <!-- Form Section (hidden until acceptance) -->
       <div id="formSection" class="d-none">
@@ -69,6 +94,7 @@
           <div class="card-body">
             <!-- Employees Information  -->
             <form id="submissionForm" class="mt-2" method="post" action="submit-form.php" enctype="multipart/form-data">
+              <?php if (function_exists('csrf_input')) { csrf_input(); } ?>
               <!-- NEW hidden acceptance flag -->
               <input type="hidden" name="accepted_terms" id="accepted_terms" value="">
               <h2 class="section-heading mb-3">Employee Information</h2>
@@ -77,20 +103,24 @@
                 <div class="row g-3">
                   <div class="col-md-3">
                     <label class="form-label required">First name</label>
-                    <input type="text" name="first_name" class="form-control" required>
+          <input type="text" name="first_name" class="form-control" required
+            value="<?php echo htmlspecialchars($profile['first_name'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label">Middle name</label>
-                    <input type="text" name="middle_name" class="form-control">
+          <input type="text" name="middle_name" class="form-control"
+            value="<?php echo htmlspecialchars($profile['middle_name'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Last name</label>
-                    <input type="text" name="last_name" class="form-control" required>
+          <input type="text" name="last_name" class="form-control" required
+            value="<?php echo htmlspecialchars($profile['last_name'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Employee ID</label>
-                    <input type="text" name="employee_id" class="form-control" placeholder="" required>
-                    <small class="text-muted">Format: </small>
+          <input type="text" name="employee_id" class="form-control" placeholder="" required
+            value="<?php echo htmlspecialchars($profile['student_number'] ?? ''); ?>" readonly>
+          <small class="text-muted">Format: XXXXX</small>
                   </div>
                 </div>
               </fieldset>
@@ -99,52 +129,62 @@
                 <div class="row g-3">
                   <div class="col-md-4">
                     <label class="form-label required">Home Address</label>
-                    <input type="text" name="home_address" class="form-control" required>
+          <input type="text" name="home_address" class="form-control" required
+            value="<?php echo htmlspecialchars($profile['home_address'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label required">Mobile Number</label>
-                    <input type="tel" name="mobile_number" class="form-control" required>
+          <input type="tel" name="mobile_number" class="form-control" required
+            value="<?php echo htmlspecialchars($profile['mobile_number'] ?? ''); ?>" readonly>
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label required">Webmail Address</label>
-                    <input type="email" name="webmail" class="form-control" required>
+                    <label class="form-label required">PUP Webmail</label>
+          <input type="email" name="webmail" class="form-control" required
+            value="<?php echo htmlspecialchars($profile['email'] ?? ''); ?>" readonly>
                   </div>
                 </div>
               </fieldset>
               <fieldset>
                 <legend>Academic Affiliation</legend>
                 <div class="row g-3">
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <label class="form-label required">Campus</label>
-                    <select name="campus" class="form-select" required>
+                    <select name="campus" id="campus" class="form-select" required>
                       <option value="" disabled selected>Choose...</option>
                       <option>PUP Main</option>
                       <option>CEA</option>
                     </select>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
+                    <label class="form-label required">Academic Level</label>
+                    <select name="academicLevel" id="academicLevel" class="form-select" required>
+                      <option value="" disabled selected>Choose...</option>
+                      <!-- Will be populated from JS -->
+                    </select>
+                  </div>
+                  <div class="col-md-4">
                     <label class="form-label required">College</label>
-                    <select name="college" class="form-select" required>
+                    <select name="college" id="college" class="form-select" required>
                       <option value="" disabled selected>Choose...</option>
-                      <option>CCIS</option>
-                      <option>CAF</option>
+                      <!-- Will be populated from JS -->
                     </select>
                   </div>
-                  <div class="col-md-3">
-                    <label class="form-label required">Department</label>
-                    <select name="department" class="form-select" required>
-                      <option value="" disabled selected>Choose...</option>
-                      <option>DIT</option>
-                      <option>DCS</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3">
+                </div>
+                <div class="row g-3 mt-2">
+                  <div class="col-md-6">
                     <label class="form-label required">Program</label>
-                    <select name="program" class="form-select" required>
+                    <select name="program" id="program" class="form-select" required>
                       <option value="" disabled selected>Choose...</option>
-                      <option>BSIT</option>
-                      <option>N/A</option>
+                      <!-- Will be populated from JS -->
                     </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label required">Work Classification</label>
+                    <select name="workClassification" id="workClassification" class="form-select" required>
+                      <option value="" disabled selected>Choose...</option>
+                      <!-- Will be populated from JS -->
+                    </select>
+                    <small class="text-muted">Type O (Original), Type A (Adaptation), Type B (Based on Public Domain)</small>
                   </div>
                 </div>
               </fieldset>
@@ -173,10 +213,12 @@
                       Adviser is a Co-author
                     </label>
                   </div>
+                  <!-- mirror checkbox state for server if needed (kept hidden, doesn't change UI) -->
+                  <input type="hidden" name="adviser_Coauthor" id="adviser_Coauthor_hidden" value="">
                   </div>
                   <div class="col-md-3">
                     <label class="form-label required">Date Accomplished</label>
-                    <input type="date" name="date_accomplished" class="form-control" required>
+                    <input type="date" name="date_accomplished" class="form-control" required max="<?php echo date('Y-m-d'); ?>">
                     <small class="text-muted">Finalization date.</small>
                   </div>
                 </div>
@@ -294,159 +336,11 @@
       </div>
     </div>
   </div>
- <footer class="bg-white border-top py-3 mt-4">
-    <div class="container text-center small">
-      © 2025 Polytechnic University of the Philippines &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/terms/" class="text-decoration-none">Terms of Service</a> &nbsp;|&nbsp;
-      <a href="https://www.pup.edu.ph/privacy/" class="text-decoration-none">Privacy Statement</a>
-    </div>
-  </footer>
+  <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
  
-  <script>
-    // Terms & Conditions gating (NEW)
-    (function(){
-      const gate = document.getElementById('termsGate');
-      const formSection = document.getElementById('formSection');
-      const chk = document.getElementById('termsAgree');
-      const nextBtn = document.getElementById('termsNext');
-      const acceptedInput = document.getElementById('accepted_terms');
-
-      chk.addEventListener('change', ()=> {
-        nextBtn.disabled = !chk.checked;
-      });
-
-      nextBtn.addEventListener('click', ()=> {
-        if(!chk.checked) return;
-        acceptedInput.value = '1';
-        gate.classList.add('d-none');
-        formSection.classList.remove('d-none');
-        // smooth scroll to top of form
-        formSection.scrollIntoView({behavior:'smooth', block:'start'});
-      });
-    })();
-  </script>
-  <script>
-    (function(){
-      let authorIndex = 0;
-      const authorForm = document.getElementById('authorForm');
-      const authorsList = document.getElementById('authorsList');
-      const authorsHidden = document.getElementById('authorsHidden');
-      const saveBtn = document.getElementById('saveAuthorBtn');
-      const modalEl = document.getElementById('authorModal');
-      const modal = new bootstrap.Modal(modalEl);
-
-      function renderPlaceholder(){
-        if(!authorsHidden.children.length){
-          authorsList.innerHTML = 'No authors added yet.';
-        }
-      }
-
-      function makePill(data, idx){
-        const div = document.createElement('div');
-        div.className = 'author-pill';
-        div.dataset.idx = idx;
-        div.innerHTML = `
-          <span class="fw-semibold">${data.first_name} ${data.middle_initial ? data.middle_initial+'. ' : ''}${data.last_name}</span>
-          <small class="text-muted ms-2">${data.program || ''}</small>
-        `;
-        authorsList.appendChild(div);
-      }
-
-      function addHiddenInputs(data, idx){
-        const wrapper = document.createElement('div');
-        wrapper.id = 'author-hidden-' + idx;
-        for(const key in data){
-          const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `authors[${idx}][${key}]`;
-            input.value = data[key];
-            wrapper.appendChild(input);
-        }
-        authorsHidden.appendChild(wrapper); 
-      }
-
-      saveBtn.addEventListener('click', function(){
-        const formData = new FormData(authorForm);
-        const first = (formData.get('first_name')||'').trim();
-        const last = (formData.get('last_name')||'').trim();
-        if(!first || !last){
-          saveBtn.disabled = false;
-          authorForm.querySelector('[name="first_name"]').focus();
-          return;
-        }
-        const data = {};
-        formData.forEach((v,k)=>{ data[k]= (v||'').toString().trim(); });
-        addHiddenInputs(data, authorIndex);
-        if(authorsList.innerHTML.includes('No authors')) authorsList.innerHTML = '';
-        makePill(data, authorIndex);
-        authorIndex++;
-        authorForm.reset();
-        modal.hide();
-        renderPlaceholder();
-      });
-
-      modalEl.addEventListener('shown.bs.modal', ()=> {
-        authorForm.querySelector('[name="first_name"]').focus();
-      });
-
-      renderPlaceholder();
-    })();
-  </script>
-  <script>
-    (function(){
-      const adviserCheckbox = document.getElementById('adviserCoauthor');
-      const adviserInput = document.querySelector('input[name="adviser"]');
-      const authorsList = document.getElementById('authorsList');
-      const authorsHidden = document.getElementById('authorsHidden');
-      const adviserIdx = 'adviser';
-
-      function addAdviserAuthor(name) {
-        if (!document.getElementById('adviser-pill')) {
-          const div = document.createElement('div');
-          div.className = 'author-pill';
-          div.id = 'adviser-pill';
-          div.innerHTML = `<span class="fw-semibold">${name}</span> <small class="text-muted ms-2">Adviser</small>`;
-          if (authorsList.innerHTML.includes('No authors')) authorsList.innerHTML = '';
-          authorsList.appendChild(div);
-        }
-        if (!document.getElementById('adviser-hidden')) {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = `authors[${adviserIdx}][name]`;
-          input.value = name;
-          input.id = 'adviser-hidden';
-          authorsHidden.appendChild(input);
-        }
-      }
-
-      function removeAdviserAuthor() {
-        const pill = document.getElementById('adviser-pill');
-        const hidden = document.getElementById('adviser-hidden');
-        if (pill) pill.remove();
-        if (hidden) hidden.remove();
-        if (!authorsHidden.children.length) {
-          authorsList.innerHTML = 'No authors added yet.';
-        }
-      }
-
-      adviserCheckbox.addEventListener('change', function() {
-        if (adviserCheckbox.checked && adviserInput.value.trim()) {
-          addAdviserAuthor(adviserInput.value.trim());
-        } else {
-          removeAdviserAuthor();
-        }
-      });
-
-      adviserInput.addEventListener('input', function() {
-        if (adviserCheckbox.checked) {
-          removeAdviserAuthor();
-          if (adviserInput.value.trim()) {
-            addAdviserAuthor(adviserInput.value.trim());
-          }
-        }
-      });
-    })();
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>" defer></script>
+  <script src="<?php echo asset_url('javascript/forms/academic-dropdowns.js'); ?>" defer></script>
+  <script src="<?php echo asset_url('javascript/forms/employee-authors.js'); ?>" defer></script>
 </body>
 </html>

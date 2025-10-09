@@ -67,3 +67,24 @@ header .navbar {
   color: #fff;
   opacity: 0.95;
 }
+
+/* --- Shared Admin Footer Styles (match ticket.php) --- */
+html, body { height: 100%; }
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+/* Sticky footer behavior: push footer to bottom when content is short */
+footer.standard-footer { position: static !important; margin-top: auto !important; }
+/* Visual style of standard footer */
+footer.standard-footer {
+  background: #fff !important;
+  border-top: 1px solid #dee2e6 !important;
+  padding: 1rem 0 !important;
+  font-size: 0.875rem !important;
+  color: #6c757d !important;
+}
+footer.standard-footer .container { text-align: center !important; }
+footer.standard-footer a { color: #0d6efd !important; text-decoration: none !important; }
+footer.standard-footer a:hover { color: #0a58ca !important; text-decoration: underline !important; }

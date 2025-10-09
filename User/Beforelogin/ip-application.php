@@ -58,7 +58,7 @@
             <div class="mb-2 small text-center">Click here to go to the Registration/Login form.</div>
             <div class="d-flex gap-2">
               <a href="login.php" class="btn btn-danger btn-sm fw-bold px-4">STUDENT</a>
-              <a href="login.php" class="btn btn-danger btn-sm fw-bold px-4">EMPLOYEE</a>
+              <a href="login.php?role=employee" class="btn btn-danger btn-sm fw-bold px-4">EMPLOYEE</a>
             </div>
           </div>
         </div>

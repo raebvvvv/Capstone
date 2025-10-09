@@ -20,6 +20,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($user['status'] == 'pending' && $user['role'] !== 'admin') {
                 $error = "Please wait for the confirmation of your account.";
             } else {
+                // Only allow employees (and admins) to use this login page
+                $roleLower = strtolower($user['role']);
+                if (!in_array($roleLower, ['employee','admin'], true)) {
+                    $error = 'This login is only for employees. Please use the Student Login page.';
+                } else {
                 session_regenerate_id(true); // Security: Prevent session fixation attacks
                 $_SESSION['user_logged_in'] = true;
                 $_SESSION['user_id'] = $user['user_id'];
@@ -27,6 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['student_number'] = $user['student_number'];
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0; // Set admin status
+                $_SESSION['role'] = $user['role']; // Persist role
 
                 if ($user['role'] === 'admin') {
                     // Redirect administrators to the admin dashboard
@@ -36,6 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     redirect('index.php');
                 }
                 exit();
+                }
             }
         } else {
             $error = "Invalid student number or password.";
@@ -90,7 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php endif; ?>
             <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
                 <div class="mb-3 position-relative">
-                    <input type="text" class="form-control rounded-pill ps-4 pe-5" id="student_number" name="student_number" placeholder="Webmail" required style="border: 2px solid #222;">
+                    <input type="text" class="form-control rounded-pill ps-4 pe-5" id="student_number" name="student_number" placeholder="Employee ID" required style="border: 2px solid #222;">
                     <span class="position-absolute top-50 end-0 translate-middle-y pe-3 text-secondary" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                             <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>

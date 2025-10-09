@@ -84,9 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
               const container = document.createElement('div');
               detailsContent.innerHTML = '';
               detailsContent.appendChild(container);
-              const opts = { role: 'user' };
+              // Determine context: on employee pages, body has data-user-kind="employee"
+              const isEmployee = (document.body && document.body.getAttribute('data-user-kind') === 'employee');
+              const opts = { role: isEmployee ? 'employee' : 'user' };
               if(resubmitRaw){ opts.flaggedTypes = resubmitRaw; }
-              window.renderSubmissionDetails(container, data, { role: 'user' });
+              window.renderSubmissionDetails(container, data, opts);
 
               // Provide a host for reupload controls (placed BEFORE Notes)
               const host = document.createElement('div');
@@ -94,9 +96,10 @@ document.addEventListener('DOMContentLoaded', function () {
               host.className = 'w-75 mt-3 mx-auto';
               detailsContent.appendChild(host);
 
-              // Notes section: only show in Pending tab
+              // Notes section: show only when ticket was marked Incomplete (resubmission requested)
               const inPendingTabForNotes = !!btn.closest('#pending');
-              if(inPendingTabForNotes){
+              const hasResubmitFlag = !!resubmitRaw && String(resubmitRaw).trim().length > 0;
+              if(inPendingTabForNotes && hasResubmitFlag){
                 const notesWrap = document.createElement('div');
                 notesWrap.className = 'mt-3';
                 const notes = Array.isArray(data.notes) ? data.notes : [];
@@ -359,6 +362,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     badge.className='badge bg-secondary doc-status';
                     badge.title='Uploading';
                     const fd = new FormData();
+                    // Include CSRF token for server-side verification
+                    try {
+                      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                      if (csrf) { fd.append('csrf_token', csrf); }
+                    } catch(_) { /* ignore */ }
                     fd.append('submission_code', submissionCode);
                     fd.append('doc_type', docType);
                     fd.append('file', file);
@@ -518,8 +526,18 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     btn.disabled = true; hint.textContent = 'Sending…';
-    fetch('add_note.php', { method:'POST', body:data })
-      .then(r=> r.json())
+    const csrfHeader = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    fetch('add_note.php', { method:'POST', body:data, headers: csrfHeader ? { 'X-CSRF-Token': csrfHeader } : undefined })
+      .then(async r=>{
+        const text = await r.text();
+        try {
+          return JSON.parse(text);
+        } catch(_) {
+          const trimmed = (text || '').trim();
+          const cleaned = trimmed.startsWith('<') ? 'Server returned an unexpected response.' : trimmed;
+          return { success:false, error: cleaned || 'Request failed' };
+        }
+      })
       .then(res => {
         if(!res || !res.success){
           const msg = (res && res.error) ? res.error : 'Failed to send note.';

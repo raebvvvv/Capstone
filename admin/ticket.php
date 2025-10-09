@@ -5,6 +5,13 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
+// Provide a fallback for mb_strtolower if the mbstring extension is not enabled
+if (!function_exists('mb_strtolower')) {
+    function mb_strtolower($string, $encoding = null) {
+        return strtolower($string);
+    }
+}
+
 // Handle actions (server-side fallback when JS is disabled)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (function_exists('verify_csrf_post')) { verify_csrf_post(); }
@@ -82,14 +89,45 @@ $has_notes = isset($_GET['has_notes']) ? (int)$_GET['has_notes'] : 0;
 $where = '';
 $params = [];
 if ($search_query !== '') {
-    // Search by student name, student number, submission code, or title
-    $where = " WHERE (
-        CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) LIKE :q
-        OR s.student_number LIKE :q
-        OR s.submission_code LIKE :q
-        OR s.title LIKE :q
-    )";
-    $params[':q'] = "%$search_query%";
+    // Normalize internal whitespace in search term (e.g., multiple spaces) and lowercase
+    $normalized = trim(preg_replace('/\s+/', ' ', $search_query));
+    $lc = mb_strtolower($normalized, 'UTF-8');
+    // Build a hyphen/space-stripped version for ID/number matching
+    $stripped = preg_replace('/[\s\-]+/', '', $lc);
+
+    // Prepare helpful expressions
+    $nameExpr = "LOWER(CONCAT_WS(' ', TRIM(s.first_name), NULLIF(TRIM(COALESCE(s.middle_name,'')),''), TRIM(s.last_name)))";
+
+    // Tokenized search for names: require all tokens to be present across first/middle/last (AND semantics)
+    $tokens = array_values(array_filter(preg_split('/\s+/', $lc)));
+    $tokenClauses = [];
+    $i = 0;
+    foreach ($tokens as $tok) {
+        $key = ":t{$i}";
+        // Use only the concatenated name expression to avoid duplicate placeholder usage across columns
+        $tokenClauses[] = "( $nameExpr LIKE $key )";
+        $params[$key] = '%' . $tok . '%';
+        $i++;
+    }
+    $tokensAnd = !empty($tokenClauses) ? ('(' . implode(' AND ', $tokenClauses) . ')') : '';
+
+    // Search by:
+    //  - Name (full and tokenized)
+    //  - Student number (case-insensitive; hyphen/space-insensitive)
+    //  - Submission code / Request ID (case-insensitive; hyphen/space-insensitive)
+    //  - Title (case-insensitive partial)
+    $whereParts = [];
+    // Use unique placeholders for PDO compatibility when emulation is disabled
+    $whereParts[] = "$nameExpr LIKE :q_like1";        $params[':q_like1'] = '%' . $lc . '%';
+    $whereParts[] = "LOWER(TRIM(s.first_name)) LIKE :q_like2"; $params[':q_like2'] = '%' . $lc . '%';
+    $whereParts[] = "LOWER(TRIM(s.last_name)) LIKE :q_like3";  $params[':q_like3'] = '%' . $lc . '%';
+    if ($tokensAnd !== '') { $whereParts[] = $tokensAnd; }
+    $whereParts[] = "REPLACE(LOWER(s.student_number), '-', '') LIKE :q_strip1";           $params[':q_strip1'] = '%' . $stripped . '%';
+    $whereParts[] = "REPLACE(REPLACE(LOWER(s.submission_code), '-', ''), ' ', '') LIKE :q_strip2"; $params[':q_strip2'] = '%' . $stripped . '%';
+    $whereParts[] = "LOWER(s.submission_code) LIKE :q_like4";  $params[':q_like4'] = '%' . $lc . '%';
+    $whereParts[] = "LOWER(s.title) LIKE :q_like5";            $params[':q_like5'] = '%' . $lc . '%';
+
+    $where = ' WHERE (' . implode("\n        OR ", $whereParts) . ')';
 }
 if ($has_notes === 1) {
     $where .= ($where ? ' AND ' : ' WHERE ') . ' COALESCE(sn.note_count,0) > 0 ';
@@ -97,6 +135,8 @@ if ($has_notes === 1) {
 
 // Load requests from submissions (ipmo_users.sql)
 $rows = [];
+// Debug helpers
+$__dbgMainQueryError = null; $__dbgFilteredCount = null;
 try {
     // Ensure meta table exists (lean persistence) so LEFT JOIN never errors on fresh DB
     try {
@@ -134,12 +174,13 @@ try {
         if (function_exists('log_event')) { log_event('DB_ERROR', 'Failed ensuring submission_incomplete_meta', ['err' => $eCreate->getMessage()]); }
         // continue; LEFT JOIN will fail only if table truly absent, but we attempted creation.
     }
+    $adminId = (int)($_SESSION['user_id'] ?? 0);
     $sql = "SELECT 
                 s.submission_id,
                 s.submission_code AS request_id,
                 s.student_number AS student_id,
                 CONCAT(s.first_name, ' ', COALESCE(s.middle_name,''), ' ', s.last_name) AS student_name,
-                s.academic_level AS user_classification,
+                u.role AS user_role,
                 s.program,
                 s.created_at AS request_date,
                 s.status,
@@ -155,6 +196,7 @@ try {
                 ma.admin_comment AS approved_admin_comment,
                 ma.affected_doc_types AS approved_affected_doc_types
             FROM submissions s
+            LEFT JOIN users u ON u.user_id = s.user_id
             LEFT JOIN (
                 SELECT submission_id, COUNT(*) AS note_count, MAX(created_at) AS last_note
                 FROM submission_notes
@@ -165,7 +207,7 @@ try {
                        SUM(CASE WHEN v.last_viewed_at IS NULL OR n.created_at > v.last_viewed_at THEN 1 ELSE 0 END) AS unread_count
                 FROM submission_notes n
                 LEFT JOIN submission_notes_admin_views v
-                      ON v.submission_id = n.submission_id AND v.admin_id = :admin_id
+                      ON v.submission_id = n.submission_id AND v.admin_id = $adminId
                 GROUP BY n.submission_id
             ) un ON un.submission_id = s.submission_id
             LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope = 'pending'
@@ -173,12 +215,14 @@ try {
             $where
             ORDER BY s.created_at DESC";
     $stmt = $pdo->prepare($sql);
-    $params[':admin_id'] = (int)($_SESSION['user_id'] ?? 0);
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
 } catch (Throwable $e) {
     if (function_exists('log_event')) { log_event('DB_ERROR', 'Query submissions failed', ['err' => $e->getMessage()]); }
     $rows = [];
+    if (isset($_GET['debug']) && (string)$_GET['debug'] === '1') {
+        $__dbgMainQueryError = $e->getMessage();
+    }
 }
 
 // Split by status for tabs
@@ -192,6 +236,68 @@ foreach ($rows as $r) {
     elseif ($st === 'approved') { $approved[] = $r; }
     elseif ($st === 'completed') { $completed[] = $r; }
 }
+// Debug info: quick DB sanity checks
+$__dbgTotalSubs = null; $__dbgSridCount = null; $__dbgEridCount = null; $__dbgSamples = [];
+// Extra debug fields to surface effective WHERE and param values
+$__dbgWhere = null; $__dbgParams = null; $__dbgProbe = ['code_like'=>null,'code_stripped_like'=>null];
+try {
+    if (isset($_GET['debug']) && (string)$_GET['debug'] === '1') {
+        $__dbgTotalSubs = (int)$pdo->query("SELECT COUNT(*) FROM submissions")->fetchColumn();
+        $__dbgSridCount = (int)$pdo->query("SELECT COUNT(*) FROM submissions WHERE submission_code LIKE 'SRID%'")->fetchColumn();
+        $__dbgEridCount = (int)$pdo->query("SELECT COUNT(*) FROM submissions WHERE submission_code LIKE 'ERID%'")->fetchColumn();
+        $stmtDbg = $pdo->query("SELECT submission_code AS code, status, LOWER(CONCAT_WS(' ', TRIM(first_name), NULLIF(TRIM(COALESCE(middle_name,'')),''), TRIM(last_name))) AS nm
+                                 FROM submissions ORDER BY created_at DESC LIMIT 5");
+        $__dbgSamples = $stmtDbg ? $stmtDbg->fetchAll() : [];
+        // Record the effective WHERE and params used
+        $__dbgWhere = $where;
+        $__dbgParams = $params;
+        // Probe: would the simple code LIKE matches return anything with current search?
+        if (!empty($search_query)) {
+            $tmpLc = isset($lc) ? $lc : mb_strtolower(trim($search_query), 'UTF-8');
+            $tmpStripped = isset($stripped) ? $stripped : preg_replace('/[\s\-]+/', '', $tmpLc);
+            try {
+                $p1 = $pdo->prepare("SELECT COUNT(*) FROM submissions s WHERE LOWER(s.submission_code) LIKE :q_like");
+                $p1->execute([':q_like' => '%'.$tmpLc.'%']);
+                $__dbgProbe['code_like'] = (int)$p1->fetchColumn();
+            } catch (Throwable $e1) { $__dbgProbe['code_like'] = 'err'; }
+            try {
+                $p2 = $pdo->prepare("SELECT COUNT(*) FROM submissions s WHERE REPLACE(REPLACE(LOWER(s.submission_code), '-', ''), ' ', '') LIKE :q_stripped_like");
+                $p2->execute([':q_stripped_like' => '%'.$tmpStripped.'%']);
+                $__dbgProbe['code_stripped_like'] = (int)$p2->fetchColumn();
+            } catch (Throwable $e2) { $__dbgProbe['code_stripped_like'] = 'err'; }
+        }
+        // Also compute filtered count using the exact same WHERE/params but without joins
+        try {
+            if (!empty($where)) {
+                $stmtCnt = $pdo->prepare("SELECT COUNT(*) FROM submissions s $where");
+                // Bind only params actually used in $where to avoid HY093
+                $usedParams = [];
+                foreach ($params as $k => $v) {
+                    if (strpos($where, $k) !== false) { $usedParams[$k] = $v; }
+                }
+                $stmtCnt->execute($usedParams);
+                $__dbgFilteredCount = (int)$stmtCnt->fetchColumn();
+            } else {
+                $__dbgFilteredCount = $__dbgTotalSubs;
+            }
+        } catch (Throwable $eCnt) {
+            $__dbgFilteredCount = 'err';
+        }
+    }
+} catch (Throwable $e) { /* ignore debug failures */ }
+// If this is a search and the current tab is empty, auto-pick the first tab with results (server-side)
+if ($search_query !== '') {
+    $byTab = [
+        'pending' => $pending,
+        'approved' => $approved,
+        'completed' => $completed,
+    ];
+    if (!isset($byTab[$active_tab]) || empty($byTab[$active_tab])) {
+        foreach (['pending','approved','completed'] as $tabName) {
+            if (!empty($byTab[$tabName])) { $active_tab = $tabName; break; }
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -202,11 +308,11 @@ foreach ($rows as $r) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="../css/ticket.css?v=7">
+    <link rel="stylesheet" href="../css/ticket.css">
     <link rel="stylesheet" href="../css/admin-navbar.css">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
     <title>Manage Requests</title>
-    <script src="../javascript/admin-filters.js?v=2" defer></script>
+    <script src="../javascript/admin-filters.js?v=3" defer></script>
 </head>
 <body>
 <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>">
@@ -312,16 +418,63 @@ foreach ($rows as $r) {
     </div>
 </div>
 
+    <main class="page-wrapper">
     <div class="container mt-5">
         <h1 class="text-center mb-4" style="font-size:2rem;">Manage Applications</h1>
+        <?php $__debug = isset($_GET['debug']) && (string)$_GET['debug'] === '1'; if ($__debug): ?>
+        <div class="mx-auto mb-3" style="max-width:920px;">
+            <div class="border rounded p-3" style="background:#fff8e1;border-color:#f0e1a5;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>Debug: Search Diagnostics</strong>
+                    <a class="small text-decoration-underline" href="<?php echo htmlspecialchars(preg_replace('/([&?])debug=1(&|$)/','${1}', $_SERVER['REQUEST_URI'])); ?>">hide</a>
+                </div>
+                <pre class="mb-2" style="white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size:12px; line-height:1.35;">
+GET params: <?php echo htmlspecialchars(json_encode([
+    'search' => $search_query,
+    'tab' => $active_tab,
+    'has_notes' => $has_notes,
+], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); ?>
+Normalized: <?php echo htmlspecialchars(json_encode([
+    'lower' => isset($lc) ? $lc : null,
+    'stripped' => isset($stripped) ? $stripped : null,
+], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); ?>
+SQL where: <?php echo htmlspecialchars((string)$__dbgWhere); ?>
+Params: <?php echo htmlspecialchars(json_encode($__dbgParams, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); ?>
+Counts: <?php echo htmlspecialchars(json_encode([
+    'pending' => isset($pending) ? count($pending) : 0,
+    'approved' => isset($approved) ? count($approved) : 0,
+    'completed' => isset($completed) ? count($completed) : 0,
+], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); ?>
+Active tab (server): <?php echo htmlspecialchars($active_tab); ?>
+Main query error: <?php echo htmlspecialchars((string)($__dbgMainQueryError ?? '')); ?>
+                </pre>
+                <div class="small text-muted">Runtime file info:</div>
+                <pre class="mb-2" style="white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size:12px; line-height:1.35;">
+File path: <?php echo htmlspecialchars(__FILE__); ?>
+File mtime: <?php $mt = @filemtime(__FILE__); echo $mt ? htmlspecialchars(date('c', $mt)) : 'n/a'; ?>
+                </pre>
+                <div class="small text-muted">DB quick-checks:</div>
+                <pre class="mb-0" style="white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size:12px; line-height:1.35;">
+Total submissions: <?php echo htmlspecialchars((string)($__dbgTotalSubs ?? 'n/a')); ?>
+SRID count: <?php echo htmlspecialchars((string)($__dbgSridCount ?? 'n/a')); ?>, ERID count: <?php echo htmlspecialchars((string)($__dbgEridCount ?? 'n/a')); ?>
+Probe: code_like=<?php echo htmlspecialchars((string)($__dbgProbe['code_like'] ?? 'n/a')); ?>, code_stripped_like=<?php echo htmlspecialchars((string)($__dbgProbe['code_stripped_like'] ?? 'n/a')); ?>
+Filtered count (WHERE only): <?php echo htmlspecialchars((string)($__dbgFilteredCount ?? 'n/a')); ?>
+Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); ?>
+                </pre>
+            </div>
+        </div>
+        <?php endif; ?>
         <div class="d-flex justify-content-center mb-3">
-            <form method="get" class="input-group search-bar" style="max-width:540px; gap:10px;">
-                <input class="form-control rounded-pill ps-4" type="search" name="search" placeholder="Search" aria-label="Search" value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius: 50px;">
+            <form id="ticketSearchForm" method="get" class="input-group search-bar" style="max-width:540px; gap:10px;" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                <input class="form-control rounded-pill ps-4" type="search" name="search" placeholder="Search by Request ID, Name, Student Number, or Title" aria-label="Search" value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius: 50px;">
                 <input type="hidden" name="tab" id="activeTabInput" value="<?php echo htmlspecialchars($active_tab); ?>">
-                <div class="form-check form-switch ms-2 d-flex align-items-center">
+                <button id="ticketSearchBtn" class="btn btn-outline-secondary rounded-pill ms-2 px-3" type="submit">Search</button>
+                <div class="form-check form-switch ms-2 d-flex align-items-center" style="white-space:nowrap;">
                     <input class="form-check-input" type="checkbox" id="hasNotesSwitch" name="has_notes" value="1" <?php echo $has_notes ? 'checked' : ''; ?>>
                     <label class="form-check-label ms-2 small" for="hasNotesSwitch">Has Notes</label>
                 </div>
+                <!-- Hidden submit ensures Enter key submits even with multiple inputs in the group -->
+                <button type="submit" class="visually-hidden" aria-hidden="true" tabindex="-1">Search</button>
             </form>
         </div>
         <div class="d-flex justify-content-center mb-3 gap-2">
@@ -334,9 +487,9 @@ foreach ($rows as $r) {
         </div>
         <div class="d-flex justify-content-between align-items-center mb-2">
             <ul class="nav nav-tabs" id="requestTabs">
-                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='pending' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#pending" style="color:#222;">Pending</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='approved' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#approved" style="color:#222;">Approved</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='completed' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#completed" style="color:#222;">Complete</a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='pending' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#pending" style="color:#222;">Pending<?php if($search_query!==''){ echo ' ('.count($pending).')'; } ?></a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='approved' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#approved" style="color:#222;">Approved<?php if($search_query!==''){ echo ' ('.count($approved).')'; } ?></a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='completed' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#completed" style="color:#222;">Complete<?php if($search_query!==''){ echo ' ('.count($completed).')'; } ?></a></li>
             </ul>
             <div></div>
         </div>
@@ -383,9 +536,8 @@ foreach ($rows as $r) {
                                     </td>
                                     <td>
                                         <?php
-                                            $userRaw = trim((string)($ticket['user_classification'] ?? ''));
-                                            $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
-                                            echo htmlspecialchars($userLabel);
+                                            $role = strtolower(trim((string)($ticket['user_role'] ?? 'student')));
+                                            echo htmlspecialchars($role === 'employee' ? 'Employee' : 'Student');
                                         ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
@@ -472,9 +624,8 @@ foreach ($rows as $r) {
                                         </td>
                                         <td>
                                             <?php
-                                                $userRaw = trim((string)($ticket['user_classification'] ?? ''));
-                                                $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
-                                                echo htmlspecialchars($userLabel);
+                                                $role = strtolower(trim((string)($ticket['user_role'] ?? 'student')));
+                                                echo htmlspecialchars($role === 'employee' ? 'Employee' : 'Student');
                                             ?>
                                         </td>
                                         <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
@@ -545,9 +696,8 @@ foreach ($rows as $r) {
                                     </td>
                                     <td>
                                         <?php
-                                            $userRaw = trim((string)($ticket['user_classification'] ?? ''));
-                                            $userLabel = (stripos($userRaw, 'employee') !== false) ? 'Employee' : 'Student';
-                                            echo htmlspecialchars($userLabel);
+                                            $role = strtolower(trim((string)($ticket['user_role'] ?? 'student')));
+                                            echo htmlspecialchars($role === 'employee' ? 'Employee' : 'Student');
                                         ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($ticket['request_date']); ?></td>
@@ -581,6 +731,7 @@ foreach ($rows as $r) {
             </div>
         </div>
     </div>
+    </main>
 
     <div class="modal fade" id="certificateModal" tabindex="-1" aria-labelledby="certificateModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -771,7 +922,7 @@ foreach ($rows as $r) {
         </div>
     </div>
 
-<script src="../javascript/admin-ticket.js?v=6" defer></script>
+<script src="../javascript/admin-ticket.js?v=8" defer></script>
 <script src="../javascript/admin-profile.js?v=2" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

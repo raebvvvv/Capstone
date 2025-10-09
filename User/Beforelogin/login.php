@@ -6,6 +6,13 @@ require app_path('conn.php');
 // If not for some reason, call conditionally:
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 
+// If this page is accessed in 'employee' mode, redirect to dedicated employee login
+if (isset($_GET['role']) && strtolower($_GET['role']) === 'employee') {
+    if (function_exists('redirect')) { redirect('User/Beforelogin/login-employee.php'); }
+    header('Location: login-employee.php');
+    exit();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $student_number = trim(htmlspecialchars($_POST['student_number']));
     $password = $_POST['password'];
@@ -20,6 +27,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($user['status'] == 'pending' && $user['role'] !== 'admin') {
                 $error = "Please wait for the confirmation of your account.";
             } else {
+                // Prevent employees from logging in via the student login page
+                if (strtolower($user['role']) === 'employee') {
+                    $error = 'This account is for employees. Please use the Employee Login page.';
+                } else {
                 session_regenerate_id(true); // Security: Prevent session fixation attacks
                 $_SESSION['user_logged_in'] = true;
                 $_SESSION['user_id'] = $user['user_id'];
@@ -27,6 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['student_number'] = $user['student_number'];
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0; // Set admin status
+                $_SESSION['role'] = $user['role']; // Persist role (student/employee/admin)
 
                 if ($user['role'] === 'admin') {
                     // Redirect administrators to the admin dashboard
@@ -36,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     redirect('index.php');
                 }
                 exit();
+                }
             }
         } else {
             $error = "Invalid student number or password.";
@@ -46,6 +59,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
+<?php
+    // Determine login mode (student default, employee optional via query)
+    $loginMode = (isset($_GET['role']) && strtolower($_GET['role']) === 'employee') ? 'employee' : 'student';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,14 +100,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" class="login-logo">
             </div>
             <div class="text-center mb-3">
-                <span class="fw-normal student-login-text">Student Login.</span>
+                <span class="fw-normal student-login-text"><?php echo ($loginMode === 'employee') ? 'Employee Login' : 'Student Login.'; ?></span>
             </div>
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger py-2 mb-3"><?php echo $error; ?></div>
             <?php endif; ?>
             <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
                 <div class="mb-3 position-relative">
-                    <input type="text" class="form-control rounded-pill ps-4 pe-5" id="student_number" name="student_number" placeholder="Webmail" required style="border: 2px solid #222;">
+                    <input type="text" class="form-control rounded-pill ps-4 pe-5" id="student_number" name="student_number" placeholder="Student ID" required style="border: 2px solid #222;">
                     <span class="position-absolute top-50 end-0 translate-middle-y pe-3 text-secondary" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                             <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>

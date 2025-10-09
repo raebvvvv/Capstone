@@ -7,13 +7,41 @@ if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 
 header('Content-Type: application/json');
 
+// mbstring polyfills (hosting may not have mbstring enabled)
+if (!function_exists('mb_strlen')) {
+	function mb_strlen($s) { return strlen($s); }
+}
+if (!function_exists('mb_substr')) {
+	function mb_substr($s, $start, $len = null) { return ($len === null) ? substr($s, $start) : substr($s, $start, $len); }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 	http_response_code(405);
 	echo json_encode(['success' => false, 'error' => 'Method not allowed']);
 	exit;
 }
 
-if (function_exists('verify_csrf_post')) { verify_csrf_post(); }
+// CSRF validation: prefer JSON error instead of plain text exit
+if (function_exists('csrf_token')) {
+	$posted = $_POST['csrf_token'] ?? '';
+	$headerTok = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_SERVER['HTTP_X_CSRFTOKEN'] ?? '');
+	$sessionTok = $_SESSION['csrf_token'] ?? '';
+	$ok = ($posted && hash_equals($sessionTok, $posted)) || ($headerTok && hash_equals($sessionTok, $headerTok));
+	if (!$ok) {
+		http_response_code(400);
+		echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
+		exit;
+	}
+} else if (function_exists('verify_csrf_post')) {
+	// Fallback to legacy function if helpers are not available
+	try {
+		verify_csrf_post();
+	} catch (Throwable $e) {
+		http_response_code(400);
+		echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
+		exit;
+	}
+}
 
 $userId = (int)($_SESSION['user_id'] ?? 0);
 if ($userId <= 0) {

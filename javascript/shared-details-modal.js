@@ -5,6 +5,19 @@
 
   function formatSize(bytes){ if(!bytes && bytes!==0) return ''; const units=['B','KB','MB','GB']; let i=0; let v=bytes; while(v>=1024 && i<units.length-1){ v/=1024; i++; } return v.toFixed(v>=10||i===0?0:1)+' '+units[i]; }
 
+  function formatDateText(dstr){
+    try{
+      if(!dstr) return '';
+      // Normalize common YYYY-MM-DD values
+      const iso = String(dstr).trim();
+      const d = new Date(iso);
+      if(!isNaN(d.getTime())){
+        return d.toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'2-digit' });
+      }
+      return iso; // fallback to original if parse fails
+    }catch(_){ return String(dstr); }
+  }
+
   function buildFilesHTML(details, options){
     const detailedList = Array.isArray(details.files_list) ? details.files_list : [];
     const legacyMap = details.files || {};
@@ -31,19 +44,26 @@
 
   function buildAuthorsHTML(details, options){
     const add = Array.isArray(details.additionalAuthors)? details.additionalAuthors: [];
-    if(!add.length) return '';
+    if(!add.length && !details.adviser) return '';
+  const isAdv = (a)=> !!(a && a.is_adviser);
     const rows = add.map((a,idx)=>{
-      const isAdv = a.is_adviser ? '<span class="badge bg-warning text-dark ms-2">Adviser</span>' : '';
+      const badge = isAdv(a) ? '<span class="badge bg-warning text-dark ms-2">Adviser</span>' : '';
       const name = escapeHTML(a.name || '—');
       const btn = options && options.onAuthorDetails ? `<button type="button" class="btn btn-success btn-sm rounded-pill px-3 ms-2 author-view-btn" data-author-index="${idx}">View Details</button>` : '';
-      return `<div class="author-entry">${name}${isAdv}${btn}</div>`;
+      return `<div class="author-entry">${name}${badge}${btn}</div>`;
     }).join('');
-    return `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${rows}</div>`;
+  const hasAdviserInAuthors = add.some(isAdv);
+  const adviserRaw = (details.adviser || '').toString().trim();
+  const adviserName = (!hasAdviserInAuthors && adviserRaw) ? `<p><strong>Adviser:</strong> ${escapeHTML(adviserRaw)}</p>` : '';
+    const authorsBlock = rows ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${rows}</div>` : '';
+    return adviserName + authorsBlock;
   }
 
   function render(containerEl, details, opts){
     const o = Object.assign({ role: 'admin', showNotes: false, onAuthorDetails: null }, opts||{});
     if(!containerEl) return;
+    containerEl.classList.remove('text-center');
+    containerEl.classList.add('text-start');
     const v = (x,d='—') => (x==null||x==='')?d:x;
 
     const studentName = v(details.studentName);
@@ -57,7 +77,7 @@
 
     const title = v(details.documentTitle);
     const wc = v(details.workClassification);
-    const accDate = v(details.accomplishmentDate);
+  const accDate = v(details.accomplishmentDate);
 
     // For user role, highlight/label files flagged for resubmission
     let flaggedTypes = [];
@@ -72,12 +92,17 @@
   const statusHTML = bannerText ? `<div class="alert alert-success mb-3">${escapeHTML(bannerText)}</div>` : '';
     const notesHTML = o.showNotes ? `<div class="mt-3" id="sharedNotesHost"></div>` : '';
 
+    // Determine labels based on role/page: Employees should see Employee ID/Number and Employee Information
+    const isEmployeeContext = (String(o.role||'').toLowerCase()==='employee') || (document.body && document.body.getAttribute('data-user-kind')==='employee');
+    const infoHeader = isEmployeeContext ? 'Employee Information' : 'Student Information';
+    const idLabel = isEmployeeContext ? 'Employee ID/Number' : 'Student Number';
+
     containerEl.innerHTML = `
       ${statusHTML}
       <div>
-        <h5>Student Information</h5>
+        <h5>${escapeHTML(infoHeader)}</h5>
         <p><strong>Name:</strong> ${escapeHTML(studentName)}</p>
-        <p><strong>Student Number:</strong> ${escapeHTML(num)}</p>
+        <p><strong>${escapeHTML(idLabel)}:</strong> ${escapeHTML(num)}</p>
         <p><strong>Email Address:</strong> ${escapeHTML(email)}</p>
         <p><strong>Home Address:</strong> ${escapeHTML(addr)}</p>
         <p><strong>Campus:</strong> ${escapeHTML(campus)}</p>
@@ -90,7 +115,7 @@
         <p><strong>Title:</strong> ${escapeHTML(title)}</p>
         <p><strong>Type (Work Classification):</strong> ${escapeHTML(wc)}</p>
         <p><strong>Author/s Full name/s:</strong> ${escapeHTML(studentName)}</p>
-        ${accDate ? `<p><strong>Date Accomplished:</strong> ${escapeHTML(accDate)}</p>` : ''}
+  ${accDate ? `<p><strong>Date Accomplished:</strong> ${escapeHTML(formatDateText(accDate))}</p>` : ''}
         ${authorsHTML}
       </div>
       <div class="mt-3">

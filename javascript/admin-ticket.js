@@ -110,13 +110,33 @@
       details._exampleSeeded = true;
     }
 
-    const authorsListHTML = (details.additionalAuthors||[]).map((a,idx)=>`<div class="author-entry"><span class="author-name">${a.name||'—'}</span><button type="button" class="btn btn-success btn-sm rounded-pill px-3 ms-2 author-view-btn" data-author-index="${idx}">View Details</button></div>`).join('');
+    const allAuthors = Array.isArray(details.additionalAuthors) ? details.additionalAuthors : [];
+    const isAdv = (a)=> (a && (a.is_adviser===1 || a.is_adviser===true || a.is_adviser==='1'));
+    const advisersInAuthors = allAuthors.filter(isAdv);
+    const coauthors = allAuthors.slice(); // keep all for listing; badge advisers inline
+
+    const coauthorsListHTML = coauthors.map((a)=>{
+      const badge = isAdv(a) ? '<span class="badge bg-warning text-dark ms-2">Adviser</span>' : '';
+      const btn = isAdv(a) ? '' : `<button type="button" class="btn btn-success btn-sm rounded-pill px-3 ms-2 author-view-btn" data-author-index="${allAuthors.indexOf(a)}">View Details</button>`;
+      return `<div class="author-entry"><span class="author-name">${a.name||'—'}</span>${badge}${btn}</div>`;
+    }).join('');
+    // If adviser is not a co-author, show a concise line under Document Information
+    const adviserName = (details.adviser || '').trim();
+    const adviserInlineHTML = (!advisersInAuthors.length && adviserName)
+      ? `<p><strong>Adviser:</strong> ${escapeHTML(adviserName)}</p>`
+      : '';
     const modalBody = document.getElementById('detailsModalBody');
     if(!modalBody) return;
 
-  modalBody.innerHTML = `<div><h5>Student Information</h5>`+
+    // Determine user type from Request ID prefix (ERID = Employee, SRID = Student)
+    const rid = String(v(details.request_id, ''));
+    const isEmployee = /^ERID-/i.test(rid);
+    const infoHeader = isEmployee ? 'Employee Information' : 'Student Information';
+    const idLabel = isEmployee ? 'Employee ID/Number' : 'Student Number';
+
+  modalBody.innerHTML = `<div><h5>${infoHeader}</h5>`+
       `<p><strong>Name:</strong> ${editMode? `<input type='text' id='editStudentName' value='${escapeHTML(v(details.studentName,''))}' />` : escapeHTML(v(details.studentName,'—'))}</p>`+
-      `<p><strong>Student Number:</strong> ${editMode? `<input type='text' id='editStudentNumber' value='${escapeHTML(v(details.studentNumber,''))}' />` : escapeHTML(v(details.studentNumber,'—'))}</p>`+
+      `<p><strong>${idLabel}:</strong> ${editMode? `<input type='text' id='editStudentNumber' value='${escapeHTML(v(details.studentNumber,''))}' />` : escapeHTML(v(details.studentNumber,'—'))}</p>`+
       `<p><strong>Email Address:</strong> ${editMode? `<input type='email' id='editEmail' value='${escapeHTML(v(details.email,''))}' />` : escapeHTML(v(details.email,'—'))}</p>`+
       `<p><strong>Home Address:</strong> ${editMode? `<input type='text' id='editHomeAddress' value='${escapeHTML(v(details.homeAddress,''))}' />` : escapeHTML(v(details.homeAddress,'—'))}</p>`+
       `<p><strong>Campus:</strong> ${editMode? `<input type='text' id='editCampus' value='${escapeHTML(v(details.campus,''))}' />` : escapeHTML(v(details.campus,'—'))}</p>`+
@@ -126,9 +146,13 @@
   `<div><h5>Document Information</h5>`+
       `<p><strong>Title:</strong> ${editMode? `<input type='text' id='editDocumentTitle' value='${escapeHTML(v(details.documentTitle,''))}' />` : escapeHTML(v(details.documentTitle,'—'))}</p>`+
   `<p><strong>Type (Work Classification):</strong> ${escapeHTML(v(details.workClassification,'—'))}</p>`+
-      `<p><strong>Author/s Full name/s:</strong> ${escapeHTML(v(details.studentName,'—'))}</p>`+
-      `${authorsListHTML ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${authorsListHTML}</div>`: ''}`+
-      `<p class="mt-2"><strong>Date Accomplished:</strong> ${editMode? `<input type='date' id='editAccomplishmentDate' value='${escapeHTML(v(details.accomplishmentDate,''))}' />` : escapeHTML(v(details.accomplishmentDate,'—'))}</p></div>`+
+  `<p><strong>Author/s Full name/s:</strong> ${escapeHTML(v(details.studentName,'—'))}</p>`+
+  adviserInlineHTML+
+  `${coauthorsListHTML ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${coauthorsListHTML}</div>`: ''}`+
+      `<p class="mt-2"><strong>Date Accomplished:</strong> ${editMode
+        ? `<input type='date' id='editAccomplishmentDate' value='${escapeHTML(v(details.accomplishmentDate,''))}' />`
+        : (function(x){ try{ if(!x) return '—'; const d=new Date(String(x).trim()); return isNaN(d)? escapeHTML(x): d.toLocaleDateString('en-PH',{month:'long', day:'2-digit', year:'numeric'});}catch(_){ return escapeHTML(x||'—'); } })(v(details.accomplishmentDate,''))
+      }</p></div>`+
       `<div class="mt-3"><h5>Uploaded Files</h5>${attachmentsHTML}</div>`;
 
     const editBtn = document.getElementById('editDetailsBtn');
@@ -155,6 +179,15 @@
       program: programText,
       documentTitle:'', authorName:'', accomplishmentDate: reqDateText
     };
+    // Populate request_id from the table (first column) for ERID/SRID detection in fallback
+    try {
+      const ridCell = tr.querySelector('td:nth-child(1)');
+      if (ridCell) {
+        details.request_id = (ridCell.textContent || '').trim();
+      }
+    } catch(_) {
+      /* noop */
+    }
     currentDetails = details;
     renderDetails(details,false);
     const detailsModalEl = document.getElementById('detailsModal');
@@ -165,23 +198,34 @@
     if(!body) return;
     const v=(x)=> (x??'');
     if(!edit){
-      body.innerHTML = `<div class="mb-3"><strong>Name:</strong> ${author.name || '—'}</div>`+
+      const isAdv = (author && (author.is_adviser===1 || author.is_adviser===true || author.is_adviser==='1'));
+      body.innerHTML = `<div class="mb-3"><strong>Name:</strong> ${author.name || '—'} ${isAdv? '<span class="badge bg-warning text-dark ms-2">Adviser</span>':''}</div>`+
+        `<div class="mb-2"><strong>Role:</strong> ${isAdv ? 'Adviser' : 'Author'}</div>`+
         `<div class="mb-2"><strong>Student Number:</strong> ${author.studentNumber || ''}</div>`+
         `<div class="mb-2"><strong>Email Address:</strong> ${author.email || ''}</div>`+
         `<div class="mb-2"><strong>Home Address:</strong> ${author.address || ''}</div>`+
-        `<div class="mb-2"><strong>Phone Number:</strong> ${author.phone || ''}</div>`+
-        `<div class="mb-2"><strong>Campus:</strong> ${author.campus || ''}</div>`+
-        `<div class="mb-2"><strong>College:</strong> ${author.college || ''}</div>`+
-        `<div class="mb-2"><strong>Program:</strong> ${author.program || ''}</div>`;
+        `<div class="mb-2"><strong>Phone Number:</strong> ${author.phone || ''}</div>`;
     } else {
-      body.innerHTML = `<div class="mb-2"><label class="form-label">Name</label><input class="form-control" id="editAuthorNameInput" value="${v(author.name)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Student Number</label><input class="form-control" id="editAuthorStudNoInput" value="${v(author.studentNumber)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Email Address</label><input type="email" class="form-control" id="editAuthorEmailInput" value="${v(author.email)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Home Address</label><input class="form-control" id="editAuthorAddressInput" value="${v(author.address)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Phone Number</label><input class="form-control" id="editAuthorPhoneInput" value="${v(author.phone)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Campus</label><input class="form-control" id="editAuthorCampusInput" value="${v(author.campus)}"></div>`+
-        `<div class="mb-2"><label class="form-label">College</label><input class="form-control" id="editAuthorCollegeInput" value="${v(author.college)}"></div>`+
-        `<div class="mb-2"><label class="form-label">Program</label><input class="form-control" id="editAuthorProgramInput" value="${v(author.program)}"></div>`;
+      // Split name for editing convenience; attempt First [Middle ...] Last
+      const splitName = (n)=>{
+        const parts = String(n||'').trim().split(/\s+/).filter(Boolean);
+        if(parts.length<=1) return { first: parts[0]||'', middle:'', last:'' };
+        if(parts.length===2) return { first: parts[0], middle:'', last: parts[1] };
+        const first = parts.shift();
+        const last = parts.pop();
+        const middle = parts.join(' ');
+        return { first, middle, last };
+      };
+      const nm = splitName(author.name||'');
+      body.innerHTML = `<div class="row g-2">`+
+        `<div class="col-12 col-md-4"><label class="form-label">First Name</label><input class="form-control" id="editAuthorFirst" value="${escapeHTML(v(nm.first))}"></div>`+
+        `<div class="col-12 col-md-4"><label class="form-label">Middle Name</label><input class="form-control" id="editAuthorMiddle" value="${escapeHTML(v(nm.middle))}"></div>`+
+        `<div class="col-12 col-md-4"><label class="form-label">Last Name</label><input class="form-control" id="editAuthorLast" value="${escapeHTML(v(nm.last))}"></div>`+
+        `</div>`+
+        `<div class="mb-2 mt-2"><label class="form-label">Student Number</label><input class="form-control" id="editAuthorStudNoInput" value="${escapeHTML(v(author.studentNumber))}"></div>`+
+        `<div class="mb-2"><label class="form-label">Email Address</label><input type="email" class="form-control" id="editAuthorEmailInput" value="${escapeHTML(v(author.email))}"></div>`+
+        `<div class="mb-2"><label class="form-label">Home Address</label><input class="form-control" id="editAuthorAddressInput" value="${escapeHTML(v(author.address))}"></div>`+
+        `<div class="mb-2"><label class="form-label">Phone Number</label><input class="form-control" id="editAuthorPhoneInput" value="${escapeHTML(v(author.phone))}"></div>`;
     }
     const editBtn = document.getElementById('authorEditBtn');
     const saveBtn = document.getElementById('authorSaveBtn');
@@ -190,7 +234,7 @@
       saveBtn.style.display = edit ? 'inline-block':'none';
     }
   }
-  function openAuthorModal(index){
+  function openAuthorModal(index){ 
     currentAuthorIndex = index;
     const author = (currentDetails.additionalAuthors || [])[index] || {};
     renderAuthorModal(author,false);
@@ -203,6 +247,74 @@
   function selectRemarkActive(remark){ const dd=document.getElementById('remarksDropdownActive'); if(dd) dd.textContent=remark; }
 
   document.addEventListener('DOMContentLoaded', function(){
+    // Global handlers for Author modal edit/save (use currentAuthorIndex)
+    const authorEditBtnEl = document.getElementById('authorEditBtn');
+    if(authorEditBtnEl){
+      authorEditBtnEl.addEventListener('click', ()=>{
+        const author = (currentDetails.additionalAuthors || [])[currentAuthorIndex ?? -1];
+        if(!author){ return; }
+        renderAuthorModal(author, true);
+      });
+    }
+    const authorSaveBtnEl = document.getElementById('authorSaveBtn');
+    if(authorSaveBtnEl){
+      authorSaveBtnEl.addEventListener('click', async ()=>{
+        const author = (currentDetails.additionalAuthors || [])[currentAuthorIndex ?? -1];
+        if(!author){ alert('No author selected.'); return; }
+        const authorId = author.id || null;
+        if(!authorId){ alert('Missing author id; cannot save.'); return; }
+        const first = document.getElementById('editAuthorFirst')?.value?.trim() || '';
+        const middle = document.getElementById('editAuthorMiddle')?.value?.trim() || '';
+        const last = document.getElementById('editAuthorLast')?.value?.trim() || '';
+        const studentId = document.getElementById('editAuthorStudNoInput')?.value?.trim() || '';
+        const email = document.getElementById('editAuthorEmailInput')?.value?.trim() || '';
+        const address = document.getElementById('editAuthorAddressInput')?.value?.trim() || '';
+        const phone = document.getElementById('editAuthorPhoneInput')?.value?.trim() || '';
+        try {
+          authorSaveBtnEl.disabled = true;
+          const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+          const res = await fetch('../admin/update_author.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+            body: JSON.stringify({
+              author_id: authorId,
+              first_name: first,
+              middle_name: middle,
+              last_name: last,
+              student_id: studentId,
+              webmail: email,
+              home_address: address,
+              mobile: phone
+            })
+          });
+          let data = null;
+          try { data = await res.json(); } catch(_) {}
+          if(!data){
+            let txt = '';
+            try { txt = await res.text(); } catch(_) {}
+            alert('Failed to save author changes' + (txt?`\n${txt}`:''));
+            return;
+          }
+          if(!data.success){ alert('Failed to save author changes' + (data.error?`: ${data.error}`:'' ) + (data.detail?`\n${data.detail}`:'')); return; }
+          // Update local model
+          const full = [first, middle, last].filter(Boolean).join(' ');
+          author.name = full;
+          author.studentNumber = studentId;
+          author.email = email;
+          author.address = address;
+          author.phone = phone;
+          // Re-render
+          renderAuthorModal(author,false);
+          renderDetails(currentDetails,false);
+        } catch(err){
+          console.error('update_author error', err);
+          alert('Network error updating author');
+        } finally {
+          authorSaveBtnEl.disabled = false;
+        }
+      });
+    }
     // Density toggle removed; always use optimized layout
 
     // Open details by clicking Request ID only
@@ -216,19 +328,45 @@
         try {
           const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
           const res = await fetch('../admin/fetch_submission_details.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify({ request_id: reqId }) });
-          const data = await res.json();
-          if(data.success){
-            currentDetails = data; // matches expected keys in renderDetails
+          let data = {};
+          try { data = await res.json(); } catch(_) {}
+          if(data && data.success){
+            currentDetails = data;
             renderDetails(currentDetails,false);
             const detailsModalEl = document.getElementById('detailsModal');
             if(detailsModalEl) ModalApi.show(detailsModalEl);
           } else {
-            console.warn('Details fetch failed', data);
-            showDetailsModal(tr); // fallback to legacy static extraction
+            // Retry via GET (read-only) to avoid CSRF-related failures
+            const res2 = await fetch(`../admin/fetch_submission_details.php?request_id=${encodeURIComponent(reqId)}`, { method:'GET', credentials:'same-origin' });
+            let data2 = {};
+            try { data2 = await res2.json(); } catch(_) {}
+            if(data2 && data2.success){
+              currentDetails = data2;
+              renderDetails(currentDetails,false);
+              const detailsModalEl = document.getElementById('detailsModal');
+              if(detailsModalEl) ModalApi.show(detailsModalEl);
+            } else {
+              console.warn('Details fetch failed', data || data2);
+              showDetailsModal(tr);
+            }
           }
         } catch(err){
-          console.error('Details fetch error', err);
-          showDetailsModal(tr);
+          try {
+            const res2 = await fetch(`../admin/fetch_submission_details.php?request_id=${encodeURIComponent(reqId)}`, { method:'GET', credentials:'same-origin' });
+            const data2 = await res2.json();
+            if(data2 && data2.success){
+              currentDetails = data2;
+              renderDetails(currentDetails,false);
+              const detailsModalEl = document.getElementById('detailsModal');
+              if(detailsModalEl) ModalApi.show(detailsModalEl);
+            } else {
+              console.error('Details fetch GET error', err, data2);
+              showDetailsModal(tr);
+            }
+          } catch(err2){
+            console.error('Details fetch error', err, err2);
+            showDetailsModal(tr);
+          }
         }
       }
     });
@@ -769,24 +907,57 @@
 
     // Table sorting
     function sortTable(tbody, key, dir){
+      const table = tbody.closest('table');
       const rows = Array.from(tbody.querySelectorAll('tr'));
-      const idxMap = { request: 0, name: 1, class: 2, program: 3, date: 4, status: 5 };
+      // Determine column index dynamically based on header data-sort
+      const headers = Array.from(table?.querySelectorAll('thead th') || []);
+      const colIndex = headers.findIndex(h => (h.getAttribute('data-sort')||'') === key);
+      const nth = (colIndex >= 0 ? (colIndex + 1) : null);
+
+      function cellText(tr, n){
+        if (n === null) return tr.textContent.trim();
+        const td = tr.querySelector('td:nth-child(' + n + ')');
+        return (td ? td.textContent : '').trim();
+      }
+
+      function parseDateYmdHms(text){
+        const s = String(text).trim();
+        // Expect: YYYY-MM-DD HH:MM:SS (or with 'T' separator)
+        const m = s.match(/^\s*(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})\s*$/);
+        if(!m) return NaN;
+        const y = +m[1], mo = +m[2]-1, d = +m[3], hh = +m[4], mm = +m[5], ss = +m[6];
+        // Use UTC to avoid TZ differences when comparing
+        return Date.UTC(y, mo, d, hh, mm, ss);
+      }
+
       const getVal = (tr)=>{
         switch(key){
-          case 'request': return (tr.querySelector('td:nth-child(1)')?.textContent||'').trim();
-          case 'name': return (tr.querySelector('td:nth-child(2)')?.textContent||'').trim();
-          case 'class': return (tr.querySelector('td:nth-child(3)')?.textContent||'').trim();
           case 'program': return (tr.querySelector('.col-program')?.textContent||'').trim();
-          case 'date': return (tr.querySelector('td:nth-child(5)')?.textContent||'').trim();
-          case 'status': return (tr.querySelector('td:nth-child(6)')?.textContent||'').trim();
-          default: return tr.textContent.trim();
+          case 'date': {
+            const t = cellText(tr, nth ?? 5);
+            const ts = parseDateYmdHms(t);
+            return Number.isFinite(ts) ? ts : t.toLowerCase();
+          }
+          default:
+            return cellText(tr, nth).toLowerCase();
         }
       };
+
       rows.sort((a,b)=>{
-        const va = getVal(a).toLowerCase();
-        const vb = getVal(b).toLowerCase();
-        if(va === vb) return 0;
-        return dir==='asc' ? (va>vb?1:-1) : (va<vb?1:-1);
+        const va = getVal(a);
+        const vb = getVal(b);
+        // Numeric compare if both numbers (timestamps), else string
+        const numa = typeof va === 'number' && Number.isFinite(va);
+        const numb = typeof vb === 'number' && Number.isFinite(vb);
+        let cmp = 0;
+        if (numa && numb) {
+          cmp = va === vb ? 0 : (va > vb ? 1 : -1);
+        } else {
+          const sa = String(va);
+          const sb = String(vb);
+          cmp = sa === sb ? 0 : (sa > sb ? 1 : -1);
+        }
+        return dir==='asc' ? cmp : -cmp;
       });
       rows.forEach(r=> tbody.appendChild(r));
     }

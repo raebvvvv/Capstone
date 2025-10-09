@@ -22,10 +22,13 @@
         </span>
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notifBadge">0</span>
       </button>
-      <div id="notifDropdown" class="card shadow position-absolute end-0 mt-2" style="width:340px; display:none; z-index:1050;">
-        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+      <div id="notifDropdown" class="card shadow position-absolute end-0 mt-2" style="width:360px; display:none; z-index:1050;">
+        <div class="card-header py-2 d-flex justify-content-between align-items-center gap-2">
           <span class="fw-semibold small mb-0">Recent Re-uploads</span>
-          <button class="btn btn-sm btn-outline-secondary" id="notifRefreshBtn">↻</button>
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-secondary" id="notifMarkAllBtn" title="Mark all as read">Mark all</button>
+            <button class="btn btn-sm btn-outline-secondary" id="notifRefreshBtn" title="Refresh">↻</button>
+          </div>
         </div>
         <ul class="list-group list-group-flush small" id="notifList" style="max-height:300px; overflow-y:auto;"></ul>
         <div class="card-footer text-center small py-1"><em>Showing latest 20</em></div>
@@ -93,17 +96,37 @@
       });
   }
 
+  function markAllRead(){
+    fetch('mark_all_notifications_read.php', { method:'POST' })
+      .then(r=>r.json())
+      .then(data=>{
+        if(!data.success) return;
+        const wrap = ensureUI();
+        if(!wrap) return;
+        const list = qs('#notifList', wrap);
+        list.querySelectorAll('.mark-read-btn').forEach(btn=>{
+          btn.textContent='Read';
+          btn.className='btn btn-sm btn-outline-secondary mark-read-btn';
+        });
+        const badge = qs('#notifBadge', wrap);
+        if(badge){ badge.textContent='0'; badge.classList.add('d-none'); }
+      })
+      .catch(()=>{});
+  }
+
   function bindListeners(){
     const wrap = ensureUI();
     if(!wrap) return;
     const bell = qs('#notifBell', wrap);
     const dropdown = qs('#notifDropdown', wrap);
-    const refresh = qs('#notifRefreshBtn', wrap);
+  const refresh = qs('#notifRefreshBtn', wrap);
+  const markAll = qs('#notifMarkAllBtn', wrap);
     bell.addEventListener('click', ()=>{
       dropdown.style.display = dropdown.style.display==='none' || !dropdown.style.display ? 'block':'none';
       if(dropdown.style.display==='block'){ fetchNotifications(); }
     });
-    refresh.addEventListener('click', ()=> fetchNotifications());
+  refresh.addEventListener('click', ()=> fetchNotifications());
+  if (markAll) { markAll.addEventListener('click', (e)=>{ e.preventDefault(); markAllRead(); }); }
     document.addEventListener('click', (e)=>{
       if(!wrap.contains(e.target) && dropdown.style.display==='block'){
         dropdown.style.display='none';

@@ -33,8 +33,9 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
           <?php if ($isLoggedIn): ?>
             <!-- Logged in navigation -->
             <li class="nav-item"><a class="nav-link" href="User/Afterlogin/about.php">About Us</a></li>
-            <li class="nav-item"><a class="nav-link" href="User/Afterlogin/student-application.php">My Application</a></li>
-            <li class="nav-item"><a class="nav-link" href="User/Afterlogin/student-profile.php">My Profile</a></li>
+            <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+            <li class="nav-item"><a class="nav-link" href="<?php echo 'User/Afterlogin/' . ($isEmployee ? 'employee-application.php' : 'student-application.php'); ?>">My Application</a></li>
+            <li class="nav-item"><a class="nav-link" href="<?php echo 'User/Afterlogin/' . ($isEmployee ? 'employee-profile.php' : 'student-profile.php'); ?>">My Profile</a></li>
           
           <?php else: ?>
             <!-- Not logged in navigation -->
@@ -133,7 +134,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
         <h5 class="fw-bold mb-3">Register or Login here!</h5>
         <div class="d-flex">
           <a href="User/Beforelogin/login.php" class="btn btn-login fw-bold px-5 py-2">STUDENT</a>
-          <a href="User/Beforelogin/login.php" class="btn btn-login fw-bold px-5 py-2">EMPLOYEE</a>
+          <a href="User/Beforelogin/login.php?role=employee" class="btn btn-login fw-bold px-5 py-2">EMPLOYEE</a>
         </div>
       </div>
       <?php endif; ?>
@@ -194,7 +195,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
     </div>
   </section>
 
-  <!-- Articles Section -->
+  <!-- Articles Section 
   <section class="container py-6" id="articles">
     <h2 class="fw-bold mb-4">Articles</h2>
     <div class="row g-4">
@@ -223,7 +224,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- Footer -->
   <?php include __DIR__ . '/partials/standard_footer.php'; ?>
