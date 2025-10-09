@@ -13,26 +13,21 @@ $error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (function_exists('verify_csrf_post')) { verify_csrf_post(); }
 
-    $identifier = trim($_POST['identifier'] ?? ''); // email or ID
+    $identifier = trim($_POST['identifier'] ?? ''); // admin_number only
     $password   = $_POST['password'] ?? '';
 
     if ($identifier === '' || $password === '') {
         $error = 'Please fill in all fields.';
     } else {
-        // Determine lookup by email or admin number
-        $byEmail = strpos($identifier, '@') !== false;
-        
-        if ($byEmail) {
-            // Login by email
-            $sql = "SELECT user_id, email, password, role, status FROM users WHERE email = ? LIMIT 1";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$identifier]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        // Strict: accept ONLY admin_number (no email-based login)
+        // Reject if input looks like an email to avoid user confusion or enumeration
+        if (strpos($identifier, '@') !== false) {
+            $error = 'Invalid credentials.'; // generic
+            $user = null;
         } else {
-            // Login by admin number
-            $sql = "SELECT u.user_id, u.email, u.password, u.role, u.status, ap.admin_number as identifier 
+            $sql = "SELECT u.user_id, u.email, u.password, u.role, u.status, ap.admin_number 
                     FROM users u 
-                    JOIN admin_profiles ap ON u.user_id = ap.user_id 
+                    INNER JOIN admin_profiles ap ON u.user_id = ap.user_id 
                     WHERE ap.admin_number = ? LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$identifier]);
@@ -54,7 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_logged_in'] = true;
                     $_SESSION['user_id'] = $user['user_id'];
                     $_SESSION['email'] = $user['email'] ?? '';
-                    $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email'];
+                    $_SESSION['admin_number'] = $user['admin_number'] ?? $identifier;
+                    $_SESSION['user_identifier'] = $user['admin_number'] ?? $user['email'];
                     $_SESSION['is_admin'] = 1;
                     $_SESSION['role'] = 'admin';
                     redirect('admin/admin.php');

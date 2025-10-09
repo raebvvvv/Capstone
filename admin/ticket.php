@@ -83,9 +83,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch admin data
 if (isset($_SESSION['user_id'])) {
     $user_id = (int)$_SESSION['user_id'];
-    $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name FROM users u 
-        LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ?");
-    $stmt->execute([$user_id]);
+    if (!empty($_SESSION['admin_number'])) {
+        $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name, ap.admin_number FROM users u 
+            INNER JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? AND ap.admin_number = ? LIMIT 1");
+        $stmt->execute([$user_id, $_SESSION['admin_number']]);
+    } else {
+        $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name, ap.admin_number FROM users u 
+            LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? LIMIT 1");
+        $stmt->execute([$user_id]);
+    }
     $row = $stmt->fetch() ?: [];
     $admin = [
         'email' => $row['email'] ?? '',
