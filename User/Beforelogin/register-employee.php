@@ -247,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <body class="bg-light d-flex flex-column min-vh-100">
   <nav class="navbar navbar-expand-lg bg-white border-bottom">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
+      <a class="navbar-brand d-flex align-items-center" href="<?php echo asset_url('index.php'); ?>">
         <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
