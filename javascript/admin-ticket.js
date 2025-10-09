@@ -210,9 +210,14 @@
     const v=(x)=> (x??'');
     if(!edit){
       const isAdv = (author && (author.is_adviser===1 || author.is_adviser===true || author.is_adviser==='1'));
+      // Determine if this is an employee context based on the current submission's request ID
+      const rid = String(currentDetails.request_id || '');
+      const isEmployee = /^ERID-/i.test(rid);
+      const idLabel = isEmployee ? 'Employee ID/Number' : 'Student Number';
+      
       body.innerHTML = `<div class="mb-3"><strong>Name:</strong> ${author.name || '—'} ${isAdv? '<span class="badge bg-warning text-dark ms-2">Adviser</span>':''}</div>`+
-        `<div class="mb-2"><strong>Role:</strong> ${isAdv ? 'Adviser' : 'Author'}</div>`+
-        `<div class="mb-2"><strong>Student Number:</strong> ${author.studentNumber || ''}</div>`+
+        `<div class="mb-2"><strong>Role:</strong> ${isAdv ? 'Adviser' : 'Co-Author'}</div>`+
+        `<div class="mb-2"><strong>${idLabel}:</strong> ${author.studentNumber || ''}</div>`+
         `<div class="mb-2"><strong>Email Address:</strong> ${author.email || ''}</div>`+
         `<div class="mb-2"><strong>Home Address:</strong> ${author.address || ''}</div>`+
         `<div class="mb-2"><strong>Phone Number:</strong> ${author.phone || ''}</div>`;
@@ -228,12 +233,17 @@
         return { first, middle, last };
       };
       const nm = splitName(author.name||'');
+      // Determine if this is an employee context based on the current submission's request ID
+      const rid = String(currentDetails.request_id || '');
+      const isEmployee = /^ERID-/i.test(rid);
+      const idLabel = isEmployee ? 'Employee ID/Number' : 'Student Number';
+      
       body.innerHTML = `<div class="row g-2">`+
         `<div class="col-12 col-md-4"><label class="form-label">First Name</label><input class="form-control" id="editAuthorFirst" value="${escapeHTML(v(nm.first))}"></div>`+
         `<div class="col-12 col-md-4"><label class="form-label">Middle Name</label><input class="form-control" id="editAuthorMiddle" value="${escapeHTML(v(nm.middle))}"></div>`+
         `<div class="col-12 col-md-4"><label class="form-label">Last Name</label><input class="form-control" id="editAuthorLast" value="${escapeHTML(v(nm.last))}"></div>`+
         `</div>`+
-        `<div class="mb-2 mt-2"><label class="form-label">Student Number</label><input class="form-control" id="editAuthorStudNoInput" value="${escapeHTML(v(author.studentNumber))}"></div>`+
+        `<div class="mb-2 mt-2"><label class="form-label">${idLabel}</label><input class="form-control" id="editAuthorStudNoInput" value="${escapeHTML(v(author.studentNumber))}"></div>`+
         `<div class="mb-2"><label class="form-label">Email Address</label><input type="email" class="form-control" id="editAuthorEmailInput" value="${escapeHTML(v(author.email))}"></div>`+
         `<div class="mb-2"><label class="form-label">Home Address</label><input class="form-control" id="editAuthorAddressInput" value="${escapeHTML(v(author.address))}"></div>`+
         `<div class="mb-2"><label class="form-label">Phone Number</label><input class="form-control" id="editAuthorPhoneInput" value="${escapeHTML(v(author.phone))}"></div>`;

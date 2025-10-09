@@ -273,21 +273,8 @@ if (empty($errors)) {
 
         $submission_id = $pdo->lastInsertId();
 
-        // Insert adviser as co-author if checkbox is checked
-        if (isset($_POST['adviser_Coauthor']) && $adviser_id) {
-            $authorStmt = $pdo->prepare("
-                INSERT INTO submission_authors (
-                    submission_id, adviser_id, first_name, middle_name, last_name, is_adviser, role
-                ) VALUES (?, ?, ?, ?, ?, 1, 'Adviser')
-            ");
-            $authorStmt->execute([
-                $submission_id,
-                $adviser_id,
-                $firstName,
-                $middleName,
-                $lastName
-            ]);
-        }
+        // Note: Adviser as co-author is handled via the coauthors array below (with is_adviser flag)
+        // No separate insertion needed here
 
         // Insert documents
         $docStmt = $pdo->prepare("
@@ -366,11 +353,6 @@ if (empty($errors)) {
         }
 
         // Handle coauthors
-        // Get adviser name parts for comparison
-        $adviserFirstName = $firstName;
-        $adviserMiddleName = $middleName;
-        $adviserLastName = $lastName;
-
         if (!empty($_POST['coauthors'])) {
             $authorStmt = $pdo->prepare("
                 INSERT INTO submission_authors (
@@ -381,14 +363,10 @@ if (empty($errors)) {
             ");
 
             foreach ($_POST['coauthors'] as $coauthor) {
-                // Skip if this coauthor is the adviser (already inserted as adviser)
-                if (
-                    trim(strtolower($coauthor['first_name'])) === trim(strtolower($adviserFirstName)) &&
-                    trim(strtolower(isset($coauthor['middle_name']) ? $coauthor['middle_name'] : (isset($coauthor['middle_initial']) ? $coauthor['middle_initial'] : ''))) === trim(strtolower($adviserMiddleName)) &&
-                    trim(strtolower($coauthor['last_name'])) === trim(strtolower($adviserLastName))
-                ) {
-                    continue;
-                }
+                // Insert all coauthors including advisers (is_adviser flag distinguishes them)
+                // Explicitly check for '1' or true to handle both string and boolean values
+                $isAdviser = (isset($coauthor['is_adviser']) && ($coauthor['is_adviser'] === '1' || $coauthor['is_adviser'] === 1 || $coauthor['is_adviser'] === true)) ? 1 : 0;
+                
                 $authorStmt->execute([
                     $submission_id,
                     normalize_name($coauthor['first_name']),
@@ -398,7 +376,7 @@ if (empty($errors)) {
                     $coauthor['mobile'],
                     $coauthor['home_address'],
                     $coauthor['webmail'],
-                    $coauthor['is_adviser'] ? 0 : 1
+                    $isAdviser
                 ]);
             }
         }

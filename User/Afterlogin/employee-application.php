@@ -181,6 +181,13 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
   $pendingIssue = trim((string)($row['pending_issue_label'] ?? ''));
   $pendingComment = trim((string)($row['pending_admin_comment'] ?? ''));
   $pendingAffected = trim((string)($row['pending_affected_doc_types'] ?? ''));
+  // Build comment text for button from admin comment only (no fallback to remarks)
+  $pendingCommentText = $pendingComment;
+  if ($pendingCommentText !== '' && $pendingAffected !== '') {
+    $parts = array_filter(array_map('trim', explode('|', $pendingAffected)));
+    $pretty = array_map(function($s){ return ucwords(str_replace('_',' ', $s)); }, $parts);
+    $pendingCommentText = trim($pendingCommentText . "\n\nFile(s) to be resubmitted: " . implode(', ', $pretty));
+  }
   ?>
 <tr
   data-status="<?php echo htmlspecialchars($row['status']); ?>"
@@ -253,15 +260,6 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
   <td class="align-middle text-nowrap">
     <div class="d-flex gap-2 align-items-center flex-nowrap justify-content-start">
       <?php if($pendingComment !== ''): ?>
-        <?php
-          // Include files to be resubmitted in the comments content when available (Pending scope)
-          $pendingCommentText = (string)$pendingComment;
-          if ($pendingAffected !== '') {
-            $parts = array_filter(array_map('trim', explode('|', $pendingAffected)));
-            $pretty = array_map(function($s){ return ucwords(str_replace('_',' ', $s)); }, $parts);
-            $pendingCommentText = trim($pendingCommentText . "\n\nFile(s) to be resubmitted: " . implode(', ', $pretty));
-          }
-        ?>
         <a href="#" class="btn btn-outline-secondary btn-sm btn-comments" data-admin-comment="<?php echo htmlspecialchars($pendingCommentText, ENT_QUOTES); ?>">Comments</a>
       <?php else: ?>
         <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>
@@ -332,11 +330,9 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
                     $approvedRemark = "Documents don't match";
                   }
                 } else {
-                  // If admin provided a comment but chose no specific remarks option, show "Others"
-                  $approvedAdminCommentCheck = trim((string)($row['approved_admin_comment'] ?? ''));
-                  if ($approvedAdminCommentCheck !== '') {
-                    $approvedRemark = 'Others';
-                  }
+                  // No specific issue label set in Approved scope.
+                  // Keep default remark "For Physical Submission" even if an approved admin comment exists.
+                  // The comment is still accessible via the Comments button.
                 }
               ?>
               <tr<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>
@@ -399,7 +395,8 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
             <?php if(count($completed_items)===0): ?>
               <tr><td colspan="6" class="text-center text-muted py-5">No completed applications.</td></tr>
             <?php else: foreach($completed_items as $row): ?>
-              <tr<?php if(!empty($row['approved_admin_comment'])) echo ' data-admin-comment="'.htmlspecialchars($row['approved_admin_comment'], ENT_QUOTES).'"'; ?>>
+              <?php $completionComment = trim((string)($row['remarks'] ?? '')); ?>
+              <tr<?php if($completionComment !== '') echo ' data-admin-comment="'.htmlspecialchars($completionComment, ENT_QUOTES).'"'; ?>>
                 <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
                 <td class="text-nowrap"><?php echo htmlspecialchars($row['employee_number']); ?></td>
                 <td>
@@ -415,7 +412,7 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
                   <div class="d-flex gap-2 align-items-center flex-nowrap justify-content-start">
                     <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
                     <a href="#" class="btn btn-outline-primary btn-sm btn-view-certificate" data-code="<?php echo htmlspecialchars($row['submission_code']); ?>">View Certificate</a>
-                    <?php if(!empty($row['approved_admin_comment'])): ?>
+                    <?php if($completionComment !== ''): ?>
                       <a href="#" class="btn btn-outline-secondary btn-sm btn-comments">Comments</a>
                     <?php else: ?>
                       <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>

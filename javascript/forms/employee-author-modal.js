@@ -166,7 +166,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = `coauthors[${index}][${key}]`;
-        input.value = value;
+        // Convert boolean is_adviser to numeric string for PHP
+        if (key === 'is_adviser') {
+          input.value = value ? '1' : '0';
+        } else {
+          input.value = value;
+        }
         mainForm.appendChild(input);
       });
     });

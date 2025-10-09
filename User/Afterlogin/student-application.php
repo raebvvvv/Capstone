@@ -331,11 +331,9 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
                     $approvedRemark = "Documents don't match";
                   }
                 } else {
-                  // If admin provided a comment but chose no specific remarks option, show "Others"
-                  $approvedAdminCommentCheck = trim((string)($row['approved_admin_comment'] ?? ''));
-                  if ($approvedAdminCommentCheck !== '') {
-                    $approvedRemark = 'Others';
-                  }
+                  // No specific issue label set in Approved scope.
+                  // Keep default remark "For Physical Submission" even if an approved admin comment exists.
+                  // The comment is still accessible via the Comments button.
                 }
               ?>
               <tr<?php if($approvedAffected !== ''): ?> data-resubmit-files="<?php echo htmlspecialchars($approvedAffected, ENT_QUOTES); ?>"<?php endif; ?>>
@@ -399,11 +397,10 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
               <tr><td colspan="6" class="text-center text-muted py-5">No completed applications.</td></tr>
             <?php else: foreach($completed_items as $row): ?>
               <?php
-                // Completed: Comments button only if approved admin comment exists
-                $completedApprovedAdminComment = trim((string)($row['approved_admin_comment'] ?? ''));
-                $completedComment = $completedApprovedAdminComment;
+                // Completed: show comment ONLY if a completion comment exists (stored in s.remarks)
+                $completionComment = trim((string)($row['remarks'] ?? ''));
               ?>
-              <tr<?php if($completedApprovedAdminComment !== '') echo ' data-admin-comment="'.htmlspecialchars($completedComment, ENT_QUOTES).'"'; ?>>
+              <tr<?php if($completionComment !== '') echo ' data-admin-comment="'.htmlspecialchars($completionComment, ENT_QUOTES).'"'; ?>>
                 <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
                 <td class="text-nowrap"><?php echo htmlspecialchars($row['student_number']); ?></td>
                 <td>
@@ -419,7 +416,7 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
                   <div class="d-flex gap-2 align-items-center flex-nowrap justify-content-start">
                     <a href="#" class="btn btn-success btn-sm view-details-btn" data-id="<?php echo htmlspecialchars($row['submission_code']); ?>">View Details</a>
                     <a href="#" class="btn btn-outline-primary btn-sm btn-view-certificate" data-code="<?php echo htmlspecialchars($row['submission_code']); ?>">View Certificate</a>
-                    <?php if($completedApprovedAdminComment !== ''): ?>
+                    <?php if($completionComment !== ''): ?>
                       <a href="#" class="btn btn-outline-secondary btn-sm btn-comments">Comments</a>
                     <?php else: ?>
                       <span class="btn btn-outline-secondary btn-sm invisible">Comments</span>

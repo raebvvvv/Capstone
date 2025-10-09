@@ -196,11 +196,13 @@ class SecurityHeaders {
         
         if (self::$isProduction) {
             // Production: enforce CSP with reporting
-            $reportUri = Environment::get('CSP_REPORT_URI', '/security/csp-report');
+            $reportUri = Environment::get('CSP_REPORT_URI', '/csp_report.php');
             $cspDirectives[] = "report-uri $reportUri";
             header('Content-Security-Policy: ' . implode('; ', $cspDirectives));
         } else {
-            // Development: report-only mode for testing
+            // Development: report-only mode for testing (with report URI to suppress browser warnings)
+            $reportUri = Environment::get('CSP_REPORT_URI', '/csp_report.php');
+            $cspDirectives[] = "report-uri $reportUri";
             header('Content-Security-Policy-Report-Only: ' . implode('; ', $cspDirectives));
         }
     }
