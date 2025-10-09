@@ -245,8 +245,8 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                     <small class="text-muted d-block mt-1">Use the button to add each author.</small>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label">Adviser</label>
-                    <input type="text" name="adviser" class="form-control" placeholder="Add an Adviser">
+                    <label class="form-label required">Adviser</label>
+                    <input type="text" name="adviser" class="form-control required" placeholder="Add an Adviser" required>
                     <div class="form-check mt-2">
                       <input class="form-check-input" type="checkbox" name="adviser_Coauthor" id="adviser_Coauthor">
                       <label class="form-check-label" for="adviser_Coauthor">
