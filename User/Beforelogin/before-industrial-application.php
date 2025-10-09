@@ -47,11 +47,12 @@
       <li class="mb-4">
         This ZIP file contains clean copies of all the files listed below.<br>
         Files <strong>required</strong> to be printed have <span class="text-success fw-bold">'[Print]'</span> in their filenames.<br>
-        <a href="https://drive.google.com/uc?export=download&id=1njbAmgm2LrUSm2I5NPM9sFgPLbwnP_UH" class="btn btn-primary mt-2 mb-2" style="width:180px; background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Industrial-Property.zip</a>
+        <a href="https://drive.google.com/uc?export=download&id=1JtRlzBU0S7DDaaXSr6yJJlZLo8C7pigy" class="btn btn-primary mt-2 mb-2" style="width:180px; background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Industrial-Property.zip</a>
       </li>
       <li class="mb-4">
-        Once printed and accomplished, you may proceed to the <strong>submission form.</strong><br> 
-        <a href="login.php" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a>
+        Once printed and accomplished, please proceed to the <strong>physical submission at the RMIPO in room S423, PUP Main.</strong><br> 
+      <!-- <a href="login.php" class="btn submission-btn mt-2 mb-2" style="width:180px;">Submission Form</a> -->
+        <br> 
       </li>
     </ol>
     <p class="text-muted mb-3" style="font-size:0.95em;">
@@ -61,42 +62,64 @@
       <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">1. Industrial Property Application and Procedures</span>
+          <span class="fw-bold">1. Request letter / Letter of intent for IP application addressed to the director of IPMO <span class="text-success">[Print]</span></span>
         </div>
         <div class="file-actions">
-          <a href="https://drive.google.com/file/d/11KW9MmxtVCzsfsWa1r9ifg-0RBFP-hG-/view?usp=sharing" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
-          <a href="https://drive.google.com/uc?export=download&id=11KW9MmxtVCzsfsWa1r9ifg-0RBFP-hG-" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+          
+        <!-- <a href="https://drive.google.com/file/d/11KW9MmxtVCzsfsWa1r9ifg-0RBFP-hG-/view?usp=sharing" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://drive.google.com/uc?export=download&id=11KW9MmxtVCzsfsWa1r9ifg-0RBFP-hG-" class="btn btn-danger btn-sm mb-1">Download as PDF</a> -->
+        
         </div>
       </div>
       <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">2. Industrial Property Application Form <span class="text-success">[Print]</span></span><br>
-          <span style="font-size:0.95em;">For Multiple or Single Authorship</span>
+          <span class="fw-bold">2.	Proof of copyright application / Certificate of copyright application from IPMO <span class="text-success">[Print]</span></span><br>
+          <span style="font-size:0.95em;">You must first secure a copyright application or certificate from the IPMO.</span>
         </div>
         <div class="file-actions">
-          <a href="https://docs.google.com/document/d/1py-jLmvd_jbNyk4fCUZkwBVq28C6F4l6/edit?usp=sharing&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
-          <a href="https://docs.google.com/document/d/1py-jLmvd_jbNyk4fCUZkwBVq28C6F4l6/export?format=docx" download class="btn download-btn btn-sm mb-1">Download as PDF</a>
+          <!-- <a href="https://docs.google.com/document/d/1py-jLmvd_jbNyk4fCUZkwBVq28C6F4l6/edit?usp=sharing&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://docs.google.com/document/d/1py-jLmvd_jbNyk4fCUZkwBVq28C6F4l6/export?format=docx" download class="btn download-btn btn-sm mb-1">Download as PDF</a> -->
         </div>
       </div>
       <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">3. Industrial Property Co-Authorship Agreement <span class="text-success">[Print]</span></span>
+          <span class="fw-bold">3.	Notarized deed of Assignment <span class="text-success">[Print]</span></span>
         </div>
         <div class="file-actions">
-          <a href="https://docs.google.com/document/d/11K-MlpSodpghHhPiB_q5YUpXlSdb_vgb/edit?usp=drive_link&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
-          <a href="https://docs.google.com/document/d/11K-MlpSodpghHhPiB_q5YUpXlSdb_vgb/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+          <a href="https://docs.google.com/document/d/1eufbQVVlI09adpwep406tXTiL_ksmUV5/view" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://docs.google.com/document/d/1eufbQVVlI09adpwep406tXTiL_ksmUV5/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
         </div>
       </div>
         <div class="file-card">
         <div class="file-icon">&#128196;</div>
         <div class="file-info">
-          <span class="fw-bold">4. Flash Drive Label  <span class="text-success">[Print]</span></span><br>
+          <span class="fw-bold">4. Invention Disclosure Form  <span class="text-success">[Print]</span></span><br>
         </div>
         <div class="file-actions">
-          <a href="https://docs.google.com/document/d/18Eq88--hxUbixZWGvd3LdEl6BzszfG0S/edit?usp=drive_link&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
-          <a href="https://docs.google.com/document/d/18Eq88--hxUbixZWGvd3LdEl6BzszfG0S/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+          <a href="https://docs.google.com/document/d/1tiY3U6vEubB69x0kY_Bqm1UMIBvwqXb9/view" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://docs.google.com/document/d/1tiY3U6vEubB69x0kY_Bqm1UMIBvwqXb9/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+        </div>
+      </div>
+          <div class="file-card">
+        <div class="file-icon">&#128196;</div>
+        <div class="file-info">
+          <span class="fw-bold">5. Preliminary Search Report <span class="text-success">[Print]</span></span><br>
+        </div>
+        <div class="file-actions">
+          <a href="https://docs.google.com/document/d/1g2eyCiWMMXDUP72nNh4KZJvkClkmu3OO/view" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://docs.google.com/document/d/1tiY3U6vEubB69x0kY_Bqm1UMIBvwqXb9/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a>
+        </div>
+      </div>
+        <div class="file-card">
+        <div class="file-icon">&#128196;</div>
+        <div class="file-info">
+          <span class="fw-bold">6. Two (2) copies of acknowledgement receipt of IP Application  <span class="text-success">[Print]</span></span><br>
+        </div>
+        <div class="file-actions">
+          <!-- <a href="https://docs.google.com/document/d/18Eq88--hxUbixZWGvd3LdEl6BzszfG0S/edit?usp=drive_link&ouid=104730774923126836253&rtpof=true&sd=true" target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
+          <a href="https://docs.google.com/document/d/18Eq88--hxUbixZWGvd3LdEl6BzszfG0S/export?format=docx" class="btn btn-danger btn-sm mb-1">Download as PDF</a> -->
         </div>
       </div>
     </div>
