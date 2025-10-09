@@ -195,7 +195,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
     </div>
   </section>
 
-  <!-- Articles Section -->
+  <!-- Articles Section 
   <section class="container py-6" id="articles">
     <h2 class="fw-bold mb-4">Articles</h2>
     <div class="row g-4">
@@ -224,7 +224,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- Footer -->
   <?php include __DIR__ . '/partials/standard_footer.php'; ?>
