@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $campus        = trim($_POST['campus'] ?? '');
     $college       = trim($_POST['college'] ?? '');
     $department    = trim($_POST['department'] ?? '');
+  $academicLevel = trim($_POST['academic_level'] ?? '');
 
   // reset errors for this POST
   $errors = [];
@@ -34,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $now = new DateTime();
         $diff = $lastUpdateDate->diff($now)->days;
 
-        if ($diff < 30) {
+      if ($diff < 30) {
             $daysLeft = 30 - $diff;
             $errors[] = "Profile can only be updated once every 30 days. Please wait {$daysLeft} more days.";
         }
@@ -66,14 +67,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $errors[] = "Invalid mobile number format (use 09XXXXXXXXX or +639XXXXXXXXX)";
   }
 
-  // Required fields (suffix & middle name optional)
+  // Required fields (suffix, middle name, and program are optional)
   if (empty($firstName) || empty($lastName) || empty($homeAddress) ||
     empty($mobileNumber) || empty($campus) || empty($college) || empty($department)) {
-    $errors[] = "All fields except suffix and middle name are required";
+    $errors[] = "All fields except suffix, middle name, and program are required";
   }
 
+  // Additional validation for new editable fields
+  $validCampuses = ['PUP Main (Sta. Mesa, Manila)'];
+  if (!in_array($campus, $validCampuses)) {
+    $errors[] = "Please select a valid campus";
+  }
+
+  $validColleges = [
+    'College of Accountancy and Finance (CAF)',
+    'College of Architecture, Design and the Built Environment (CADBE)',
+    'College of Arts and Letters (CAL)',
+    'College of Business Administration (CBA)',
+    'College of Communication (COC)',
+    'College of Computer and Information Sciences (CCIS)',
+    'College of Education (COED)',
+    'College of Engineering (CE)',
+    'College of Human Kinetics (CHK)',
+    'College of Law (CL)',
+    'College of Political Science and Public Administration (CPSPA)',
+    'College of Social Sciences and Development (CSSD)',
+    'College of Science (CS)',
+    'College of Tourism, Hospitality and Transportation Management (CTHTM)',
+    'Institute of Technology'
+  ];
+  if (!in_array($college, $validColleges)) {
+    $errors[] = "Please select a valid college";
+  }
+
+  // Program is optional for employees, but validate if provided
+  // (No validation needed for optional program field)
+
+  // Validate academic level (required and must be one of allowed values)
+  $validLevels = ['Not Studying','Doctorate','Masters','Open University'];
+  if ($academicLevel === '') {
+    $errors[] = 'Academic level is required';
+  } elseif (!in_array($academicLevel, $validLevels, true)) {
+    $errors[] = 'Invalid academic level selected';
+  }
+
+  // Get additional fields for validation and update
+  $program = trim($_POST['program'] ?? '');
+
   // Fetch current profile data
-  $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, department FROM employee_profiles WHERE user_id = ?");
+  $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, program, department, academic_level FROM employee_profiles WHERE user_id = ?");
     $stmt->execute([$user_id]);
     $current = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -87,7 +129,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $mobileNumber  !== $current['mobile_number'] ||
         $campus        !== $current['campus'] ||
         $college       !== $current['college'] ||
-        $department    !== $current['department']
+        $program       !== $current['program'] ||
+        $department    !== $current['department'] ||
+        $academicLevel !== $current['academic_level']
     );
 
     if (!$hasChanges) {
@@ -95,15 +139,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     }
 
     if (empty($errors)) {
-        // Proceed with update
-    // Only allow updating home address and mobile number; keep others unchanged
-    $stmt = $pdo->prepare("UPDATE employee_profiles SET 
-      home_address=?, mobile_number=?, last_updated_at=NOW()
-      WHERE user_id=?");
+        // Proceed with update: allow updating names, academic fields, home address and mobile number
+        $stmt = $pdo->prepare("UPDATE employee_profiles SET 
+          last_name=?, first_name=?, middle_name=?, suffix=?, 
+          campus=?, college=?, program=?, department=?, academic_level=?, 
+          home_address=?, mobile_number=?, last_updated_at=NOW()
+          WHERE user_id=?");
         
-    $stmt->execute([
-      $homeAddress, $mobileNumber, $user_id
-    ]);
+        $stmt->execute([
+          $lastName, $firstName, $middleName, $suffix,
+          $campus, $college, $program, $department, $academicLevel, 
+          $homeAddress, $mobileNumber, $user_id
+        ]);
         $success = "✅ Profile updated successfully!";
     } else {
         // Show errors as list
@@ -242,7 +289,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">Last Name</label>
     <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['last_name']) ? 'is-invalid' : ''; ?>" 
+           class="form-control <?php echo isset($errors['last_name']) ? 'is-invalid' : ''; ?>" 
            name="last_name" id="lastName" 
            value="<?php echo htmlspecialchars($profile['last_name'] ?? ''); ?>" 
            readonly>
@@ -254,7 +301,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">First Name</label>
     <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['first_name']) ? 'is-invalid' : ''; ?>" 
+           class="form-control <?php echo isset($errors['first_name']) ? 'is-invalid' : ''; ?>" 
            name="first_name" id="firstName" 
            value="<?php echo htmlspecialchars($profile['first_name'] ?? ''); ?>" 
            readonly>
@@ -266,7 +313,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">Middle Name</label>
     <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['middle_name']) ? 'is-invalid' : ''; ?>" 
+           class="form-control <?php echo isset($errors['middle_name']) ? 'is-invalid' : ''; ?>" 
            name="middle_name" id="middleName" 
            value="<?php echo htmlspecialchars($profile['middle_name'] ?? ''); ?>" 
            readonly>
@@ -280,7 +327,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">Suffix</label>
     <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['suffix']) ? 'is-invalid' : ''; ?>" 
+           class="form-control <?php echo isset($errors['suffix']) ? 'is-invalid' : ''; ?>" 
            name="suffix" id="suffix" 
            value="<?php echo htmlspecialchars($profile['suffix'] ?? ''); ?>" 
            readonly>
@@ -326,52 +373,62 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 
 <div class="row mb-3">
   <div class="col-md-4">
-    <label class="form-label">Academic Level</label>
-    <input type="text" 
-           class="form-control bg-light lock" 
-           id="academicLevel"
-           value="<?php echo htmlspecialchars($profile['academic_level'] ?? 'Not Studying'); ?>" 
-           readonly>
-  </div>
-  <div class="col-md-4">
     <label class="form-label">Campus</label>
-    <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['campus']) ? 'is-invalid' : ''; ?>" 
-           name="campus" id="campus" 
-           value="<?php echo htmlspecialchars($profile['campus'] ?? ''); ?>" 
-           readonly>
+    <select class="form-select <?php echo isset($errors['campus']) ? 'is-invalid' : ''; ?>" 
+            name="campus" id="campus" disabled>
+      <?php $campusVal = trim((string)($profile['campus'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($campusVal); ?>" selected><?php echo htmlspecialchars($campusVal ?: 'Choose...'); ?></option>
+    </select>
     <?php if (isset($errors['campus'])): ?>
       <div class="invalid-feedback"><?php echo $errors['campus']; ?></div>
     <?php endif; ?>
   </div>
-  <div class="col-md-4">
-    <label class="form-label">Program</label>
-    <input type="text" 
-           class="form-control bg-light lock" 
-           id="program"
-           value="<?php echo htmlspecialchars($profile['program'] ?? 'N/A'); ?>" 
-           readonly>
-  </div>
-
+  
   <div class="col-md-4">
     <label class="form-label">College</label>
-    <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['college']) ? 'is-invalid' : ''; ?>" 
-           name="college" id="college" 
-           value="<?php echo htmlspecialchars($profile['college'] ?? ''); ?>" 
-           readonly>
+    <select class="form-select <?php echo isset($errors['college']) ? 'is-invalid' : ''; ?>" 
+            name="college" id="college" disabled>
+      <?php $collegeVal = trim((string)($profile['college'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($collegeVal); ?>" selected><?php echo htmlspecialchars($collegeVal ?: 'Choose...'); ?></option>
+    </select>
     <?php if (isset($errors['college'])): ?>
       <div class="invalid-feedback"><?php echo $errors['college']; ?></div>
     <?php endif; ?>
   </div>
 
   <div class="col-md-4">
+    <label class="form-label">Program</label>
+    <select class="form-select <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
+            name="program" id="program" disabled>
+      <?php $programVal = trim((string)($profile['program'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($programVal); ?>" selected><?php echo htmlspecialchars($programVal ?: 'Choose...'); ?></option>
+    </select>
+    <?php if (isset($errors['program'])): ?>
+      <div class="invalid-feedback"><?php echo $errors['program']; ?></div>
+    <?php endif; ?>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <div class="col-md-4">
+    <label class="form-label">Academic Level</label>
+    <select class="form-select <?php echo isset($errors['academic_level']) ? 'is-invalid' : ''; ?>" 
+            name="academic_level" id="academicLevel" disabled>
+      <?php $levelVal = trim((string)($profile['academic_level'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($levelVal); ?>" selected><?php echo htmlspecialchars($levelVal ?: 'Choose...'); ?></option>
+    </select>
+    <?php if (isset($errors['academic_level'])): ?>
+      <div class="invalid-feedback"><?php echo $errors['academic_level']; ?></div>
+    <?php endif; ?>
+  </div>
+
+  <div class="col-md-4">
     <label class="form-label">Department</label>
-    <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['department']) ? 'is-invalid' : ''; ?>" 
-           name="department" id="department" 
-           value="<?php echo htmlspecialchars($profile['department'] ?? ''); ?>" 
-           readonly>
+    <select class="form-select <?php echo isset($errors['department']) ? 'is-invalid' : ''; ?>" 
+            name="department" id="department" disabled>
+      <?php $deptVal = trim((string)($profile['department'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($deptVal); ?>" selected><?php echo htmlspecialchars($deptVal ?: 'Choose...'); ?></option>
+    </select>
     <?php if (isset($errors['department'])): ?>
       <div class="invalid-feedback"><?php echo $errors['department']; ?></div>
     <?php endif; ?>
@@ -399,12 +456,10 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
   <!-- Scripts -->
-  
-
+  <script src="<?php echo asset_url('javascript/forms/employee-academic-dropdowns.js'); ?>" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-<script src="<?php echo asset_url('javascript/student-profile.js'); ?>"></script>
 <script src="<?php echo asset_url('javascript/date-limit.js'); ?>"></script>
-<script src="<?php echo asset_url('javascript/student-profile-inline.js'); ?>"></script>
+<script src="<?php echo asset_url('javascript/employee-profile.js'); ?>"></script>
 </body>
 
 <!-- Logout Confirmation Modal -->

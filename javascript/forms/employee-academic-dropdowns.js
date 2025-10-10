@@ -351,25 +351,43 @@ document.addEventListener('DOMContentLoaded', function() {
       .sort();
   }
   
-  // Populate selects even if disabled (we keep them locked but with visible options)
-  if (campusSelect) populateDropdown(campusSelect, academicData.campus);
-  // Populate academic level options
-  if (academicLevelSelect) {
+  // Helper: whether select has a single, server-provided value we should keep
+  function hasServerSelection(select) {
+    if (!select || !select.options || select.options.length !== 1) return false;
+    const val = (select.options[0].value || '').trim();
+    const txt = (select.options[0].textContent || '').trim();
+    if (!val) return false;
+    const sentinel = new Set(['Choose...', 'N/A']);
+    return !sentinel.has(val) && !sentinel.has(txt);
+  }
+
+  // Populate selects even if disabled, but don't overwrite a single server value
+  if (campusSelect && (!campusSelect.options || campusSelect.options.length === 0 || (campusSelect.options.length === 1 && !hasServerSelection(campusSelect)))) {
+    populateDropdown(campusSelect, academicData.campus);
+  }
+  // Populate academic level options (respect server-provided selection)
+  if (academicLevelSelect && (!academicLevelSelect.options || academicLevelSelect.options.length === 0 || (academicLevelSelect.options.length === 1 && !hasServerSelection(academicLevelSelect)))) {
     // For employee pages (id 'academicLevel'), show requested options only
     const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"];
     populateDropdown(academicLevelSelect, employeeLevelOptions);
   }
-  if (collegeSelect) populateDropdown(collegeSelect, getDynamicCollegeList());
-  if (programSelect) populateDropdown(programSelect, academicData.program.default);
-  if (departmentSelect) populateDropdown(departmentSelect, academicData.department.default);
+  if (collegeSelect && (!collegeSelect.options || collegeSelect.options.length === 0 || (collegeSelect.options.length === 1 && !hasServerSelection(collegeSelect)))) {
+    populateDropdown(collegeSelect, getDynamicCollegeList());
+  }
+  if (programSelect && (!programSelect.options || programSelect.options.length === 0 || (programSelect.options.length === 1 && !hasServerSelection(programSelect)))) {
+    populateDropdown(programSelect, academicData.program.default);
+  }
+  if (departmentSelect && (!departmentSelect.options || departmentSelect.options.length === 0 || (departmentSelect.options.length === 1 && !hasServerSelection(departmentSelect)))) {
+    populateDropdown(departmentSelect, academicData.department.default);
+  }
   if (workClassificationSelect) populateDropdown(workClassificationSelect, academicData.workClassification);
 
-  // Apply department N/A lock if initial college has no mapping
+  // Apply department N/A lock if initial college has no mapping, but don't override server-provided selection
   if (collegeSelect && departmentSelect) {
     const initialCollege = collegeSelect.value;
     if (initialCollege) {
       const deps = academicData.department[initialCollege];
-      if (!Array.isArray(deps) || deps.length === 0) {
+      if ((!Array.isArray(deps) || deps.length === 0) && !hasServerSelection(departmentSelect)) {
         departmentSelect.disabled = true;
         departmentSelect.innerHTML = '';
         const na = document.createElement('option');
@@ -394,14 +412,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Re-initialize after terms acceptance if form was hidden initially
   document.addEventListener('ipmo:form:show', function () {
-    if (campusSelect) populateDropdown(campusSelect, academicData.campus);
-    if (academicLevelSelect) {
+    if (campusSelect && (!campusSelect.options || campusSelect.options.length === 0 || (campusSelect.options.length === 1 && !hasServerSelection(campusSelect)))) populateDropdown(campusSelect, academicData.campus);
+    if (academicLevelSelect && (!academicLevelSelect.options || academicLevelSelect.options.length === 0 || (academicLevelSelect.options.length === 1 && !hasServerSelection(academicLevelSelect)))) {
       const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"];
       populateDropdown(academicLevelSelect, employeeLevelOptions);
     }
-    if (collegeSelect) populateDropdown(collegeSelect, getDynamicCollegeList());
-    if (programSelect) populateDropdown(programSelect, academicData.program.default);
-    if (departmentSelect) populateDropdown(departmentSelect, academicData.department.default);
+    if (collegeSelect && (!collegeSelect.options || collegeSelect.options.length === 0 || (collegeSelect.options.length === 1 && !hasServerSelection(collegeSelect)))) populateDropdown(collegeSelect, getDynamicCollegeList());
+    if (programSelect && (!programSelect.options || programSelect.options.length === 0 || (programSelect.options.length === 1 && !hasServerSelection(programSelect)))) populateDropdown(programSelect, academicData.program.default);
+    if (departmentSelect && (!departmentSelect.options || departmentSelect.options.length === 0 || (departmentSelect.options.length === 1 && !hasServerSelection(departmentSelect)))) populateDropdown(departmentSelect, academicData.department.default);
 
     // If a college is preselected (by server or future prefill), adjust department/program lists accordingly
     const selectedCollege = collegeSelect && collegeSelect.value ? collegeSelect.value : null;

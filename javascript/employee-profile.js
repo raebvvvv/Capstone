@@ -1,27 +1,5 @@
-// student-profile.js
+// Employee profile editing - specialized version
 document.addEventListener('DOMContentLoaded', () => {
-  // --- Logout ---
-  const signOutBtn = document.getElementById('signOutBtn');
-  if (signOutBtn) {
-    signOutBtn.addEventListener('click', () => {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '../../User/Beforelogin/logout.php';
-
-      if (typeof csrfToken !== 'undefined') {
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrf_token';
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
-      }
-
-      document.body.appendChild(form);
-      form.submit();
-    });
-  }
-
-  // --- Profile editing ---
   const form = document.getElementById('profileForm');
   const editBtn = document.getElementById('editProfileBtn');
   const saveBtn = document.getElementById('saveProfileBtn');
@@ -29,26 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!form || !editBtn || !saveBtn || !cancelBtn) return;
 
-  // Check edit restrictions
-  if (typeof nextEditAllowed !== 'undefined' && nextEditAllowed) {
-    const now = new Date();
-    const nextDate = new Date(nextEditAllowed);
-
-    if (now < nextDate) {
-      // Disable editing if not yet allowed
-      editBtn.disabled = true;
-      
-      // Add subtle tooltip using Bootstrap
-      const tooltip = new bootstrap.Tooltip(editBtn, {
-        title: `Profile editing available after ${nextDate.toLocaleDateString()}`,
-        placement: 'right'
-      });
-    }
-  }
-
-  // Allow editing Home Address, Mobile Number, and Name fields; handle selects separately
-  const textEditableInputs = form.querySelectorAll('#homeAddress, #mobileNumber, #lastName, #firstName, #middleName');
-  const selectEditableInputs = form.querySelectorAll('#campus, #college, #program, #academicLevel');
+  // Allow editing for employee-specific fields including department
+  const textEditableInputs = form.querySelectorAll('#homeAddress, #mobileNumber, #lastName, #firstName, #middleName, #suffix');
+  const selectEditableInputs = form.querySelectorAll('#campus, #college, #program, #academicLevel, #department');
   let originalValues = {};
 
   // Enable edit mode
@@ -70,17 +31,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Re-initialize dropdown options from academicData
     try {
-      document.dispatchEvent(new Event('ipmo:form:show'));
-      // restore current selections after population
       const academicLevel = document.getElementById('academicLevel');
       const college = document.getElementById('college');
       const program = document.getElementById('program');
       const campus = document.getElementById('campus');
-      if (academicLevel && originalValues.academicLevel) academicLevel.value = originalValues.academicLevel;
-      if (academicLevel) academicLevel.dispatchEvent(new Event('change')); // adjust dependent lists
-      if (college && originalValues.college) college.value = originalValues.college;
-      if (program && originalValues.program) program.value = originalValues.program;
-      if (campus && originalValues.campus) campus.value = originalValues.campus;
+      const department = document.getElementById('department');
+
+      // Clear dataset "locked" flags set by dropdown initializer
+      [academicLevel, college, program, department].forEach(el => {
+        if (el && el.dataset && el.dataset.locked) {
+          try { delete el.dataset.locked; } catch(_) {}
+        }
+      });
+
+      // Trigger population
+      document.dispatchEvent(new Event('ipmo:form:show'));
+
+      // Helpers for options
+      const hasOption = (sel, val) => !!sel && Array.from(sel.options).some(o => o.value === val);
+      const ensureOption = (sel, val) => {
+        if (!sel || !val) return;
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        sel.appendChild(opt);
+        sel.value = val;
+      };
+
+      // Restore current selections after population in a safe order
+      if (academicLevel && originalValues.academicLevel) {
+        academicLevel.value = originalValues.academicLevel;
+        academicLevel.dispatchEvent(new Event('change')); // adjust dependent lists
+      }
+
+      if (college && originalValues.college) {
+        college.value = originalValues.college;
+        college.dispatchEvent(new Event('change')); // adjust dependent lists (dept/program for UG)
+      }
+
+      if (campus && originalValues.campus) {
+        campus.value = originalValues.campus;
+      }
+
+      // Only restore program if enabled; if missing in dataset, append fallback option
+      if (program && !program.disabled && originalValues.program) {
+        if (hasOption(program, originalValues.program)) {
+          program.value = originalValues.program;
+        } else {
+          // Add fallback so current value remains visible/editable
+          ensureOption(program, originalValues.program);
+        }
+      }
+
+      // Restore department; if not in options (college mapping missing), add fallback and enable
+      if (department && originalValues.department) {
+        if (hasOption(department, originalValues.department)) {
+          department.value = originalValues.department;
+        } else {
+          ensureOption(department, originalValues.department);
+          department.disabled = false;
+        }
+      }
     } catch(_) {}
 
     editBtn.style.display = 'none';
@@ -110,15 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
     editBtn.style.display = 'inline-block';
   });
 
-  // If editing is locked, add tooltip
-  if (editBtn.disabled) {
-    const tooltip = new bootstrap.Tooltip(editBtn, {
-      title: 'Profile can only be edited once every 30 days',
-      placement: 'bottom'
-    });
-  }
-
-
   // Helper to clear previous error messages
   function clearErrors() {
     document.querySelectorAll('.error-message').forEach(el => el.remove());
@@ -140,14 +142,14 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.querySelector('.toast-body').textContent = message;
     
     const bsToast = new bootstrap.Toast(toast, {
-        delay: 2000  // Show for 2 seconds instead of default 5 seconds
+        delay: 2000
     });
     bsToast.show();
   }
 
   // Form submission with validation
   form.addEventListener('submit', function(e) {
-    clearErrors(); // remove old errors
+    clearErrors();
     let isValid = true;
 
     const mobile = document.getElementById('mobileNumber');
@@ -155,11 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastName = document.getElementById('lastName');
     const firstName = document.getElementById('firstName');
     const middleName = document.getElementById('middleName');
+    const suffix = document.getElementById('suffix');
     const campusSel = document.getElementById('campus');
     const collegeSel = document.getElementById('college');
     const programSel = document.getElementById('program');
     const levelSel = document.getElementById('academicLevel');
-    const mobileRegex = /^09\d{9}$/; // PH format
+    const departmentSel = document.getElementById('department');
+    const mobileRegex = /^09\d{9}$/;
     
     if (!home.value.trim()) {
       showError(home, 'Home address is required.');
@@ -171,24 +175,44 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // Basic client-side checks for names and dropdowns
+    // Name validation
     const nameRegex = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
-    if (!nameRegex.test(firstName.value.trim())) { showError(firstName, 'First name should contain letters and single spaces.'); isValid = false; }
-    if (!nameRegex.test(lastName.value.trim())) { showError(lastName, 'Last name should contain letters and single spaces.'); isValid = false; }
-    if (middleName.value.trim() && !nameRegex.test(middleName.value.trim())) { showError(middleName, 'Middle name should contain letters and single spaces.'); isValid = false; }
+    if (!nameRegex.test(firstName.value.trim())) { 
+      showError(firstName, 'First name should contain letters and single spaces.'); 
+      isValid = false; 
+    }
+    if (!nameRegex.test(lastName.value.trim())) { 
+      showError(lastName, 'Last name should contain letters and single spaces.'); 
+      isValid = false; 
+    }
+    if (middleName.value.trim() && !nameRegex.test(middleName.value.trim())) { 
+      showError(middleName, 'Middle name should contain letters and single spaces.'); 
+      isValid = false; 
+    }
+
+    // Suffix validation (if provided)
+    if (suffix.value.trim()) {
+      const validSuffixes = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
+      if (!validSuffixes.includes(suffix.value.trim())) {
+        showError(suffix, 'Please enter a valid suffix (Jr., Sr., I, II, III, IV, V) or leave blank.');
+        isValid = false;
+      }
+    }
+
+    // Dropdown validation (program is optional for employees)
     if (!campusSel.value) { showError(campusSel, 'Please select a campus.'); isValid = false; }
     if (!levelSel.value) { showError(levelSel, 'Please select an academic level.'); isValid = false; }
     if (!collegeSel.value) { showError(collegeSel, 'Please select a college.'); isValid = false; }
-    if (!programSel.value) { showError(programSel, 'Please select a program.'); isValid = false; }
+    if (!departmentSel.value) { showError(departmentSel, 'Please select a department.'); isValid = false; }
 
     if (!isValid) {
-      e.preventDefault(); // stop form submission if invalid
+      e.preventDefault();
       showToast('Please fix the errors', 'danger');
     }
   });
 
-  // After successful save
-  if (document.querySelector('.badge.bg-success')) {
+  // Show success toast if form was submitted successfully
+  if (document.querySelector('.alert-success')) {
     showToast('Profile updated successfully');
   }
 });

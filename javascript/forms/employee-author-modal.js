@@ -10,6 +10,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let authors = []; // user-added authors (not adviser)
   let adviser_Coauthor = null; // adviser co-author object
+  let adviserExistingIdx = -1;
+
+  function normalizeName(s){
+    return String(s||'')
+      .replace(/\./g,'')
+      .replace(/\s+/g,' ')
+      .trim()
+      .toLowerCase();
+  }
+  function firstLastOnlyFromStr(s){
+    const p = normalizeName(s).split(' ').filter(Boolean);
+    if(p.length===0) return '';
+    if(p.length===1) return p[0];
+    return p[0] + ' ' + p[p.length-1];
+  }
+  function authorDisplayName(a){
+    const mid = (a.middle_name||'').trim();
+    const full = `${a.first_name||''} ${mid?mid+' ':''}${a.last_name||''}`;
+    return full.replace(/\s+/g,' ').trim();
+  }
+  function matchesAdviserByName(aName, adviserName){
+    const advNorm = normalizeName(adviserName);
+    const advSimple = firstLastOnlyFromStr(adviserName);
+    const cNorm = normalizeName(aName);
+    const cSimple = firstLastOnlyFromStr(aName);
+    if(!cNorm) return false;
+    return (advNorm && cNorm===advNorm) || (advSimple && cSimple===advSimple);
+  }
 
   function titleCase(str) {
     if (!str) return '';
@@ -29,7 +57,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
   if (adviserInput) {
-    adviserInput.addEventListener('blur', () => { adviserInput.value = titleCase(adviserInput.value); });
+    adviserInput.addEventListener('blur', () => {
+      adviserInput.value = titleCase(adviserInput.value);
+      if (adviserCheckbox && adviserCheckbox.checked) {
+        handleAdviserCheckboxChange(true);
+      }
+    });
   }
 
   function isValidPupWebmail(email) {
@@ -81,6 +114,15 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     authors.push(coauthor);
+    if (adviserCheckbox && adviserCheckbox.checked && adviserInput && adviserInput.value.trim()) {
+      const newIdx = authors.length - 1;
+      const aName = authorDisplayName(authors[newIdx]);
+      if (matchesAdviserByName(aName, adviserInput.value.trim())) {
+        authors.forEach((a,i)=>{ a.is_adviser = (i===newIdx); });
+        adviserExistingIdx = newIdx;
+        adviser_Coauthor = null;
+      }
+    }
     updateAuthorsList();
     updateHiddenFields();
     modal.hide();
@@ -89,35 +131,48 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   if (adviserCheckbox && adviserInput) {
-    adviserCheckbox.addEventListener('change', function () {
-      if (this.checked) {
-        const adviserName = adviserInput.value.trim();
-        if (!adviserName) {
-          alert('Please enter the adviser name first.');
-          this.checked = false;
-          return;
-        }
+    adviserCheckbox.addEventListener('change', function () { handleAdviserCheckboxChange(this.checked); });
+  }
+
+  function handleAdviserCheckboxChange(checked){
+    if (checked) {
+      const adviserName = adviserInput.value.trim();
+      if (!adviserName) {
+        alert('Please enter the adviser name first.');
+        adviserCheckbox.checked = false;
+        return;
+      }
+      adviserExistingIdx = -1;
+      for (let i=0;i<authors.length;i++){
+        const aName = authorDisplayName(authors[i]);
+        if (matchesAdviserByName(aName, adviserName)) { adviserExistingIdx = i; break; }
+      }
+      if (adviserExistingIdx >= 0) {
+        authors.forEach((a,i)=>{ a.is_adviser = (i===adviserExistingIdx); });
+        adviser_Coauthor = null;
+      } else {
         const nameParts = adviserName.split(' ');
         const firstName = titleCase(nameParts[0] || adviserName);
         const lastName = titleCase(nameParts.length > 1 ? nameParts.slice(-1)[0] : '');
         const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).map((n) => n[0]).join('') : '';
-
         adviser_Coauthor = {
           first_name: firstName,
           middle_name: middleName,
           last_name: lastName,
-          student_id: '',
-          mobile: '',
-          webmail: '',
-          home_address: '',
+          student_id: '', mobile: '', webmail: '', home_address: '',
           is_adviser: true,
         };
-      } else {
-        adviser_Coauthor = null;
+        authors.forEach((a)=>{ a.is_adviser = false; });
       }
-      updateAuthorsList();
-      updateHiddenFields();
-    });
+    } else {
+      if (adviserExistingIdx >= 0 && authors[adviserExistingIdx]) {
+        authors[adviserExistingIdx].is_adviser = false;
+      }
+      adviserExistingIdx = -1;
+      adviser_Coauthor = null;
+    }
+    updateAuthorsList();
+    updateHiddenFields();
   }
 
   function updateAuthorsList() {
@@ -144,7 +199,17 @@ document.addEventListener('DOMContentLoaded', function () {
         removeBtn.className = 'btn btn-sm btn-link text-danger ms-2 p-0';
         removeBtn.textContent = '×';
         removeBtn.addEventListener('click', () => {
-          authors.splice(index - (adviser_Coauthor ? 1 : 0), 1);
+          const offset = adviser_Coauthor ? 1 : 0;
+          const realIdx = index - offset;
+          if (realIdx >= 0) {
+            authors.splice(realIdx, 1);
+            if (adviserExistingIdx === realIdx) {
+              adviserExistingIdx = -1;
+              if (adviserCheckbox) adviserCheckbox.checked = false;
+            } else if (adviserExistingIdx > realIdx) {
+              adviserExistingIdx -= 1;
+            }
+          }
           updateAuthorsList();
           updateHiddenFields();
         });

@@ -639,7 +639,7 @@
           const code = data.request_id || requestId;
           // Updated: use dedicated certificate endpoint (server generates PDF via FPDI)
           const iframeId = 'certFrame_' + Date.now();
-          const html = `<div class="certificate-preview"><iframe id="${iframeId}" src="view_certificate.php?id=${encodeURIComponent(code)}" width="100%" height="500" style="border:none;" loading="lazy" referrerpolicy="no-referrer"></iframe><div class="small text-muted mt-2" id="${iframeId}_status">Loading certificate...</div></div>`;
+          const html = `<div class="certificate-preview"><iframe id="${iframeId}" src="view_certificate.php?id=${encodeURIComponent(code)}" width="100%" height="500px" style="border:none;" loading="lazy" referrerpolicy="no-referrer"></iframe><div class="small text-muted mt-2" id="${iframeId}_status">Loading certificate...</div></div>`;
           if(body) body.innerHTML = html;
           const dl = modalEl.querySelector('#downloadCertificateBtn');
           if(dl) dl.href = 'view_certificate.php?id=' + encodeURIComponent(code) + '&mode=download';

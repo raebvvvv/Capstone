@@ -3,6 +3,10 @@ require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php';
 $isLoggedIn = true;
 
+// DEBUG: Temporarily unlock profile editing regardless of 30-day restriction
+// Set to false to restore normal behavior
+$DEBUG_UNLOCK_EDIT_PROFILE = false;
+
 $user_id = $_SESSION['user_id'];
 // Initialize common vars to avoid notices
 $errors = [];
@@ -17,30 +21,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $suffix        = trim($_POST['suffix'] ?? '');
     $homeAddress   = trim($_POST['home_address'] ?? '');
     $mobileNumber  = trim($_POST['mobile_number'] ?? '');
-    $campus        = trim($_POST['campus'] ?? '');
-    $college       = trim($_POST['college'] ?? '');
+  $campus        = trim($_POST['campus'] ?? '');
+  $college       = trim($_POST['college'] ?? '');
   // Department removed from profile editing
   $department    = '';
-    $program       = trim($_POST['program'] ?? '');
+  $program       = trim($_POST['program'] ?? '');
+  $academicLevel = trim($_POST['academic_level'] ?? '');
 
   // reset errors for this POST
   $errors = [];
 
-    // Check last update timestamp
+  // Check last update timestamp (skipped in debug mode)
+  if (!$DEBUG_UNLOCK_EDIT_PROFILE) {
     $stmt = $pdo->prepare("SELECT last_updated_at FROM student_profiles WHERE user_id = ?");
     $stmt->execute([$user_id]);
     $lastUpdate = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($lastUpdate && $lastUpdate['last_updated_at']) {
-        $lastUpdateDate = new DateTime($lastUpdate['last_updated_at']);
-        $now = new DateTime();
-        $diff = $lastUpdateDate->diff($now)->days;
+      $lastUpdateDate = new DateTime($lastUpdate['last_updated_at']);
+      $now = new DateTime();
+      $diff = $lastUpdateDate->diff($now)->days;
 
-        if ($diff < 30) {
-            $daysLeft = 30 - $diff;
-            $errors[] = "Profile can only be updated once every 30 days. Please wait {$daysLeft} more days.";
-        }
+      if ($diff < 30) {
+        $daysLeft = 30 - $diff;
+        $errors[] = "Profile can only be updated once every 30 days. Please wait {$daysLeft} more days.";
+      }
     }
+  }
 
     // Validation logic
     if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $firstName)) {
@@ -71,12 +78,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     // Required fields (suffix & middle initial optional)
   if (empty($firstName) || empty($lastName) || empty($homeAddress) ||
     empty($mobileNumber) || empty($campus) || empty($college) ||
-    empty($program)) {
+    empty($program) || empty($academicLevel)) {
     $errors[] = "All fields except suffix and middle name are required";
   }
 
     // Fetch current profile data
-  $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, program FROM student_profiles WHERE user_id = ?");
+  $stmt = $pdo->prepare("SELECT last_name, first_name, middle_name, suffix, home_address, mobile_number, campus, college, program, academic_level FROM student_profiles WHERE user_id = ?");
     $stmt->execute([$user_id]);
     $current = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -88,9 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $suffix        !== $current['suffix'] ||
         $homeAddress   !== $current['home_address'] ||
         $mobileNumber  !== $current['mobile_number'] ||
-    $campus        !== $current['campus'] ||
-    $college       !== $current['college'] ||
-    $program       !== $current['program']
+  $campus        !== $current['campus'] ||
+  $college       !== $current['college'] ||
+  $program       !== $current['program'] ||
+  $academicLevel !== $current['academic_level']
     );
 
     if (!$hasChanges) {
@@ -98,15 +106,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     }
 
     if (empty($errors)) {
-        // Proceed with update
-    // Only allow updating home address and mobile number; keep others unchanged
-    $stmt = $pdo->prepare("UPDATE student_profiles SET 
-      home_address=?, mobile_number=?, last_updated_at=NOW()
-      WHERE user_id=?");
-        
-    $stmt->execute([
-      $homeAddress, $mobileNumber, $user_id
-    ]);
+        // Proceed with update: allow updating name fields and academic fields per request
+        $stmt = $pdo->prepare("UPDATE student_profiles SET 
+          last_name=?, first_name=?, middle_name=?, suffix=?,
+          home_address=?, mobile_number=?, campus=?, college=?, program=?, academic_level=?,
+          last_updated_at=NOW()
+          WHERE user_id=?");
+        $stmt->execute([
+          $lastName, $firstName, $middleName, $suffix,
+          $homeAddress, $mobileNumber, $campus, $college, $program, $academicLevel,
+          $user_id
+        ]);
         $success = "✅ Profile updated successfully!";
     } else {
         // Show errors as list
@@ -192,10 +202,18 @@ if (!empty($profile['last_updated_at'])) {
     <div class="d-flex align-items-center mb-3">
     <h1 class="fw-bold mb-0" style="font-size:2.5rem;">My Profile</h1>
     <button id="editProfileBtn" type="button" class="btn btn-primary btn-sm ms-3" 
-            <?php echo ($now < $nextEditAllowed) ? 'disabled' : ''; ?>>
+            <?php 
+              $shouldDisable = false;
+              if (!(isset($DEBUG_UNLOCK_EDIT_PROFILE) && $DEBUG_UNLOCK_EDIT_PROFILE)) {
+                if (!empty($nextEditAllowed) && ($now < $nextEditAllowed)) {
+                  $shouldDisable = true;
+                }
+              }
+              echo $shouldDisable ? 'disabled' : '';
+            ?>>
         Edit Profile
     </button>
-    <?php if ($now < $nextEditAllowed): ?>
+    <?php if (!(isset($DEBUG_UNLOCK_EDIT_PROFILE) && $DEBUG_UNLOCK_EDIT_PROFILE) && !empty($nextEditAllowed) && ($now < $nextEditAllowed)): ?>
         <small class="text-muted ms-2">
             Available for editing in <?php echo $daysUntilEdit; ?> days
         </small>
@@ -217,8 +235,8 @@ if (!empty($errors)) {
         if (strpos($err, '30 days') !== false) {
             $hasRestrictionError = true;
             ?>
-            <div class="alert alert-warning py-1 px-2 small border-0 d-inline-block" style="background-color: #fffbe6; color: #856404; font-size: 0.95rem;">
-                <i class="fas fa-clock me-1"></i> <?php echo $err; ?>
+      <div class="alert alert-warning py-1 px-2 small border-0 d-inline-block" style="background-color: #fffbe6; color: #856404; font-size: 0.95rem;">
+        <i class="fas fa-clock me-1"></i> <?php echo (isset($DEBUG_UNLOCK_EDIT_PROFILE) && $DEBUG_UNLOCK_EDIT_PROFILE) ? 'Debug mode: 30-day restriction is currently bypassed.' : $err; ?>
             </div>
             <?php
             break;
@@ -245,17 +263,17 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <div class="col-md-4">
     <label class="form-label">Last Name</label>
     <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['last_name']) ? 'is-invalid' : ''; ?>" 
-           name="last_name" id="lastName" 
-           value="<?php echo htmlspecialchars($profile['last_name'] ?? ''); ?>" 
-           readonly>
+      class="form-control bg-light lock <?php echo isset($errors['last_name']) ? 'is-invalid' : ''; ?>" 
+      name="last_name" id="lastName" 
+      value="<?php echo htmlspecialchars($profile['last_name'] ?? ''); ?>" 
+      readonly>
     <?php if (isset($errors['last_name'])): ?>
       <div class="invalid-feedback"><?php echo $errors['last_name']; ?></div>
     <?php endif; ?>
   </div>
   
   <div class="col-md-4">
-    <label class="form-label">First Name</label>
+  <label class="form-label">First Name</label>
     <input type="text" 
            class="form-control bg-light lock <?php echo isset($errors['first_name']) ? 'is-invalid' : ''; ?>" 
            name="first_name" id="firstName" 
@@ -267,7 +285,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   </div>
 
   <div class="col-md-4">
-    <label class="form-label">Middle Name</label>
+  <label class="form-label">Middle Name</label>
     <input type="text" 
            class="form-control bg-light lock <?php echo isset($errors['middle_name']) ? 'is-invalid' : ''; ?>" 
            name="middle_name" id="middleName" 
@@ -330,11 +348,12 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 <div class="row mb-3">
   <div class="col-md-3">
     <label class="form-label">Campus</label>
-    <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['campus']) ? 'is-invalid' : ''; ?>" 
-           name="campus" id="campus" 
-           value="<?php echo htmlspecialchars($profile['campus'] ?? ''); ?>" 
-           readonly>
+    <select 
+      class="form-select bg-light lock <?php echo isset($errors['campus']) ? 'is-invalid' : ''; ?>" 
+      name="campus" id="campus" disabled>
+      <?php $campusVal = trim((string)($profile['campus'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($campusVal); ?>" selected><?php echo htmlspecialchars($campusVal ?: 'Choose...'); ?></option>
+    </select>
     <?php if (isset($errors['campus'])): ?>
       <div class="invalid-feedback"><?php echo $errors['campus']; ?></div>
     <?php endif; ?>
@@ -342,11 +361,12 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 
   <div class="col-md-3">
     <label class="form-label">College</label>
-    <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['college']) ? 'is-invalid' : ''; ?>" 
-           name="college" id="college" 
-           value="<?php echo htmlspecialchars($profile['college'] ?? ''); ?>" 
-           readonly>
+    <select 
+      class="form-select bg-light lock <?php echo isset($errors['college']) ? 'is-invalid' : ''; ?>" 
+      name="college" id="college" disabled>
+      <?php $collegeVal = trim((string)($profile['college'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($collegeVal); ?>" selected><?php echo htmlspecialchars($collegeVal ?: 'Choose...'); ?></option>
+    </select>
     <?php if (isset($errors['college'])): ?>
       <div class="invalid-feedback"><?php echo $errors['college']; ?></div>
     <?php endif; ?>
@@ -354,22 +374,24 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 
   <div class="col-md-3">
     <label class="form-label">Program</label>
-    <input type="text" 
-           class="form-control bg-light lock <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
-           name="program" id="program" 
-           value="<?php echo htmlspecialchars($profile['program'] ?? ''); ?>" 
-           readonly>
+    <select 
+      class="form-select bg-light lock <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
+      name="program" id="program" disabled>
+      <?php $programVal = trim((string)($profile['program'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($programVal); ?>" selected><?php echo htmlspecialchars($programVal ?: 'Choose...'); ?></option>
+    </select>
     <?php if (isset($errors['program'])): ?>
       <div class="invalid-feedback"><?php echo $errors['program']; ?></div>
     <?php endif; ?>
   </div>
   <div class="col-md-3">
     <label class="form-label">Academic Level</label>
-    <input type="text"
-           class="form-control bg-light lock <?php echo isset($errors['academic_level']) ? 'is-invalid' : ''; ?>"
-           name="academic_level" id="academicLevel"
-           value="<?php echo htmlspecialchars($profile['academic_level'] ?? ''); ?>"
-           readonly>
+    <select
+           class="form-select bg-light lock <?php echo isset($errors['academic_level']) ? 'is-invalid' : ''; ?>"
+           name="academic_level" id="academicLevel" disabled>
+      <?php $levelVal = trim((string)($profile['academic_level'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($levelVal); ?>" selected><?php echo htmlspecialchars($levelVal ?: 'Choose...'); ?></option>
+    </select>
     <?php if (isset($errors['academic_level'])): ?>
       <div class="invalid-feedback"><?php echo $errors['academic_level']; ?></div>
     <?php endif; ?>
@@ -397,8 +419,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
   <!-- Scripts -->
-  
-
+  <script src="<?php echo asset_url('javascript/forms/student-academic-dropdowns.js'); ?>"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo asset_url('javascript/student-profile.js'); ?>"></script>
 <script src="<?php echo asset_url('javascript/date-limit.js'); ?>"></script>

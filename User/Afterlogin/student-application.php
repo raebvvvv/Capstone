@@ -51,7 +51,7 @@ function render_pagination_controls_stu(string $tab, int $page, int $pages): voi
   <link rel="stylesheet" href="<?php echo asset_url('css/shared-details-modal.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token()); ?>">
-  <script src="<?php echo asset_url('javascript/shared-details-modal.js'); ?>" defer></script>
+  <script src="<?php echo asset_url('javascript/shared-details-modal.js?v=4'); ?>" defer></script>
 </head>
 <body>
   <!-- Navbar (uniform across project) -->

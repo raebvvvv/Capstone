@@ -50,18 +50,21 @@ if (empty($admin['username'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     verify_csrf_post();
     $user_id = (int)$_POST['user_id'];
-    $email = $_POST['email'];
     $role = isset($_POST['role']) ? $_POST['role'] : null;
     $status = isset($_POST['status']) ? $_POST['status'] : null;
     // Optional student profile fields
     $student_campus = isset($_POST['student_campus']) ? trim($_POST['student_campus']) : null;
     $student_college = isset($_POST['student_college']) ? trim($_POST['student_college']) : null;
     $student_program = isset($_POST['student_program']) ? trim($_POST['student_program']) : null;
+    $student_home_address = isset($_POST['student_home_address']) ? trim($_POST['student_home_address']) : null;
+    $student_academic_level = isset($_POST['student_academic_level']) ? trim($_POST['student_academic_level']) : null;
     // Optional employee profile fields
     $employee_campus = isset($_POST['employee_campus']) ? trim($_POST['employee_campus']) : null;
     $employee_college = isset($_POST['employee_college']) ? trim($_POST['employee_college']) : null;
     $employee_department = isset($_POST['employee_department']) ? trim($_POST['employee_department']) : null;
     $employee_program = isset($_POST['employee_program']) ? trim($_POST['employee_program']) : null;
+    $employee_home_address = isset($_POST['employee_home_address']) ? trim($_POST['employee_home_address']) : null;
+    $employee_academic_level = isset($_POST['employee_academic_level']) ? trim($_POST['employee_academic_level']) : null;
     // Validate role and status
     // Restrict roles: do not allow assigning 'admin' via Manage Users
     $valid_roles = ['student','employee'];
@@ -70,11 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     if (!in_array($status, $valid_status, true)) { $status = null; }
 
     if ($role !== null && $status !== null) {
-        $stmt_update = $pdo->prepare("UPDATE users SET email = ?, role = ?, status = ? WHERE user_id = ?");
-        $stmt_update->execute([$email, $role, $status, $user_id]);
-    } else {
-        $stmt_update = $pdo->prepare("UPDATE users SET email = ? WHERE user_id = ?");
-        $stmt_update->execute([$email, $user_id]);
+        $stmt_update = $pdo->prepare("UPDATE users SET role = ?, status = ? WHERE user_id = ?");
+        $stmt_update->execute([$role, $status, $user_id]);
     }
 
         // If student role, upsert campus/college/program in student_profiles
@@ -84,11 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
                 $stmt_check->execute([$user_id]);
                 $existing = $stmt_check->fetchColumn();
                 if ($existing) {
-                    $stmt_sp = $pdo->prepare("UPDATE student_profiles SET campus = ?, college = ?, program = ?, last_updated_at = NOW() WHERE user_id = ?");
-                    $stmt_sp->execute([$student_campus, $student_college, $student_program, $user_id]);
+                    $stmt_sp = $pdo->prepare("UPDATE student_profiles SET campus = ?, college = ?, program = ?, home_address = COALESCE(?, home_address), academic_level = COALESCE(?, academic_level), last_updated_at = NOW() WHERE user_id = ?");
+                    $stmt_sp->execute([$student_campus, $student_college, $student_program, $student_home_address, $student_academic_level, $user_id]);
                 } else {
-                    $stmt_sp = $pdo->prepare("INSERT INTO student_profiles (user_id, campus, college, program, last_updated_at) VALUES (?,?,?,?, NOW())");
-                    $stmt_sp->execute([$user_id, $student_campus, $student_college, $student_program]);
+                    $stmt_sp = $pdo->prepare("INSERT INTO student_profiles (user_id, campus, college, program, home_address, academic_level, last_updated_at) VALUES (?,?,?,?,?,?, NOW())");
+                    $stmt_sp->execute([$user_id, $student_campus, $student_college, $student_program, $student_home_address, $student_academic_level]);
                 }
             } catch (Exception $e) {
                 // swallow and continue to avoid breaking the flow; optionally log error
@@ -102,11 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
                 $stmt_check_e->execute([$user_id]);
                 $existing_e = $stmt_check_e->fetchColumn();
                 if ($existing_e) {
-                    $stmt_ep = $pdo->prepare("UPDATE employee_profiles SET campus = ?, college = ?, department = ?, program = ?, last_updated_at = NOW() WHERE user_id = ?");
-                    $stmt_ep->execute([$employee_campus, $employee_college, $employee_department, $employee_program, $user_id]);
+                    $stmt_ep = $pdo->prepare("UPDATE employee_profiles SET campus = ?, college = ?, department = ?, program = ?, home_address = COALESCE(?, home_address), academic_level = COALESCE(?, academic_level), last_updated_at = NOW() WHERE user_id = ?");
+                    $stmt_ep->execute([$employee_campus, $employee_college, $employee_department, $employee_program, $employee_home_address, $employee_academic_level, $user_id]);
                 } else {
-                    $stmt_ep = $pdo->prepare("INSERT INTO employee_profiles (user_id, campus, college, department, program, last_updated_at) VALUES (?,?,?,?,?, NOW())");
-                    $stmt_ep->execute([$user_id, $employee_campus, $employee_college, $employee_department, $employee_program]);
+                    $stmt_ep = $pdo->prepare("INSERT INTO employee_profiles (user_id, campus, college, department, program, home_address, academic_level, last_updated_at) VALUES (?,?,?,?,?,?,?, NOW())");
+                    $stmt_ep->execute([$user_id, $employee_campus, $employee_college, $employee_department, $employee_program, $employee_home_address, $employee_academic_level]);
                 }
             } catch (Exception $e) {
                 // swallow and continue; optionally log
@@ -152,10 +152,14 @@ $sql_active = "
     sp.campus AS student_campus,
     sp.college AS student_college,
     sp.program AS student_program,
+    sp.academic_level AS student_academic_level,
+    sp.home_address AS student_home_address,
     ep.campus AS employee_campus,
     ep.college AS employee_college,
     ep.department AS employee_department,
-    ep.program AS employee_program
+    ep.program AS employee_program,
+    ep.academic_level AS employee_academic_level,
+    ep.home_address AS employee_home_address
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -215,10 +219,14 @@ $sql_pending = "
     sp.campus AS student_campus,
     sp.college AS student_college,
     sp.program AS student_program,
+    sp.academic_level AS student_academic_level,
+    sp.home_address AS student_home_address,
     ep.campus AS employee_campus,
     ep.college AS employee_college,
     ep.department AS employee_department,
-    ep.program AS employee_program
+    ep.program AS employee_program,
+    ep.academic_level AS employee_academic_level,
+    ep.home_address AS employee_home_address
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -278,10 +286,14 @@ $sql_inactive = "
     sp.campus AS student_campus,
     sp.college AS student_college,
     sp.program AS student_program,
+    sp.academic_level AS student_academic_level,
+    sp.home_address AS student_home_address,
     ep.campus AS employee_campus,
     ep.college AS employee_college,
     ep.department AS employee_department,
-    ep.program AS employee_program
+    ep.program AS employee_program,
+    ep.academic_level AS employee_academic_level,
+    ep.home_address AS employee_home_address
     FROM users u
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
@@ -559,7 +571,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                             <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Webmail</label>
-                                <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($row['email']); ?>" required>
+                                <input type="email" class="form-control" id="email" value="<?php echo htmlspecialchars($row['email']); ?>" readonly>
                             </div>
                             <div class="mb-3">
                                 <label for="identifier_display" class="form-label">Student Number/Employee ID</label>
@@ -587,6 +599,16 @@ $result_inactive = $stmt_inactive->fetchAll();
                                 <div class="border rounded p-3 mb-3 bg-light-subtle student-profile-section" style="border-color:#ddd!important;">
                                     <h6 class="fw-bold mb-3">Student Profile</h6>
                                     <div class="mb-3">
+                                        <label for="student_home_<?php echo $row['user_id']; ?>" class="form-label">Home Address</label>
+                                        <input type="text" class="form-control" id="student_home_<?php echo $row['user_id']; ?>" name="student_home_address" value="<?php echo htmlspecialchars($row['student_home_address'] ?? ''); ?>" placeholder="Enter home address">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="student_level_<?php echo $row['user_id']; ?>" class="form-label">Academic Level</label>
+                                        <select class="form-select acad-level-student" id="student_level_<?php echo $row['user_id']; ?>" name="student_academic_level" data-current="<?php echo htmlspecialchars($row['student_academic_level'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
                                         <label for="student_campus_<?php echo $row['user_id']; ?>" class="form-label">Campus</label>
                                         <select class="form-select acad-campus" id="student_campus_<?php echo $row['user_id']; ?>" name="student_campus" data-current="<?php echo htmlspecialchars($row['student_campus'] ?? ''); ?>">
                                             <option value="" disabled selected>Choose...</option>
@@ -609,6 +631,16 @@ $result_inactive = $stmt_inactive->fetchAll();
                                 <?php if (($row['role'] ?? '') === 'employee'): ?>
                                 <div class="border rounded p-3 mb-3 bg-light-subtle employee-profile-section" style="border-color:#ddd!important;">
                                     <h6 class="fw-bold mb-3">Employee Profile</h6>
+                                    <div class="mb-3">
+                                        <label for="employee_home_<?php echo $row['user_id']; ?>" class="form-label">Home Address</label>
+                                        <input type="text" class="form-control" id="employee_home_<?php echo $row['user_id']; ?>" name="employee_home_address" value="<?php echo htmlspecialchars($row['employee_home_address'] ?? ''); ?>" placeholder="Enter home address">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="employee_level_<?php echo $row['user_id']; ?>" class="form-label">Academic Level</label>
+                                        <select class="form-select emp-level" id="employee_level_<?php echo $row['user_id']; ?>" name="employee_academic_level" data-current="<?php echo htmlspecialchars($row['employee_academic_level'] ?? ''); ?>">
+                                            <option value="" disabled selected>Choose...</option>
+                                        </select>
+                                    </div>
                                     <div class="mb-3">
                                         <label for="employee_campus_<?php echo $row['user_id']; ?>" class="form-label">Campus</label>
                                         <select class="form-select emp-campus" id="employee_campus_<?php echo $row['user_id']; ?>" name="employee_campus" data-current="<?php echo htmlspecialchars($row['employee_campus'] ?? ''); ?>">
@@ -747,13 +779,20 @@ $result_inactive = $stmt_inactive->fetchAll();
                     const campusSel = section.querySelector('.acad-campus');
                     const collegeSel = section.querySelector('.acad-college');
                     const programSel = section.querySelector('.acad-program');
+                    const levelSel = section.querySelector('.acad-level-student');
                     if (!campusSel || !collegeSel || !programSel) return;
 
                     const campusCurrent = campusSel.dataset.current || '';
                     const collegeCurrent = collegeSel.dataset.current || '';
                     const programCurrent = programSel.dataset.current || '';
+                    const levelCurrent = levelSel ? (levelSel.dataset.current || '') : '';
 
                     populateSelect(campusSel, academicData.campus || [], campusCurrent);
+                    if (levelSel) {
+                        const rawLevels = (academicData.academicLevel && Array.isArray(academicData.academicLevel)) ? academicData.academicLevel : ['Undergraduate','Masters','Doctorate','Open University'];
+                        const studentLevels = rawLevels.filter(l => l !== 'Not Studying');
+                        populateSelect(levelSel, studentLevels, levelCurrent);
+                    }
                     populateSelect(collegeSel, getCollegeListFromPrograms(), collegeCurrent);
 
                     const initialCollege = collegeCurrent || collegeSel.value;
@@ -775,14 +814,20 @@ $result_inactive = $stmt_inactive->fetchAll();
                     const collegeSel = section.querySelector('.emp-college');
                     const deptSel = section.querySelector('.emp-department');
                     const programSel = section.querySelector('.emp-program');
+                    const levelSel = section.querySelector('.emp-level');
                     if (!campusSel || !collegeSel || !deptSel || !programSel) return;
 
                     const campusCurrent = campusSel.dataset.current || '';
                     const collegeCurrent = collegeSel.dataset.current || '';
                     const deptCurrent = deptSel.dataset.current || '';
                     const programCurrent = programSel.dataset.current || '';
+                    const levelCurrent = levelSel ? (levelSel.dataset.current || '') : '';
 
                     populateSelect(campusSel, academicData.campus || [], campusCurrent);
+                    if (levelSel) {
+                        const employeeLevels = ["Not Studying","Doctorate","Masters","Open University"];
+                        populateSelect(levelSel, employeeLevels, levelCurrent);
+                    }
                     populateSelect(collegeSel, getCollegeListFromPrograms(), collegeCurrent);
 
                     const initialCollege = collegeCurrent || collegeSel.value;

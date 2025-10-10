@@ -9,3 +9,5 @@
     <a href="https://www.pup.edu.ph/privacy/" target="_blank">Privacy Statement</a>
   </div>
 </footer>
+<!-- Idle auto-logout (admin pages only) -->
+<script src="<?php echo asset_url('javascript/admin-idle-logout.js'); ?>" defer></script>

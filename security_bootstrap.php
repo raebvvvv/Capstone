@@ -40,7 +40,11 @@ if (!function_exists('secure_bootstrap')) {
     function secure_bootstrap(): void {
         // Basic config constants with environment variable support
         if (!defined('SESSION_IDLE_TIMEOUT')) {
-            define('SESSION_IDLE_TIMEOUT', Environment::getInt('SESSION_IDLE_TIMEOUT', 1800)); // 30 minutes
+            define('SESSION_IDLE_TIMEOUT', Environment::getInt('SESSION_IDLE_TIMEOUT', 1800)); // default 30 minutes
+        }
+        // Admin pages stricter idle window (5 minutes) unless overridden by env ADMIN_SESSION_IDLE_TIMEOUT
+        if (!defined('ADMIN_SESSION_IDLE_TIMEOUT')) {
+            define('ADMIN_SESSION_IDLE_TIMEOUT', Environment::getInt('ADMIN_SESSION_IDLE_TIMEOUT', 300)); // 5 minutes
         }
         if (!defined('SESSION_ABSOLUTE_LIFETIME')) {
             define('SESSION_ABSOLUTE_LIFETIME', Environment::getInt('SESSION_LIFETIME', 28800)); // 8 hours
@@ -75,7 +79,9 @@ if (!function_exists('secure_bootstrap')) {
         if (!isset($_SESSION['session_created_at'])) {
             $_SESSION['session_created_at'] = $now;
         }
-        if (isset($_SESSION['last_activity']) && ($now - (int)$_SESSION['last_activity']) > SESSION_IDLE_TIMEOUT) {
+        // Use stricter admin idle timeout on admin routes
+        $effectiveIdleTimeout = $isAdminRoute ? ADMIN_SESSION_IDLE_TIMEOUT : SESSION_IDLE_TIMEOUT;
+        if (isset($_SESSION['last_activity']) && ($now - (int)$_SESSION['last_activity']) > $effectiveIdleTimeout) {
             session_unset(); session_destroy();
             if (function_exists('redirect')) { redirect($loginTarget); }
             header('Location: ' . $loginTarget); exit();

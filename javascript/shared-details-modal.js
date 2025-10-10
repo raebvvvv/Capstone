@@ -45,16 +45,55 @@
   function buildAuthorsHTML(details, options){
     const add = Array.isArray(details.additionalAuthors)? details.additionalAuthors: [];
     if(!add.length && !details.adviser) return '';
+    const adviserRaw = (details.adviser || '').toString().trim();
+
+    // Helper: robust-ish name matching ignoring case, extra spaces and middle initials
+    function normalizeName(s){
+      return String(s||'')
+        .replace(/\./g,'')         // drop dots in initials
+        .replace(/\s+/g,' ')       // collapse spaces
+        .trim()
+        .toLowerCase();
+    }
+    function firstLastOnly(s){
+      const parts = normalizeName(s).split(' ').filter(Boolean);
+      if(parts.length === 0) return '';
+      if(parts.length === 1) return parts[0];
+      return parts[0] + ' ' + parts[parts.length-1];
+    }
+    const advNorm = normalizeName(adviserRaw);
+    const advSimple = firstLastOnly(adviserRaw);
+    const isNameMatchAdviser = (candidate)=>{
+      const cNorm = normalizeName(candidate);
+      if(!cNorm) return false;
+      if(advNorm && cNorm === advNorm) return true;
+      const cSimple = firstLastOnly(candidate);
+      return !!advSimple && cSimple === advSimple;
+    };
     // More robust adviser check: handle 1, "1", true, or truthy values
     const isAdv = (a)=> !!(a && (a.is_adviser === 1 || a.is_adviser === '1' || a.is_adviser === true));
+
+    // Decide exactly who should be shown as Adviser among co-authors:
+    // 1) Prefer explicit is_adviser flags (can be multiple if data says so)
+    // 2) Else if adviser_coauthor is truthy, select exactly ONE best name match
+    // 3) Else, no co-author shown as Adviser
+    const anyFlagged = add.some(isAdv);
+    let selectedMatchIdx = -1;
+    if (!anyFlagged && (details.adviser_coauthor === 1 || details.adviser_coauthor === '1' || details.adviser_coauthor === true)) {
+      // find the first strong match
+      for (let i=0; i<add.length; i++){
+        if (isNameMatchAdviser(add[i].name || '')) { selectedMatchIdx = i; break; }
+      }
+    }
+
     const rows = add.map((a,idx)=>{
-      const badge = isAdv(a) ? '<span class="badge bg-warning text-dark ms-2">Adviser</span>' : '';
+      const matchedAsAdviser = anyFlagged ? isAdv(a) : (idx === selectedMatchIdx);
+      const badge = matchedAsAdviser ? '<span class="badge bg-warning text-dark ms-2">Adviser</span>' : '';
       const name = escapeHTML(a.name || '—');
       const btn = options && options.onAuthorDetails ? `<button type="button" class="btn btn-success btn-sm rounded-pill px-3 ms-2 author-view-btn" data-author-index="${idx}">View Details</button>` : '';
       return `<div class="author-entry">${name}${badge}${btn}</div>`;
     }).join('');
-    const hasAdviserInAuthors = add.some(isAdv);
-    const adviserRaw = (details.adviser || '').toString().trim();
+    const hasAdviserInAuthors = anyFlagged || (selectedMatchIdx >= 0);
     const adviserName = (!hasAdviserInAuthors && adviserRaw) ? `<p><strong>Adviser:</strong> ${escapeHTML(adviserRaw)}</p>` : '';
     const authorsBlock = rows ? `<div class="mt-2"><div class="fw-semibold mb-1">Additional Author(s)</div>${rows}</div>` : '';
     return adviserName + authorsBlock;

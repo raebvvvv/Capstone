@@ -10,6 +10,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let authors = []; // Only user-added authors (not adviser)
   let adviser_Coauthor = null; // Adviser as co-author object or null
+  let adviserExistingIdx = -1; // index in authors[] if adviser maps to existing
+
+  // --- Name normalization & matching helpers ---
+  function normalizeName(s){
+    return String(s||'')
+      .replace(/\./g,'')
+      .replace(/\s+/g,' ')
+      .trim()
+      .toLowerCase();
+  }
+  function firstLastOnlyFromStr(s){
+    const p = normalizeName(s).split(' ').filter(Boolean);
+    if(p.length===0) return '';
+    if(p.length===1) return p[0];
+    return p[0] + ' ' + p[p.length-1];
+  }
+  function authorDisplayName(a){
+    const mid = (a.middle_name||'').trim();
+    // build full name and simple first+last variants
+    const full = `${a.first_name||''} ${mid?mid+' ':''}${a.last_name||''}`;
+    return full.replace(/\s+/g,' ').trim();
+  }
+  function matchesAdviserByName(aName, adviserName){
+    const advNorm = normalizeName(adviserName);
+    const advSimple = firstLastOnlyFromStr(adviserName);
+    const cNorm = normalizeName(aName);
+    const cSimple = firstLastOnlyFromStr(aName);
+    if(!cNorm) return false;
+    return (advNorm && cNorm===advNorm) || (advSimple && cSimple===advSimple);
+  }
 
   // --- Helpers: Title Case for names ---
   function titleCase(str) {
@@ -33,7 +63,13 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   // Auto-format adviser field too
   if (adviserInput) {
-    adviserInput.addEventListener('blur', () => { adviserInput.value = titleCase(adviserInput.value); });
+    adviserInput.addEventListener('blur', () => {
+      adviserInput.value = titleCase(adviserInput.value);
+      // If currently checked, re-evaluate mapping to avoid duplicates
+      if (adviserCheckbox && adviserCheckbox.checked) {
+        handleAdviserCheckboxChange(true);
+      }
+    });
   }
 
   // --- Email validation ---
@@ -89,6 +125,18 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     authors.push(coauthor);
+
+    // If adviser is checked and this co-author matches adviser name, mark it as adviser and drop separate adviser entry
+    if (adviserCheckbox && adviserCheckbox.checked && adviserInput && adviserInput.value.trim()) {
+      const newIdx = authors.length - 1;
+      const aName = authorDisplayName(authors[newIdx]);
+      if (matchesAdviserByName(aName, adviserInput.value.trim())) {
+        // clear others
+        authors.forEach((a,i)=>{ a.is_adviser = (i===newIdx); });
+        adviserExistingIdx = newIdx;
+        adviser_Coauthor = null;
+      }
+    }
     updateAuthorsList();
     updateHiddenFields();
 
@@ -101,35 +149,54 @@ document.addEventListener('DOMContentLoaded', function () {
   // --- Adviser as co-author toggle ---
   if (adviserCheckbox && adviserInput) {
     adviserCheckbox.addEventListener('change', function () {
-      if (this.checked) {
-        const adviserName = adviserInput.value.trim();
-        if (!adviserName) {
-          alert('Please enter the adviser name first.');
-          this.checked = false;
-          return;
-        }
-        // Split adviser name into first/middle/last (simple logic, can be improved)
+      handleAdviserCheckboxChange(this.checked);
+    });
+  }
+
+  function handleAdviserCheckboxChange(checked){
+    if (checked) {
+      const adviserName = adviserInput.value.trim();
+      if (!adviserName) {
+        alert('Please enter the adviser name first.');
+        adviserCheckbox.checked = false;
+        return;
+      }
+      // Try to map to an existing co-author
+      adviserExistingIdx = -1;
+      for (let i=0;i<authors.length;i++){
+        const aName = authorDisplayName(authors[i]);
+        if (matchesAdviserByName(aName, adviserName)) { adviserExistingIdx = i; break; }
+      }
+      if (adviserExistingIdx >= 0) {
+        // mark exactly one as adviser
+        authors.forEach((a,i)=>{ a.is_adviser = (i===adviserExistingIdx); });
+        adviser_Coauthor = null;
+      } else {
+        // Create separate adviser entry
         const nameParts = adviserName.split(' ');
         const firstName = titleCase(nameParts[0] || adviserName);
         const lastName = titleCase(nameParts.length > 1 ? nameParts.slice(-1)[0] : '');
         const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).map((n) => n[0]).join('') : '';
-
         adviser_Coauthor = {
           first_name: firstName,
           middle_name: middleName,
           last_name: lastName,
-          student_id: '',
-          mobile: '',
-          webmail: '',
-          home_address: '',
+          student_id: '', mobile: '', webmail: '', home_address: '',
           is_adviser: true,
         };
-      } else {
-        adviser_Coauthor = null;
+        // Ensure no authors flagged as adviser
+        authors.forEach((a)=>{ a.is_adviser = false; });
       }
-      updateAuthorsList();
-      updateHiddenFields();
-    });
+    } else {
+      // Uncheck: remove adviser flag from existing and drop separate entry
+      if (adviserExistingIdx >= 0 && authors[adviserExistingIdx]) {
+        authors[adviserExistingIdx].is_adviser = false;
+      }
+      adviserExistingIdx = -1;
+      adviser_Coauthor = null;
+    }
+    updateAuthorsList();
+    updateHiddenFields();
   }
 
   // --- Authors list rendering ---
@@ -160,8 +227,18 @@ document.addEventListener('DOMContentLoaded', function () {
         removeBtn.className = 'btn btn-sm btn-link text-danger ms-2 p-0';
         removeBtn.textContent = '×';
         removeBtn.addEventListener('click', () => {
-          // Remove from authors array by index (skip adviser)
-          authors.splice(index - (adviser_Coauthor ? 1 : 0), 1);
+          // Remove from authors array by index (skip adviser separate entry)
+          const offset = adviser_Coauthor ? 1 : 0;
+          const realIdx = index - offset;
+          if (realIdx >= 0) {
+            authors.splice(realIdx, 1);
+            if (adviserExistingIdx === realIdx) {
+              adviserExistingIdx = -1;
+              if (adviserCheckbox) adviserCheckbox.checked = false;
+            } else if (adviserExistingIdx > realIdx) {
+              adviserExistingIdx -= 1;
+            }
+          }
           updateAuthorsList();
           updateHiddenFields();
         });
@@ -187,7 +264,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = `coauthors[${index}][${key}]`;
-        input.value = value;
+        if (key === 'is_adviser') {
+          input.value = value ? '1' : '0';
+        } else {
+          input.value = value;
+        }
         mainForm.appendChild(input);
       });
     });

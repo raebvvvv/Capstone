@@ -1,0 +1,2 @@
+# Deny direct web access to helper/include files
+Require all denied

@@ -12,3 +12,35 @@ RewriteRule ^industrial-property-info\.php$ User/Beforelogin/industrial-property
 RewriteRule ^copyright-info\.php$ User/Beforelogin/copyright-info.php [L,NC]
 
 # (Optional placeholder) Additional mappings can be added below.
+
+# --- Security hardening additions ---
+
+# 1) Disable directory listings
+Options -Indexes
+
+# 2) Block access to hidden dotfiles (e.g., .env, .git, .htaccess when accessed directly)
+<FilesMatch "^\.">
+	Require all denied
+</FilesMatch>
+
+# 3) Deny direct web access to sensitive config/helper PHP files in the web root
+#    (these are meant to be included by other scripts, not hit directly)
+<FilesMatch "(?i)^(conn|config|env_config|secure_session_config|auth_check|profile_helpers|upload_helpers|upload_validator|security_[^/]+|verify_security(_updates)?|quick_security_test|test_.*)\.php$">
+	Require all denied
+</FilesMatch>
+
+# 4) Block common non-public artifacts (logs, dumps, backups, docs)
+<FilesMatch "(?i)\.(sql|log|ini|env|bak|old|ps1|bat|sh|csv|md|txt)$">
+	Require all denied
+</FilesMatch>
+
+# 5) Block Composer manifests directly
+<FilesMatch "^(composer\.json|composer\.lock)$">
+	Require all denied
+</FilesMatch>
+
+# 6) Prevent direct access to sensitive directories via URL if per-folder .htaccess is missing
+#    (Prefer per-folder .htaccess; these rules are an extra safeguard.)
+RewriteRule ^(includes|vendor|PHPMailer)/ - [F,L]
+RewriteRule ^Documentation\ \([0-9]+\)/ - [F,L]
+RewriteRule ^for\ dummy\ submission/ - [F,L]
