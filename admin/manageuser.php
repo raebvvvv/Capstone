@@ -719,7 +719,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                         <div class="mb-3">
                             <label for="profileNewPassword" class="form-label">New Password</label>
                             <input type="password" class="form-control" id="profileNewPassword" minlength="8" required>
-                            <div class="form-text">At least 8 characters.</div>
+                            <div class="form-text">At least 12 characters.</div>
                         </div>
                         <div class="mb-2">
                             <label for="profileConfirmPassword" class="form-label">Confirm New Password</label>

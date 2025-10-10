@@ -63,6 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+<div style="margin-top:20px;">
+    <a href="/Capstone/forgot_password.php" class="small">Forgot Password?</a>
+</div>
 <!DOCTYPE html>
 <html lang="en">
 <head>

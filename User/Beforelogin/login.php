@@ -153,7 +153,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </button>
                 </div>
                 <div class="mb-3 text-end">
-                    <a href="#" class="small forgot-password-link" style="font-size: 0.95rem;">Forgot password?</a>
+                    <a href="/Capstone/forgot_password.php" class="small forgot-password-link" style="font-size: 0.95rem;">Forgot password?</a>
                 </div>
                 <button type="submit" class="btn w-100 login-btn-custom">Login</button>
             </form>
