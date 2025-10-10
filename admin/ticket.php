@@ -1131,15 +1131,12 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                 <div class="modal-header d-flex align-items-center justify-content-between pb-2 border-0">
                     <div class="d-flex align-items-center gap-2">
                         <h5 class="modal-title fw-bold mb-0" id="detailsModalLabel">Request Details</h5>
-                        <button type="button" class="btn btn-sm btn-edit-modal" id="editDetailsBtn">Edit</button>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <hr class="m-0 mb-3">
                 <div class="modal-body" id="detailsModalBody"></div>
-                <div class="modal-footer border-0 pt-3">
-                    <button type="button" class="btn btn-save-modal" id="saveDetailsBtn" style="display:none;">Save</button>
-                </div>
+                <div class="modal-footer border-0 pt-3"></div>
             </div>
         </div>
     </div>
@@ -1156,10 +1153,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="authorInfoBody"></div>
-            <div class="modal-footer border-0 pt-3">
-                <button type="button" class="btn btn-edit-modal" id="authorEditBtn">EDIT</button>
-                <button type="button" class="btn btn-save-modal" id="authorSaveBtn" style="display:none;">SAVE</button>
-            </div>  
+            <div class="modal-footer border-0 pt-3"></div>  
         </div>
     </div>
     </div>

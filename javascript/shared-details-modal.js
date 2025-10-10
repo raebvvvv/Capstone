@@ -99,21 +99,8 @@
       if (hint) { flaggedTypes = hint.split('|').map(s=>s.trim()).filter(Boolean); }
     } catch(_){}
     const filesHTML = buildFilesHTML(details, { flaggedTypes });
-    // Build IPMO Comments section for user role if available
-    let ipmoCommentsHTML = '';
-    try {
-      const ic = details && details.ipmoComments ? details.ipmoComments : null;
-      const has = !!(ic && (ic.has || ic.issue || ic.affected || ic.comment));
-      if (has && String(o.role||'').toLowerCase() === 'user' && !o.suppressIpmoComments) {
-        const parts = [];
-        if (ic.issue) { parts.push(`<div><strong>Issue:</strong> ${escapeHTML(ic.issue)}</div>`); }
-        if (ic.affected) { parts.push(`<div><strong>Affected document(s):</strong> ${escapeHTML(ic.affected)}</div>`); }
-        if (ic.comment) { parts.push(`<div><strong>Comment:</strong> ${escapeHTML(ic.comment)}</div>`); }
-        if (parts.length) {
-          ipmoCommentsHTML = `<div class="mt-3"><h5>IPMO Comments</h5>${parts.join('')}</div>`;
-        }
-      }
-    } catch(_) { /* ignore */ }
+    // IPMO Comments section intentionally hidden in View Details
+    const ipmoCommentsHTML = '';
     const authorsHTML = buildAuthorsHTML(details, { onAuthorDetails: !!o.onAuthorDetails });
 
   const bannerText = (o.role === 'user' && details.statusBanner && String(details.statusBanner).trim() !== '') ? String(details.statusBanner) : '';

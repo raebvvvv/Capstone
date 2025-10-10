@@ -78,7 +78,8 @@
   }
 
   function renderDetails(details, editMode){
-    editMode = !!editMode;
+    // Force read-only view: ignore edit mode
+    editMode = false;
     const v = (x,d='') => (x===undefined||x===null?d:x);
     // File attachments (prefer detailed list if provided)
     const detailedList = Array.isArray(details.files_list) ? details.files_list : [];
@@ -166,12 +167,7 @@
       }</p></div>`+
       `<div class="mt-3"><h5>Uploaded Files</h5>${attachmentsHTML}</div>`;
 
-    const editBtn = document.getElementById('editDetailsBtn');
-    const saveBtn = document.getElementById('saveDetailsBtn');
-    if(editBtn && saveBtn){
-      editBtn.style.display = editMode ? 'none':'inline-block';
-      saveBtn.style.display = editMode ? 'inline-block':'none';
-    }
+    // No edit/save controls in read-only mode
     document.querySelectorAll('.author-view-btn').forEach(btn=>{
       btn.addEventListener('click',()=>{ const idx=parseInt(btn.getAttribute('data-author-index'),10); openAuthorModal(idx); });
     });
@@ -248,12 +244,7 @@
         `<div class="mb-2"><label class="form-label">Home Address</label><input class="form-control" id="editAuthorAddressInput" value="${escapeHTML(v(author.address))}"></div>`+
         `<div class="mb-2"><label class="form-label">Phone Number</label><input class="form-control" id="editAuthorPhoneInput" value="${escapeHTML(v(author.phone))}"></div>`;
     }
-    const editBtn = document.getElementById('authorEditBtn');
-    const saveBtn = document.getElementById('authorSaveBtn');
-    if(editBtn && saveBtn){
-      editBtn.style.display = edit ? 'none':'inline-block';
-      saveBtn.style.display = edit ? 'inline-block':'none';
-    }
+    // Author modal is read-only; no edit/save controls
   }
   function openAuthorModal(index){ 
     currentAuthorIndex = index;
@@ -269,73 +260,7 @@
 
   document.addEventListener('DOMContentLoaded', function(){
     // Global handlers for Author modal edit/save (use currentAuthorIndex)
-    const authorEditBtnEl = document.getElementById('authorEditBtn');
-    if(authorEditBtnEl){
-      authorEditBtnEl.addEventListener('click', ()=>{
-        const author = (currentDetails.additionalAuthors || [])[currentAuthorIndex ?? -1];
-        if(!author){ return; }
-        renderAuthorModal(author, true);
-      });
-    }
-    const authorSaveBtnEl = document.getElementById('authorSaveBtn');
-    if(authorSaveBtnEl){
-      authorSaveBtnEl.addEventListener('click', async ()=>{
-        const author = (currentDetails.additionalAuthors || [])[currentAuthorIndex ?? -1];
-        if(!author){ alert('No author selected.'); return; }
-        const authorId = author.id || null;
-        if(!authorId){ alert('Missing author id; cannot save.'); return; }
-        const first = document.getElementById('editAuthorFirst')?.value?.trim() || '';
-        const middle = document.getElementById('editAuthorMiddle')?.value?.trim() || '';
-        const last = document.getElementById('editAuthorLast')?.value?.trim() || '';
-        const studentId = document.getElementById('editAuthorStudNoInput')?.value?.trim() || '';
-        const email = document.getElementById('editAuthorEmailInput')?.value?.trim() || '';
-        const address = document.getElementById('editAuthorAddressInput')?.value?.trim() || '';
-        const phone = document.getElementById('editAuthorPhoneInput')?.value?.trim() || '';
-        try {
-          authorSaveBtnEl.disabled = true;
-          const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-          const res = await fetch('../admin/update_author.php', {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-            body: JSON.stringify({
-              author_id: authorId,
-              first_name: first,
-              middle_name: middle,
-              last_name: last,
-              student_id: studentId,
-              webmail: email,
-              home_address: address,
-              mobile: phone
-            })
-          });
-          let data = null;
-          try { data = await res.json(); } catch(_) {}
-          if(!data){
-            let txt = '';
-            try { txt = await res.text(); } catch(_) {}
-            alert('Failed to save author changes' + (txt?`\n${txt}`:''));
-            return;
-          }
-          if(!data.success){ alert('Failed to save author changes' + (data.error?`: ${data.error}`:'' ) + (data.detail?`\n${data.detail}`:'')); return; }
-          // Update local model
-          const full = [first, middle, last].filter(Boolean).join(' ');
-          author.name = full;
-          author.studentNumber = studentId;
-          author.email = email;
-          author.address = address;
-          author.phone = phone;
-          // Re-render
-          renderAuthorModal(author,false);
-          renderDetails(currentDetails,false);
-        } catch(err){
-          console.error('update_author error', err);
-          alert('Network error updating author');
-        } finally {
-          authorSaveBtnEl.disabled = false;
-        }
-      });
-    }
+    // Remove author edit/save wiring (read-only)
     // Density toggle removed; always use optimized layout
 
     // Open details by clicking Request ID only
@@ -392,95 +317,7 @@
       }
     });
 
-    const editDetailsBtn = document.getElementById('editDetailsBtn');
-    if(editDetailsBtn){ editDetailsBtn.addEventListener('click', ()=> renderDetails(currentDetails,true)); }
-    const saveDetailsBtn = document.getElementById('saveDetailsBtn');
-    if (saveDetailsBtn) {
-      saveDetailsBtn.addEventListener('click', async () => {
-        // Collect edited values from the modal (match IDs created in renderDetails)
-        const studentName = document.getElementById('editStudentName')?.value?.trim() || '';
-        const studentNumber = document.getElementById('editStudentNumber')?.value?.trim() || '';
-        const email = document.getElementById('editEmail')?.value?.trim() || '';
-        const homeAddress = document.getElementById('editHomeAddress')?.value?.trim() || '';
-        const campus = document.getElementById('editCampus')?.value?.trim() || '';
-        const college = document.getElementById('editCollege')?.value?.trim() || '';
-        const program = document.getElementById('editProgram')?.value?.trim() || '';
-        const documentTitle = document.getElementById('editDocumentTitle')?.value?.trim() || '';
-        const accomplishmentDate = document.getElementById('editAccomplishmentDate')?.value?.trim() || '';
-
-        const rid = currentDetails.request_id || document.querySelector('#detailsModal [data-request-id]')?.getAttribute('data-request-id') || '';
-        if (!rid) { alert('Missing Request ID; cannot save changes.'); return; }
-
-        const payload = {
-          request_id: rid,
-          student_name: studentName,
-          student_id: studentNumber,
-          email,
-          home_address: homeAddress,
-          campus,
-          college,
-          program,
-          document_title: documentTitle,
-          accomplishment_date: accomplishmentDate
-        };
-
-        try {
-          const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-          const res = await fetch('../edit_ticket.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-            body: JSON.stringify(payload)
-          });
-          let data = {};
-          try { data = await res.json(); } catch(_) {}
-          if (!res.ok) { throw new Error(data.error || ('HTTP ' + res.status)); }
-          if (data.success) {
-            // Update local state and UI with edited fields
-            if (studentName) currentDetails.studentName = studentName;
-            if (studentNumber) currentDetails.studentNumber = studentNumber;
-            if (email) currentDetails.email = email;
-            if (homeAddress) currentDetails.homeAddress = homeAddress;
-            if (campus) currentDetails.campus = campus;
-            if (college) currentDetails.college = college;
-            if (program) currentDetails.program = program;
-            if (documentTitle) currentDetails.documentTitle = documentTitle;
-            if (accomplishmentDate) currentDetails.accomplishmentDate = accomplishmentDate;
-
-            // Also reflect changes back into the active table row if present
-            const openLink = document.querySelector(`a.open-details[data-request-id="${CSS.escape(rid)}"]`);
-            const row = openLink?.closest('tr');
-            if (row) {
-              if (studentName) {
-                const nameAnchor = row.querySelector('td:nth-child(2) .fw-semibold, td:nth-child(2) a.open-details');
-                if (nameAnchor) nameAnchor.textContent = studentName;
-              }
-              if (studentNumber) {
-                const sub = row.querySelector('.student-subtext');
-                if (sub) sub.textContent = studentNumber;
-              }
-              if (program) {
-                const prog = row.querySelector('.col-program');
-                if (prog) { prog.textContent = program; prog.setAttribute('title', program); }
-              }
-            }
-            // Broadcast a cross-tab/window event so other pages (e.g., Completed Applications) can update
-            try {
-              window.localStorage.setItem('ipmo:lastUpdate', JSON.stringify({
-                t: Date.now(), kind: 'submission-updated', requestId: rid,
-                payload: { studentName, studentNumber, program, college, documentTitle }
-              }));
-            } catch(_) {}
-            renderDetails(currentDetails, false);
-            alert('Details updated successfully.');
-          } else {
-            alert('Update failed: ' + (data.error || 'Unknown error'));
-          }
-        } catch (err) {
-          console.error('Save details error', err);
-          alert('Failed to save changes: ' + err.message);
-        }
-      });
-    }
+    // Remove details edit/save wiring (read-only)
 
     // Incomplete (pending) single-modal flow
     document.querySelectorAll('#pending .btn-incomplete').forEach(btn=>{ 

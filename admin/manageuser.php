@@ -63,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     $employee_department = isset($_POST['employee_department']) ? trim($_POST['employee_department']) : null;
     $employee_program = isset($_POST['employee_program']) ? trim($_POST['employee_program']) : null;
     // Validate role and status
-    $valid_roles = ['student','employee','admin'];
+    // Restrict roles: do not allow assigning 'admin' via Manage Users
+    $valid_roles = ['student','employee'];
     $valid_status = ['active','inactive','pending'];
     if (!in_array($role, $valid_roles, true)) { $role = null; }
     if (!in_array($status, $valid_status, true)) { $status = null; }
@@ -122,7 +123,7 @@ $search_param = '%' . $search_query . '%';
 
 // Role filter (all | student | employee | admin)
 $role_filter = isset($_GET['role']) ? strtolower(trim($_GET['role'])) : 'all';
-$allowed_roles = ['all','student','employee','admin'];
+$allowed_roles = ['all','student','employee'];
 if (!in_array($role_filter, $allowed_roles, true)) { $role_filter = 'all'; }
 
 // Helper to add role filter clause
@@ -159,7 +160,7 @@ $sql_active = "
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
     LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id AND u.role = 'admin'
-    WHERE u.status = 'active' AND (
+    WHERE u.status = 'active' AND u.role <> 'admin' AND (
         u.email LIKE :q1 
         OR sp.student_number LIKE :q2
         OR ep.employee_number LIKE :q3
@@ -222,7 +223,7 @@ $sql_pending = "
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
     LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id AND u.role = 'admin'
-    WHERE u.status = 'pending' AND (
+    WHERE u.status = 'pending' AND u.role <> 'admin' AND (
         u.email LIKE :q1 
         OR sp.student_number LIKE :q2
         OR ep.employee_number LIKE :q3
@@ -285,7 +286,7 @@ $sql_inactive = "
     LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
     LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
     LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id AND u.role = 'admin'
-    WHERE u.status = 'inactive' AND (
+    WHERE u.status = 'inactive' AND u.role <> 'admin' AND (
         u.email LIKE :q1 
         OR sp.student_number LIKE :q2
         OR ep.employee_number LIKE :q3
@@ -382,7 +383,6 @@ $result_inactive = $stmt_inactive->fetchAll();
                         <option value="all" <?php echo $role_filter==='all'?'selected':''; ?>>All Roles</option>
                         <option value="student" <?php echo $role_filter==='student'?'selected':''; ?>>Student</option>
                         <option value="employee" <?php echo $role_filter==='employee'?'selected':''; ?>>Employee</option>
-                  
                     </select>
                 </div>
                 <div class="col-6 col-md-3 d-grid">
@@ -400,11 +400,7 @@ $result_inactive = $stmt_inactive->fetchAll();
         <div class="tab-content mt-3">
             <!-- Active Users Tab -->
             <div class="tab-pane fade show active" id="active">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <a class="btn btn-outline-secondary btn-sm" href="manageuser_export.php?status=active&role=<?php echo urlencode($role_filter); ?>&search=<?php echo urlencode($search_query); ?>">Export CSV</a>
-                    </div>
-                </div>
+               
                 <form method="POST" action="bulk_user_action.php" class="bulk-form">
                     <?php csrf_input(); ?>
                     <input type="hidden" name="status_scope" value="active">
@@ -453,11 +449,6 @@ $result_inactive = $stmt_inactive->fetchAll();
             </div>
             <!-- Pending Users Tab -->
             <div class="tab-pane fade" id="pending">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <a class="btn btn-outline-secondary btn-sm" href="manageuser_export.php?status=pending&role=<?php echo urlencode($role_filter); ?>&search=<?php echo urlencode($search_query); ?>">Export CSV</a>
-                    </div>
-                </div>
                 <form method="POST" action="bulk_user_action.php" class="bulk-form">
                     <?php csrf_input(); ?>
                     <input type="hidden" name="status_scope" value="pending">
@@ -506,11 +497,6 @@ $result_inactive = $stmt_inactive->fetchAll();
             </div>
             <!-- Inactive Users Tab -->
             <div class="tab-pane fade" id="inactive">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <a class="btn btn-outline-secondary btn-sm" href="manageuser_export.php?status=inactive&role=<?php echo urlencode($role_filter); ?>&search=<?php echo urlencode($search_query); ?>">Export CSV</a>
-                    </div>
-                </div>
                 <form method="POST" action="bulk_user_action.php" class="bulk-form">
                     <?php csrf_input(); ?>
                     <input type="hidden" name="status_scope" value="inactive">
@@ -586,7 +572,6 @@ $result_inactive = $stmt_inactive->fetchAll();
                                     <select class="form-select" id="role" name="role" required>
                                         <option value="student" <?php echo $row['role']==='student'?'selected':''; ?>>Student</option>
                                         <option value="employee" <?php echo $row['role']==='employee'?'selected':''; ?>>Employee</option>
-                                        <option value="admin" <?php echo $row['role']==='admin'?'selected':''; ?>>Admin</option>
                                     </select>
                                 </div>
                                 <div class="mb-3 col-6">
