@@ -27,7 +27,7 @@ if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $back = isset($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER'], ENT_QUOTES, 'UTF-8') : asset_url('index.php');
         $msg = 'Total upload size exceeds server limit (' . htmlspecialchars(ini_get('post_max_size'), ENT_QUOTES, 'UTF-8') . '). Reduce file sizes (max 50MB per file) or contact administrator.';
         echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Upload Too Large</title>';
-        echo '<meta name="viewport" content="width=device-width, initial-scale=1"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light">';
+        echo '<meta name="viewport" content="width=device-width, initial-scale=1"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"></head><body class="bg-light">';
         echo '<div class="container py-5"><div class="alert alert-warning shadow-sm">';
         echo '<h4 class="alert-heading mb-3">Upload Too Large</h4><p class="mb-3">' . $msg . '</p>';
         echo '<a class="btn btn-sm btn-secondary" href="' . $back . '">Go Back</a> ';
@@ -243,7 +243,7 @@ if ($errors) {
     http_response_code(400);
     $back = isset($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER'], ENT_QUOTES, 'UTF-8') : asset_url('index.php');
     echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Submission Errors</title>';
-    echo '<meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light">';
+    echo '<meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"></head><body class="bg-light">';
     echo '<div class="container py-5"><div class="alert alert-danger shadow-sm"><h4 class="alert-heading mb-3">Submission Errors</h4><ul class="mb-3">';
     foreach ($errors as $e) { echo '<li>' . htmlspecialchars($e, ENT_QUOTES, 'UTF-8') . '</li>'; }
     echo '</ul><a class="btn btn-sm btn-secondary" href="' . $back . '">Go Back</a> ';
@@ -489,7 +489,7 @@ if (empty($errors)) {
 <meta charset="UTF-8" />
 <title>Submission Received | PUP e-IPMO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous" />
 </head>
 <body class="bg-light">
   <div class="container py-5">

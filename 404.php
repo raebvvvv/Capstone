@@ -9,7 +9,7 @@ http_response_code(404);
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>404 Not Found</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuQkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous" />
 </head>
 <body class="bg-light d-flex min-vh-100 align-items-center">
   <div class="container text-center">
