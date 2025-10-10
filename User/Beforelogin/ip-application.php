@@ -144,69 +144,85 @@
             <span class="step-title fw-bold">Application Status and Remarks</span>
           </div>
           <div class="step-desc mb-1">
-            <!-- Pending Tab -->
-            <div class="mt-3">
-              <div class="fw-bold text-danger">Pending Tab</div>
-              <div class="ms-3 mt-2">
-                <div class="fw-bold">Remarks: <span class="text-danger">For Evaluation</span></div>
-                <div class="small mb-2">
-                  Upon submission, your application will be subject for evaluation.
-                </div>
-                
-                <div class="fw-bold">Remarks: <span class="text-danger">Pending Review</span></div>
-                <div class="small mb-2">
-                  Your resubmitted files is currently pending and under review.
-                </div>
-                
-                <div class="fw-bold">Remarks: <span class="text-danger">Incorrect Document/Upload</span>, <span class="text-danger">Error in Document/Upload</span></div>
-                <div class="small mb-2">
-                  Read comments regarding your application by clicking the <b>Comments</b> button. Upload the necessary files that will need to be resubmitted by clicking the <b>View Details</b> button.
-                </div>
-                
-                <div class="fw-bold">Remarks: <span class="text-danger">Others</span></div>
-                <div class="small mb-2">
-                  Read comments regarding your application. Other issue/s regarding your application that may or may not require resubmission.
-                </div>
-              </div>
-            </div>
+          <!-- Pending Tab -->
 
-            <!-- Approved Tab -->
-            <div class="mt-4">
-              <div class="fw-bold text-danger">Approved Tab</div>
-              <div class="ms-3 mt-2">
-                <div class="fw-bold">Remarks: <span class="text-danger">For Physical Submission</span></div>
-                <div class="small mb-2">
-                  Approved applications may proceed to submission of hardcopy:<br>
-                  <b>Envelope</b> (in your department's designated color) inside the envelope are:
-                  <ul class="mb-1">
-                    <li>2 copies of application forms with 1 document stamp</li>
-                    <li>2 pieces of flashdrives containing the theses</li>
-                  </ul>
-                  <b>Note:</b> Please show the <b>Request ID</b> to the IPMO staff, you may either show the Request ID directly from website or download the Request ID as PDF file.
-                </div>
-                
-                <div class="fw-bold">Remarks: <span class="text-danger">Missing Document</span>, <span class="text-danger">Error in Document</span>, <span class="text-danger">Documents don't match</span></div>
-                <div class="small mb-2">
-                  Read comments regarding your application by clicking the <b>Comments</b> button. You may see the documents that has issue by clicking the <b>View Details</b> that may need for resubmission.
-                </div>
-                
-                <div class="fw-bold">Remarks: <span class="text-danger">Others</span></div>
-                <div class="small mb-2">
-                  Read comments regarding your application. Other issue/s regarding your application that may or may not require resubmission.
-                </div>
-              </div>
+      <div class="step-desc mb-1">
+        <!-- Pending Tab -->
+        <div class="mt-3">
+          <div class="fw-bold" style="color:#d46a00;">Pending Tab</div>
+          <div class="ms-3 mt-2">
+            <div class="fw-bold">Remarks: For Evaluation</div>
+            <div class="small mb-2">
+              Once submitted, your application will be evaluated by the reviewing team.
             </div>
+            
+            <div class="fw-bold">Remarks: Pending Review</div>
+            <div class="small mb-2">
+              Your resubmitted files are currently under review.
+            </div>
+            
+            <div class="fw-bold">
+              Remarks: 
+              <span class="text-danger">Incorrect Document/Upload</span>, 
+              <span class="text-danger">Error in Document/Upload</span>
+            </div>
+            <div class="small mb-2">
+              Review the comments regarding your application by clicking the <b>Comments</b> button. Re-upload the required files by selecting the <b>View Details</b> button.
+            </div>
+            
+            <div class="fw-bold">Remarks: Others</div>
+            <div class="small mb-2">
+              Review the comments regarding your application. This may include other issues that may or may not require resubmission.
+            </div>
+          </div>
+        </div>
 
-            <!-- Completed Tab -->
-            <div class="mt-4">
-              <div class="fw-bold text-danger">Completed Tab</div>
-              <div class="ms-3 mt-2">
-                <div class="fw-bold">Remarks: <span class="text-danger">Complete</span></div>
-                <div class="small mb-2">
-                  Your application has been approved. You may now download your <b>Certificate of Copyright Application</b> by clicking the <b>View Certificate</b> button.
-                </div>
-              </div>
+        <!-- Approved Tab -->
+        <div class="mt-4">
+          <div class="fw-bold" style="color:#1a8b1a;">Approved Tab</div>
+          <div class="ms-3 mt-2">
+            <div class="fw-bold">Remarks: For Physical Submission</div>
+            <div class="small mb-2">
+              Approved applications may now proceed with the submission of hard copies:<br>
+              <b>Envelope</b> (in your department’s designated color) should contain:
+              <ul class="mb-1">
+                <li><i>Two (2) copies of the application form, each with one documentary stamp</i></li>
+                <li><i>Two (2) flash drives containing the thesis files</i></li>
+              </ul>
+              <b>Note:</b> Please present your <b>Request ID</b> to the IPMO staff. You may either show it directly from the website or download it as a PDF file.
             </div>
+            
+            <div class="fw-bold">
+              Remarks: 
+              <span class="text-danger">Missing Document</span>, 
+              <span class="text-danger">Error in Document</span>, 
+              <span class="text-danger">Documents Don’t Match</span>
+            </div>
+            <div class="small mb-2">
+              Review the comments regarding your application by clicking the <b>Comments</b> button. You can also identify documents with issues by selecting the <b>View Details</b> button to determine which files need to be resubmitted.
+            </div>
+            
+            <div class="fw-bold">Remarks: Others</div>
+            <div class="small mb-2">
+              Review the comments regarding your application. This may include other concerns that may or may not require resubmission.
+            </div>
+          </div>
+        </div>
+
+        <!-- Completed Tab -->
+        <div class="mt-4">
+          <div class="fw-bold" style="color:#004080;">Completed Tab</div>
+          <div class="ms-3 mt-2">
+            <div class="fw-bold">Remarks: Complete</div>
+            <div class="small mb-2">
+              Your application has been fully approved. You may now download your <b>Certificate of Copyright Application</b> by clicking the <b>View Certificate</b> button.
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
           </div>
         </div>
       </div>
