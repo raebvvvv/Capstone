@@ -191,12 +191,11 @@ if ($has_notes === 1) {
     $where .= ($where ? ' AND ' : ' WHERE ') . ' COALESCE(sn.note_count,0) > 0 ';
 }
 
-// Load requests from submissions (ipmo_users.sql)
-$rows = [];
+// Load requests with server-side pagination per active tab
 // Debug helpers
 $__dbgMainQueryError = null; $__dbgFilteredCount = null;
 try {
-    // Ensure meta table exists (lean persistence) so LEFT JOIN never errors on fresh DB
+    // Ensure meta/notes tables exist to support joins (lightweight safety)
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
             submission_id INT NOT NULL,
@@ -209,7 +208,6 @@ try {
             PRIMARY KEY (submission_id, scope),
             CONSTRAINT fk_sim_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-        // Ensure notes tables exist for joins below
         $pdo->exec("CREATE TABLE IF NOT EXISTS submission_notes (
             id INT AUTO_INCREMENT PRIMARY KEY,
             submission_id INT NOT NULL,
@@ -229,11 +227,86 @@ try {
             CONSTRAINT fk_snav_admin FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
     } catch (Throwable $eCreate) {
-        if (function_exists('log_event')) { log_event('DB_ERROR', 'Failed ensuring submission_incomplete_meta', ['err' => $eCreate->getMessage()]); }
-        // continue; LEFT JOIN will fail only if table truly absent, but we attempted creation.
+        if (function_exists('log_event')) { log_event('DB_ERROR', 'Failed ensuring meta/notes tables', ['err' => $eCreate->getMessage()]); }
     }
+
+    // Build reusable FROM/JOIN blocks
+    $baseJoins = " FROM submissions s
+        LEFT JOIN users u ON u.user_id = s.user_id
+        LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
+        LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
+        LEFT JOIN (
+            SELECT submission_id, COUNT(*) AS note_count, MAX(created_at) AS last_note
+            FROM submission_notes
+            GROUP BY submission_id
+        ) sn ON sn.submission_id = s.submission_id";
+
     $adminId = (int)($_SESSION['user_id'] ?? 0);
-    $sql = "SELECT 
+    $unreadJoin = " LEFT JOIN (
+            SELECT n.submission_id,
+                   SUM(CASE WHEN v.last_viewed_at IS NULL OR n.created_at > v.last_viewed_at THEN 1 ELSE 0 END) AS unread_count
+            FROM submission_notes n
+            LEFT JOIN submission_notes_admin_views v
+                  ON v.submission_id = n.submission_id AND v.admin_id = $adminId
+            GROUP BY n.submission_id
+        ) un ON un.submission_id = s.submission_id";
+    $metaJoins = " LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope = 'pending'
+        LEFT JOIN submission_incomplete_meta ma ON ma.submission_id = s.submission_id AND ma.scope = 'approved'";
+
+    // Helper to compose tab status condition
+    $statusClauseFor = function(string $tab): string {
+        if ($tab === 'approved') return " s.status = 'approved' ";
+        if ($tab === 'completed') return " s.status = 'completed' ";
+        // pending
+        return " s.status IN ('pending','pending_review') ";
+    };
+
+    // Build total counts for each tab using same $where filters
+    $tabs = ['pending','approved','completed'];
+    $totals = [ 'pending'=>0, 'approved'=>0, 'completed'=>0 ];
+    foreach ($tabs as $t) {
+        $whereFinal = $where !== '' ? $where . ' AND ' . $statusClauseFor($t) : (' WHERE ' . $statusClauseFor($t));
+        $sqlCount = "SELECT COUNT(*)" . $baseJoins . $whereFinal;
+        $stmtC = $pdo->prepare($sqlCount);
+        $stmtC->execute($params);
+        $totals[$t] = (int)$stmtC->fetchColumn();
+    }
+
+    // Pagination (10 per page) for each tab
+    $perPage = 10;
+    $pending_total   = $totals['pending'];
+    $approved_total  = $totals['approved'];
+    $completed_total = $totals['completed'];
+
+    // Helper to derive requested page for a given tab (active tab uses ?page=N, others default to 1)
+    $requested_page = function(string $tab) use ($active_tab): int {
+        if ($active_tab === $tab) {
+            $p = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            return $p > 0 ? $p : 1;
+        }
+        return 1;
+    };
+
+    // Compute per-tab pages, clamp
+    $pending_pages   = max(1, (int)ceil($pending_total / $perPage));
+    $approved_pages  = max(1, (int)ceil($approved_total / $perPage));
+    $completed_pages = max(1, (int)ceil($completed_total / $perPage));
+
+    $pending_page    = min($pending_pages,  $requested_page('pending'));
+    $approved_page   = min($approved_pages, $requested_page('approved'));
+    $completed_page  = min($completed_pages,$requested_page('completed'));
+
+    // Prepare item containers
+    $pending_items = [];
+    $approved_items = [];
+    $completed_items = [];
+
+    // Only fetch rows for the active tab
+    $active_page  = $requested_page($active_tab);
+    $offset       = ($active_page - 1) * $perPage;
+    $limitClause  = ' LIMIT ' . (int)$perPage . ' OFFSET ' . (int)$offset . ' ';
+    $whereActive  = $where !== '' ? $where . ' AND ' . $statusClauseFor($active_tab) : (' WHERE ' . $statusClauseFor($active_tab));
+    $sqlSelect = "SELECT 
                 s.submission_id,
                 s.submission_code AS request_id,
                 CASE 
@@ -261,48 +334,28 @@ try {
                 ma.issue_label   AS approved_issue_label,
                 ma.admin_comment AS approved_admin_comment,
                 ma.affected_doc_types AS approved_affected_doc_types
-            FROM submissions s
-            LEFT JOIN users u ON u.user_id = s.user_id
-            LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
-            LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
-            LEFT JOIN (
-                SELECT submission_id, COUNT(*) AS note_count, MAX(created_at) AS last_note
-                FROM submission_notes
-                GROUP BY submission_id
-            ) sn ON sn.submission_id = s.submission_id
-            LEFT JOIN (
-                SELECT n.submission_id,
-                       SUM(CASE WHEN v.last_viewed_at IS NULL OR n.created_at > v.last_viewed_at THEN 1 ELSE 0 END) AS unread_count
-                FROM submission_notes n
-                LEFT JOIN submission_notes_admin_views v
-                      ON v.submission_id = n.submission_id AND v.admin_id = $adminId
-                GROUP BY n.submission_id
-            ) un ON un.submission_id = s.submission_id
-            LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope = 'pending'
-            LEFT JOIN submission_incomplete_meta ma ON ma.submission_id = s.submission_id AND ma.scope = 'approved'
-            $where
-            ORDER BY s.created_at DESC";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $rows = $stmt->fetchAll();
-} catch (Throwable $e) {
-    if (function_exists('log_event')) { log_event('DB_ERROR', 'Query submissions failed', ['err' => $e->getMessage()]); }
-    $rows = [];
-    if (isset($_GET['debug']) && (string)$_GET['debug'] === '1') {
-        $__dbgMainQueryError = $e->getMessage();
-    }
-}
+            "
+            . $baseJoins
+            . $unreadJoin
+            . $metaJoins
+            . $whereActive .
+            " ORDER BY s.created_at DESC " . $limitClause;
 
-// Split by status for tabs
-$pending = [];
-$approved = [];
-$completed = [];
-foreach ($rows as $r) {
-    $st = strtolower((string)($r['status'] ?? ''));
-    // Normalize statuses from submissions table
-    if ($st === 'pending' || $st === 'pending_review') { $pending[] = $r; }
-    elseif ($st === 'approved') { $approved[] = $r; }
-    elseif ($st === 'completed') { $completed[] = $r; }
+    $stmtSel = $pdo->prepare($sqlSelect);
+    $stmtSel->execute($params);
+    $activeRows = $stmtSel->fetchAll();
+    if ($active_tab === 'pending') { $pending_items = $activeRows; }
+    elseif ($active_tab === 'approved') { $approved_items = $activeRows; }
+    else { $completed_items = $activeRows; }
+
+} catch (Throwable $e) {
+    if (function_exists('log_event')) { log_event('DB_ERROR', 'Query submissions (paginated) failed', ['err' => $e->getMessage()]); }
+    $__dbgMainQueryError = $e->getMessage();
+    // Fallback to empty sets
+    $pending_items = $approved_items = $completed_items = [];
+    $pending_total = $approved_total = $completed_total = 0;
+    $pending_pages = $approved_pages = $completed_pages = 1;
+    $pending_page = $approved_page = $completed_page = 1;
 }
 // Debug info: quick DB sanity checks
 $__dbgTotalSubs = null; $__dbgSridCount = null; $__dbgEridCount = null; $__dbgSamples = [];
@@ -367,33 +420,7 @@ if ($search_query !== '') {
     }
 }
 
-// Pagination (10 per page) for each tab
-$perPage = 10;
-$pending_total   = count($pending);
-$approved_total  = count($approved);
-$completed_total = count($completed);
-
-// Helper to derive requested page for a given tab (active tab uses ?page=N, others default to 1)
-$requested_page = function(string $tab) use ($active_tab): int {
-    if ($active_tab === $tab) {
-        $p = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        return $p > 0 ? $p : 1;
-    }
-    return 1;
-};
-
-// Compute per-tab pages, clamp, and slice arrays
-$pending_pages  = max(1, (int)ceil($pending_total / $perPage));
-$approved_pages = max(1, (int)ceil($approved_total / $perPage));
-$completed_pages= max(1, (int)ceil($completed_total / $perPage));
-
-$pending_page   = min($pending_pages,  $requested_page('pending'));
-$approved_page  = min($approved_pages, $requested_page('approved'));
-$completed_page = min($completed_pages,$requested_page('completed'));
-
-$pending_items   = array_slice($pending,   ($pending_page   - 1) * $perPage, $perPage);
-$approved_items  = array_slice($approved,  ($approved_page  - 1) * $perPage, $perPage);
-$completed_items = array_slice($completed, ($completed_page - 1) * $perPage, $perPage);
+// Note: Items already fetched for active tab; totals/pages computed above
 
 // Helper to build pagination URL preserving filters
 function build_page_url(string $tab, int $page): string {
@@ -609,9 +636,9 @@ Normalized: <?php echo htmlspecialchars(json_encode([
 SQL where: <?php echo htmlspecialchars((string)$__dbgWhere); ?>
 Params: <?php echo htmlspecialchars(json_encode($__dbgParams, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); ?>
 Counts: <?php echo htmlspecialchars(json_encode([
-    'pending' => isset($pending) ? count($pending) : 0,
-    'approved' => isset($approved) ? count($approved) : 0,
-    'completed' => isset($completed) ? count($completed) : 0,
+    'pending' => isset($pending_total) ? (int)$pending_total : 0,
+    'approved' => isset($approved_total) ? (int)$approved_total : 0,
+    'completed' => isset($completed_total) ? (int)$completed_total : 0,
 ], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); ?>
 Active tab (server): <?php echo htmlspecialchars($active_tab); ?>
 Main query error: <?php echo htmlspecialchars((string)($__dbgMainQueryError ?? '')); ?>
@@ -654,10 +681,22 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
             <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm" type="button">Copyright</button></a>
         </div>
         <div class="d-flex justify-content-between align-items-center mb-2">
+            <?php
+            // Helper to build tab URL preserving filters and forcing page=1 for new tab selection
+            function build_tab_url(string $tab): string {
+                $params = $_GET;
+                $params['tab'] = $tab;
+                $params['page'] = 1; // reset to first page when switching tabs
+                if (!empty($params['has_notes'])) { $params['has_notes'] = 1; }
+                else { unset($params['has_notes']); }
+                $qs = http_build_query($params);
+                return htmlspecialchars($_SERVER['PHP_SELF'] . '?' . $qs);
+            }
+            ?>
             <ul class="nav nav-tabs" id="requestTabs">
-                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='pending' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#pending" style="color:#222;">Pending<?php if($search_query!==''){ echo ' ('.count($pending).')'; } ?></a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='approved' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#approved" style="color:#222;">Approved<?php if($search_query!==''){ echo ' ('.count($approved).')'; } ?></a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='completed' ? 'active' : ''; ?>" data-bs-toggle="tab" href="#completed" style="color:#222;">Complete<?php if($search_query!==''){ echo ' ('.count($completed).')'; } ?></a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='pending' ? 'active' : ''; ?>" href="<?php echo build_tab_url('pending'); ?>" style="color:#222;">Pending<?php if($search_query!==''){ echo ' ('.(int)$pending_total.')'; } ?></a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='approved' ? 'active' : ''; ?>" href="<?php echo build_tab_url('approved'); ?>" style="color:#222;">Approved<?php if($search_query!==''){ echo ' ('.(int)$approved_total.')'; } ?></a></li>
+                <li class="nav-item"><a class="nav-link fw-semibold <?php echo $active_tab==='completed' ? 'active' : ''; ?>" href="<?php echo build_tab_url('completed'); ?>" style="color:#222;">Complete<?php if($search_query!==''){ echo ' ('.(int)$completed_total.')'; } ?></a></li>
             </ul>
             <div></div>
         </div>

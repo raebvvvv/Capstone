@@ -115,7 +115,8 @@ if ($profile) {
         <div class="card shadow-sm">
           <div class="card-body">
             <!-- Employees Information  -->
-            <form id="submissionForm" class="mt-2" method="post" action="submit-form.php" enctype="multipart/form-data">
+            <?php $perFileMB = 50; // 50MB per-file limit client-side ?>
+            <form id="submissionForm" class="mt-2" method="post" action="submit-form.php" enctype="multipart/form-data" data-file-max-mb="<?php echo (int)$perFileMB; ?>">
               <?php if (function_exists('csrf_input')) { csrf_input(); } ?>
               <input type="hidden" name="accepted_terms" id="accepted_terms" value="">
 
@@ -283,6 +284,12 @@ if ($profile) {
                 <button type="submit" class="btn btn-success px-5">Submit</button>
               </div>
             </form>
+            <?php
+              if (file_exists(__DIR__ . '/../../upload_helpers.php')) {
+                require_once __DIR__ . '/../../upload_helpers.php';
+                echo display_upload_requirements();
+              }
+            ?>
           </div>
         </div>
       </div>
@@ -354,6 +361,7 @@ if ($profile) {
   <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-academic-dropdowns.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-author-modal.js'); ?>" defer></script>
+  <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
   <script>
     // Prefill Academic Affiliation fields (except Work Classification) from employee profile
     (function() {

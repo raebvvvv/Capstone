@@ -19,7 +19,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'missing') {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $filename = basename((string)$row['file_path']);
         $safe = trim(str_replace(["\r","\n"], '', $filename));
-        $fsPath = app_path('uploads/' . $safe);
+    $fsPath = storage_path('uploads/' . $safe);
         $exists = is_file($fsPath) ? 'yes' : 'no';
         if ($exists === 'no') {
             fputcsv($out, [
@@ -47,7 +47,7 @@ try {
     while ($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $filename = basename((string)$r['file_path']);
         $safe = trim(str_replace(["\r","\n"], '', $filename));
-        $fsPath = app_path('uploads/' . $safe);
+    $fsPath = storage_path('uploads/' . $safe);
         $exists = is_file($fsPath);
         $rows[] = [
             'request_id' => (string)$r['submission_code'],
@@ -89,7 +89,7 @@ try {
         <div class="mb-3">
             <span class="badge badge-present">Present: <?php echo (int)$present; ?></span>
             <span class="badge badge-missing ms-2">Missing: <?php echo (int)$missing; ?></span>
-            <div class="small text-muted mt-2">Root folder checked: <code><?php echo htmlspecialchars(app_path('uploads/')); ?></code></div>
+            <div class="small text-muted mt-2">Root folder checked: <code><?php echo htmlspecialchars(storage_path('uploads/')); ?></code></div>
         </div>
         <div class="table-responsive">
             <table class="table table-sm align-middle">

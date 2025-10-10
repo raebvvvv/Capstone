@@ -611,16 +611,6 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
                     data-values='<?php echo htmlspecialchars(json_encode($campusValues), ENT_QUOTES, 'UTF-8'); ?>'></canvas>
             </div>
         </div>
-
-        <!-- Types (Work Classification) Distribution -->
-        <div class="dashboard-section mb-4">
-            <h5><span class="legend-dot legend-open"></span> Types (Work Classification) Distribution</h5>
-            <div class="bar-chart-container">
-                <canvas id="workClassChart"
-                    data-labels='<?php echo htmlspecialchars(json_encode($wcLabels), ENT_QUOTES, 'UTF-8'); ?>'
-                    data-values='<?php echo htmlspecialchars(json_encode($wcValues), ENT_QUOTES, 'UTF-8'); ?>'></canvas>
-            </div>
-        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>

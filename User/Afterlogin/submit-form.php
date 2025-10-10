@@ -2,9 +2,40 @@
 require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php';
 require_once __DIR__ . '/../../includes/debug_helpers.php';
+require_once __DIR__ . '/../../upload_helpers.php';
 
 // Setup error logging
 setupErrorLogging();
+
+// Preflight: detect if PHP dropped POST due to exceeding post_max_size (avoids CSRF false negatives)
+if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    $contentLength = isset($_SERVER['CONTENT_LENGTH']) ? (int)$_SERVER['CONTENT_LENGTH'] : 0;
+    $postMaxRaw = ini_get('post_max_size');
+    $postMax = 0;
+    if ($postMaxRaw) {
+        $unit = strtolower(substr($postMaxRaw, -1));
+        $num = (float)$postMaxRaw;
+        switch ($unit) {
+            case 'g': $postMax = (int)($num * 1024 * 1024 * 1024); break;
+            case 'm': $postMax = (int)($num * 1024 * 1024); break;
+            case 'k': $postMax = (int)($num * 1024); break;
+            default:  $postMax = (int)$num; // assume bytes
+        }
+    }
+    if ($postMax > 0 && $contentLength > $postMax) {
+        http_response_code(413); // Payload Too Large
+        $back = isset($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER'], ENT_QUOTES, 'UTF-8') : asset_url('index.php');
+        $msg = 'Total upload size exceeds server limit (' . htmlspecialchars(ini_get('post_max_size'), ENT_QUOTES, 'UTF-8') . '). Reduce file sizes (max 50MB per file) or contact administrator.';
+        echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Upload Too Large</title>';
+        echo '<meta name="viewport" content="width=device-width, initial-scale=1"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light">';
+        echo '<div class="container py-5"><div class="alert alert-warning shadow-sm">';
+        echo '<h4 class="alert-heading mb-3">Upload Too Large</h4><p class="mb-3">' . $msg . '</p>';
+        echo '<a class="btn btn-sm btn-secondary" href="' . $back . '">Go Back</a> ';
+        echo '<a class="btn btn-sm btn-outline-primary" href="' . asset_url('index.php') . '">Home</a>';
+        echo '</div></div></body></html>';
+        exit;
+    }
+}
 
 // Log form submission
 logDebug('Form submitted', [
@@ -26,28 +57,62 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Determine role (default to 'student')
 $role = $_SESSION['role'] ?? 'student';
 
-// Alias employee_id -> student_number for employees
+// Alias employee_id -> student_number for employees (kept for backward compatibility)
 if ($role === 'employee') {
     if (empty($_POST['student_number']) && !empty($_POST['employee_id'])) {
         $_POST['student_number'] = $_POST['employee_id'];
     }
 }
 
-// For students, enforce academic level from DB profile, not from client
+// Server-side immutability: override readonly/disabled fields with profile values
+$errors = [];
 if ($role === 'student') {
-    $stmt = $pdo->prepare("SELECT academic_level, campus, college, program FROM student_profiles WHERE user_id = ?");
+    // Fetch full profile for students
+    $stmt = $pdo->prepare("SELECT sp.first_name, sp.middle_name, sp.last_name, sp.student_number, sp.home_address, sp.mobile_number, sp.campus, sp.academic_level, sp.college, sp.program, u.email
+                           FROM student_profiles sp JOIN users u ON sp.user_id = u.user_id WHERE sp.user_id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $studentProfile = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($studentProfile && !empty($studentProfile['academic_level'])) {
-        // Override client-submitted values with server-side profile
-        $_POST['academicLevel'] = $studentProfile['academic_level'];
-        // Optionally also enforce other academic fields if you want full consistency
-        if (!empty($studentProfile['campus'])) { $_POST['campus'] = $studentProfile['campus']; }
+        // Identity and contact
+        $_POST['first_name']      = $studentProfile['first_name'] ?? '';
+        $_POST['middle_name']     = $studentProfile['middle_name'] ?? '';
+        $_POST['last_name']       = $studentProfile['last_name'] ?? '';
+        $_POST['student_number']  = $studentProfile['student_number'] ?? '';
+        $_POST['home_address']    = $studentProfile['home_address'] ?? '';
+        $_POST['mobile_number']   = $studentProfile['mobile_number'] ?? '';
+        $_POST['webmail']         = $studentProfile['email'] ?? '';
+        // Academic (locked in UI)
+        $_POST['academicLevel']   = $studentProfile['academic_level'];
+        if (!empty($studentProfile['campus']))  { $_POST['campus']  = $studentProfile['campus']; }
         if (array_key_exists('college', $studentProfile)) { $_POST['college'] = $studentProfile['college'] ?? ''; }
         if (array_key_exists('program', $studentProfile)) { $_POST['program'] = $studentProfile['program'] ?? ''; }
     } else {
-        // No academic level in DB; force an error
-        $errors[] = 'Missing academic level in your profile. Please contact support.';
+        $errors[] = 'Your student profile is incomplete. Please complete your profile and try again.';
+    }
+} elseif ($role === 'employee') {
+    // Fetch full profile for employees
+    $stmt = $pdo->prepare("SELECT ep.first_name, ep.middle_name, ep.last_name, ep.employee_number, ep.home_address, ep.mobile_number, ep.campus, ep.academic_level, ep.college, ep.department, ep.program, u.email
+                           FROM employee_profiles ep JOIN users u ON ep.user_id = u.user_id WHERE ep.user_id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $empProfile = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($empProfile && !empty($empProfile['employee_number'])) {
+        // Identity and contact
+        $_POST['first_name']      = $empProfile['first_name'] ?? '';
+        $_POST['middle_name']     = $empProfile['middle_name'] ?? '';
+        $_POST['last_name']       = $empProfile['last_name'] ?? '';
+        // Store employee_number in student_number column on submissions as per schema
+        $_POST['student_number']  = $empProfile['employee_number'] ?? '';
+        $_POST['home_address']    = $empProfile['home_address'] ?? '';
+        $_POST['mobile_number']   = $empProfile['mobile_number'] ?? '';
+        $_POST['webmail']         = $empProfile['email'] ?? '';
+        // Academic (locked in UI)
+        if (!empty($empProfile['academic_level'])) { $_POST['academicLevel'] = $empProfile['academic_level']; }
+        if (!empty($empProfile['campus']))  { $_POST['campus']  = $empProfile['campus']; }
+        if (array_key_exists('college', $empProfile))    { $_POST['college']    = $empProfile['college'] ?? ''; }
+        if (array_key_exists('program', $empProfile))    { $_POST['program']    = $empProfile['program'] ?? ''; }
+        // department exists but not stored in submissions table directly
+    } else {
+        $errors[] = 'Your employee profile is incomplete. Please complete your profile and try again.';
     }
 }
 
@@ -57,7 +122,6 @@ $requiredFields = [
     'campus','academicLevel','workClassification','title','date_accomplished'
     // 'college' and 'program' handled separately based on role/level
 ];
-$errors = [];
 $data = [];
 foreach ($requiredFields as $f) {
     $val = trim($_POST[$f] ?? '');
@@ -112,15 +176,23 @@ if (!$data['accepted_terms']) {
     $errors[] = 'Terms not accepted.';
 }
 
+// Validate date_accomplished is not in the future
+if (!empty($data['date_accomplished'])) {
+    $ts = strtotime($data['date_accomplished']);
+    if ($ts === false || $ts > strtotime('today')) {
+        $errors[] = 'Invalid date accomplished.';
+    }
+}
+
 // Files expected (role-aware)
 if ($role === 'employee') {
-    // Employees: same set as students but 'presentation' replaces 'full_manuscript' and no 'approval_sheet'
+    // Employees: 'presentation' replaces 'full_manuscript'. Notarized co-authorship is optional.
     $fileFields = [
         'journal_publication_format',
         'notarized_copyright',
         'receipt_payment',
         'presentation',
-        'notarized_coauthorship',
+        // 'notarized_coauthorship' is optional for employees; process later if provided
         'record_copyright'
     ];
 } else {
@@ -136,7 +208,7 @@ if ($role === 'employee') {
     ];
 }
 
-$uploadDir = app_path('uploads');
+$uploadDir = storage_path('uploads');
 if (!is_dir($uploadDir)) {
     @mkdir($uploadDir, 0775, true);
 }
@@ -147,18 +219,23 @@ foreach ($fileFields as $ff) {
         $errors[] = "File upload error: $ff";
         continue;
     }
-    $fileInfo = $_FILES[$ff];
-    $ext = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
-    if ($ext !== 'pdf') {
-        $errors[] = "$ff must be a PDF.";
-        continue;
-    }
-    $safeName = $ff . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.pdf';
-    $dest = $uploadDir . DIRECTORY_SEPARATOR . $safeName;
-    if (!move_uploaded_file($fileInfo['tmp_name'], $dest)) {
-        $errors[] = "Failed to store $ff";
+    // Use secure upload helper which validates PDF content and MIME and sanitizes filename
+    $res = secure_upload_file($_FILES[$ff], $ff, $uploadDir);
+    if (!$res['success']) {
+        foreach ($res['errors'] as $err) { $errors[] = $ff . ': ' . $err; }
     } else {
-        $storedFiles[$ff] = $safeName;
+        $storedFiles[$ff] = $res['filename'];
+    }
+}
+
+// Handle optional employee notarized_coauthorship if provided
+if ($role === 'employee' && isset($_FILES['notarized_coauthorship']) && $_FILES['notarized_coauthorship']['error'] === UPLOAD_ERR_OK) {
+    $ff = 'notarized_coauthorship';
+    $res = secure_upload_file($_FILES[$ff], $ff, $uploadDir);
+    if (!$res['success']) {
+        foreach ($res['errors'] as $err) { $errors[] = $ff . ': ' . $err; }
+    } else {
+        $storedFiles[$ff] = $res['filename'];
     }
 }
 
@@ -194,9 +271,9 @@ function normalize_name($s) {
     return $s;
 }
 
-// Normalize submitter names
-$data['first_name'] = normalize_name($data['first_name'] ?? '');
-$data['last_name'] = normalize_name($data['last_name'] ?? '');
+// Normalize submitter names (from server-enforced values)
+$data['first_name'] = normalize_name($_POST['first_name'] ?? '');
+$data['last_name']  = normalize_name($_POST['last_name'] ?? '');
 $_POST['middle_name'] = normalize_name($_POST['middle_name'] ?? '');
 
 // Normalize adviser field

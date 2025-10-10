@@ -99,7 +99,8 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
         <div class="card shadow-sm">
           <div class="card-body">
             <!-- Student Information  -->
-            <form id="submissionForm" method="POST" action="submit-form.php" enctype="multipart/form-data">
+            <?php $perFileMB = 50; ?>
+            <form id="submissionForm" method="POST" action="submit-form.php" enctype="multipart/form-data" data-file-max-mb="<?php echo (int)$perFileMB; ?>">
               <?php if (function_exists('csrf_input')) { csrf_input(); } ?>
               <!-- NEW hidden acceptance flag -->
               <input type="hidden" name="accepted_terms" id="accepted_terms" value="">
@@ -149,7 +150,6 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                            value="<?php echo htmlspecialchars($profile['email']); ?>" readonly>
                     <small class="form-text text-muted">
                         Students: 2020-00000-XX-0@iskolar.pup.edu.ph<br>
-                        Faculty: firstname.lastname@pup.edu.ph
                     </small>
                   </div>
                 </div>
@@ -299,6 +299,13 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
                 <button type="submit" class="btn btn-success px-5">Submit</button>
               </div>
             </form>
+            <?php
+              // Optional: display upload requirements
+              if (file_exists(__DIR__ . '/../../upload_helpers.php')) {
+                require_once __DIR__ . '/../../upload_helpers.php';
+                echo display_upload_requirements();
+              }
+            ?>
           </div>
         </div>
         </div>
@@ -378,6 +385,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/student-academic-dropdowns.js'); ?>"></script>
+   <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
  
 
 </body>

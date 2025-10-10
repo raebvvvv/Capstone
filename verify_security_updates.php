@@ -162,18 +162,79 @@
                             echo "❌ upload_helpers.php: Not found\n";
                         }
                         
-                        // Check uploads directory protection
-                        if (file_exists(__DIR__ . '/uploads/.htaccess')) {
-                            echo "✅ uploads/.htaccess: Found\n";
-                            $htaccess = file_get_contents(__DIR__ . '/uploads/.htaccess');
-                            if (strpos($htaccess, 'php_flag engine off') !== false) {
-                                echo "✅ PHP execution: Disabled in uploads\n";
+                        // Validate secure storage (outside webroot) instead of webroot uploads/.htaccess
+                        echo "\n<strong>Validating secure storage location…</strong>\n";
+                        // Load environment helper to resolve STORAGE_PATH if available
+                        try {
+                            if (!class_exists('Environment') && file_exists(__DIR__ . '/env_config.php')) {
+                                require_once __DIR__ . '/env_config.php';
+                            }
+                        } catch (Throwable $e) { /* ignore */ }
+
+                        // Derive storage base path (matches logic in config.php without loading it to avoid header issues)
+                        $basePath = __DIR__;
+                        $storageBase = null;
+                        try {
+                            $envStorage = class_exists('Environment') ? Environment::get('STORAGE_PATH') : null;
+                            if ($envStorage && is_string($envStorage) && strlen(trim($envStorage)) > 0) {
+                                $storageBase = rtrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, (string)$envStorage), DIRECTORY_SEPARATOR);
+                            }
+                        } catch (Throwable $e) { /* ignore */ }
+                        if ($storageBase === null) {
+                            // Default to sibling folder to project root
+                            $storageBase = rtrim(dirname($basePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'ipmo_storage';
+                        }
+                        $storageUploads = $storageBase . DIRECTORY_SEPARATOR . 'uploads';
+                        echo '➡️ STORAGE_BASE: ' . $storageBase . "\n";
+                        echo '➡️ STORAGE uploads path: ' . $storageUploads . "\n";
+
+                        // Check existence
+                        if (is_dir($storageBase)) {
+                            echo "✅ Storage base exists\n";
+                        } else {
+                            echo "⚠️ Storage base does not exist (it will be created on-demand by the app): " . $storageBase . "\n";
+                        }
+                        if (is_dir($storageUploads)) {
+                            echo "✅ Storage uploads folder exists\n";
+                        } else {
+                            echo "⚠️ Storage uploads folder missing (created when the first upload occurs)\n";
+                        }
+
+                        // Verify storage is outside webroot
+                        $realBase = realpath($basePath) ?: $basePath;
+                        $realStorage = realpath($storageBase) ?: $storageBase;
+                        $isOutside = (stripos($realStorage, $realBase . DIRECTORY_SEPARATOR) !== 0) && ($realStorage !== $realBase);
+                        echo '➡️ Project root: ' . $realBase . "\n";
+                        echo '➡️ Resolved storage: ' . $realStorage . "\n";
+                        if ($isOutside) {
+                            echo "✅ Storage is outside webroot (recommended)\n";
+                        } else {
+                            echo "❌ Storage appears to be inside webroot — move it outside or set STORAGE_PATH in environment.\n";
+                        }
+
+                        // Optional sanity: if a legacy webroot uploads/ folder exists, warn if it contains files
+                        $legacyWebrootUploads = __DIR__ . DIRECTORY_SEPARATOR . 'uploads';
+                        if (is_dir($legacyWebrootUploads)) {
+                            $hasFiles = false;
+                            try {
+                                $it = new FilesystemIterator($legacyWebrootUploads, FilesystemIterator::SKIP_DOTS);
+                                foreach ($it as $f) { $hasFiles = true; break; }
+                            } catch (Throwable $e) { /* ignore */ }
+                            if ($hasFiles) {
+                                echo "⚠️ Legacy webroot uploads/ contains files. These should be migrated to secure storage or protected.\n";
                             } else {
-                                echo "⚠️ PHP execution: May not be properly disabled\n";
+                                echo "✅ Legacy webroot uploads/ is empty (good)\n";
                             }
                         } else {
-                            echo "❌ uploads/.htaccess: Not found\n";
+                            echo "✅ No webroot uploads/ directory detected (good)\n";
                         }
+
+                        // Confirm presence of secure streaming endpoints used to serve files
+                        $userStream = __DIR__ . '/User/Afterlogin/download_document.php';
+                        $adminStream = __DIR__ . '/admin/stream_document.php';
+                        echo "\n<strong>Streaming endpoints:</strong>\n";
+                        echo file_exists($userStream) ? "✅ User download_document.php: Found\n" : "❌ User download_document.php: Missing\n";
+                        echo file_exists($adminStream) ? "✅ Admin stream_document.php: Found\n" : "❌ Admin stream_document.php: Missing\n";
                         ?>
                     </div>
                 </div>

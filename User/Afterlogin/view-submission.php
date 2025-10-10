@@ -133,7 +133,8 @@ function pup_modal_body($submission, $authors, $files, $notes = [], $noteSaved =
     <div class="d-flex flex-column align-items-center">
       <ul class="list-unstyled w-75">
         <?php foreach ($files as $file): 
-          $fileUrl = asset_url('uploads/' . $file['file_path']);
+          // Use the submission ID from the provided $submission to build a secure file URL
+          $fileUrl = asset_url('User/Afterlogin/download_document.php?id=' . urlencode((string)$submission['submission_id']) . '&type=' . urlencode((string)$file['doc_type']));
         ?>
           <li class="mb-2" data-doc-type="<?php echo htmlspecialchars($file['doc_type']); ?>">
             <div class="d-flex justify-content-between align-items-center gap-2">

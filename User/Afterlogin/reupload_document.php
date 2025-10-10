@@ -3,6 +3,8 @@ require __DIR__ . '/../../config.php';
 // Ensure DB connection is available
 require app_path('conn.php');
 require_once __DIR__ . '/../../auth_check.php';
+// Use centralized validator for consistent PDF-only and 50MB-per-file rules
+require_once __DIR__ . '/../../upload_validator.php';
 header('Content-Type: application/json');
 
 if($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -72,40 +74,11 @@ try {
     }
 
     $file = $_FILES['file'];
-    $maxSize = 5 * 1024 * 1024; // 5MB
-    if($file['size'] > $maxSize){
-        http_response_code(413);
-        echo json_encode(['success'=>false,'error'=>'File too large (max 5MB)']);
-        exit;
-    }
-
-    // Basic MIME / extension validation
-    $allowedExt = ['pdf'];
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if(!in_array($ext, $allowedExt, true)){
+    // Centralized validation (PDF-only, MIME/content checks, max size via env - default 50MB)
+    $validation = UploadValidator::validateFile($file, $docType);
+    if(!$validation['valid']){
         http_response_code(422);
-        echo json_encode(['success'=>false,'error'=>'Only PDF files allowed']);
-        exit;
-    }
-
-    // Robust MIME detection with fallbacks
-    $mime = null;
-    if (function_exists('finfo_open')) {
-        $f = @finfo_open(FILEINFO_MIME_TYPE);
-        if ($f) {
-            $mime = @finfo_file($f, $file['tmp_name']);
-            @finfo_close($f);
-        }
-    }
-    if (!$mime && function_exists('mime_content_type')) {
-        $mime = @mime_content_type($file['tmp_name']);
-    }
-    if (!$mime) { $mime = 'application/pdf'; }
-
-    // Accept PDFs and common octet-stream fallback when extension is pdf
-    if(!($mime === 'application/pdf' || ($mime === 'application/octet-stream' && $ext === 'pdf'))){
-        http_response_code(422);
-        echo json_encode(['success'=>false,'error'=>'Invalid MIME type']);
+        echo json_encode(['success'=>false,'error'=>$validation['errors'][0] ?? 'Validation failed']);
         exit;
     }
 
@@ -153,13 +126,15 @@ try {
     // Generate new filename (keeping doc_type prefix)
     $newName = $docType . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.pdf';
     // Determine upload directory (relative to project root)
-    $uploadDir = __DIR__ . '/../../uploads';
+    $uploadDir = storage_path('uploads');
     if(!is_dir($uploadDir)) { @mkdir($uploadDir, 0755, true); }
 
     $target = rtrim($uploadDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $newName;
-    if(!move_uploaded_file($file['tmp_name'], $target)){
+    // Use secureMove so we log and enforce permissions consistently
+    $move = UploadValidator::secureMove($file, $target, $validation);
+    if(!$move['success']){
         http_response_code(500);
-        echo json_encode(['success'=>false,'error'=>'Failed to store file']);
+        echo json_encode(['success'=>false,'error'=>$move['errors'][0] ?? 'Failed to store file']);
         exit;
     }
 
@@ -170,7 +145,7 @@ try {
     }
 
     $upd = $pdo->prepare('UPDATE submission_documents SET file_path=?, uploaded_at=NOW(), file_size=?, mime_type=?, verified=0, verified_by=NULL, verified_at=NULL WHERE document_id=?');
-    $upd->execute([$newName, (int)$file['size'], $mime, (int)$doc['document_id']]);
+    $upd->execute([$newName, (int)$validation['size'], $validation['mime_type'], (int)$doc['document_id']]);
 
     // Remove this doc type from pending affected list (submission_incomplete_meta)
     $remaining = [];

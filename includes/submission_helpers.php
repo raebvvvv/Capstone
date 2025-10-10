@@ -83,7 +83,7 @@ function saveSubmissionDocuments($pdo, $submissionId, $files) {
     ");
 
     foreach ($files as $type => $filename) {
-        $filepath = app_path('uploads/' . $filename);
+    $filepath = storage_path('uploads/' . $filename);
         $filesize = filesize($filepath);
         $mimetype = mime_content_type($filepath);
 

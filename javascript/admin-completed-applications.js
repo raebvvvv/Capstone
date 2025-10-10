@@ -212,13 +212,13 @@ function initCompletedAppsFilters() {
 	const campusBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="campusMenu"]') : null;
 	const typesBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="typesMenu"]') : null;
 	const groupBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="groupMenu"]') : null;
-	// Department filter removed from UI
-	const departmentBtn = null;
+	// Department filter (added after College)
+	const departmentBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="departmentMenu"]') : null;
 	const campusMenu = document.getElementById('campusMenu');
 	const acadLevelMenu = document.getElementById('acadLevelMenu');
 	const collegeMenu = document.getElementById('collegeMenu');
 	const programMenu = document.getElementById('programMenu');
-	const departmentMenu = null;
+	const departmentMenu = document.getElementById('departmentMenu');
 	const typesMenu = document.getElementById('typesMenu');
 	const groupMenu = document.getElementById('groupMenu');
 
@@ -255,7 +255,17 @@ function initCompletedAppsFilters() {
 		return map;
 	})();
 
-	function getAllDepartments() { return []; }
+	function getAllDepartments() {
+		const ad = getAD();
+		const dep = (ad && ad.department) || {};
+		const all = new Set();
+		Object.keys(dep).forEach(k => {
+			if (k === 'default') return;
+			const arr = dep[k] || [];
+			arr.forEach(d => all.add(d));
+		});
+		return Array.from(all).sort((a,b)=> (a||'').localeCompare(b||''));
+	}
 
 	function setBtnLabel(btn, baseLabel, valueLabel) {
 		if (!btn) return;
@@ -331,7 +341,12 @@ function initCompletedAppsFilters() {
 		return Array.from(set).sort((a,b)=> a.localeCompare(b));
 	}
 
-	function buildDepartmentMenu(departments) { /* no-op */ }
+	function buildDepartmentMenu(departments) {
+		if (!departmentMenu) return;
+		const items = [ '<button class="dropdown-item" type="button">All</button>' ]
+			.concat((departments||[]).map(d => `<button class="dropdown-item" type="button" data-value="${norm(d)}">${d}</button>`));
+		departmentMenu.innerHTML = items.join('');
+	}
 
 	function parseCollegeCode(text) {
 		if (!text) return 'All';
@@ -354,8 +369,23 @@ function initCompletedAppsFilters() {
 		setBtnLabel(programBtn, 'Program', 'All');
 		selectedProgram = 'All';
 
-		// Rebuild Department menu based on selected college
-	// Department filter removed
+		// Rebuild Department menu based on selected college using academicData.department
+		if (departmentMenu) {
+			const ad = getAD();
+			const depMap = (ad && ad.department) || {};
+			const full = CODE_TO_COLLEGE_FULL[selectedCollegeCode] || null;
+			let deps = [];
+			if (full && Array.isArray(depMap[full])) {
+				deps = depMap[full];
+			} else if (Array.isArray(depMap.default)) {
+				deps = depMap.default;
+			} else {
+				deps = [];
+			}
+			buildDepartmentMenu(deps);
+			selectedDepartment = 'All';
+			setBtnLabel(departmentBtn, 'Department', '');
+		}
 		updateListVisibility();
 	}
 
@@ -472,7 +502,11 @@ function initCompletedAppsFilters() {
 			const prog = (el.getAttribute('data-program')||'').trim();
 			if (prog !== (selectedProgram||'').toLowerCase()) return false;
 		}
-		// Department filter removed
+		// Department
+		if (selectedDepartment !== 'All') {
+			const dep = norm(el.getAttribute('data-department')||'');
+			if (dep !== (selectedDepartment||'').toLowerCase()) return false;
+		}
 		// Campus (substring match)
 		if (selectedCampus !== 'All') {
 			const campus = (el.getAttribute('data-campus')||'').trim();
@@ -823,7 +857,19 @@ function initCompletedAppsFilters() {
 			});
 		}
 
-		// Department menu removed
+		// Department
+		if (departmentMenu) {
+			departmentMenu.addEventListener('click', (e) => {
+				const item = e.target.closest('.dropdown-item');
+				if (!item) return;
+				const label = item.textContent.trim();
+				const val = (item.getAttribute('data-value') || norm(label) || 'all');
+				selectedDepartment = (label === 'All') ? 'All' : val;
+				setBtnLabel(departmentBtn, 'Department', label === 'All' ? '' : label);
+				updateListVisibility();
+				departmentMenu.classList.remove('menu-active');
+			});
+		}
 
 		// Campus
 		if (campusMenu) {
@@ -1073,7 +1119,7 @@ function initCompletedAppsFilters() {
 	setBtnLabel(campusBtn, 'Campus', '');
 	setBtnLabel(typesBtn, 'Types', '');
 	setBtnLabel(groupBtn, 'Group', '');
-	// Department button removed
+	setBtnLabel(departmentBtn, 'Department', '');
 }
 
 if (document.readyState === 'loading') {

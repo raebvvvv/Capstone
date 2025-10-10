@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <button type="button" class="btn btn-sm btn-warning" id="reuploadSubmitBtn"><span class="submit-text">Submit</span></button>
                     <div class="small text-muted" id="reuploadProgress" style="display:none;">Uploading...</div>
                   </div>
-                  <div class="form-text mt-2">Max size 5MB each. PDF only.</div>
+                  <div class="form-text mt-2">Max size 50MB each. PDF only.</div>
                 </div></div>`;
 
                 // Fresh cycle -> no pre-marked done docs
@@ -271,8 +271,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     badge.title = 'Not selected';
                     return;
                   }
-                  if(file.size > 5*1024*1024){
-                    alert('File exceeds 5MB limit.');
+                  if(file.size > 50*1024*1024){
+                    alert('File exceeds 50MB limit.');
                     input.value='';
                     badge.textContent = '✗';
                     badge.className = 'badge bg-danger doc-status';

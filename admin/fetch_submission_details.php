@@ -74,7 +74,8 @@ try {
     $filesDetailed = [];
     foreach($docs as $d){
         $docType = $d['doc_type'];
-        $publicUrl = asset_url('uploads/'.$d['file_path']);
+        // Admins stream files via secure controller to avoid exposing storage path
+        $publicUrl = asset_url('admin/stream_document.php?id=' . urlencode((string)$sid) . '&did=' . urlencode((string)$d['document_id']));
         $filesMap[$docType] = $publicUrl;
         // Human readable label (basic normalization; can be extended)
         $label = ucwords(str_replace(['_','-'],' ', $docType));

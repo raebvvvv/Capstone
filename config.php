@@ -57,6 +57,40 @@ if (!function_exists('app_path')) {
     }
 }
 
+// Secure storage path (outside webroot) for user uploads and generated files
+if (!defined('STORAGE_BASE')) {
+    // Allow override via env: STORAGE_PATH=C:\secure\ipmo_storage or /var/ipmo_storage
+    $envStorage = Environment::get('STORAGE_PATH');
+    if ($envStorage && is_string($envStorage)) {
+        $base = rtrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $envStorage), DIRECTORY_SEPARATOR);
+    } else {
+        // Default: place storage outside typical webroot folders when detected
+        // If BASE_PATH = C:\xampp\htdocs\capstone, prefer C:\xampp\ipmo_storage
+        $projectParent = rtrim(dirname(BASE_PATH), DIRECTORY_SEPARATOR);
+        $parentOfParent = rtrim(dirname($projectParent), DIRECTORY_SEPARATOR);
+        $webRootFolder = strtolower(basename($projectParent));
+        $commonWebRoots = ['htdocs','www','public','public_html','wwwroot'];
+        if (in_array($webRootFolder, $commonWebRoots, true) && $parentOfParent !== '' && $parentOfParent !== $projectParent) {
+            $base = $parentOfParent . DIRECTORY_SEPARATOR . 'ipmo_storage';
+        } else {
+            // Fallback: sibling to project root
+            $base = $projectParent . DIRECTORY_SEPARATOR . 'ipmo_storage';
+        }
+    }
+    define('STORAGE_BASE', $base);
+}
+
+if (!function_exists('storage_path')) {
+    function storage_path(string $path = ''): string {
+        $base = STORAGE_BASE;
+        if (!is_dir($base)) {
+            // Best-effort create base storage folder
+            @mkdir($base, 0775, true);
+        }
+        return $path ? ($base . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR)) : $base;
+    }
+}
+
 if (!function_exists('asset_url')) {
     function asset_url(string $path = ''): string {
         return BASE_URL . ltrim($path, '/');

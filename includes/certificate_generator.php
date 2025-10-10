@@ -11,7 +11,7 @@
  * Options:
  *  - force_regen (bool) Force regeneration even if cached file exists.
  *  - template (string) Absolute path to template PDF (defaults to admin/New-Certificate.pdf)
- *  - output_dir (string) Absolute path where generated certificates are stored (defaults to uploads/certificates)
+ *  - output_dir (string) Absolute path where generated certificates are stored (defaults to storage_path('certificates'))
  *  - title_font_size (int) Default 18
  *  - authors_font_size (int) Default 12
  *  - date_font_size (int) Default 11
@@ -108,7 +108,8 @@ if (!function_exists('generate_certificate')) {
         // 3. Paths & caching
         $template = $opts['template'] ?? app_path('admin/New-Certificate.pdf');
         if (!is_file($template)) { throw new RuntimeException('Template PDF missing at ' . $template); }
-        $outputDir = $opts['output_dir'] ?? app_path('uploads/certificates');
+    // Store generated certificates under secure storage outside webroot by default
+    $outputDir = $opts['output_dir'] ?? storage_path('certificates');
         if (!is_dir($outputDir)) { @mkdir($outputDir, 0775, true); }
         $codeSlug = preg_replace('/[^A-Za-z0-9_-]+/','_', (string)$sub['submission_code']);
         $targetPath = rtrim($outputDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $codeSlug . '.pdf';

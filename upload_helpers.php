@@ -2,6 +2,8 @@
 // Upload Helper Functions
 // Integration layer for enhanced upload validation
 
+// Ensure storage_path() and Environment are available
+require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/upload_validator.php';
 
 /**
@@ -136,7 +138,10 @@ function handle_upload_errors($errors, $uploadedFiles = []) {
     
     // Log upload failures for security monitoring
     $logEntry = date('c') . ' | UPLOAD_FAILURE | Errors: ' . implode('; ', $errors) . PHP_EOL;
-    file_put_contents(__DIR__ . '/upload_errors.log', $logEntry, FILE_APPEND);
+    $logFile = storage_path('logs/upload_errors.log');
+    $logDir = dirname($logFile);
+    if (!is_dir($logDir)) { @mkdir($logDir, 0775, true); }
+    file_put_contents($logFile, $logEntry, FILE_APPEND);
     
     return $errors;
 }

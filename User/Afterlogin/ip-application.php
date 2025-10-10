@@ -80,7 +80,7 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth
           <div class="step-desc mb-1">Fill in required information and attach all PDF files.</div>
         </div>
       </div>
-      <!-- Step 6 -->
+   <!-- Step 6 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
           <img src="<?php echo asset_url('Photos/Icons/complaint.png'); ?>" alt="Evaluation Icon" class="img-fluid">
@@ -88,24 +88,70 @@ require_once __DIR__ . '/../../auth_check.php'; // enforce auth
         <div class="flex-grow-1">
           <div>
             <span class="step-number">6.</span>
-            <span class="step-title fw-bold">Application will be subject to evaluation</span>
+            <span class="step-title fw-bold">Application Status and Remarks</span>
           </div>
           <div class="step-desc mb-1">
-            Upon submission, your application will be subject for evaluation.
-            <div class="mt-2 ms-1">
-              <div class="fw-bold">6.1 Remarks: <span class="text-danger">Incomplete</span></div>
-              <div class="small">
-                Read comments regarding your application.<br>
-                <span class="fw-bold">"Incomplete"</span> can vary from <span class="fw-bold">typographical errors or missing/incorrect information or document, etc.</span>
+            <!-- Pending Tab -->
+            <div class="mt-3">
+              <div class="fw-bold text-danger">Pending Tab</div>
+              <div class="ms-3 mt-2">
+                <div class="fw-bold">Remarks: <span class="text-danger">For Evaluation</span></div>
+                <div class="small mb-2">
+                  Upon submission, your application will be subject for evaluation.
+                </div>
+                
+                <div class="fw-bold">Remarks: <span class="text-danger">Pending Review</span></div>
+                <div class="small mb-2">
+                  Your resubmitted files is currently pending and under review.
+                </div>
+                
+                <div class="fw-bold">Remarks: <span class="text-danger">Incorrect Document/Upload</span>, <span class="text-danger">Error in Document/Upload</span></div>
+                <div class="small mb-2">
+                  Read comments regarding your application by clicking the <b>Comments</b> button. Upload the necessary files that will need to be resubmitted by clicking the <b>View Details</b> button.
+                </div>
+                
+                <div class="fw-bold">Remarks: <span class="text-danger">Others</span></div>
+                <div class="small mb-2">
+                  Read comments regarding your application. Other issue/s regarding your application that may or may not require resubmission.
+                </div>
               </div>
-              <div class="fw-bold mt-2">6.2 Remarks: <span class="text-success">Approved</span></div>
-              <div class="small">
-                Approved applications may proceed to submission of hardcopy:<br>
-                <b>Envelope</b> (in your department's designated color) inside the envelope are:
-                <ul class="mb-1">
-                  <li>2 copies of application forms with 1 document stamp</li>
-                  <li>2 pieces of flashdrives containing the theses</li>
-                </ul>
+            </div>
+
+            <!-- Approved Tab -->
+            <div class="mt-4">
+              <div class="fw-bold text-danger">Approved Tab</div>
+              <div class="ms-3 mt-2">
+                <div class="fw-bold">Remarks: <span class="text-danger">For Physical Submission</span></div>
+                <div class="small mb-2">
+                  Approved applications may proceed to submission of hardcopy:<br>
+                  <b>Envelope</b> (in your department's designated color) inside the envelope are:
+                  <ul class="mb-1">
+                    <li>2 copies of application forms with 1 document stamp</li>
+                    <li>2 pieces of flashdrives containing the theses</li>
+                  </ul>
+                  <b>Note:</b> Please show the <b>Request ID</b> to the IPMO staff, you may either show the Request ID directly from website or download the Request ID as PDF file.
+                </div>
+                
+                <div class="fw-bold">Remarks: <span class="text-danger">Missing Document</span>, <span class="text-danger">Error in Document</span>, <span class="text-danger">Documents don't match</span></div>
+                <div class="small mb-2">
+                  Read comments regarding your application by clicking the <b>Comments</b> button. You may see the documents that has issue by clicking the <b>View Details</b> that may need for resubmission.
+                </div>
+                
+                <div class="fw-bold">Remarks: <span class="text-danger">Others</span></div>
+                <div class="small mb-2">
+                  Read comments regarding your application. Other issue/s regarding your application that may or may not require resubmission.
+                </div>
+              </div>
+            </div>
+
+            <!-- Completed Tab -->
+            <div class="mt-4">
+              <div class="fw-bold text-danger">Completed Tab</div>
+              <div class="ms-3 mt-2">
+                <div class="fw-bold">Remarks: <span class="text-danger">Complete</span></div>
+                <div class="small mb-2">
+                  Your application has been approved. You may now download your <b>Certificate of Copyright Application</b> by clicking the <b>View Certificate</b> button.
+                </div>
               </div>
             </div>
           </div>

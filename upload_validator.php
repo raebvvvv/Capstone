@@ -2,7 +2,8 @@
 // Enhanced File Upload Validation
 // Comprehensive security validation for file uploads
 
-require_once __DIR__ . '/env_config.php';
+// Use full app config to access storage_path() so quarantine/uploads are outside webroot
+require_once __DIR__ . '/config.php';
 
 class UploadValidator {
     
@@ -14,17 +15,15 @@ class UploadValidator {
     private static $quarantineDir;
     
     public static function init() {
-        self::$maxFileSize = Environment::getInt('MAX_UPLOAD_SIZE', 10485760); // 10MB default
-        self::$allowedExtensions = explode(',', Environment::get('ALLOWED_EXTENSIONS', 'pdf,doc,docx,jpg,jpeg,png'));
+        self::$maxFileSize = Environment::getInt('MAX_UPLOAD_SIZE', 52428800); // 50MB default
+        // Only allow PDF files site-wide by default. Override via ALLOWED_EXTENSIONS if needed.
+        self::$allowedExtensions = explode(',', Environment::get('ALLOWED_EXTENSIONS', 'pdf'));
+        self::$allowedExtensions = array_values(array_filter(array_map('strtolower', array_map('trim', self::$allowedExtensions))));
         self::$allowedMimeTypes = [
-            'pdf' => ['application/pdf'],
-            'doc' => ['application/msword'],
-            'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-            'jpg' => ['image/jpeg'],
-            'jpeg' => ['image/jpeg'],
-            'png' => ['image/png']
+            'pdf' => ['application/pdf', 'application/x-pdf', 'application/acrobat', 'applications/pdf']
         ];
-        self::$quarantineDir = __DIR__ . '/quarantine';
+    // Keep quarantine outside webroot
+    self::$quarantineDir = storage_path('quarantine');
         
         // Create quarantine directory if it doesn't exist
         if (!is_dir(self::$quarantineDir)) {
@@ -86,10 +85,29 @@ class UploadValidator {
         }
         
         // MIME type validation (more secure than extension checking)
-        $detectedMimeType = mime_content_type($file['tmp_name']);
+        // Prefer finfo for MIME detection; fall back to mime_content_type
+        $detectedMimeType = 'application/octet-stream';
+        if (function_exists('finfo_open')) {
+            $fi = @finfo_open(FILEINFO_MIME_TYPE);
+            if ($fi) {
+                $dm = @finfo_file($fi, $file['tmp_name']);
+                if (!empty($dm)) { $detectedMimeType = $dm; }
+                @finfo_close($fi);
+            }
+        } elseif (function_exists('mime_content_type')) {
+            $dm = @mime_content_type($file['tmp_name']);
+            if (!empty($dm)) { $detectedMimeType = $dm; }
+        }
         if (!isset(self::$allowedMimeTypes[$extension]) || 
             !in_array($detectedMimeType, self::$allowedMimeTypes[$extension])) {
-            $errors[] = "File content does not match extension for $fieldName";
+            $allowByHeader = false;
+            if ($extension === 'pdf') {
+                $hdr = @file_get_contents($file['tmp_name'], false, null, 0, 4);
+                if ($hdr === '%PDF') { $allowByHeader = true; }
+            }
+            if (!$allowByHeader) {
+                $errors[] = "File content does not match extension for $fieldName";
+            }
         }
         
         // File content validation
@@ -101,8 +119,8 @@ class UploadValidator {
         // Filename sanitization
         $sanitizedName = self::sanitizeFilename($originalName, $fieldName);
         
-        // Malware/script detection
-        $malwareCheck = self::scanForMalware($file);
+        // Malware/script detection (less aggressive for PDFs to reduce false positives)
+        $malwareCheck = self::scanForMalware($file, $extension);
         if (!$malwareCheck['valid']) {
             $errors = array_merge($errors, $malwareCheck['errors']);
             // Move suspicious file to quarantine
@@ -131,36 +149,33 @@ class UploadValidator {
             
             switch ($extension) {
                 case 'pdf':
-                    // Check PDF header
+                    // Check PDF header signature
                     if (substr($fileContent, 0, 4) !== '%PDF') {
                         $errors[] = 'Invalid PDF file format';
                     }
-                    // Check for embedded scripts (basic detection)
-                    if (preg_match('/\/JavaScript|\/JS|\/S#|\/Launch/i', $fileContent)) {
-                        $errors[] = 'PDF contains potentially dangerous JavaScript';
+                    // Detect JavaScript and potential auto-execution contexts; only block if auto-exec or Launch is present
+                    $hasJsAction = (
+                        preg_match('/\/S\s*\/JavaScript\b/i', $fileContent) ||   // Action dictionary: /S /JavaScript
+                        preg_match('/\/JS\s*(\(|<)/i', $fileContent)               // JS code provided as literal or hex string: /JS ( ... ) or /JS <...>
+                    );
+                    $hasAutoExec = preg_match('/\/(OpenAction|AA)\b/i', $fileContent) === 1; // Auto-executing contexts
+                    $hasLaunch = preg_match('/\/Launch\b/i', $fileContent) === 1;            // Launch action is dangerous
+                    if ($hasLaunch || ($hasJsAction && $hasAutoExec)) {
+                        $errors[] = 'PDF contains auto-executing JavaScript or Launch actions';
+                    }
+                    // Heuristic: ensure EOF marker exists somewhere (not exhaustive)
+                    if (strpos($fileContent, '%%EOF') === false) {
+                        $errors[] = 'Malformed PDF: missing EOF marker';
+                    }
+                    // Reject extremely large object count hints to reduce DoS risk (heuristic)
+                    if (preg_match('/\/Count\s+(\d{6,})/i', $fileContent, $m)) {
+                        $errors[] = 'PDF appears to contain an unusually large object count';
                     }
                     break;
-                    
-                case 'jpg':
-                case 'jpeg':
-                    // Check JPEG header
-                    if (substr($fileContent, 0, 2) !== "\xFF\xD8") {
-                        $errors[] = 'Invalid JPEG file format';
-                    }
-                    break;
-                    
-                case 'png':
-                    // Check PNG header
-                    if (substr($fileContent, 0, 8) !== "\x89PNG\r\n\x1a\n") {
-                        $errors[] = 'Invalid PNG file format';
-                    }
-                    break;
-                    
-                case 'doc':
-                case 'docx':
-                    // Basic validation - check if file can be read
+                default:
+                    // Any extension not explicitly handled (but allowed) must still have content
                     if (empty($fileContent)) {
-                        $errors[] = 'Document file appears to be empty or corrupted';
+                        $errors[] = 'File appears to be empty or corrupted';
                     }
                     break;
             }
@@ -175,33 +190,37 @@ class UploadValidator {
     /**
      * Scan for potential malware signatures
      */
-    private static function scanForMalware($file) {
+    private static function scanForMalware($file, $extension = null) {
         $errors = [];
         
         try {
             $fileContent = file_get_contents($file['tmp_name']);
             
             // Common malware/script signatures
-            $dangerousPatterns = [
-                '/<?php/i',
-                '/<%/i',
-                '/<script/i',
-                '/javascript:/i',
-                '/vbscript:/i',
-                '/onload=/i',
-                '/onerror=/i',
-                '/eval\(/i',
-                '/system\(/i',
-                '/exec\(/i',
-                '/shell_exec/i',
-                '/base64_decode/i',
-                '/\x00/' // Null bytes
-            ];
-            
-            foreach ($dangerousPatterns as $pattern) {
-                if (preg_match($pattern, $fileContent)) {
-                    $errors[] = 'File contains potentially malicious content';
-                    break;
+            // Note: For PDFs we skip generic web/script pattern scanning to reduce false positives,
+            // relying on PDF-specific checks above. We still check for executable headers below.
+            if (strtolower((string)$extension) !== 'pdf') {
+                $dangerousPatterns = [
+                    '/<\?php/i',
+                    '/<%/i',
+                    '/<script/i',
+                    '/javascript:/i',
+                    '/vbscript:/i',
+                    '/onload=/i',
+                    '/onerror=/i',
+                    '/eval\(/i',
+                    '/system\(/i',
+                    '/exec\(/i',
+                    '/shell_exec/i',
+                    '/base64_decode/i',
+                    '/\x00/' // Null bytes
+                ];
+
+                foreach ($dangerousPatterns as $pattern) {
+                    if (preg_match($pattern, $fileContent)) {
+                        $errors[] = 'File contains potentially malicious content';
+                        break;
+                    }
                 }
             }
             
@@ -263,7 +282,10 @@ class UploadValidator {
         $quarantinePath = self::$quarantineDir . '/' . 'quarantine_' . date('Ymd_His') . '_' . $filename;
         if (move_uploaded_file($file['tmp_name'], $quarantinePath)) {
             $logEntry = date('c') . " | QUARANTINE | File: $filename | Reason: $reason" . PHP_EOL;
-            file_put_contents(__DIR__ . '/quarantine.log', $logEntry, FILE_APPEND);
+            $logFile = storage_path('logs/quarantine.log');
+            $logDir = dirname($logFile);
+            if (!is_dir($logDir)) { @mkdir($logDir, 0775, true); }
+            file_put_contents($logFile, $logEntry, FILE_APPEND);
         }
     }
     
@@ -295,7 +317,10 @@ class UploadValidator {
             // Log successful upload
             $logEntry = date('c') . " | UPLOAD_SUCCESS | File: " . basename($destination) . 
                        " | Size: " . $validation['size'] . " | Type: " . $validation['mime_type'] . PHP_EOL;
-            file_put_contents(__DIR__ . '/upload.log', $logEntry, FILE_APPEND);
+            $logFile = storage_path('logs/upload.log');
+            $logDir = dirname($logFile);
+            if (!is_dir($logDir)) { @mkdir($logDir, 0775, true); }
+            file_put_contents($logFile, $logEntry, FILE_APPEND);
             
             return ['success' => true, 'filename' => basename($destination)];
         } else {

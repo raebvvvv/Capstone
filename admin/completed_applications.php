@@ -105,7 +105,8 @@ try {
 
     // Preload documents and authors for all submissions
     $apps = [];
-    $fileStmt = $pdo->prepare("SELECT submission_id, doc_type, file_path FROM submission_documents WHERE submission_id = ? ORDER BY doc_type ASC");
+    // Include document_id so we can reference secure streaming endpoint per-file
+    $fileStmt = $pdo->prepare("SELECT document_id, submission_id, doc_type, file_path FROM submission_documents WHERE submission_id = ? ORDER BY doc_type ASC");
     $authStmt = $pdo->prepare("SELECT first_name, middle_name, last_name, is_adviser FROM submission_authors WHERE submission_id = ? ORDER BY is_adviser DESC, last_name ASC, first_name ASC");
     foreach ($subs as $s) {
         $files = [];
@@ -114,11 +115,12 @@ try {
             $rows = $fileStmt->fetchAll(PDO::FETCH_ASSOC);
             foreach ($rows as $f) {
                 $label = ucwords(str_replace(['_', '-'], ' ', (string)$f['doc_type']));
-                // File path stored is filename under uploads/; build relative URL from admin/
+                // File path stored is filename; build secure stream URL instead of exposing filesystem/relative paths
                 $filename = basename((string)$f['file_path']);
                 $safeFilename = trim(str_replace(["\r","\n"], '', $filename));
-                $url = '../uploads/' . rawurlencode($safeFilename);
-                $fsPath = app_path('uploads/' . $safeFilename);
+                $docId = (int)($f['document_id'] ?? 0);
+                $url = asset_url('admin/stream_document.php?id=' . urlencode((string)$s['submission_id']) . '&did=' . urlencode((string)$docId));
+                $fsPath = storage_path('uploads/' . $safeFilename);
                 $exists = is_file($fsPath);
                 $files[] = [ 'label' => $label, 'url' => $url, 'name' => $safeFilename, 'exists' => $exists ];
             }
@@ -403,6 +405,13 @@ try {
                     <button class="dropdown-item" type="button">CTHTM - College of Tourism, Hospitality and Transportation Management</button>
                 </div>
             </div>
+            <div class="ipapp-mini-dropdown" style="position:relative;">
+                <button class="ipapp-mini-btn" data-target="departmentMenu">Department<span>▼</span></button>
+                <div class="ipapp-mini-menu" id="departmentMenu">
+                    <button class="dropdown-item" type="button">All</button>
+                    <button class="dropdown-item" type="button">N/A</button>
+                </div>
+            </div>
             
             <div class="ipapp-mini-dropdown" style="position:relative;">
                 <button class="ipapp-mini-btn" data-target="programMenu">Program<span>▼</span></button>
@@ -532,6 +541,7 @@ try {
                      data-college="<?php echo htmlspecialchars(strtolower($meta['college'] ?? '')); ?>"
                      data-college-code="<?php echo htmlspecialchars(strtolower($meta['college_code'] ?? '')); ?>"
                      data-program="<?php echo htmlspecialchars(strtolower($meta['program'] ?? '')); ?>"
+                     data-department="<?php echo htmlspecialchars(strtolower($app['details']['student']['department'] ?? '')); ?>"
                  data-academic-level="<?php echo htmlspecialchars(strtolower($app['details']['student']['academicLevel'] ?? '')); ?>"
                  data-group="<?php echo htmlspecialchars(strtolower($meta['group'] ?? '')); ?>"
                      data-type="<?php echo htmlspecialchars(strtolower($meta['type'] ?? '')); ?>"

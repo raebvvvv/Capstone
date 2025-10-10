@@ -39,7 +39,8 @@ try {
   foreach($f->fetchAll(PDO::FETCH_ASSOC) as $row){
     $files[] = [
       'label' => ucwords(str_replace(['_','-'],' ', (string)$row['doc_type'])),
-      'url' => asset_url('uploads/'.$row['file_path']),
+  // Serve via secure download endpoint scoped to the current user's submission
+  'url' => asset_url('User/Afterlogin/download_document.php?id=' . urlencode((string)$sid) . '&type=' . urlencode((string)$row['doc_type'])),
       'size' => isset($row['file_size']) ? (int)$row['file_size'] : null,
       'verified' => isset($row['verified']) ? (int)$row['verified'] : 0,
       'type' => (string)$row['doc_type']
@@ -173,6 +174,17 @@ try {
     }
   }
 
+  // Resolve Department with fallbacks (submission column first, then employee profile)
+  $departmentOut = trim((string)($sub['department'] ?? ''));
+  if ($departmentOut === '') {
+    try {
+      $p = $pdo->prepare('SELECT department FROM employee_profiles WHERE user_id = ? LIMIT 1');
+      $p->execute([$user_id]);
+      $profDept = $p->fetchColumn();
+      if (!empty($profDept)) { $departmentOut = trim((string)$profDept); }
+    } catch (Throwable $e) { /* ignore missing table/col */ }
+  }
+
   $resp = [
     'success' => true,
     'submissionCode' => $sub['submission_code'],
@@ -182,6 +194,7 @@ try {
     'homeAddress' => $sub['home_address'] ?? '',
     'campus' => $sub['campus'] ?? '',
     'college' => $sub['college'] ?? '',
+    'department' => $departmentOut,
     'program' => $sub['program'] ?? '',
   'academicLevel' => $academicLevelOut,
   // provide snake_case alias for maximal compatibility across clients
