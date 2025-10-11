@@ -39,6 +39,26 @@ register_shutdown_function(function(){
     }
 });
 
+// Lightweight debug logging for incoming AJAX requests to help diagnose non-JSON responses.
+// Writes minimal information (method, URI, key headers, body preview) to a local debug file.
+$dbgLog = __DIR__ . '/../debug_set_incomplete.log';
+try{
+    $dbgRaw = file_get_contents('php://input');
+    $dbgHeaders = [];
+    if(function_exists('getallheaders')){
+        $gh = getallheaders();
+        $dbgHeaders['X-CSRF-Token'] = $gh['X-CSRF-Token'] ?? ($gh['X-Csrf-Token'] ?? null);
+        $dbgHeaders['Accept'] = $gh['Accept'] ?? null;
+        $dbgHeaders['Content-Type'] = $gh['Content-Type'] ?? null;
+    } else {
+        $dbgHeaders['X-CSRF-Token'] = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_SERVER['HTTP_X_CSRFTOKEN'] ?? null);
+        $dbgHeaders['Accept'] = $_SERVER['HTTP_ACCEPT'] ?? null;
+        $dbgHeaders['Content-Type'] = $_SERVER['CONTENT_TYPE'] ?? null;
+    }
+    $entry = ['ts'=>date('c'),'uri'=>($_SERVER['REQUEST_URI'] ?? ''),'method'=>($_SERVER['REQUEST_METHOD'] ?? ''),'headers'=>$dbgHeaders,'body_preview'=>substr($dbgRaw,0,200)];
+    @file_put_contents($dbgLog, json_encode($entry) . PHP_EOL, FILE_APPEND | LOCK_EX);
+}catch(Throwable $e){ /* ignore logging errors */ }
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
