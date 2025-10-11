@@ -18,6 +18,10 @@
  *  - coords (array) Override coordinates; keys: title, authors, date each => ['x'=>..,'y'=>..,'w'=>..]
  *  - line_height (float) Multicell line height (default 6)
  *  - debug_boxes (bool) If true, draws bounding boxes around each text block to aid positioning
+ *  - qr (array|bool) If truthy, add a QR code linking to public validator with signed token. When array, accepts:
+ *      - x, y, size (mm) or w,h
+ *      - caption (string) Optional small text below QR
+ *      - ttl_seconds (int) Token validity window, default 90 days
  *
  * Coordinate System:
  *   FPDI/FPDF units default to millimeters (A4 ~ 210x297). Adjust as needed; measure positions using a PDF viewer
@@ -103,7 +107,41 @@ if (!function_exists('generate_certificate')) {
         $dateTs = $sub['status_updated_at'] ? strtotime($sub['status_updated_at']) : ($sub['created_at'] ? strtotime($sub['created_at']) : time());
     // Prefer reviewed_at for certificate date if available, else status_updated_at, else created_at
     $dateTs = $sub['reviewed_at'] ? strtotime($sub['reviewed_at']) : ($sub['status_updated_at'] ? strtotime($sub['status_updated_at']) : ($sub['created_at'] ? strtotime($sub['created_at']) : time()));
-        $datePretty = date('F j, Y', $dateTs ?: time());
+    $datePretty = date('F j, Y', $dateTs ?: time());
+
+    // Build signed validation URL (for QR). We'll generate after knowing submission_code.
+    $codeVal = (string)$sub['submission_code'];
+    $ttl = isset($opts['qr']['ttl_seconds']) ? (int)$opts['qr']['ttl_seconds'] : (90 * 24 * 60 * 60); // 90 days default
+    if ($ttl < 3600) { $ttl = 3600; }
+    $payload = [ 'c' => $codeVal, 'iat' => time(), 'exp' => time() + $ttl ];
+    $json = json_encode($payload, JSON_UNESCAPED_SLASHES);
+    $pB64 = rtrim(strtr(base64_encode($json), '+/', '-_'), '=');
+    $sig  = hash_hmac('sha256', $pB64, TICKET_SIGNING_KEY, true);
+    $sB64 = rtrim(strtr(base64_encode($sig), '+/', '-_'), '=');
+        $token = $pB64 . '.' . $sB64;
+        $base = defined('BASE_URL') ? rtrim(BASE_URL, '/') : '';
+        // Prefer an opaque short key so code/token are not exposed in the URL. Fallback to explicit params on failure.
+        $validateUrl = '';
+        try {
+            $linksDir = storage_path('qr_links');
+            if (!is_dir($linksDir)) { @mkdir($linksDir, 0770, true); }
+            // Stable per-code key (24 hex chars) derived from HMAC(code)
+            $key = substr(bin2hex(hash_hmac('sha256', $codeVal, TICKET_SIGNING_KEY, true)), 0, 24);
+            $payloadRec = [
+                'c'   => $codeVal,
+                't'   => $token,
+                'iat' => time(),
+                'exp' => time() + $ttl,
+            ];
+            $recPath = rtrim($linksDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $key . '.json';
+            $ok = (bool)file_put_contents($recPath, json_encode($payloadRec, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            if ($ok) {
+                $validateUrl = ($base !== '' ? $base : '') . '/validate_ticket.php?k=' . rawurlencode($key);
+            }
+        } catch (Throwable $e) { /* ignore and fallback */ }
+        if ($validateUrl === '') {
+            $validateUrl = ($base !== '' ? $base : '') . '/validate_ticket.php?code=' . rawurlencode($codeVal) . '&t=' . rawurlencode($token);
+        }
 
         // 3. Paths & caching
         $template = $opts['template'] ?? app_path('admin/New-Certificate.pdf');
@@ -141,6 +179,19 @@ if (!function_exists('generate_certificate')) {
         $datePos      = $coords['date']      ?? ['x'=>15,'y'=>163.5,'w'=>120];
         $receiverPos  = $coords['receiver']  ?? ['x'=>113,'y'=>142,'w'=>50]; // area labeled "Name of Receiver/staff from RMIPO"
         $receiverFont = (int)($opts['receiver_font_size'] ?? 15);
+    $qrCfg = $opts['qr'] ?? true; // default: enable QR; true to use defaults, or array for config
+    // Default QR position/size as per admin preference
+    $qrPos = ['x'=>200, 'y'=>140, 'size'=>35];
+        $qrCaption = 'Scan to validate';
+    $qrDebug = !empty($opts['qr_debug']);
+    $qrFallbackText = !empty($opts['qr_fallback_text']);
+        if (is_array($qrCfg)) {
+            if (isset($qrCfg['x'])) { $qrPos['x'] = (float)$qrCfg['x']; }
+            if (isset($qrCfg['y'])) { $qrPos['y'] = (float)$qrCfg['y']; }
+            if (isset($qrCfg['size'])) { $qrPos['size'] = (float)$qrCfg['size']; }
+            if (isset($qrCfg['w']) && isset($qrCfg['h'])) { $qrPos['size'] = (float)min($qrCfg['w'], $qrCfg['h']); }
+            if (!empty($qrCfg['caption']) && is_string($qrCfg['caption'])) { $qrCaption = $qrCfg['caption']; }
+        }
 
         // Safety sanitize strings for FPDF (basic ASCII fallback if needed)
         $sanitize = function(string $s): string {
@@ -194,6 +245,8 @@ if (!function_exists('generate_certificate')) {
         $tplIdx = $pdf->importPage(1);
         $size = $pdf->getTemplateSize($tplIdx);
         $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+        $pageW = (float)$size['width'];
+        $pageH = (float)$size['height'];
         $pdf->useTemplate($tplIdx);
 
         $debug = !empty($opts['debug_boxes']);
@@ -224,11 +277,107 @@ if (!function_exists('generate_certificate')) {
         if ($receiverOut !== '') {
             $drawBlock($pdf, $receiverOut,'Helvetica','',$receiverFont,$receiverPos,'C',$lineHeight,[0,0,0],$debug,[128,0,128]);
         }
+    // Clamp QR position to page bounds with a small margin
+    $margin = 5.0;
+    if ($qrPos['size'] > $pageW - 2*$margin) { $qrPos['size'] = max(10.0, $pageW - 2*$margin); }
+    if ($qrPos['size'] > $pageH - 2*$margin) { $qrPos['size'] = max(10.0, $pageH - 2*$margin); }
+    $qrPos['x'] = max($margin, min($qrPos['x'], $pageW - $qrPos['size'] - $margin));
+    $qrPos['y'] = max($margin, min($qrPos['y'], $pageH - $qrPos['size'] - 2*$margin));
+
+        // QR code (optional)
+        $tmpQr = null;
+        if ($qrCfg) {
+            try {
+                $writerClass   = '\\Endroid\\QrCode\\Writer\\PngWriter';
+                $qrCodeClass   = '\\Endroid\\QrCode\\QrCode';
+                $encodingClass = '\\Endroid\\QrCode\\Encoding\\Encoding';
+                $errLevelClass = '\\Endroid\\QrCode\\ErrorCorrectionLevel\\ErrorCorrectionLevelLow';
+                if (class_exists($writerClass) && class_exists($qrCodeClass) && class_exists($encodingClass) && class_exists($errLevelClass)) {
+                    $qr = $qrCodeClass::create($validateUrl);
+                    $encoding = new $encodingClass('UTF-8');
+                    $errLevel = new $errLevelClass();
+                    $qr = $qr->setEncoding($encoding)
+                             ->setErrorCorrectionLevel($errLevel)
+                             ->setSize((int)round($qrPos['size'] * 3.7795275591)) // mm to px approx at 96 DPI
+                             ->setMargin(2);
+                    $writer = new $writerClass();
+                    $result = $writer->write($qr);
+                    $tmpQr = $targetPath . '.qr.png';
+                    $result->saveToFile($tmpQr);
+                }
+            } catch (Throwable $e) {
+                // ignore QR failure, continue without QR
+                $tmpQr = null;
+            }
+        }
+
+        if ($tmpQr && is_file($tmpQr)) {
+            // Place QR image
+            $pdf->Image($tmpQr, $qrPos['x'], $qrPos['y'], $qrPos['size'], $qrPos['size']);
+            if ($qrCaption !== '') {
+                $pdf->SetFont('Helvetica','',8);
+                $pdf->SetTextColor(0,0,0);
+                $pdf->SetXY($qrPos['x'], min($pageH - 8, $qrPos['y'] + $qrPos['size'] + 3));
+                $pdf->Cell($qrPos['size'], 4, $qrCaption, 0, 0, 'C');
+            }
+        } elseif ($qrCfg && class_exists('\\BaconQrCode\\Encoder\\Encoder') && class_exists('\\BaconQrCode\\Common\\ErrorCorrectionLevel')) {
+            // Fallback: draw QR modules directly using BaconQrCode (no GD required)
+            try {
+                $eclClass = '\\BaconQrCode\\Common\\ErrorCorrectionLevel';
+                $encClass = '\\BaconQrCode\\Encoder\\Encoder';
+                $ecl = $eclClass::L();
+                $qrObj = $encClass::encode($validateUrl, $ecl);
+                $matrix = $qrObj->getMatrix();
+                $w = $matrix->getWidth();
+                $h = $matrix->getHeight();
+                if ($w > 0 && $h > 0) {
+                    $module = min($qrPos['size'] / $w, $qrPos['size'] / $h);
+                    $x0 = $qrPos['x'];
+                    $y0 = $qrPos['y'];
+                    // Draw white background
+                    $pdf->SetFillColor(255,255,255);
+                    $pdf->Rect($x0, $y0, $module * $w, $module * $h, 'F');
+                    // Draw black modules
+                    $pdf->SetFillColor(0,0,0);
+                    for ($ry=0; $ry<$h; $ry++) {
+                        for ($rx=0; $rx<$w; $rx++) {
+                            $val = (int)$matrix->get($rx, $ry);
+                            if ($val > 0) {
+                                $pdf->Rect($x0 + $rx * $module, $y0 + $ry * $module, $module, $module, 'F');
+                            }
+                        }
+                    }
+                    if ($qrCaption !== '') {
+                        $pdf->SetFont('Helvetica','',8);
+                        $pdf->SetTextColor(0,0,0);
+                        $pdf->SetXY($x0, $y0 + ($module * $h) + 3);
+                        $pdf->Cell($module * $w, 4, $qrCaption, 0, 0, 'C');
+                    }
+                }
+            } catch (Throwable $e) {
+                // ignore fallback failure
+            }
+        } elseif ($qrCfg && ($qrDebug || $qrFallbackText)) {
+            // Draw a placeholder box and fallback text (helps verify coordinates even if QR lib missing)
+            $pdf->SetDrawColor(150,150,150);
+            $pdf->Rect($qrPos['x'], $qrPos['y'], $qrPos['size'], $qrPos['size']);
+            $pdf->SetFont('Helvetica','',7);
+            $pdf->SetTextColor(80,80,80);
+            $pdf->SetXY($qrPos['x'], $qrPos['y'] + $qrPos['size'] + 2);
+            $shortUrl = ($base !== '' ? $base : '') . '/validate_ticket.php?code=' . rawurlencode($codeVal);
+            $text = $qrCaption !== '' ? $qrCaption : 'Validate';
+            $pdf->Cell($qrPos['size'], 3.5, $text, 0, 2, 'C');
+            $pdf->SetXY($qrPos['x'], $qrPos['y'] + $qrPos['size'] + 6);
+            $pdf->Cell($qrPos['size'], 3.5, $shortUrl, 0, 0, 'C');
+        }
 
         // Save to disk atomically
         $tmp = $targetPath . '.tmp';
         $pdf->Output($tmp, 'F');
         @rename($tmp, $targetPath);
+
+        // Cleanup temp QR
+        if ($tmpQr && is_file($tmpQr)) { @unlink($tmpQr); }
 
         if (function_exists('log_event')) {
             log_event('CERT_GENERATED', 'Certificate generated', [ 'submission_id'=>$submissionId, 'file'=>$targetPath ]);

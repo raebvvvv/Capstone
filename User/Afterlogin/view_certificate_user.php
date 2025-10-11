@@ -27,6 +27,8 @@ $submissionId = (int)$row['submission_id'];
 require_once app_path('includes/certificate_generator.php');
 // Allow same tuning params only for admins; for users we ignore coordinate overrides for safety.
 $options = [];
+// Enable QR by default for users; coordinates are defaults from generator
+$options['qr'] = true;
 if (!empty($_GET['force']) && !empty($_SESSION['is_admin']) && (int)$_SESSION['is_admin'] === 1) { $options['force_regen'] = true; }
 if (isset($_GET['authors_align'])) { $options['authors_align'] = $_GET['authors_align']; }
 try {
