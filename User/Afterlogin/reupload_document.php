@@ -7,6 +7,26 @@ require_once __DIR__ . '/../../auth_check.php';
 require_once __DIR__ . '/../../upload_validator.php';
 header('Content-Type: application/json');
 
+// Fast response helper to flush JSON quickly and allow background work to continue
+function reupload_respond_fast_and_detach(array $payload): void {
+    if (!headers_sent()) {
+        header('Content-Type: application/json');
+    }
+    echo json_encode($payload);
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        ignore_user_abort(true);
+        if (function_exists('ob_get_length')) {
+            $len = ob_get_length();
+            if ($len !== false && !headers_sent()) {
+                header('Content-Length: ' . $len);
+            }
+        }
+        @ob_end_flush(); @flush();
+    }
+}
+
 if($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success'=>false,'error'=>'Method not allowed']);
@@ -99,15 +119,24 @@ try {
     } catch (Throwable $e) {
         // best-effort; continue to query and let outer catch handle if needed
     }
-    // Prefer approved scope when present (keeps item in Approved while allowing re-upload).
-    $metaStmt = $pdo->prepare('SELECT affected_doc_types FROM submission_incomplete_meta WHERE submission_id=? AND scope IN ("pending","approved") ORDER BY FIELD(scope,"approved","pending") LIMIT 1');
+    // Accept flags from either 'pending' or 'approved' scope; merge both lists.
+    $metaStmt = $pdo->prepare('SELECT scope, affected_doc_types FROM submission_incomplete_meta WHERE submission_id=? AND scope IN ("pending","approved")');
     $metaStmt->execute([(int)$sub['submission_id']]);
-    $metaRow = $metaStmt->fetch(PDO::FETCH_ASSOC);
-    $requested = [];
-    if($metaRow && !empty($metaRow['affected_doc_types'])){
-        $requested = array_filter(array_map('trim', explode('|', $metaRow['affected_doc_types'])));
+    $metaRows = $metaStmt->fetchAll(PDO::FETCH_ASSOC);
+    $requestedSet = [];
+    $scopesWithDoc = [];
+    if($metaRows){
+        foreach($metaRows as $mr){
+            if(!empty($mr['affected_doc_types'])){
+                $parts = array_filter(array_map('trim', explode('|', $mr['affected_doc_types'])));
+                foreach($parts as $p){ $requestedSet[$p] = true; }
+                if(in_array($docType, $parts, true)){
+                    $scopesWithDoc[] = (string)$mr['scope'];
+                }
+            }
+        }
     }
-    if(!in_array($docType, $requested, true)){
+    if(empty($requestedSet) || !isset($requestedSet[$docType])){
         http_response_code(409);
         echo json_encode(['success'=>false,'error'=>'Document not currently requested for resubmission']);
         exit;
@@ -147,115 +176,145 @@ try {
     $upd = $pdo->prepare('UPDATE submission_documents SET file_path=?, uploaded_at=NOW(), file_size=?, mime_type=?, verified=0, verified_by=NULL, verified_at=NULL WHERE document_id=?');
     $upd->execute([$newName, (int)$validation['size'], $validation['mime_type'], (int)$doc['document_id']]);
 
-    // Remove this doc type from pending affected list (submission_incomplete_meta)
+    // Remove this doc type from any scopes that currently include it, and compute remaining across all scopes
     $remaining = [];
     $updatedStatus = null;
     try {
-        $metaSel = $pdo->prepare('SELECT affected_doc_types FROM submission_incomplete_meta WHERE submission_id=? LIMIT 1');
+        $metaSel = $pdo->prepare('SELECT scope, affected_doc_types FROM submission_incomplete_meta WHERE submission_id=? AND scope IN ("pending","approved")');
         $metaSel->execute([(int)$sub['submission_id']]);
-        $meta = $metaSel->fetch(PDO::FETCH_ASSOC);
-        if($meta && !empty($meta['affected_doc_types'])){
-            $parts = array_filter(array_map('trim', explode('|', $meta['affected_doc_types'])));
-            $remaining = array_values(array_filter($parts, function($p) use ($docType){ return $p !== $docType; }));
-            $newVal = implode('|', $remaining);
-            $updMeta = $pdo->prepare('UPDATE submission_incomplete_meta SET affected_doc_types=? WHERE submission_id=?');
-            $updMeta->execute([$newVal, (int)$sub['submission_id']]);
-            if(empty($remaining)){
-                // Auto-advance status back to pending_review if currently a revision state
-                $revStates = ['revision_needed','pending','pending_review','under_review'];
-                if(in_array(strtolower($sub['status']), $revStates, true)){
-                    $newStatus = 'pending_review';
-                    $stUpd = $pdo->prepare('UPDATE submissions SET status=? WHERE submission_id=?');
-                    $stUpd->execute([$newStatus, (int)$sub['submission_id']]);
-                    $updatedStatus = $newStatus;
+        $allRows = $metaSel->fetchAll(PDO::FETCH_ASSOC);
+        $aggregateRemaining = [];
+        if($allRows){
+            foreach($allRows as $row){
+                $scope = (string)$row['scope'];
+                $parts = [];
+                if(!empty($row['affected_doc_types'])){
+                    $parts = array_filter(array_map('trim', explode('|', $row['affected_doc_types'])));
                 }
+                // Remove current doc type from this scope's list if present
+                $newParts = array_values(array_filter($parts, function($p) use ($docType){ return $p !== $docType; }));
+                $aggregateRemaining = array_merge($aggregateRemaining, $newParts);
+                $newVal = $newParts ? implode('|', $newParts) : null;
+                // Update only the row for this specific scope
+                $updMeta = $pdo->prepare('UPDATE submission_incomplete_meta SET affected_doc_types=? WHERE submission_id=? AND scope=?');
+                $updMeta->execute([$newVal, (int)$sub['submission_id'], $scope]);
+            }
+        }
+        // Unique remaining list across all scopes
+        $remaining = array_values(array_unique(array_filter($aggregateRemaining)));
+        if(empty($remaining)){
+            // Auto-advance status back to pending_review if currently a revision state
+            $revStates = ['revision_needed','pending','pending_review','under_review'];
+            if(in_array(strtolower($sub['status']), $revStates, true)){
+                $newStatus = 'pending_review';
+                $stUpd = $pdo->prepare('UPDATE submissions SET status=? WHERE submission_id=?');
+                $stUpd->execute([$newStatus, (int)$sub['submission_id']]);
+                $updatedStatus = $newStatus;
             }
         }
     } catch(Throwable $ign){ /* non-fatal */ }
 
-    // Ensure notifications table exists (lightweight check each call; could be optimized)
-    $pdo->exec("CREATE TABLE IF NOT EXISTS admin_notifications (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        submission_id INT NOT NULL,
-        submission_code VARCHAR(100) NOT NULL,
-        user_id INT NOT NULL,
-        doc_type VARCHAR(100) NOT NULL,
-        message VARCHAR(255) NOT NULL,
-        notification_type VARCHAR(50) DEFAULT 'resubmission',
-        occurrence_count INT DEFAULT 1,
-        meta TEXT DEFAULT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        is_read TINYINT(1) DEFAULT 0,
-        INDEX (is_read),
-        INDEX (submission_id),
-        INDEX (user_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    // Respond immediately to client to avoid surfacing non-critical background errors
+    reupload_respond_fast_and_detach([
+        'success'=>true,
+        'doc_type'=>$docType,
+        'file_name'=>$newName,
+        'size'=>$file['size'],
+        'remaining'=>$remaining,
+        'updated_status'=>$updatedStatus
+    ]);
 
-    // Ensure resubmission audit table exists
-    $pdo->exec("CREATE TABLE IF NOT EXISTS resubmission_audit (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        submission_id INT NOT NULL,
-        submission_code VARCHAR(100) NOT NULL,
-        user_id INT NOT NULL,
-        doc_type VARCHAR(100) NOT NULL,
-        file_name VARCHAR(255) DEFAULT NULL,
-        file_size INT DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX (submission_id),
-        INDEX (user_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    // Background: audit + admin notifications (best-effort)
+    try {
+        // Ensure notifications table exists (lightweight check each call; could be optimized)
+        $pdo->exec("CREATE TABLE IF NOT EXISTS admin_notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            submission_id INT NOT NULL,
+            submission_code VARCHAR(100) NOT NULL,
+            user_id INT NOT NULL,
+            doc_type VARCHAR(100) NOT NULL,
+            message VARCHAR(255) NOT NULL,
+            notification_type VARCHAR(50) DEFAULT 'resubmission',
+            occurrence_count INT DEFAULT 1,
+            meta TEXT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            is_read TINYINT(1) DEFAULT 0,
+            INDEX (is_read),
+            INDEX (submission_id),
+            INDEX (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    // Insert immutable audit row for this document reupload
-    $auditIns = $pdo->prepare('INSERT INTO resubmission_audit (submission_id, submission_code, user_id, doc_type, file_name, file_size) VALUES (?,?,?,?,?,?)');
-    $auditIns->execute([(int)$sub['submission_id'], $submissionCode, $user_id, $docType, $newName, (int)$validation['size']]);
+        // Ensure resubmission audit table exists
+        $pdo->exec("CREATE TABLE IF NOT EXISTS resubmission_audit (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            submission_id INT NOT NULL,
+            submission_code VARCHAR(100) NOT NULL,
+            user_id INT NOT NULL,
+            doc_type VARCHAR(100) NOT NULL,
+            file_name VARCHAR(255) DEFAULT NULL,
+            file_size INT DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX (submission_id),
+            INDEX (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    // Aggregation/dedupe window (minutes)
-    $dedupeMin = getenv('NOTIF_DEDUPE_WINDOW_MIN') ? (int)getenv('NOTIF_DEDUPE_WINDOW_MIN') : 10;
+        // Insert immutable audit row for this document reupload
+        $auditIns = $pdo->prepare('INSERT INTO resubmission_audit (submission_id, submission_code, user_id, doc_type, file_name, file_size) VALUES (?,?,?,?,?,?)');
+        $auditIns->execute([(int)$sub['submission_id'], $submissionCode, $user_id, $docType, $newName, (int)$validation['size']]);
 
-    // Try to find a recent aggregated notification for this submission
-    $sel = $pdo->prepare('SELECT id, occurrence_count, meta, created_at FROM admin_notifications WHERE submission_id = ? AND notification_type = ? ORDER BY created_at DESC LIMIT 1');
-    $sel->execute([(int)$sub['submission_id'], 'resubmission']);
-    $last = $sel->fetch(PDO::FETCH_ASSOC);
-    $now = new DateTimeImmutable('now');
-    $metaArr = [];
-    // Prepare current item meta
-    $currentItem = [
-        'doc_type' => $docType,
-        'file_name' => $newName,
-        'file_size' => (int)$validation['size'],
-        'created_at' => $now->format('Y-m-d H:i:s'),
-        'user_id' => $user_id
-    ];
+        // Aggregation/dedupe window (minutes)
+        $dedupeMin = getenv('NOTIF_DEDUPE_WINDOW_MIN') ? (int)getenv('NOTIF_DEDUPE_WINDOW_MIN') : 10;
 
-    if ($last) {
-        // check window
-        $created = new DateTimeImmutable($last['created_at']);
-        $diffMin = ($now->getTimestamp() - $created->getTimestamp()) / 60;
-        if ($diffMin <= $dedupeMin) {
-            // update existing aggregated notification: increment count, append meta, set is_read=0
-            $existingMeta = [];
-            if (!empty($last['meta'])) {
-                $decoded = json_decode($last['meta'], true);
-                if (is_array($decoded)) { $existingMeta = $decoded; }
+        // Try to find a recent aggregated notification for this submission
+        $sel = $pdo->prepare('SELECT id, occurrence_count, meta, created_at FROM admin_notifications WHERE submission_id = ? AND notification_type = ? ORDER BY created_at DESC LIMIT 1');
+        $sel->execute([(int)$sub['submission_id'], 'resubmission']);
+        $last = $sel->fetch(PDO::FETCH_ASSOC);
+        $now = new DateTimeImmutable('now');
+        $metaArr = [];
+        // Prepare current item meta
+        $currentItem = [
+            'doc_type' => $docType,
+            'file_name' => $newName,
+            'file_size' => (int)$validation['size'],
+            'created_at' => $now->format('Y-m-d H:i:s'),
+            'user_id' => $user_id
+        ];
+
+        if ($last) {
+            // check window
+            $created = new DateTimeImmutable($last['created_at']);
+            $diffMin = ($now->getTimestamp() - $created->getTimestamp()) / 60;
+            if ($diffMin <= $dedupeMin) {
+                // update existing aggregated notification: increment count, append meta, set is_read=0
+                $existingMeta = [];
+                if (!empty($last['meta'])) {
+                    $decoded = json_decode($last['meta'], true);
+                    if (is_array($decoded)) { $existingMeta = $decoded; }
+                }
+                $existingMeta[] = $currentItem;
+                $newCount = max(1, (int)$last['occurrence_count']) + 1;
+                $newMsg = sprintf('User #%d resubmitted %d document%s for %s', $user_id, $newCount, $newCount>1? 's':'', $submissionCode);
+                $upd = $pdo->prepare('UPDATE admin_notifications SET occurrence_count = ?, meta = ?, message = ?, is_read = 0, created_at = NOW() WHERE id = ?');
+                $upd->execute([$newCount, json_encode($existingMeta, JSON_UNESCAPED_UNICODE), $newMsg, (int)$last['id']]);
+            } else {
+                // No recent aggregate within window -> insert new
+                $metaArr[] = $currentItem;
+                $msg = sprintf('User #%d resubmitted 1 document for %s', $user_id, $submissionCode);
+                $ins = $pdo->prepare('INSERT INTO admin_notifications (submission_id, submission_code, user_id, doc_type, message, notification_type, occurrence_count, meta) VALUES (?,?,?,?,?,?,?,?)');
+                $ins->execute([(int)$sub['submission_id'], $submissionCode, $user_id, $docType, $msg, 'resubmission', 1, json_encode($metaArr, JSON_UNESCAPED_UNICODE)]);
             }
-            $existingMeta[] = $currentItem;
-            $newCount = max(1, (int)$last['occurrence_count']) + 1;
-            $newMsg = sprintf('User #%d resubmitted %d document%s for %s', $user_id, $newCount, $newCount>1? 's':'', $submissionCode);
-            $upd = $pdo->prepare('UPDATE admin_notifications SET occurrence_count = ?, meta = ?, message = ?, is_read = 0, created_at = NOW() WHERE id = ?');
-            $upd->execute([$newCount, json_encode($existingMeta, JSON_UNESCAPED_UNICODE), $newMsg, (int)$last['id']]);
-            // done
-            echo json_encode(['success'=>true,'doc_type'=>$docType,'file_name'=>$newName,'size'=>$file['size'],'notified'=>true,'aggregated'=>true,'remaining'=>$remaining,'updated_status'=>$updatedStatus]);
-            exit;
+        } else {
+            // No prior notification -> insert new
+            $metaArr[] = $currentItem;
+            $msg = sprintf('User #%d resubmitted 1 document for %s', $user_id, $submissionCode);
+            $ins = $pdo->prepare('INSERT INTO admin_notifications (submission_id, submission_code, user_id, doc_type, message, notification_type, occurrence_count, meta) VALUES (?,?,?,?,?,?,?,?)');
+            $ins->execute([(int)$sub['submission_id'], $submissionCode, $user_id, $docType, $msg, 'resubmission', 1, json_encode($metaArr, JSON_UNESCAPED_UNICODE)]);
         }
+    } catch (Throwable $bg) {
+        // Silent best-effort; optionally log if logger available
+        if (function_exists('error_log')) { @error_log('reupload background error: '.substr($bg->getMessage(),0,200)); }
     }
-
-    // No recent aggregate found -> insert a new aggregated notification
-    $metaArr[] = $currentItem;
-    $msg = sprintf('User #%d resubmitted 1 document for %s', $user_id, $submissionCode);
-    $ins = $pdo->prepare('INSERT INTO admin_notifications (submission_id, submission_code, user_id, doc_type, message, notification_type, occurrence_count, meta) VALUES (?,?,?,?,?,?,?,?)');
-    $ins->execute([(int)$sub['submission_id'], $submissionCode, $user_id, $docType, $msg, 'resubmission', 1, json_encode($metaArr, JSON_UNESCAPED_UNICODE)]);
-
-    echo json_encode(['success'=>true,'doc_type'=>$docType,'file_name'=>$newName,'size'=>$file['size'],'notified'=>true,'remaining'=>$remaining,'updated_status'=>$updatedStatus]);
+    exit;
 } catch(Throwable $e){
     http_response_code(500);
     echo json_encode(['success'=>false,'error'=>'Server error','detail'=>$e->getMessage()]);

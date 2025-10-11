@@ -5,6 +5,7 @@ require_admin();
 header('Content-Type: application/json');
 
 try {
+    // Ensure admin_notifications table exists with the extended schema used by re-upload flow
     $pdo->exec("CREATE TABLE IF NOT EXISTS admin_notifications (
         id INT AUTO_INCREMENT PRIMARY KEY,
         submission_id INT NOT NULL,
@@ -12,12 +13,35 @@ try {
         user_id INT NOT NULL,
         doc_type VARCHAR(100) NOT NULL,
         message VARCHAR(255) NOT NULL,
+        notification_type VARCHAR(50) DEFAULT 'resubmission',
+        occurrence_count INT DEFAULT 1,
+        meta TEXT DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         is_read TINYINT(1) DEFAULT 0,
         INDEX (is_read),
         INDEX (submission_id),
         INDEX (user_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // If table exists from an older schema, attempt to add the missing columns (best-effort)
+    try {
+        $colCheck = $pdo->query("SHOW COLUMNS FROM admin_notifications LIKE 'notification_type'");
+        if ($colCheck && $colCheck->rowCount() === 0) {
+            $pdo->exec("ALTER TABLE admin_notifications ADD COLUMN notification_type VARCHAR(50) DEFAULT 'resubmission'");
+        }
+    } catch (Throwable $e) { /* ignore */ }
+    try {
+        $colCheck = $pdo->query("SHOW COLUMNS FROM admin_notifications LIKE 'occurrence_count'");
+        if ($colCheck && $colCheck->rowCount() === 0) {
+            $pdo->exec("ALTER TABLE admin_notifications ADD COLUMN occurrence_count INT DEFAULT 1");
+        }
+    } catch (Throwable $e) { /* ignore */ }
+    try {
+        $colCheck = $pdo->query("SHOW COLUMNS FROM admin_notifications LIKE 'meta'");
+        if ($colCheck && $colCheck->rowCount() === 0) {
+            $pdo->exec("ALTER TABLE admin_notifications ADD COLUMN meta TEXT DEFAULT NULL");
+        }
+    } catch (Throwable $e) { /* ignore */ }
 
     $limit = 20;
     $stmt = $pdo->prepare('SELECT id, submission_code, doc_type, message, created_at, is_read FROM admin_notifications ORDER BY id DESC LIMIT ?');

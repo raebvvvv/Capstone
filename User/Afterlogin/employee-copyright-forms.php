@@ -58,17 +58,20 @@ if ($profile) {
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
+          <li class="nav-item">
+            <?php include __DIR__ . '/../../partials/user_notifications.php'; ?>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
 
   <main class="py-4">
-    <div class="container-fluid">
+    <div class="container">
       <div class="row justify-content-center">
-        <div class="col-12">
-          <!-- Terms & Conditions -->
-          <div id="termsGate" class="card shadow-sm mb-4 mx-auto" style="max-width:800px;width:100%;">
+        <div class="col-lg-8 col-xl-7">
+          <!-- Terms & Conditions (match student structure) -->
+          <div id="termsGate" class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white py-2">
               <strong>Terms &amp; Conditions</strong>
             </div>
@@ -110,9 +113,9 @@ if ($profile) {
 
       <!-- Form Section (hidden until acceptance) -->
       <div id="formSection" class="d-none">
-        <h1 class="fw-bold text-center">Submission Form <small class="text-danger fw-normal" style="font-size:.55em;">(Employee)</small></h1>
-        <p class="text-muted small text-center">Please fill out the form below to submit your intellectual property for evaluation and processing. All fields marked with an asterisk (*) are required.</p>
-        <div class="card shadow-sm submission-form-card mx-auto" style="max-width:1300px;width:100%;">
+        <h1 class="fw-bold">Submission Form <small class="text-danger fw-normal" style="font-size:.55em;">(Employee)</small></h1>
+        <p class="text-muted small">Please fill out the form below to submit your intellectual property for evaluation and processing. All fields marked with an asterisk (*) are required.</p>
+        <div class="card shadow-sm">
           <div class="card-body">
             <!-- Employees Information  -->
             <?php $perFileMB = 50; // 50MB per-file limit client-side ?>
@@ -337,12 +340,12 @@ if ($profile) {
   <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-academic-dropdowns.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-author-modal.js'); ?>" defer></script>
-  <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
   <script>
-    window.CATALOGS_API_URL = window.CATALOGS_API_URL || <?php echo json_encode(asset_url('catalogs_public_api.php')); ?>;
     window.USER_ROLE = 'employee';
+    window.CATALOGS_API_URL = '<?php echo rtrim(asset_url('catalogs_public_api.php'), '/'); ?>';
   </script>
   <script src="<?php echo asset_url('javascript/forms/dynamic-documents.js'); ?>" defer></script>
+  <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
   <script>
     // Prefill Academic Affiliation fields (except Work Classification) from employee profile
     (function() {

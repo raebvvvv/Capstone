@@ -3,12 +3,7 @@ require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php';
 
 // Fetch user profile data
-$stmt = $pdo->prepare("
-    SELECT sp.*, u.email
-    FROM student_profiles sp 
-    JOIN users u ON sp.user_id = u.user_id 
-    WHERE sp.user_id = ?
-");
+$stmt = $pdo->prepare("\n    SELECT sp.*, u.email\n    FROM student_profiles sp \n    JOIN users u ON sp.user_id = u.user_id \n    WHERE sp.user_id = ?\n");
 $stmt->execute([$_SESSION['user_id']]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
@@ -23,14 +18,13 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/forms.css'); ?>">
-
 </head>
 <body class="forms-page">
   <!-- Navbar -->
-<nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <nav class="navbar navbar-expand-lg bg-white border-bottom">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+        <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -48,11 +42,11 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   </nav>
 
   <main class="py-4">
-    <div class="container-fluid">
+    <div class="container">
       <div class="row justify-content-center">
-        <div class="col-12 ">
+        <div class="col-lg-8 col-xl-7">
           <!-- Terms & Conditions -->
-          <div id="termsGate" class="card shadow-sm mb-4 mx-auto" style="max-width:800px;width:100%;">
+          <div id="termsGate" class="card shadow-sm mb-4">
         <div class="card-header bg-primary text-white py-2">
           <strong>Terms &amp; Conditions</strong>
         </div>
@@ -94,9 +88,9 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
       <!-- Form Section (hidden until acceptance) -->
       <div id="formSection" class="d-none">
-        <h1 class="fw-bold text-center">Submission Form <small class="text-danger fw-normal" style="font-size:.55em;">(Student)</small></h1>
-        <p class="text-muted small text-center">Please fill out the form below to submit your intellectual property for evaluation and processing. All fields marked with an asterisk (*) are required.</p>
-        <div class="card shadow-sm submission-form-card mx-auto" style="max-width:1300px;width:100%;">
+        <h1 class="fw-bold">Submission Form <small class="text-danger fw-normal" style="font-size:.55em;">(Student)</small></h1>
+        <p class="text-muted small">Please fill out the form below to submit your intellectual property for evaluation and processing. All fields marked with an asterisk (*) are required.</p>
+        <div class="card shadow-sm">
           <div class="card-body">
             <!-- Student Information  -->
             <?php $perFileMB = 50; ?>
@@ -357,12 +351,12 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/student-academic-dropdowns.js'); ?>"></script>
-   <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
-   <script>
-     window.CATALOGS_API_URL = window.CATALOGS_API_URL || <?php echo json_encode(asset_url('catalogs_public_api.php')); ?>;
-     window.USER_ROLE = 'student';
-   </script>
-   <script src="<?php echo asset_url('javascript/forms/dynamic-documents.js'); ?>" defer></script>
+ <script>
+   window.USER_ROLE = 'student';
+   window.CATALOGS_API_URL = '<?php echo rtrim(asset_url('catalogs_public_api.php'), '/'); ?>';
+ </script>
+ <script src="<?php echo asset_url('javascript/forms/dynamic-documents.js'); ?>" defer></script>
+ <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
  
 
 </body>

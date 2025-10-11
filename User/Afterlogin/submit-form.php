@@ -184,118 +184,103 @@ if (!empty($data['date_accomplished'])) {
     }
 }
 
-// Determine expected documents dynamically from catalogs (documents table); preserve legacy names as fallback
-function normalize_doc_key($name, $code = null) {
-    // Prefer normalizing from name for stability and legacy compatibility; fallback to code if name missing
-    $base = $name ?: $code;
-    $s = strtolower(trim((string)$base));
-    // replace non-alnum with underscores and collapse repeats
-    $s = preg_replace('/[^a-z0-9]+/', '_', $s);
-    $s = trim($s, '_');
-    return $s ?: 'document';
+// Determine required documents dynamically from catalogs (fallback to legacy list if empty)
+function norm_key_php($s) {
+    $s = strtolower(trim((string)$s));
+    $s = preg_replace('/[^a-z0-9]+/i', '_', $s);
+    $s = preg_replace('/^_+|_+$/', '', $s);
+    return $s !== '' ? $s : 'document';
 }
 
-// Load documents for this role (both + role)
-$docRows = [];
+// Ensure documents table exists (defensive, mirrors public API)
 try {
-    $stmt = $pdo->prepare("SELECT name, code, role FROM documents WHERE role IN ('both', ?) ORDER BY name ASC");
-    $stmt->execute([$role]);
-    $docRows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $pdo->exec("CREATE TABLE IF NOT EXISTS documents (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        code VARCHAR(50) NULL,
+        role VARCHAR(20) NOT NULL DEFAULT 'both',
+        UNIQUE KEY uq_document_name_role (name, role)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 } catch (Throwable $e) {
-    // If table missing or error, fall back to legacy static sets
-    $docRows = [];
+    // ignore; will fallback below
 }
 
-// Build spec list; optional rule: Notarized Co-Authorship optional for employees only
-$docSpecs = [];
-foreach ($docRows as $r) {
-    $name = (string)($r['name'] ?? '');
-    $code = (string)($r['code'] ?? '');
-    $key  = normalize_doc_key($name, $code);
-    $isOptional = false;
-    if ($role === 'employee' && stripos($name, 'Notarized Co-Authorship') !== false) {
-        $isOptional = true;
-    }
-    $docSpecs[] = [
-        'name' => $name,
-        'code' => $code,
-        'key'  => $key,
-        'optional' => $isOptional,
-    ];
-}
-
-// If no documents found (e.g., legacy), synthesize from legacy sets to avoid breaking
-if (!$docSpecs) {
-    if ($role === 'employee') {
-        $legacy = [
-            ['Journal Publication Format','JPF','journal_publication_format',false],
-            ['Notarized Copyright Application Form','NCAF','notarized_copyright',false],
-            ['Receipt of Payment','RCPT','receipt_payment',false],
-            ['Presentation','PRSN','presentation',false],
-            ['Record of Copyright Application','ROCA','record_copyright',false],
-        ];
+$expectedDocs = [];
+try {
+    if (in_array($role, ['student','employee'], true)) {
+        $stmt = $pdo->prepare("SELECT name FROM documents WHERE role IN ('both', ?) ORDER BY name");
+        $stmt->execute([$role]);
     } else {
-        $legacy = [
-            ['Journal Publication Format','JPF','journal_publication_format',false],
-            ['Notarized Copyright Application Form','NCAF','notarized_copyright',false],
-            ['Receipt of Payment','RCPT','receipt_payment',false],
-            ['Full Manuscript','FMSS','full_manuscript',false],
-            ['Notarized Co-Authorship','NCAU','notarized_coauthorship',false],
-            ['Approval Sheet (Thesis)','APRV','approval_sheet',false],
-            ['Record of Copyright Application','ROCA','record_copyright',false],
-        ];
+        $stmt = $pdo->query("SELECT name FROM documents WHERE role = 'both' ORDER BY name");
     }
-    foreach ($legacy as [$n,$c,$k,$o]) { $docSpecs[] = ['name'=>$n,'code'=>$c,'key'=>$k,'optional'=>$o]; }
+    $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    foreach ($rows as $r) {
+        $name = (string)($r['name'] ?? 'Document');
+        $key = norm_key_php($name);
+        $optional = ($role === 'employee' && preg_match('/notarized\s*co-?authorship/i', $name));
+        $expectedDocs[] = ['key' => $key, 'name' => $name, 'optional' => $optional];
+    }
+} catch (Throwable $e) {
+    $expectedDocs = [];
 }
 
-// Legacy key mapping to allow old front-ends to submit successfully
-$legacyNameMap = [
-    'journal_publication_format' => 'journal_publication_format',
-    'notarized_copyright'       => 'notarized_copyright',
-    'receipt_payment'           => 'receipt_payment',
-    'full_manuscript'           => 'full_manuscript',
-    'notarized_coauthorship'    => 'notarized_coauthorship',
-    'approval_sheet'            => 'approval_sheet',
-    'record_copyright'          => 'record_copyright',
-    'presentation'              => 'presentation',
-];
+// Fallback to legacy static requirements when catalogs not configured
+if (count($expectedDocs) === 0) {
+    if ($role === 'employee') {
+        $fallback = [
+            'journal_publication_format',
+            'notarized_copyright',
+            'receipt_payment',
+            'presentation',
+            'record_copyright'
+        ];
+        foreach ($fallback as $k) { $expectedDocs[] = ['key'=>$k,'name'=>$k,'optional'=>($k==='notarized_coauthorship')]; }
+        // Optional employee notarized co-authorship not in fallback required list; processed below if provided
+    } else {
+        $fallback = [
+            'journal_publication_format',
+            'notarized_copyright',
+            'receipt_payment',
+            'full_manuscript',
+            'notarized_coauthorship',
+            'approval_sheet',
+            'record_copyright'
+        ];
+        foreach ($fallback as $k) { $expectedDocs[] = ['key'=>$k,'name'=>$k,'optional'=>false]; }
+    }
+}
 
 $uploadDir = storage_path('uploads');
-if (!is_dir($uploadDir)) {
-    @mkdir($uploadDir, 0775, true);
-}
+if (!is_dir($uploadDir)) { @mkdir($uploadDir, 0775, true); }
 
 $storedFiles = [];
-foreach ($docSpecs as $spec) {
-    $key = $spec['key'];
-    $optional = (bool)$spec['optional'];
+foreach ($expectedDocs as $doc) {
+    $ff = $doc['key'];
+    $isOptional = !empty($doc['optional']);
+    $hasFile = isset($_FILES[$ff]) && ($_FILES[$ff]['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK;
 
-    // Find the uploaded file under normalized key or legacy alias
-    $fileArray = null;
-    if (isset($_FILES[$key])) {
-        $fileArray = $_FILES[$key];
-    } else {
-        // Try to guess legacy key by common patterns if names differ
-        foreach ($legacyNameMap as $legacyKey => $alias) {
-            if (isset($_FILES[$legacyKey])) {
-                // Match by name similarity
-                $legacyNorm = normalize_doc_key(str_replace('_', ' ', $legacyKey));
-                if ($legacyNorm === $key) { $fileArray = $_FILES[$legacyKey]; break; }
-            }
-        }
-    }
-
-    if (!$fileArray || $fileArray['error'] !== UPLOAD_ERR_OK) {
-        if (!$optional) { $errors[] = "File upload error: $key"; }
+    if (!$hasFile) {
+        if ($isOptional) { continue; }
+        $errors[] = "File upload error: $ff";
         continue;
     }
 
-    // Use secure upload helper which validates PDF content and MIME and sanitizes filename
-    $res = secure_upload_file($fileArray, $key, $uploadDir);
+    $res = secure_upload_file($_FILES[$ff], $ff, $uploadDir);
     if (!$res['success']) {
-        foreach ($res['errors'] as $err) { $errors[] = $key . ': ' . $err; }
+        foreach ($res['errors'] as $err) { $errors[] = $ff . ': ' . $err; }
     } else {
-        $storedFiles[$key] = $res['filename'];
+        $storedFiles[$ff] = $res['filename'];
+    }
+}
+
+// Backward-compatible: handle optional employee notarized_coauthorship if provided and not already in expectedDocs
+if ($role === 'employee' && isset($_FILES['notarized_coauthorship']) && $_FILES['notarized_coauthorship']['error'] === UPLOAD_ERR_OK && !array_key_exists('notarized_coauthorship', $storedFiles)) {
+    $ff = 'notarized_coauthorship';
+    $res = secure_upload_file($_FILES[$ff], $ff, $uploadDir);
+    if (!$res['success']) {
+        foreach ($res['errors'] as $err) { $errors[] = $ff . ': ' . $err; }
+    } else {
+        $storedFiles[$ff] = $res['filename'];
     }
 }
 

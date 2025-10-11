@@ -1,6 +1,3 @@
-/* ===============================
-   FOOTER STYLES
-================================*/
 footer.footer-minimal {
   font-size: 0.58rem !important;
   color: #555 !important;
@@ -36,12 +33,7 @@ footer.standard-footer a:hover {
   color: #0a58ca !important;
   text-decoration: underline;
 }
-
-/* ===============================
-   BASE STYLES
-================================*/
-.nav-link.active,
-.nav-link.active.maroon-underline {
+.nav-link.active, .nav-link.active.maroon-underline {
   border-bottom: 3px solid #800000;
 }
 
@@ -49,21 +41,16 @@ footer.standard-footer a:hover {
   font-size: 0.85em !important;
 }
 
-html,
-body {
+/* site-base.css */
+html, body {
   height: 100%;
   font-family: Arial, sans-serif;
   background: #fafafa;
   margin: 0;
-  overflow-y: scroll;
+  overflow-y: scroll; /* always show vertical scrollbar to prevent layout shift */
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
 }
 
@@ -77,13 +64,10 @@ h6 {
   height: auto;
 }
 
-/* ===============================
-   BUTTONS
-================================*/
 .disabled-btn {
-  pointer-events: none;
-  cursor: default;
-  opacity: 0.65 !important;
+  pointer-events: none; /* disables click */
+  cursor: default;      /* changes mouse cursor */
+   opacity: 0.65 !important;
 }
 
 .btn-success {
@@ -91,6 +75,7 @@ h6 {
   border: none;
   color: #fff;
 }
+
 .btn-success:hover {
   background-color: #39ad63;
   color: #fff;
@@ -101,6 +86,7 @@ h6 {
   color: #222;
   border: none;
 }
+
 .btn-warning:hover {
   background-color: #ffd43b;
   color: #111;
@@ -111,6 +97,7 @@ h6 {
   color: #fff;
   border: none;
 }
+
 .btn-danger:hover {
   background-color: #b02a37;
   color: #fff;
@@ -121,247 +108,115 @@ h6 {
   color: #fff;
   border: none;
 }
+
 .btn-primary:hover {
   background-color: #0b5ed7;
   color: #fff;
 }
 
-/* Login buttons */
-.btn-login {
-  background-color: #900c0c;
-  color: #fff;
-  border: none;
-  transition: background-color 0.2s ease;
-}
-.btn-login:hover {
-  background-color: #a70e0e;
-  color: #fff;
-}
-
-/* ===============================
-   CONTACT INFO SMALL
-================================*/
+/* Smaller contact info for ip-application */
 .contact-info-small {
   font-size: 0.78rem !important;
   color: #444 !important;
   line-height: 1.2;
 }
+
 .contact-info-small .icon-sm {
   width: 20px;
   height: 20px;
   margin-bottom: 2px;
 }
 
-/* ===============================
-   MAIN INTRO + OFFICE HOURS
-================================*/
-.main-intro-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 2rem;
-}
-
-.intro-left {
-  flex: 1 1 500px;
-  min-width: 300px;
-}
-
-.intro-left .ip-purpose {
-  margin-top: 1rem;
-  font-size: 0.95rem;
-  color: #444;
-}
-
-/* ===============================
-   CARDS + LOGIN SECTION
-================================*/
-.cards-center-row {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  flex-wrap: wrap;
-  gap: 0.1em;
-  margin-bottom: 1rem;
-  width: 100%;
-}
-
-.cards-center-row .card {
-  flex: 1 1 300px;
-  max-width: 360px;
-  min-width: 260px;
-  margin: 0 auto;
-}
-
+/* Login section styling */
 .login-section-center {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 2rem !important;
-  margin-bottom: 2rem;
+  margin-bottom: 32px;
+}
+
+
+
+
+
+@media (max-width: 900px) {
+  .row > .col-md-4:not(:last-child) {
+    margin-right: 1rem; /* less space on smaller screens */
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .cards-container {
+    flex-direction: column;
+    gap: 0.7em;
+  }
+  .card {
+    max-width: 95vw;
+    padding: 0.05em 0.2em; /* further reduced for mobile */
+  }
+  .card-title {
+    font-size: 1.1rem;
+  }
+  body {
+    font-size: 0.95rem;
+  }
+/* Login section styling */
+.login-section-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem !important;
+  margin-bottom: 32px;
   text-align: center;
+  width: 100%;
 }
 
 .login-section-center h5 {
+  text-align: center;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 24px;
 }
 
 .login-section-center .d-flex {
   justify-content: center;
   gap: 32px;
-  flex-wrap: wrap;
-}
-
-/* ===============================
-   POLICY SECTION
-================================*/
-#policy img {
   width: 100%;
-  height: auto;
-  border-radius: 6px;
 }
 
-
-/* ===============================
-   RESPONSIVE STYLES
-================================*/
-
-/* --- Tablets (≤ 900px) --- */
-@media (max-width: 900px) {
-  .navbar-brand span {
-    font-size: 1.05rem;
-  }
-
-  .intro-left p,
-  .intro-left .ip-purpose {
-    font-size: 0.95rem;
-  }
-
-  footer.standard-footer {
-    font-size: 0.8rem;
-  }
-
-  .cards-center-row {
-    gap: 1.5rem;
-  }
-
-  .cards-center-row .card {
-    flex: 1 1 280px;
-  }
-
-  .login-section-center .btn {
-    font-size: 0.95rem;
-    padding: 0.5rem 1.2rem;
-  }
-
-  #policy h2 {
-    font-size: 1.5rem;
-  }
+/* Cards centering enhancement */
+.cards-center-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 32px !important;
+  margin-bottom: 32px !important;
+  width: 100% !important;
 }
 
-
-/* --- Mobile (≤ 600px) --- */
-@media (max-width: 600px) {
-  body {
-    font-size: 0.95rem;
-  }
-
-  .main-intro-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-
-  .intro-left {
-    text-align: center;
-  }
-
-  .intro-left p {
-    font-size: 0.9rem;
-  }
-
-  .intro-left .ip-purpose {
-    font-size: 0.9rem;
-  }
-
-  .main-intro-row .ms-5 {
-    margin-left: 0 !important;
-    text-align: center;
-  }
-
-  .cards-center-row {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 1rem !important;
-  }
-
-  .cards-center-row .card {
-    width: 90% !important;
-    max-width: 400px !important;
-    flex: 0 0 auto !important;
-  }
-
-  .cards-center-row .btn {
-    font-size: 0.9rem;
-    padding: 0.4rem 0.8rem;
-  }
-
-  .cards-center-row small {
-    font-size: 0.7rem !important;
-  }
-
-  .login-section-center {
-    width: 100%;
-    text-align: center;
-    margin-top: 2rem !important;
-  }
-
-  .login-section-center .d-flex {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  footer.footer-minimal {
-    font-size: 0.65rem !important;
-    padding: 0.3em 0 !important;
-  }
-
-  footer.standard-footer {
-    padding: 0.8rem 0 !important;
-  }
-
-  #policy h2 {
-    font-size: 1.3rem;
-    text-align: center;
-  }
-
-  #policy h5 {
-    font-size: 1rem;
-    text-align: center;
-  }
+/* Force all cards to have equal width - override landing.css */
+.cards-center-row .card.shadow-sm.h-100 {
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  flex: 0 0 360px !important;
+  margin: 0 !important;
 }
 
-/* --- Large desktop (≥ 1200px) --- */
-@media (min-width: 1200px) {
-  body {
-    font-size: 1rem;
-  }
-
-  .card {
-    max-width: 400px;
-  }
-
-  footer.standard-footer {
-    font-size: 0.9rem;
-  }
+.cards-center-row .card {
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  flex: 0 0 360px !important;
+  margin: 0 !important;
 }
 
-/* Icon sizing - consistent for all users */
-.icon-sm {
-    width: 20px !important;
-    height: 20px !important;
-    vertical-align: middle !important;
-    margin-right: 4px !important;
+/* Page content centering */
+.container {
+  margin: 0 auto !important;
+  text-align: center !important;
 }
+}
+

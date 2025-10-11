@@ -9,6 +9,31 @@ if (function_exists('require_admin')) { require_admin(); }
 
 function respond_error($msg, array $extra = []) { echo json_encode(array_merge(['success'=>false,'error'=>$msg], $extra)); exit(); }
 
+// Flush JSON to client and finish request early so we can continue background tasks (notifications)
+function respond_fast_and_detach(array $payload): void {
+    // Ensure JSON string
+    $json = json_encode($payload);
+    // Try fastcgi_finish_request first for FPM setups
+    if (!headers_sent()) {
+        header('Content-Type: application/json');
+    }
+    echo $json;
+    // Attempt to flush and close connection for non-FPM environments
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        // Best-effort connection close
+        ignore_user_abort(true);
+        if (function_exists('ob_get_length')) {
+            $len = ob_get_length();
+            if ($len !== false && !headers_sent()) {
+                header('Content-Length: ' . $len);
+            }
+        }
+        @ob_end_flush(); @flush();
+    }
+}
+
 $raw = file_get_contents('php://input');
 $input = json_decode($raw, true);
 if (!is_array($input)) { respond_error('Invalid payload'); }
@@ -73,18 +98,21 @@ try {
         // Also persist approval-time comment into approved-scope meta so UI can render Comments after refresh
         if ($sid) {
             try {
-                // Ensure meta table exists
-                $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
-                    submission_id INT NOT NULL,
-                    scope ENUM('pending','approved') NOT NULL,
-                    issue_label VARCHAR(150) DEFAULT NULL,
-                    admin_comment TEXT NULL,
-                    affected_doc_types TEXT NULL,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (submission_id, scope),
-                    CONSTRAINT fk_sim_submission_x FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                // Ensure meta table exists at most once per session to avoid DDL overhead
+                if (empty($_SESSION['__sim_table_ok'])) {
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
+                        submission_id INT NOT NULL,
+                        scope ENUM('pending','approved') NOT NULL,
+                        issue_label VARCHAR(150) DEFAULT NULL,
+                        admin_comment TEXT NULL,
+                        affected_doc_types TEXT NULL,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        PRIMARY KEY (submission_id, scope),
+                        CONSTRAINT fk_sim_submission_x FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                    $_SESSION['__sim_table_ok'] = 1;
+                }
                 $upMeta = $pdo->prepare("INSERT INTO submission_incomplete_meta (submission_id, scope, issue_label, admin_comment, affected_doc_types) VALUES (:sid, 'approved', NULL, :cmt, NULL)
                     ON DUPLICATE KEY UPDATE admin_comment = VALUES(admin_comment)");
                 $upMeta->execute([':sid' => $sid, ':cmt' => $comment]);
@@ -109,13 +137,15 @@ try {
 
     if (function_exists('log_event')) { log_event('APPROVE_REQUEST', 'Request approved', ['request_id' => $requestId, 'rows'=>$affected, 'id_column'=>$idCol, 'comment_set'=> ($comment !== '') ]); }
 
-    // Notify applicant about approval (site + email) if we can
+    // Respond immediately to the client to reduce perceived latency
+    respond_fast_and_detach(['success' => true, 'updated' => $affected, 'id_column'=>$idCol, 'comment_set'=> ($comment !== '')]);
+
+    // Continue in background: Notify applicant about approval (site + email) if we can
     try {
         require_once __DIR__ . '/includes/notification_helpers.php';
         if ($sid) { notify_submission_status_change($pdo, $sid, 'approved'); }
     } catch (Throwable $e) { if (function_exists('log_event')) log_event('NOTIF_HOOK_FAIL','approve notify failed', ['err'=>substr($e->getMessage(),0,200)]); }
-
-    echo json_encode(['success' => true, 'updated' => $affected, 'id_column'=>$idCol, 'comment_set'=> ($comment !== '')]);
+    exit;
 } catch (Throwable $e) {
     $msg = substr($e->getMessage(),0,200);
     if (function_exists('log_event')) { log_event('DB_ERROR', 'Approve exception', ['err' => $msg, 'request_id' => $requestId]); }

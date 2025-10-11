@@ -13,6 +13,26 @@ function complete_respond_error(string $msg, array $extra = [], int $code = 400)
     exit();
 }
 
+// Fast response helper: flush JSON and detach so we can continue background work (notifications)
+function complete_respond_fast_and_detach(array $payload): void {
+    if (!headers_sent()) {
+        header('Content-Type: application/json');
+    }
+    echo json_encode($payload);
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        ignore_user_abort(true);
+        if (function_exists('ob_get_length')) {
+            $len = ob_get_length();
+            if ($len !== false && !headers_sent()) {
+                header('Content-Length: ' . $len);
+            }
+        }
+        @ob_end_flush(); @flush();
+    }
+}
+
 $raw = file_get_contents('php://input');
 $input = json_decode($raw, true);
 if (!is_array($input)) complete_respond_error('Invalid payload', ['phase'=>'payload']);
@@ -31,22 +51,28 @@ try {
     // Resolve admin profile_id to set reviewer_id as the completer
     $adminProfileId = null;
     try {
-        $uid = (int)($_SESSION['user_id'] ?? 0);
-        $anum = trim((string)($_SESSION['admin_number'] ?? ''));
-        if ($uid > 0) {
-            if ($anum !== '') {
-                $p = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? AND admin_number = ? LIMIT 1");
-                if ($p && $p->execute([ $uid, $anum ])) {
-                    $tmp = $p->fetchColumn();
-                    if ($tmp !== false) { $adminProfileId = (int)$tmp; }
+        // Use cached id if present
+        if (!empty($_SESSION['__admin_profile_id']) && ctype_digit((string)$_SESSION['__admin_profile_id'])) {
+            $adminProfileId = (int)$_SESSION['__admin_profile_id'];
+        } else {
+            $uid = (int)($_SESSION['user_id'] ?? 0);
+            $anum = trim((string)($_SESSION['admin_number'] ?? ''));
+            if ($uid > 0) {
+                if ($anum !== '') {
+                    $p = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? AND admin_number = ? LIMIT 1");
+                    if ($p && $p->execute([ $uid, $anum ])) {
+                        $tmp = $p->fetchColumn();
+                        if ($tmp !== false) { $adminProfileId = (int)$tmp; }
+                    }
                 }
-            }
-            if ($adminProfileId === null) {
-                $p = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? ORDER BY profile_id DESC LIMIT 1");
-                if ($p && $p->execute([ $uid ])) {
-                    $tmp = $p->fetchColumn();
-                    if ($tmp !== false) { $adminProfileId = (int)$tmp; }
+                if ($adminProfileId === null) {
+                    $p = $pdo->prepare("SELECT profile_id FROM admin_profiles WHERE user_id = ? ORDER BY profile_id DESC LIMIT 1");
+                    if ($p && $p->execute([ $uid ])) {
+                        $tmp = $p->fetchColumn();
+                        if ($tmp !== false) { $adminProfileId = (int)$tmp; }
+                    }
                 }
+                if ($adminProfileId) { $_SESSION['__admin_profile_id'] = (int)$adminProfileId; }
             }
         }
     } catch (Throwable $e) { $adminProfileId = null; }
@@ -102,7 +128,10 @@ try {
 
     if (function_exists('log_event')) { log_event('COMPLETE_REQUEST', 'Request completed', ['request_id'=>$requestId,'rows'=>$affected,'id_column'=>$idCol,'comment_set'=>($comment!=='')]); }
 
-    // Notify applicant about completion
+    // Respond immediately to the client to reduce perceived latency
+    complete_respond_fast_and_detach(['success'=>true,'updated'=>$affected,'id_column'=>$idCol,'comment_set'=>($comment!=='')]);
+
+    // Continue in background: notify applicant about completion
     try {
         // Resolve numeric submission_id if necessary
         $numericId = ctype_digit($requestId) ? (int)$requestId : null;
@@ -116,8 +145,7 @@ try {
             notify_submission_status_change($pdo, $numericId, 'completed');
         }
     } catch (Throwable $e) { if (function_exists('log_event')) log_event('NOTIF_HOOK_FAIL','complete notify failed', ['err'=>substr($e->getMessage(),0,200)]); }
-
-    echo json_encode(['success'=>true,'updated'=>$affected,'id_column'=>$idCol,'comment_set'=>($comment!=='')]);
+    exit;
 } catch(Throwable $e){
     $msg = substr($e->getMessage(),0,200);
     if (function_exists('log_event')) { log_event('DB_ERROR', 'Complete exception', ['err'=>$msg,'request_id'=>$requestId]); }

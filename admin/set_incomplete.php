@@ -39,6 +39,27 @@ register_shutdown_function(function(){
     }
 });
 
+// Fast response helper: flush JSON and detach so background work (like notifications) can proceed
+function set_incomplete_respond_fast_and_detach(array $payload): void {
+    if (!headers_sent()) {
+        header('Content-Type: application/json');
+    }
+    $json = json_encode($payload);
+    echo $json;
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        ignore_user_abort(true);
+        if (function_exists('ob_get_length')) {
+            $len = ob_get_length();
+            if ($len !== false && !headers_sent()) {
+                header('Content-Length: ' . $len);
+            }
+        }
+        @ob_end_flush(); @flush();
+    }
+}
+
 // Lightweight debug logging for incoming AJAX requests to help diagnose non-JSON responses.
 // Writes minimal information (method, URI, key headers, body preview) to a local debug file.
 $dbgLog = __DIR__ . '/../debug_set_incomplete.log';
@@ -166,13 +187,7 @@ try {
 
     if($pdo->inTransaction()) { $pdo->commit(); }
 
-    // Notify applicant that documents need resubmission
-    try {
-        require_once __DIR__ . '/../includes/notification_helpers.php';
-        notify_documents_need_resubmission($pdo, $sid, $affectedDocTypes, $comment);
-    } catch (Throwable $e) { if (function_exists('log_event')) log_event('NOTIF_HOOK_FAIL','set_incomplete notify failed', ['err'=>substr($e->getMessage(),0,200)]); }
-
-    echo json_encode([
+    $responsePayload = [
         'success' => true,
         'submission_id' => $sid,
         'request_id' => $sub['submission_code'],
@@ -185,7 +200,17 @@ try {
             'admin_comment' => $comment,
             'affected_doc_types' => $affectedList
         ]
-    ]);
+    ];
+
+    // Respond immediately to improve perceived latency
+    set_incomplete_respond_fast_and_detach($responsePayload);
+
+    // Continue in background: Notify applicant that documents need resubmission
+    try {
+        require_once __DIR__ . '/../includes/notification_helpers.php';
+        notify_documents_need_resubmission($pdo, $sid, $affectedDocTypes, $comment);
+    } catch (Throwable $e) { if (function_exists('log_event')) log_event('NOTIF_HOOK_FAIL','set_incomplete notify failed', ['err'=>substr($e->getMessage(),0,200)]); }
+    exit;
 } catch (Throwable $e) {
     if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) { $pdo->rollBack(); }
     http_response_code(500);

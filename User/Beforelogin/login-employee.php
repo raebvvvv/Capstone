@@ -11,34 +11,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     if (!empty($login_identifier) && !empty($password)) {
-        // Employee-only lookup: email OR employee_number; restrict to role=employee
+        // Unified lookup: email OR employee_number using JOINs
     $sql = "SELECT 
             u.user_id, u.email, u.password, u.role, u.status,
             ep.employee_number AS identifier
         FROM users u
         LEFT JOIN employee_profiles ep ON ep.user_id = u.user_id
-        WHERE u.role = 'employee' AND (u.email = :id1 OR ep.employee_number = :id2)
+        WHERE u.email = :id1 OR ep.employee_number = :id2
         LIMIT 1";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':id1' => $login_identifier, ':id2' => $login_identifier]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password'])) {
-            if ($user['status'] == 'pending') {
+            if ($user['status'] == 'pending' && $user['role'] !== 'admin') {
                 $error = "Please wait for the confirmation of your account.";
             } else {
-                // Proceed with employee login (query is already restricted to employee role)
-                    session_regenerate_id(true); // Security: Prevent session fixation attacks
-                    $_SESSION['user_logged_in'] = true;
-                    $_SESSION['user_id'] = $user['user_id'];
-                    $_SESSION['email'] = $user['email'];
-                    $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email']; // Store the number they used to login
-                    $_SESSION['is_admin'] = 0; // Employees are not admin on this page
-                    $_SESSION['role'] = $user['role']; // Persist role
+                // Only allow employees to use this login page (block admins for security)
+                $roleLower = strtolower($user['role']);
+                if ($roleLower === 'admin') {
+                    $error = 'Admin accounts must use the dedicated admin login page.';
+                } else if (!in_array($roleLower, ['employee'], true)) {
+                    $error = 'This login is only for employees. Please use the Student Login page.';
+                } else {
+                session_regenerate_id(true); // Security: Prevent session fixation attacks
+                $_SESSION['user_logged_in'] = true;
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email']; // Store the number they used to login
+                $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0; // Set admin status
+                $_SESSION['role'] = $user['role']; // Persist role
 
-                    // Redirect employees to the after-login landing page
+                if ($user['role'] === 'admin') {
+                    // Redirect administrators to the admin dashboard
+                    redirect('admin/admin.php');
+                } else {
+                    // Redirect regular users to the after-login landing page
                     redirect('User/Afterlogin/after-landing.php');
-                    exit();
+                }
+                exit();
+                }
             }
         } else {
             $error = "Invalid login credentials.";
@@ -115,7 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </button>
                 </div>
                 <div class="mb-3 text-end">
-                    <a href="/Capstone/forgot_password.php" class="small forgot-password-link" style="font-size: 0.95rem;">Forgot password?</a>
+                    <a href="#" class="small forgot-password-link" style="font-size: 0.95rem;">Forgot password?</a>
                 </div>
                 <button type="submit" class="btn w-100 login-btn-custom">Login</button>
             </form>

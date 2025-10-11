@@ -24,7 +24,7 @@ if (!empty($_SESSION['user_id'])){
     </span>
   <span id="userNotifBadge" class="position-absolute badge-notif <?php echo $unread_count>0 ? '' : 'd-none'; ?>"><?php echo $unread_count>0 ? $unread_count : '0'; ?></span>
   </button>
-  <div id="userNotifDropdown" class="card shadow position-absolute end-0 mt-2" style="width:360px; display:none; z-index:1050;" role="region" aria-live="polite">
+  <div id="userNotifDropdown" class="card shadow position-absolute end-0 mt-2 user-notif-dropdown" style="display:none; z-index:1050;" role="region" aria-live="polite">
     <div class="card-header py-2 d-flex justify-content-between align-items-center gap-2">
       <span class="fw-semibold small mb-0">Notifications</span>
       <div class="d-flex gap-2 align-items-center">
@@ -33,7 +33,6 @@ if (!empty($_SESSION['user_id'])){
       </div>
     </div>
   <ul id="userNotifList" class="list-group list-group-flush small" style="max-height:300px; overflow-y:auto;" role="list"></ul>
-    <div class="card-footer text-center small py-1"><a href="<?php echo asset_url('User/Afterlogin/notifications.php'); ?>">View all</a></div>
   </div>
   </div>
   <?php // expose app base for the client so JS doesn't need hard-coded paths ?>
@@ -45,8 +44,13 @@ if (!empty($_SESSION['user_id'])){
   /* Ensure unread/read visual styles apply in dropdown */
     #userNotifDropdown .notif-row.unread { background: #fff; }
     #userNotifDropdown .notif-row.read { background: #f8f9fa; opacity: 0.85; }
-    #userNotifDropdown .notif-row:hover { background: #f1f3f5; }
-  #userNotifDropdown .delete-single { min-width:64px; }
+    #userNotifDropdown .notif-row:hover { 
+      background: #f1f3f5; 
+    }
+  #userNotifDropdown .delete-single {
+    margin-bottom:3px;
+     min-width:64px; 
+    }
     /* Ensure badge is visible and not clipped in narrow header containers */
     #userNotifWidget { overflow: visible !important; }
     #userNotifWidget #userNotifBell { overflow: visible !important; }
@@ -57,9 +61,25 @@ if (!empty($_SESSION['user_id'])){
 
   /* Compact circular numeric badge that matches the screenshot */
   /* Slightly smaller, less intrusive badge */
-  .badge-notif { position:absolute; top:-4px; right:-4px; z-index:3000; display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; font-size:11px; line-height:1; color:#fff; background:#dc3545; border-radius:999px; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+  /* Keep badge above header but below Bootstrap modals (modal z-index ~1050) */
+  .badge-notif { position:absolute; top:-4px; right:-4px; z-index:1020 !important; display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; font-size:11px; line-height:1; color:#fff; background:#dc3545; border-radius:999px; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
 
     /* Fallback pseudo-element removed to keep only the numeric badge indicator */
+  /* Responsive dropdown sizing */
+  #userNotifDropdown.user-notif-dropdown { width: 360px; }
+  @media (max-width: 576px) {
+    /* When space is tight, stack action buttons vertically with spacing */
+    #userNotifDropdown .notif-row .ms-2.text-end { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    #userNotifDropdown.user-notif-dropdown {
+      position: fixed !important;
+      right: 8px !important;
+      left: 8px !important;
+      width: auto !important;
+      max-width: 92vw !important;
+      top: 70px; /* below navbar */
+    }
+    #userNotifDropdown .card-body { max-height: 55vh; }
+  }
   </style>
   <script src="<?php echo asset_url('javascript/user-notifications.js'); ?>"></script>
   <script>

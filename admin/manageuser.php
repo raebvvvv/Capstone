@@ -362,6 +362,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center w-100">
                             <li class="nav-item ms-auto"><a class="nav-link" href="admin.php">Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
+                            <li class="nav-item"><a class="nav-link" href="catalogs.php">Catalogs</a></li>
                             <li class="nav-item"><a class="nav-link fw-bold" aria-current="page"  href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
                             <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">

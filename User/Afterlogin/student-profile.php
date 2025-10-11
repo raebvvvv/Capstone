@@ -184,10 +184,6 @@ if (!empty($profile['last_updated_at'])) {
           <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
           <li class="nav-item"><a class="nav-link active" href="student-profile.php">My Profile</a></li>
         </ul>
-        <?php // notifications bell for logged-in users ?>
-        <div class="d-flex align-items-center ms-3">
-          <?php include __DIR__ . '/../../partials/user_notifications.php'; ?>
-        </div>
         <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
         <!-- Logout button triggers confirmation modal -->
         <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#logoutModal">
@@ -458,4 +454,3 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 </div>
 </body>
 </html>
-

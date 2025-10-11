@@ -489,7 +489,6 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="<?php echo asset_url('css/admin.css?v=2'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/admin-navbar.css'); ?>">
-
 </head>
 <body>
     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
@@ -507,8 +506,8 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center w-100">
                             <li class="nav-item ms-auto"><a class="nav-link fw-bold" aria-current="page" href="admin.php">Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
-                            <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="catalogs.php">Catalogs</a></li>
+                            <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
                             <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
                                 <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>
@@ -601,7 +600,6 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
             </div>
         </div>
         
-
         <!-- Applications by Campus (Top) -->
         <div class="dashboard-section mb-4">
             <h5><span class="legend-dot legend-grad"></span> Applications by Campus</h5>
@@ -662,7 +660,7 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
                         <div class="mb-3">
                             <label for="profileNewPassword" class="form-label">New Password</label>
                             <input type="password" class="form-control" id="profileNewPassword" minlength="8" required>
-                            <div class="form-text">At least 12 characters.</div>
+                            <div class="form-text">At least 8 characters.</div>
                         </div>
                         <div class="mb-2">
                             <label for="profileConfirmPassword" class="form-label">Confirm New Password</label>

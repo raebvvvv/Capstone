@@ -501,4 +501,3 @@ if (!empty($errors) && !$hasRestrictionError): ?>
 </div>
 </body>
 </html>
-

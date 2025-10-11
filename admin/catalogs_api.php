@@ -6,6 +6,36 @@ require_admin();
 
 header('Content-Type: application/json; charset=UTF-8');
 
+// Fallback helpers to avoid undefined function errors
+if (!function_exists('sanitize_text')) {
+    function sanitize_text($value, int $maxLen = 255): string {
+        $v = (string)$value;
+        // Normalize whitespace and remove tags
+        $v = trim($v);
+        $v = strip_tags($v);
+        $v = preg_replace('/\s+/u', ' ', $v);
+        // Enforce max length (use mb_substr when available)
+        if ($maxLen > 0) {
+            if (function_exists('mb_substr')) { $v = mb_substr($v, 0, $maxLen, 'UTF-8'); }
+            else { $v = substr($v, 0, $maxLen); }
+        }
+        return $v;
+    }
+}
+
+if (!function_exists('clean_enum')) {
+    /**
+     * Ensure a value is within allowed set (case-insensitive); returns canonical allowed value or default.
+     */
+    function clean_enum($value, array $allowed, $default = null) {
+        $val = strtolower(trim((string)$value));
+        foreach ($allowed as $opt) {
+            if (strtolower((string)$opt) === $val) { return $opt; }
+        }
+        return $default !== null ? $default : ($allowed[0] ?? '');
+    }
+}
+
 function fail($msg, $code = 400) {
     http_response_code($code);
     echo json_encode(['ok' => false, 'error' => (string)$msg], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

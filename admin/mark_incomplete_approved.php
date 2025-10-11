@@ -5,6 +5,26 @@ if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 header('Content-Type: application/json');
 
+// Fast response helper to flush JSON quickly and continue any follow-ups if needed.
+function mia_respond_fast_and_detach(array $payload): void {
+    if (!headers_sent()) {
+        header('Content-Type: application/json');
+    }
+    echo json_encode($payload);
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        ignore_user_abort(true);
+        if (function_exists('ob_get_length')) {
+            $len = ob_get_length();
+            if ($len !== false && !headers_sent()) {
+                header('Content-Length: ' . $len);
+            }
+        }
+        @ob_end_flush(); @flush();
+    }
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
@@ -103,7 +123,8 @@ try {
         ':affected' => $affectedList !== '' ? $affectedList : null,
     ]);
 
-    echo json_encode([
+    // Respond immediately for consistent speed
+    mia_respond_fast_and_detach([
         'success' => true,
         'request_id' => $row['submission_code'],
         'scope' => 'approved',
@@ -116,6 +137,33 @@ try {
             'affected_doc_types' => $affectedList
         ]
     ]);
+    // Background: notify user about resubmission requirements and alert admins feed
+    try {
+        require_once __DIR__ . '/../includes/notification_helpers.php';
+        notify_documents_need_resubmission($pdo, (int)$row['submission_id'], $affectedDocTypes, $comment);
+    } catch (Throwable $e) { /* ignore */ }
+    try {
+        // lightweight admin_notifications aggregation (best-effort)
+        $pdo->exec("CREATE TABLE IF NOT EXISTS admin_notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            type VARCHAR(50) NOT NULL,
+            message TEXT NOT NULL,
+            submission_id INT NULL,
+            is_read TINYINT(1) DEFAULT 0,
+            occurrence_count INT DEFAULT 1,
+            meta JSON NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_type_created (type, created_at DESC)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        $anMsg = 'User needs to re-upload (Approved scope) for ' . ($row['submission_code'] ?? ('#'.$row['submission_id']));
+        $ins = $pdo->prepare("INSERT INTO admin_notifications (type, message, submission_id, meta) VALUES ('reupload_request', :m, :sid, :meta)");
+        $ins->execute([
+            ':m' => $anMsg,
+            ':sid' => (int)$row['submission_id'],
+            ':meta' => json_encode(['scope'=>'approved','affected'=>$affectedDocTypes])
+        ]);
+    } catch (Throwable $e) { /* ignore admin notif errors */ }
+    exit;
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Exception', 'detail' => $e->getMessage()]);

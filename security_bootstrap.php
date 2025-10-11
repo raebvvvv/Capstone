@@ -181,39 +181,3 @@ if (!function_exists('log_event')) {
         }
     }
 }
-
-// ---------- Output escaping and input sanitization helpers ----------
-if (!function_exists('e')) {
-    // Escape for HTML context (text, attribute). Always UTF-8, quote-safe.
-    function e($value): string {
-        return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    }
-}
-
-if (!function_exists('sanitize_text')) {
-    // Basic text sanitizer: trim, collapse whitespace, strip tags; optionally cap length
-    function sanitize_text($value, int $maxLen = 255): string {
-        $s = (string)$value;
-        // Normalize newlines/tabs to spaces then collapse multiple spaces
-        $s = preg_replace('/[\r\n\t]+/u', ' ', $s);
-        $s = trim($s);
-        // Strip any HTML tags
-        $s = strip_tags($s);
-        // Collapse repeated spaces
-        $s = preg_replace('/\s{2,}/u', ' ', $s);
-        if ($maxLen > 0 && mb_strlen($s, 'UTF-8') > $maxLen) {
-            $s = mb_substr($s, 0, $maxLen, 'UTF-8');
-        }
-        return $s;
-    }
-}
-
-if (!function_exists('clean_enum')) {
-    // Constrain string to one of the allowed values (case-insensitive). Returns default if not matched.
-    function clean_enum($value, array $allowed, $default) {
-        $v = strtolower(trim((string)$value));
-        $allowedLower = array_map(function ($x) { return strtolower((string)$x); }, $allowed);
-        $idx = array_search($v, $allowedLower, true);
-        return $idx !== false ? $allowed[$idx] : $default;
-    }
-}

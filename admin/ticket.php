@@ -195,37 +195,40 @@ if ($has_notes === 1) {
 // Debug helpers
 $__dbgMainQueryError = null; $__dbgFilteredCount = null;
 try {
-    // Ensure meta/notes tables exist to support joins (lightweight safety)
+    // Ensure meta/notes tables exist to support joins (skip after first time per session to reduce overhead)
     try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
-            submission_id INT NOT NULL,
-            scope ENUM('pending','approved') NOT NULL,
-            issue_label VARCHAR(150) DEFAULT NULL,
-            admin_comment TEXT NULL,
-            affected_doc_types TEXT NULL,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (submission_id, scope),
-            CONSTRAINT fk_sim_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-        $pdo->exec("CREATE TABLE IF NOT EXISTS submission_notes (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            submission_id INT NOT NULL,
-            user_id INT NOT NULL,
-            note TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_sn_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-        $pdo->exec("CREATE TABLE IF NOT EXISTS submission_notes_admin_views (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            submission_id INT NOT NULL,
-            admin_id INT NOT NULL,
-            last_viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE KEY uniq_view (submission_id, admin_id),
-            INDEX idx_submission_admin (submission_id, admin_id),
-            CONSTRAINT fk_snav_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE,
-            CONSTRAINT fk_snav_admin FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        if (empty($_SESSION['__ticket_meta_tables_ok'])) {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS submission_incomplete_meta (
+                submission_id INT NOT NULL,
+                scope ENUM('pending','approved') NOT NULL,
+                issue_label VARCHAR(150) DEFAULT NULL,
+                admin_comment TEXT NULL,
+                affected_doc_types TEXT NULL,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (submission_id, scope),
+                CONSTRAINT fk_sim_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            $pdo->exec("CREATE TABLE IF NOT EXISTS submission_notes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                submission_id INT NOT NULL,
+                user_id INT NOT NULL,
+                note TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_sn_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            $pdo->exec("CREATE TABLE IF NOT EXISTS submission_notes_admin_views (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                submission_id INT NOT NULL,
+                admin_id INT NOT NULL,
+                last_viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uniq_view (submission_id, admin_id),
+                INDEX idx_submission_admin (submission_id, admin_id),
+                CONSTRAINT fk_snav_submission FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE,
+                CONSTRAINT fk_snav_admin FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            $_SESSION['__ticket_meta_tables_ok'] = 1;
+        }
     } catch (Throwable $eCreate) {
         if (function_exists('log_event')) { log_event('DB_ERROR', 'Failed ensuring meta/notes tables', ['err' => $eCreate->getMessage()]); }
     }
@@ -261,16 +264,20 @@ try {
         return " s.status IN ('pending','pending_review') ";
     };
 
-    // Build total counts for each tab using same $where filters
-    $tabs = ['pending','approved','completed'];
-    $totals = [ 'pending'=>0, 'approved'=>0, 'completed'=>0 ];
-    foreach ($tabs as $t) {
-        $whereFinal = $where !== '' ? $where . ' AND ' . $statusClauseFor($t) : (' WHERE ' . $statusClauseFor($t));
-        $sqlCount = "SELECT COUNT(*)" . $baseJoins . $whereFinal;
-        $stmtC = $pdo->prepare($sqlCount);
-        $stmtC->execute($params);
-        $totals[$t] = (int)$stmtC->fetchColumn();
-    }
+    // Build total counts for each tab using the same $where filters (single query for speed)
+    $sqlCountAll = "SELECT
+            SUM(CASE WHEN s.status IN ('pending','pending_review') THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN s.status = 'approved' THEN 1 ELSE 0 END) AS approved,
+            SUM(CASE WHEN s.status = 'completed' THEN 1 ELSE 0 END) AS completed
+        " . $baseJoins . ($where !== '' ? $where : '');
+    $stmtCAll = $pdo->prepare($sqlCountAll);
+    $stmtCAll->execute($params);
+    $totRow = $stmtCAll->fetch(PDO::FETCH_ASSOC) ?: ['pending'=>0,'approved'=>0,'completed'=>0];
+    $totals = [
+        'pending'   => (int)($totRow['pending'] ?? 0),
+        'approved'  => (int)($totRow['approved'] ?? 0),
+        'completed' => (int)($totRow['completed'] ?? 0),
+    ];
 
     // Pagination (10 per page) for each tab
     $perPage = 10;
@@ -526,6 +533,7 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center w-100">
                         <li class="nav-item ms-auto"><a class="nav-link" href="admin.php">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
+                        <li class="nav-item"><a class="nav-link" href="catalogs.php">Catalogs</a></li>
                         <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
                     <!-- Notes Modal -->
                     <div class="modal fade" id="notesModal" tabindex="-1" aria-labelledby="notesModalLabel" aria-hidden="true">
