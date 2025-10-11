@@ -363,8 +363,31 @@
       }
       try {
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-  const res = await fetch('../admin/set_incomplete.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify({ request_id: requestId, remark, comment, file_ids: [], affected_doc_types: affected }) });
-        const data = await res.json();
+  const res = await fetch('../admin/set_incomplete.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf,'X-Requested-With':'XMLHttpRequest'}, body: JSON.stringify({ request_id: requestId, remark, comment, file_ids: [], affected_doc_types: affected }) });
+        // Better error handling: check HTTP status first, then verify Content-Type before parsing JSON.
+        if(!res.ok){
+          const text = await res.text().catch(()=>'(no body)');
+          console.error('set_incomplete server error', res.status, text);
+          alert('Save failed: server returned ' + res.status + '\n' + text);
+          return;
+        }
+        // Read the full response text first so we can show the server body on error
+        const responseText = await res.text().catch(()=>null);
+        const contentType = (res.headers.get('content-type') || '').toLowerCase();
+        if(!contentType.includes('application/json')){
+          // Non-JSON response (often a login HTML page due to session expiry or redirect)
+          console.error('set_incomplete unexpected content-type', contentType, responseText);
+          alert('Save failed: server returned non-JSON response:\n' + (responseText || '(no body)'));
+          return;
+        }
+        let data;
+        try{
+          data = JSON.parse(responseText || '{}');
+        }catch(parseErr){
+          console.error('set_incomplete invalid JSON', parseErr, responseText);
+          alert('Save failed: server returned invalid JSON:\n' + (responseText || '(no body)'));
+          return;
+        }
         console.debug('[set_incomplete pending single] payload', { request_id: requestId, remark, comment, affected });
         console.debug('[set_incomplete pending single] response', data);
         if(data.success){
@@ -400,7 +423,7 @@
         } else {
           alert('Failed to mark incomplete: ' + (data.error || 'Unknown error'));
         }
-      } catch(err){ console.error('set_incomplete pending error', err); alert('Network error during save'); }
+  } catch(err){ console.error('set_incomplete pending error', err); alert('Network error during save: ' + (err && err.message ? err.message : String(err))); }
     }); }
 
     // Functions for multi-step incomplete workflow

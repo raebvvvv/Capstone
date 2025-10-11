@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 11, 2025 at 02:28 PM
+-- Generation Time: Oct 11, 2025 at 04:27 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,29 +24,6 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `academic_levels`
---
-
-CREATE TABLE `academic_levels` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `code` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `academic_levels`
---
-
-INSERT INTO `academic_levels` (`id`, `name`, `code`) VALUES
-(1, 'Undergraduate', 'UG'),
-(2, 'Masters', 'MS'),
-(3, 'Doctorate', 'PhD'),
-(4, 'Open University', 'OU'),
-(5, 'Not Studying', 'NS');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `admin_notifications`
 --
 
@@ -58,69 +35,90 @@ CREATE TABLE `admin_notifications` (
   `doc_type` varchar(100) NOT NULL,
   `message` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `is_read` tinyint(1) DEFAULT 0
+  `is_read` tinyint(1) DEFAULT 0,
+  `notification_type` varchar(50) NOT NULL DEFAULT 'resubmission',
+  `occurrence_count` int(11) NOT NULL DEFAULT 1,
+  `meta` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `admin_notifications`
 --
 
-INSERT INTO `admin_notifications` (`id`, `submission_id`, `submission_code`, `user_id`, `doc_type`, `message`, `created_at`, `is_read`) VALUES
-(64, 53, 'SRID-2025-20251006-1', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251006-1)', '2025-10-06 12:25:42', 1),
-(65, 53, 'SRID-2025-20251006-1', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251006-1)', '2025-10-06 12:26:53', 1),
-(66, 53, 'SRID-2025-20251006-1', 1, 'full_manuscript', 'User #1 re-uploaded full manuscript (SRID-2025-20251006-1)', '2025-10-06 12:27:59', 1),
-(67, 61, 'SRID-2025-20251007-1', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-1)', '2025-10-06 16:33:03', 1),
-(68, 61, 'SRID-2025-20251007-1', 1, 'full_manuscript', 'User #1 re-uploaded full manuscript (SRID-2025-20251007-1)', '2025-10-06 16:49:53', 1),
-(69, 63, 'SRID-2025-20251007-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-3)', '2025-10-06 16:51:45', 1),
-(70, 63, 'SRID-2025-20251007-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-3)', '2025-10-06 16:56:00', 1),
-(71, 63, 'SRID-2025-20251007-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-3)', '2025-10-06 16:56:17', 1),
-(72, 63, 'SRID-2025-20251007-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-3)', '2025-10-06 17:02:58', 1),
-(73, 69, 'ERID-2025-20251008-1', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-1)', '2025-10-07 17:02:06', 1),
-(74, 69, 'ERID-2025-20251008-1', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-1)', '2025-10-07 17:03:36', 1),
-(75, 69, 'ERID-2025-20251008-1', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-1)', '2025-10-07 17:03:36', 1),
-(76, 69, 'ERID-2025-20251008-1', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-1)', '2025-10-07 17:03:36', 1),
-(77, 69, 'ERID-2025-20251008-1', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-1)', '2025-10-07 17:03:37', 1),
-(78, 69, 'ERID-2025-20251008-1', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-1)', '2025-10-07 17:03:37', 1),
-(79, 69, 'ERID-2025-20251008-1', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
-(80, 69, 'ERID-2025-20251008-1', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
-(81, 69, 'ERID-2025-20251008-1', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
-(82, 69, 'ERID-2025-20251008-1', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
-(83, 69, 'ERID-2025-20251008-1', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1),
-(84, 74, 'ERID-2025-20251008-6', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-6)', '2025-10-08 04:49:38', 1),
-(85, 75, 'ERID-2025-20251008-7', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-7)', '2025-10-08 05:05:25', 1),
-(86, 80, 'ERID-2025-20251008-12', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
-(87, 80, 'ERID-2025-20251008-12', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
-(88, 80, 'ERID-2025-20251008-12', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
-(89, 80, 'ERID-2025-20251008-12', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
-(90, 80, 'ERID-2025-20251008-12', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
-(91, 80, 'ERID-2025-20251008-12', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1),
-(92, 85, 'ERID-2025-20251008-17', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
-(93, 85, 'ERID-2025-20251008-17', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
-(94, 85, 'ERID-2025-20251008-17', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
-(95, 85, 'ERID-2025-20251008-17', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
-(96, 85, 'ERID-2025-20251008-17', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
-(97, 85, 'ERID-2025-20251008-17', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1),
-(98, 91, 'ERID-2025-20251008-23', 6, 'journal_publication_format', 'User #6 re-uploaded journal publication format (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
-(99, 91, 'ERID-2025-20251008-23', 6, 'notarized_coauthorship', 'User #6 re-uploaded notarized coauthorship (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
-(100, 91, 'ERID-2025-20251008-23', 6, 'notarized_copyright', 'User #6 re-uploaded notarized copyright (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
-(101, 91, 'ERID-2025-20251008-23', 6, 'presentation', 'User #6 re-uploaded presentation (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
-(102, 91, 'ERID-2025-20251008-23', 6, 'receipt_payment', 'User #6 re-uploaded receipt payment (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
-(103, 91, 'ERID-2025-20251008-23', 6, 'record_copyright', 'User #6 re-uploaded record copyright (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1),
-(104, 88, 'SRID-2025-20251008-20', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-20)', '2025-10-08 07:44:26', 1),
-(105, 90, 'SRID-2025-20251008-22', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-22)', '2025-10-08 07:44:38', 1),
-(106, 92, 'SRID-2025-20251008-24', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-24)', '2025-10-08 07:51:00', 1),
-(107, 94, 'SRID-2025-20251008-26', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-26)', '2025-10-08 07:56:08', 1),
-(108, 94, 'SRID-2025-20251008-26', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-26)', '2025-10-08 08:00:56', 1),
-(109, 102, 'ERID-2025-20251009-5', 6, 'journal_publication_format', 'User #6 re-uploaded journal publication format (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1),
-(110, 102, 'ERID-2025-20251009-5', 6, 'notarized_coauthorship', 'User #6 re-uploaded notarized coauthorship (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1),
-(111, 102, 'ERID-2025-20251009-5', 6, 'notarized_copyright', 'User #6 re-uploaded notarized copyright (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1),
-(112, 102, 'ERID-2025-20251009-5', 6, 'presentation', 'User #6 re-uploaded presentation (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1),
-(113, 102, 'ERID-2025-20251009-5', 6, 'receipt_payment', 'User #6 re-uploaded receipt payment (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1),
-(114, 102, 'ERID-2025-20251009-5', 6, 'record_copyright', 'User #6 re-uploaded record copyright (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1),
-(115, 106, 'ERID-2025-20251009-9', 6, 'journal_publication_format', 'User #6 re-uploaded journal publication format (ERID-2025-20251009-9)', '2025-10-09 13:24:50', 1),
-(116, 122, 'SRID-2025-20251010-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251010-3)', '2025-10-10 07:15:22', 1),
-(117, 123, 'SRID-2025-20251010-4', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251010-4)', '2025-10-10 09:47:50', 1),
-(118, 123, 'SRID-2025-20251010-4', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251010-4)', '2025-10-10 09:55:07', 1);
+INSERT INTO `admin_notifications` (`id`, `submission_id`, `submission_code`, `user_id`, `doc_type`, `message`, `created_at`, `is_read`, `notification_type`, `occurrence_count`, `meta`) VALUES
+(64, 53, 'SRID-2025-20251006-1', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251006-1)', '2025-10-06 12:25:42', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(65, 53, 'SRID-2025-20251006-1', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251006-1)', '2025-10-06 12:26:53', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(66, 53, 'SRID-2025-20251006-1', 1, 'full_manuscript', 'User #1 re-uploaded full manuscript (SRID-2025-20251006-1)', '2025-10-06 12:27:59', 1, 'resubmission', 1, '[\"full_manuscript\"]'),
+(67, 61, 'SRID-2025-20251007-1', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-1)', '2025-10-06 16:33:03', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(68, 61, 'SRID-2025-20251007-1', 1, 'full_manuscript', 'User #1 re-uploaded full manuscript (SRID-2025-20251007-1)', '2025-10-06 16:49:53', 1, 'resubmission', 1, '[\"full_manuscript\"]'),
+(69, 63, 'SRID-2025-20251007-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-3)', '2025-10-06 16:51:45', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(70, 63, 'SRID-2025-20251007-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-3)', '2025-10-06 16:56:00', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(71, 63, 'SRID-2025-20251007-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-3)', '2025-10-06 16:56:17', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(72, 63, 'SRID-2025-20251007-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251007-3)', '2025-10-06 17:02:58', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(73, 69, 'ERID-2025-20251008-1', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-1)', '2025-10-07 17:02:06', 1, 'resubmission', 1, '[\"journal_publication_format\"]'),
+(74, 69, 'ERID-2025-20251008-1', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-1)', '2025-10-07 17:03:36', 1, 'resubmission', 1, '[\"journal_publication_format\"]'),
+(75, 69, 'ERID-2025-20251008-1', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-1)', '2025-10-07 17:03:36', 1, 'resubmission', 1, '[\"notarized_coauthorship\"]'),
+(76, 69, 'ERID-2025-20251008-1', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-1)', '2025-10-07 17:03:36', 1, 'resubmission', 1, '[\"notarized_copyright\"]'),
+(77, 69, 'ERID-2025-20251008-1', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-1)', '2025-10-07 17:03:37', 1, 'resubmission', 1, '[\"receipt_payment\"]'),
+(78, 69, 'ERID-2025-20251008-1', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-1)', '2025-10-07 17:03:37', 1, 'resubmission', 1, '[\"record_copyright\"]'),
+(79, 69, 'ERID-2025-20251008-1', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1, 'resubmission', 1, '[\"journal_publication_format\"]'),
+(80, 69, 'ERID-2025-20251008-1', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1, 'resubmission', 1, '[\"notarized_coauthorship\"]'),
+(81, 69, 'ERID-2025-20251008-1', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1, 'resubmission', 1, '[\"notarized_copyright\"]'),
+(82, 69, 'ERID-2025-20251008-1', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1, 'resubmission', 1, '[\"receipt_payment\"]'),
+(83, 69, 'ERID-2025-20251008-1', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-1)', '2025-10-07 17:06:03', 1, 'resubmission', 1, '[\"record_copyright\"]'),
+(84, 74, 'ERID-2025-20251008-6', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-6)', '2025-10-08 04:49:38', 1, 'resubmission', 1, '[\"presentation\"]'),
+(85, 75, 'ERID-2025-20251008-7', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-7)', '2025-10-08 05:05:25', 1, 'resubmission', 1, '[\"presentation\"]'),
+(86, 80, 'ERID-2025-20251008-12', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1, 'resubmission', 1, '[\"journal_publication_format\"]'),
+(87, 80, 'ERID-2025-20251008-12', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1, 'resubmission', 1, '[\"notarized_coauthorship\"]'),
+(88, 80, 'ERID-2025-20251008-12', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1, 'resubmission', 1, '[\"notarized_copyright\"]'),
+(89, 80, 'ERID-2025-20251008-12', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1, 'resubmission', 1, '[\"presentation\"]'),
+(90, 80, 'ERID-2025-20251008-12', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1, 'resubmission', 1, '[\"receipt_payment\"]'),
+(91, 80, 'ERID-2025-20251008-12', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-12)', '2025-10-08 05:14:49', 1, 'resubmission', 1, '[\"record_copyright\"]'),
+(92, 85, 'ERID-2025-20251008-17', 2, 'journal_publication_format', 'User #2 re-uploaded journal publication format (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1, 'resubmission', 1, '[\"journal_publication_format\"]'),
+(93, 85, 'ERID-2025-20251008-17', 2, 'notarized_coauthorship', 'User #2 re-uploaded notarized coauthorship (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1, 'resubmission', 1, '[\"notarized_coauthorship\"]'),
+(94, 85, 'ERID-2025-20251008-17', 2, 'notarized_copyright', 'User #2 re-uploaded notarized copyright (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1, 'resubmission', 1, '[\"notarized_copyright\"]'),
+(95, 85, 'ERID-2025-20251008-17', 2, 'presentation', 'User #2 re-uploaded presentation (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1, 'resubmission', 1, '[\"presentation\"]'),
+(96, 85, 'ERID-2025-20251008-17', 2, 'receipt_payment', 'User #2 re-uploaded receipt payment (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1, 'resubmission', 1, '[\"receipt_payment\"]'),
+(97, 85, 'ERID-2025-20251008-17', 2, 'record_copyright', 'User #2 re-uploaded record copyright (ERID-2025-20251008-17)', '2025-10-08 05:42:17', 1, 'resubmission', 1, '[\"record_copyright\"]'),
+(98, 91, 'ERID-2025-20251008-23', 6, 'journal_publication_format', 'User #6 re-uploaded journal publication format (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1, 'resubmission', 1, '[\"journal_publication_format\"]'),
+(99, 91, 'ERID-2025-20251008-23', 6, 'notarized_coauthorship', 'User #6 re-uploaded notarized coauthorship (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1, 'resubmission', 1, '[\"notarized_coauthorship\"]'),
+(100, 91, 'ERID-2025-20251008-23', 6, 'notarized_copyright', 'User #6 re-uploaded notarized copyright (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1, 'resubmission', 1, '[\"notarized_copyright\"]'),
+(101, 91, 'ERID-2025-20251008-23', 6, 'presentation', 'User #6 re-uploaded presentation (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1, 'resubmission', 1, '[\"presentation\"]'),
+(102, 91, 'ERID-2025-20251008-23', 6, 'receipt_payment', 'User #6 re-uploaded receipt payment (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1, 'resubmission', 1, '[\"receipt_payment\"]'),
+(103, 91, 'ERID-2025-20251008-23', 6, 'record_copyright', 'User #6 re-uploaded record copyright (ERID-2025-20251008-23)', '2025-10-08 07:43:09', 1, 'resubmission', 1, '[\"record_copyright\"]'),
+(104, 88, 'SRID-2025-20251008-20', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-20)', '2025-10-08 07:44:26', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(105, 90, 'SRID-2025-20251008-22', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-22)', '2025-10-08 07:44:38', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(106, 92, 'SRID-2025-20251008-24', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-24)', '2025-10-08 07:51:00', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(107, 94, 'SRID-2025-20251008-26', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-26)', '2025-10-08 07:56:08', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(108, 94, 'SRID-2025-20251008-26', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251008-26)', '2025-10-08 08:00:56', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(109, 102, 'ERID-2025-20251009-5', 6, 'journal_publication_format', 'User #6 re-uploaded journal publication format (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1, 'resubmission', 1, '[\"journal_publication_format\"]'),
+(110, 102, 'ERID-2025-20251009-5', 6, 'notarized_coauthorship', 'User #6 re-uploaded notarized coauthorship (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1, 'resubmission', 1, '[\"notarized_coauthorship\"]'),
+(111, 102, 'ERID-2025-20251009-5', 6, 'notarized_copyright', 'User #6 re-uploaded notarized copyright (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1, 'resubmission', 1, '[\"notarized_copyright\"]'),
+(112, 102, 'ERID-2025-20251009-5', 6, 'presentation', 'User #6 re-uploaded presentation (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1, 'resubmission', 1, '[\"presentation\"]'),
+(113, 102, 'ERID-2025-20251009-5', 6, 'receipt_payment', 'User #6 re-uploaded receipt payment (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1, 'resubmission', 1, '[\"receipt_payment\"]'),
+(114, 102, 'ERID-2025-20251009-5', 6, 'record_copyright', 'User #6 re-uploaded record copyright (ERID-2025-20251009-5)', '2025-10-09 12:46:23', 1, 'resubmission', 1, '[\"record_copyright\"]'),
+(115, 106, 'ERID-2025-20251009-9', 6, 'journal_publication_format', 'User #6 re-uploaded journal publication format (ERID-2025-20251009-9)', '2025-10-09 13:24:50', 1, 'resubmission', 1, '[\"journal_publication_format\"]'),
+(116, 122, 'SRID-2025-20251010-3', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251010-3)', '2025-10-10 07:15:22', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(117, 123, 'SRID-2025-20251010-4', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251010-4)', '2025-10-10 09:47:50', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(118, 123, 'SRID-2025-20251010-4', 1, 'approval_sheet', 'User #1 re-uploaded approval sheet (SRID-2025-20251010-4)', '2025-10-10 09:55:07', 1, 'resubmission', 1, '[\"approval_sheet\"]'),
+(119, 127, 'SRID-2025-20251010-8', 1, 'record_copyright', 'User #1 resubmitted 7 documents for SRID-2025-20251010-8', '2025-10-10 23:25:38', 1, 'resubmission', 7, '[\"approval_sheet\",\"full_manuscript\",\"journal_publication_format\",\"notarized_coauthorship\",\"notarized_copyright\",\"receipt_payment\",\"record_copyright\"]'),
+(120, 120, 'SRID-2025-20251010-1', 1, 'notarized_coauthorship', 'Resubmission: 9 uploads for SRID-2025-20251010-1', '2025-10-10 23:49:41', 1, 'resubmission', 9, '[\"approval_sheet\",\"approval_sheet\",\"full_manuscript\",\"journal_publication_format\",\"notarized_coauthorship\",\"approval_sheet\",\"full_manuscript\",\"journal_publication_format\",\"notarized_coauthorship\"]'),
+(121, 133, 'SRID-2025-20251011-4', 1, 'journal_publication_format', 'Resubmission: 3 uploads for SRID-2025-20251011-4', '2025-10-11 00:07:43', 1, 'resubmission', 3, '[\"approval_sheet\",\"full_manuscript\",\"journal_publication_format\"]'),
+(122, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'Resubmission: 2 uploads for SRID-2025-20251011-4', '2025-10-11 01:07:55', 1, 'resubmission', 2, '[\"approval_sheet\",\"full_manuscript\"]'),
+(123, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'User #1 resubmitted 3 documents for SRID-2025-20251011-4', '2025-10-11 01:51:13', 1, 'resubmission', 3, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760147473_5d91836d.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 09:51:13\",\"user_id\":1},{\"doc_type\":\"full_manuscript\",\"file_name\":\"full_manuscript_1760147473_35836073.pdf\",\"file_size\":1822,\"created_at\":\"2025-10-11 09:51:13\",\"user_id\":1}]'),
+(124, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'User #1 resubmitted 2 documents for SRID-2025-20251011-4', '2025-10-11 09:06:13', 1, 'resubmission', 2, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760173573_a1366a56.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 17:06:13\",\"user_id\":1},{\"doc_type\":\"full_manuscript\",\"file_name\":\"full_manuscript_1760173573_30d338f5.pdf\",\"file_size\":1822,\"created_at\":\"2025-10-11 17:06:13\",\"user_id\":1}]'),
+(125, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'User #1 resubmitted 4 documents for SRID-2025-20251011-4', '2025-10-11 09:27:42', 1, 'resubmission', 4, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760174607_8411e8ad.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 17:23:27\",\"user_id\":1},{\"doc_type\":\"full_manuscript\",\"file_name\":\"full_manuscript_1760174607_e96f2229.pdf\",\"file_size\":1822,\"created_at\":\"2025-10-11 17:23:27\",\"user_id\":1},{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760174862_182cb0a5.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 17:27:42\",\"user_id\":1},{\"doc_type\":\"full_manuscript\",\"file_name\":\"full_manuscript_1760174862_dff25200.pdf\",\"file_size\":1822,\"created_at\":\"2025-10-11 17:27:42\",\"user_id\":1}]'),
+(126, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'User #1 resubmitted 4 documents for SRID-2025-20251011-4', '2025-10-11 10:09:03', 1, 'resubmission', 4, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760176824_73db9a44.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 18:00:24\",\"user_id\":1},{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760176970_df8a1772.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 18:02:50\",\"user_id\":1},{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760177343_9f446698.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 18:09:03\",\"user_id\":1},{\"doc_type\":\"full_manuscript\",\"file_name\":\"full_manuscript_1760177343_c78e36e5.pdf\",\"file_size\":1822,\"created_at\":\"2025-10-11 18:09:03\",\"user_id\":1}]'),
+(127, 129, 'SRID-2025-20251010-10', 1, 'approval_sheet', 'User #1 resubmitted 1 document for SRID-2025-20251010-10', '2025-10-11 10:08:44', 1, 'resubmission', 1, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760177324_8c701cf6.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 18:08:44\",\"user_id\":1}]'),
+(128, 133, 'SRID-2025-20251011-4', 1, 'receipt_payment', 'User #1 resubmitted 2 documents for SRID-2025-20251011-4', '2025-10-11 10:23:24', 1, 'resubmission', 2, '[{\"doc_type\":\"receipt_payment\",\"file_name\":\"receipt_payment_1760178131_94d23a01.pdf\",\"file_size\":1821,\"created_at\":\"2025-10-11 18:22:11\",\"user_id\":1},{\"doc_type\":\"notarized_coauthorship\",\"file_name\":\"notarized_coauthorship_1760178204_d3fe3dab.pdf\",\"file_size\":1841,\"created_at\":\"2025-10-11 18:23:24\",\"user_id\":1}]'),
+(129, 129, 'SRID-2025-20251010-10', 1, 'approval_sheet', 'User #1 resubmitted 1 document for SRID-2025-20251010-10', '2025-10-11 10:25:24', 1, 'resubmission', 1, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760178324_2b7dba29.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 18:25:24\",\"user_id\":1}]'),
+(130, 133, 'SRID-2025-20251011-4', 1, 'notarized_copyright', 'User #1 resubmitted 1 document for SRID-2025-20251011-4', '2025-10-11 10:40:44', 1, 'resubmission', 1, '[{\"doc_type\":\"notarized_copyright\",\"file_name\":\"notarized_copyright_1760179244_c163b950.pdf\",\"file_size\":1841,\"created_at\":\"2025-10-11 18:40:44\",\"user_id\":1}]'),
+(131, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'User #1 resubmitted 6 documents for SRID-2025-20251011-4', '2025-10-11 11:33:25', 1, 'resubmission', 6, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760180819_3e10043b.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 19:06:59\",\"user_id\":1},{\"doc_type\":\"notarized_coauthorship\",\"file_name\":\"notarized_coauthorship_1760181249_89489ba7.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 19:14:09\",\"user_id\":1},{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760181609_673ae258.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 19:20:09\",\"user_id\":1},{\"doc_type\":\"full_manuscript\",\"file_name\":\"full_manuscript_1760181609_feff289d.pdf\",\"file_size\":1822,\"created_at\":\"2025-10-11 19:20:09\",\"user_id\":1},{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760182041_f12c1cbd.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 19:27:21\",\"user_id\":1},{\"doc_type\":\"journal_publication_format\",\"file_name\":\"journal_publication_format_1760182405_bd61025c.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 19:33:25\",\"user_id\":1}]'),
+(132, 133, 'SRID-2025-20251011-4', 1, 'receipt_payment', 'User #1 resubmitted 1 document for SRID-2025-20251011-4', '2025-10-11 12:20:02', 1, 'resubmission', 1, '[{\"doc_type\":\"receipt_payment\",\"file_name\":\"receipt_payment_1760185202_d35c9dd3.pdf\",\"file_size\":1821,\"created_at\":\"2025-10-11 20:20:02\",\"user_id\":1}]'),
+(133, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'User #1 resubmitted 1 document for SRID-2025-20251011-4', '2025-10-11 12:33:12', 1, 'resubmission', 1, '[{\"doc_type\":\"full_manuscript\",\"file_name\":\"full_manuscript_1760185992_51b270fe.pdf\",\"file_size\":1822,\"created_at\":\"2025-10-11 20:33:12\",\"user_id\":1}]'),
+(134, 133, 'SRID-2025-20251011-4', 1, 'journal_publication_format', 'User #1 resubmitted 1 document for SRID-2025-20251011-4', '2025-10-11 13:00:47', 1, 'resubmission', 1, '[{\"doc_type\":\"journal_publication_format\",\"file_name\":\"journal_publication_format_1760187647_b3fd7fae.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 21:00:47\",\"user_id\":1}]'),
+(135, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'User #1 resubmitted 4 documents for SRID-2025-20251011-4', '2025-10-11 13:21:59', 0, 'resubmission', 4, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760188360_86570608.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 21:12:40\",\"user_id\":1},{\"doc_type\":\"full_manuscript\",\"file_name\":\"full_manuscript_1760188360_8ad430d3.pdf\",\"file_size\":1822,\"created_at\":\"2025-10-11 21:12:40\",\"user_id\":1},{\"doc_type\":\"receipt_payment\",\"file_name\":\"receipt_payment_1760188649_0b358f6e.pdf\",\"file_size\":1821,\"created_at\":\"2025-10-11 21:17:29\",\"user_id\":1},{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760188919_61a1db00.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 21:21:59\",\"user_id\":1}]'),
+(136, 130, 'SRID-2025-20251011-1', 1, 'approval_sheet', 'User #1 resubmitted 1 document for SRID-2025-20251011-1', '2025-10-11 13:21:51', 0, 'resubmission', 1, '[{\"doc_type\":\"approval_sheet\",\"file_name\":\"approval_sheet_1760188911_fa1523a5.pdf\",\"file_size\":1831,\"created_at\":\"2025-10-11 21:21:51\",\"user_id\":1}]');
 
 -- --------------------------------------------------------
 
@@ -208,61 +206,6 @@ INSERT INTO `advisers` (`adviser_id`, `first_name`, `middle_name`, `last_name`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `campuses`
---
-
-CREATE TABLE `campuses` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `code` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `campuses`
---
-
-INSERT INTO `campuses` (`id`, `name`, `code`) VALUES
-(1, 'PUP Main (Sta. Mesa, Manila)', 'MAIN'),
-(7, 'test', 'test');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `colleges`
---
-
-CREATE TABLE `colleges` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `code` varchar(50) DEFAULT NULL,
-  `campus_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `colleges`
---
-
-INSERT INTO `colleges` (`id`, `name`, `code`, `campus_id`) VALUES
-(1, 'College of Accountancy and Finance (CAF)', 'CAF', 1),
-(2, 'College of Architecture, Design and the Built Environment (CADBE)', 'CADBE', 1),
-(3, 'College of Arts and Letters (CAL)', 'CAL', 1),
-(4, 'College of Business Administration (CBA)', 'CBA', 1),
-(5, 'College of Communication (COC)', 'COC', 1),
-(6, 'College of Computer and Information Sciences (CCIS)', 'CCIS', 1),
-(7, 'College of Education (COED)', 'COED', 1),
-(8, 'College of Engineering (CE)', 'CE', 1),
-(9, 'College of Human Kinetics (CHK)', 'CHK', 1),
-(10, 'College of Law (CL)', 'CL', 1),
-(11, 'College of Political Science and Public Administration (CPSPA)', 'CPSPA', 1),
-(12, 'College of Social Sciences and Development (CSSD)', 'CSSD', 1),
-(13, 'College of Science (CS)', 'CS', 1),
-(14, 'College of Tourism, Hospitality and Transportation Management (CTHTM)', 'CTHTM', 1),
-(15, 'Institute of Technology', 'ITech', 1),
-(31, 'TEST', 'TEST', NULL);
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `dashboard_summary`
 --
 
@@ -287,69 +230,7 @@ CREATE TABLE `dashboard_summary` (
 --
 
 INSERT INTO `dashboard_summary` (`id`, `last_updated`, `total_users`, `total_apps`, `pending_apps`, `approved_apps`, `completed_apps`, `overview_undergrad`, `overview_grad`, `overview_open`, `by_college_json`, `by_campus_json`, `work_class_json`) VALUES
-(1, '2025-10-11 15:44:39', 6, 80, 15, 15, 50, 41, 38, 1, '{\"labels\":[\"College of Education (COED)\",\"College of Computer and Information Sciences (CCIS)\",\"College of Social Sciences and Development (CSSD)\",\"College of Human Kinetics (CHK)\",\"College of Accountancy and Finance (CAF)\",\"College of Science (CS)\"],\"values\":[24,21,19,9,1,1]}', '{\"labels\":[\"PUP Main (Sta. Mesa, Manila)\"],\"values\":[80]}', '{\"labels\":[\"(b) Periodicals and newspaper\",\"(a) Books, Pamphlets, articles and other writings\",\"(n) Computer Programs\",\"(p) Sound recordings\",\"(m) Pictorial illustrations and advertisements\",\"(o) Other literary, scholarly, scientific and artistic works\",\"(q) Broadcast recordings\",\"(l) Audiovisual works and cinematographic works\",\"(k) Photographic works including works produced by a process analogous to photography\",\"(c) Lectures, sermons, addresses, dissertations for oral delivery\",\"Others\"],\"values\":[15,13,11,9,8,8,6,5,2,2,1]}');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `departments`
---
-
-CREATE TABLE `departments` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `code` varchar(50) DEFAULT NULL,
-  `college_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `departments`
---
-
-INSERT INTO `departments` (`id`, `name`, `code`, `college_id`) VALUES
-(1, 'Department of Accountancy', NULL, 1),
-(2, 'Department of Finance and Economics', NULL, 1),
-(3, 'Department of Management Accounting', NULL, 1),
-(4, 'Department of Computer Science', NULL, 6),
-(5, 'Department of Information Technology', NULL, 6),
-(6, 'Department of Civil Engineering', NULL, 8),
-(7, 'Department of Computer Engineering', NULL, 8),
-(8, 'Department of Electrical Engineering', NULL, 8),
-(9, 'Department of Electronics Engineering', NULL, 8),
-(10, 'Department of Industrial Engineering', NULL, 8),
-(11, 'Department of Mechanical Engineering', NULL, 8),
-(12, 'Department of Railway Engineering', NULL, 8),
-(13, 'Department of Business Administration', NULL, 4),
-(14, 'Department of Entrepreneurship', NULL, 4),
-(15, 'Department of Office Administration', NULL, 4);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `documents`
---
-
-CREATE TABLE `documents` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `code` varchar(50) DEFAULT NULL,
-  `role` varchar(20) NOT NULL DEFAULT 'both'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `documents`
---
-
-INSERT INTO `documents` (`id`, `name`, `code`, `role`) VALUES
-(1, 'Journal Publication Format', 'JPF', 'both'),
-(2, 'Notarized Copyright Application Form', 'NCAF', 'both'),
-(3, 'Receipt of Payment', 'RCPT', 'both'),
-(4, 'Full Manuscript', 'FMSS', 'student'),
-(5, 'Notarized Co-Authorship', 'NCAU', 'both'),
-(6, 'Approval Sheet (Thesis)', 'APRV', 'student'),
-(7, 'Record of Copyright Application', 'ROCA', 'both'),
-(8, 'Presentation', 'PRSN', 'employee'),
-(11, 'Heart', NULL, 'student');
+(1, '2025-10-11 18:13:27', 6, 80, 15, 15, 50, 41, 38, 1, '{\"labels\":[\"College of Education (COED)\",\"College of Computer and Information Sciences (CCIS)\",\"College of Social Sciences and Development (CSSD)\",\"College of Human Kinetics (CHK)\",\"College of Accountancy and Finance (CAF)\",\"College of Science (CS)\"],\"values\":[24,21,19,9,1,1]}', '{\"labels\":[\"PUP Main (Sta. Mesa, Manila)\"],\"values\":[80]}', '{\"labels\":[\"(b) Periodicals and newspaper\",\"(a) Books, Pamphlets, articles and other writings\",\"(n) Computer Programs\",\"(p) Sound recordings\",\"(m) Pictorial illustrations and advertisements\",\"(o) Other literary, scholarly, scientific and artistic works\",\"(q) Broadcast recordings\",\"(l) Audiovisual works and cinematographic works\",\"(k) Photographic works including works produced by a process analogous to photography\",\"(c) Lectures, sermons, addresses, dissertations for oral delivery\",\"Others\"],\"values\":[15,13,11,9,8,8,6,5,2,2,1]}');
 
 -- --------------------------------------------------------
 
@@ -381,237 +262,83 @@ CREATE TABLE `employee_profiles` (
 
 INSERT INTO `employee_profiles` (`profile_id`, `user_id`, `employee_number`, `last_name`, `first_name`, `middle_name`, `suffix`, `home_address`, `mobile_number`, `campus`, `academic_level`, `college`, `department`, `program`, `last_updated_at`) VALUES
 (1, 2, '12345', 'Lino', 'Mata', 'Bale', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234565', 'PUP Main (Sta. Mesa, Manila)', 'Not Studying', 'College of Social Sciences and Development (CSSD)', 'College Of Science', 'N/A', NULL),
-(2, 6, '54321', 'Inocentes', 'Raebv Lielmo', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manilaa', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Department of Information Technology', 'Bachelor of Science in Computer Science (BSCS)', '2025-10-11 02:17:57');
+(2, 6, '54321', 'Inocentes', 'Raebv Lielmo', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manilaa', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Department of Information Technology', 'Bachelor of Science in Computer Science (BSCS)', '2025-10-11 02:17:57'),
+(3, 17, '78901', 'Garcia', 'Mark', 'E.', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09054052007', 'PUP Main (Sta. Mesa, Manila)', 'Not Studying', 'College of Computer and Information Sciences (CCIS)', 'Department of Information Technology', 'N/A', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `programs`
+-- Table structure for table `resubmission_audit`
 --
 
-CREATE TABLE `programs` (
+CREATE TABLE `resubmission_audit` (
   `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `code` varchar(50) DEFAULT NULL,
-  `college_id` int(11) DEFAULT NULL
+  `submission_id` int(11) NOT NULL,
+  `submission_code` varchar(100) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `doc_type` varchar(100) NOT NULL,
+  `file_name` varchar(255) DEFAULT NULL,
+  `file_size` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `programs`
+-- Dumping data for table `resubmission_audit`
 --
 
-INSERT INTO `programs` (`id`, `name`, `code`, `college_id`) VALUES
-(1, 'Bachelor of Science in Accountancy (BSA)', 'BSA', 1),
-(2, 'Bachelor of Science in Business Administration Major in Financial Management (BSBAFM)', 'BSBAFM', 1),
-(3, 'Bachelor of Science in Management Accounting (BSMA)', 'BSMA', 1),
-(4, 'Bachelor of Science in Architecture (BS-ARCH)', 'BS-ARCH', 2),
-(5, 'Bachelor of Science in Interior Design (BSID)', 'BSID', 2),
-(6, 'Bachelor of Science in Environmental Planning (BSEP)', 'BSEP', 2),
-(7, 'Bachelor of Arts in English Language Studies (ABELS)', 'ABELS', 3),
-(8, 'Bachelor of Arts in Filipinology (ABF)', 'ABF', 3),
-(9, 'Bachelor of Arts in Literary and Cultural Studies (ABLCS)', 'ABLCS', 3),
-(10, 'Bachelor of Arts in Philosophy (AB-PHILO)', 'AB-PHILO', 3),
-(11, 'Bachelor of Performing Arts major in Theater Arts (BPEA)', 'BPEA', 3),
-(12, 'Doctor in Business Administration (DBA)', 'DBA', 4),
-(13, 'Master in Business Administration (MBA)', 'MBA', 4),
-(14, 'Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)', 'BSBAHRM', 4),
-(15, 'Bachelor of Science in Business Administration major in Marketing Management (BSBA-MM)', 'BSBA-MM', 4),
-(16, 'Bachelor of Science in Entrepreneurship (BSENTREP)', 'BSENTREP', 4),
-(17, 'Bachelor of Science in Office Administration (BSOA)', 'BSOA', 4),
-(18, 'Bachelor in Advertising and Public Relations (BADPR)', 'BADPR', 5),
-(19, 'Bachelor of Arts in Broadcasting (BA Broadcasting)', 'BA Broadcasting', 5),
-(20, 'Bachelor of Arts in Communication Research (BACR)', 'BACR', 5),
-(21, 'Bachelor of Arts in Journalism (BAJ)', 'BAJ', 5),
-(22, 'Bachelor of Science in Computer Science (BSCS)', 'BSCS', 6),
-(23, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', 6),
-(24, 'Doctor of Philsophy in Education Management (PhDEM)', 'PhDEM', 7),
-(25, 'Master of Arts in Education Management (MAEM)', 'MAEM', 7),
-(26, 'Master in Business Education (MBE)', 'MBE', 7),
-(27, 'Master in Library and Information Science (MLIS)', 'MLIS', 7),
-(28, 'Master of Arts in English Language Teaching (MAELT)', 'MAELT', 7),
-(29, 'Master of Arts in Education major in Mathematics Education (MAEd-ME)', 'MAEd-ME', 7),
-(30, 'Master of Arts in Physical Education and Sports (MAPES)', 'MAPES', 7),
-(31, 'Master of Arts in Education major in Teaching in the Challenged Areas (MAED-TCA)', 'MAED-TCA', 7),
-(32, 'Post-Baccalaureate Diploma in Education (PBDE)', 'PBDE', 7),
-(33, 'Bachelor of Technology and Livelihood Education - Home Economics (BTLEd)', 'BTLEd', 7),
-(34, 'Bachelor of Technology and Livelihood Education - Industrial Arts (BTLEd)', 'BTLEd', 7),
-(35, 'Bachelor of Technology and Livelihood Education - ICT (BTLEd)', 'BTLEd', 7),
-(36, 'Bachelor of Library and Information Science (BLIS)', 'BLIS', 7),
-(37, 'Bachelor of Secondary Education - English (BSEd)', 'BSEd', 7),
-(38, 'Bachelor of Secondary Education - Mathematics (BSEd)', 'BSEd', 7),
-(39, 'Bachelor of Secondary Education - Science (BSEd)', 'BSEd', 7),
-(40, 'Bachelor of Secondary Education - Filipino (BSEd)', 'BSEd', 7),
-(41, 'Bachelor of Secondary Education - Social Studies (BSEd)', 'BSEd', 7),
-(42, 'Bachelor of Elementary Education (BEEd)', 'BEEd', 7),
-(43, 'Bachelor of Early Childhood Education (BECEd)', 'BECEd', 7),
-(44, 'Bachelor of Science in Civil Engineering (BSCE)', 'BSCE', 8),
-(45, 'Bachelor of Science in Computer Engineering (BSCpE)', 'BSCpE', 8),
-(46, 'Bachelor of Science in Electrical Engineering (BSEE)', 'BSEE', 8),
-(47, 'Bachelor of Science in Electronics Engineering (BSECE)', 'BSECE', 8),
-(48, 'Bachelor of Science in Industrial Engineering (BSIE)', 'BSIE', 8),
-(49, 'Bachelor of Science in Mechanical Engineering (BSME)', 'BSME', 8),
-(50, 'Bachelor of Science in Railway Engineering (BSRE)', 'BSRE', 8),
-(51, 'Bachelor of Physical Education (BPE)', 'BPE', 9),
-(52, 'Bachelor of Science in Exercises and Sports (BSESS)', 'BSESS', 9),
-(53, 'Juris Doctor (JD)', 'JD', 10),
-(54, 'Doctor in Public Administration (DPA)', 'DPA', 11),
-(55, 'Master in Public Administration (MPA)', 'MPA', 11),
-(56, 'Bachelor of Arts in Political Science (BAPS)', 'BAPS', 11),
-(57, 'Bachelor of Arts in Political Economy (BAPE)', 'BAPE', 11),
-(58, 'Bachelor of Arts in International Studies (BAIS)', 'BAIS', 11),
-(59, 'Bachelor of Public Administration (BPA)', 'BPA', 11),
-(60, 'Bachelor of Arts in History (BAH)', 'BAH', 12),
-(61, 'Bachelor of Arts in Sociology (BAS)', 'BAS', 12),
-(62, 'Bachelor of Science in Cooperatives (BSC)', 'BSC', 12),
-(63, 'Bachelor of Science in Economics (BSE)', 'BSE', 12),
-(64, 'Bachelor of Science in Psychology (BSPSY)', 'BSPSY', 12),
-(65, 'Bachelor of Science Food Technology (BSFT)', 'BSFT', 13),
-(66, 'Bachelor of Science in Applied Mathematics (BSAPMATH)', 'BSAPMATH', 13),
-(67, 'Bachelor of Science in Biology (BSBIO)', 'BSBIO', 13),
-(68, 'Bachelor of Science in Chemistry (BSCHEM)', 'BSCHEM', 13),
-(69, 'Bachelor of Science in Mathematics (BSMATH)', 'BSMATH', 13),
-(70, 'Bachelor of Science in Nutrition and Dietetics (BSND)', 'BSND', 13),
-(71, 'Bachelor of Science in Physics (BSPHY)', 'BSPHY', 13),
-(72, 'Bachelor of Science in Statistics (BSSTAT)', 'BSSTAT', 13),
-(73, 'Bachelor of Science in Hospitality Management (BSHM)', 'BSHM', 14),
-(74, 'Bachelor of Science in Tourism Management (BSTM)', 'BSTM', 14),
-(75, 'Bachelor of Science in Transportation Management (BSTRM)', 'BSTRM', 14),
-(76, 'Diploma in Computer Engineering Technology (DCET)', 'DCET', 15),
-(77, 'Diploma in Electrical Engineering Technology (DEET)', 'DEET', 15),
-(78, 'Diploma in Electronics Engineering Technology (DECET)', 'DECET', 15),
-(79, 'Diploma in Information Communication Technology (DICT)', 'DICT', 15),
-(80, 'Diploma in Mechanical Engineering Technology (DMET)', 'DMET', 15),
-(81, 'Diploma in Office Management (DOMT)', 'DOMT', 15),
-(82, 'Master in Applied Statistics (MAS)', 'MAS', NULL),
-(83, 'Master in Business Administration (MBA)', 'MBA', NULL),
-(84, 'Master in Construction Management (MCM)', 'MCM', NULL),
-(85, 'Master in Educational Management (MEM)', 'MEM', NULL),
-(86, 'Master in Public Administration (MPA)', 'MPA', NULL),
-(87, 'Master of Arts in Communication (MAC)', 'MAC', NULL),
-(88, 'Master of Arts in English Language Studies (MAELS)', 'MAELS', NULL),
-(89, 'Master of Arts in History (MAH)', 'MAH', NULL),
-(90, 'Master of Arts in Filipino (MAF)', 'MAF', NULL),
-(91, 'Master of Arts in Psychology (MAP)', 'MAP', NULL),
-(92, 'Master of Arts in Technology Management (MATM)', 'MATM', NULL),
-(93, 'Master of Science in Biology (MSBio)', 'MSBio', NULL),
-(94, 'Master of Science in Civil Engineering (MSCE)', 'MSCE', NULL),
-(95, 'Master of Science in Computer Engineering (MSCpE)', 'MSCpE', NULL),
-(96, 'Master of Science in Computer Science (MSCS)', 'MSCS', NULL),
-(97, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
-(98, 'Master of Science in Information Technology (MSIT)', 'MSIT', NULL),
-(99, 'Master of Science in Mathematics (MSM)', 'MSM', NULL),
-(100, 'Doctor of Philosophy in Communication (PhD Com)', 'PhD Com', NULL),
-(101, 'Doctor of Philosophy in Economics (PhD Econ)', 'PhD Econ', NULL),
-(102, 'Doctor of Philosophy in English Language Studies (PhD ELS)', 'PhD ELS', NULL),
-(103, 'Doctor of Philosophy in Filipino (PhD Fil)', 'PhD Fil', NULL),
-(104, 'Doctor of Philosophy in Psychology (PhD Psy)', 'PhD Psy', NULL),
-(105, 'Doctor in Business Administration (DBA)', 'DBA', NULL),
-(106, 'Doctor in Engineering Management (D.Eng)', 'D.Eng', NULL),
-(107, 'Doctor of Philsophy in Education Management (PhDEM)', 'PhDEM', NULL),
-(108, 'Doctor in Public Administration (DPA)', 'DPA', NULL),
-(109, 'Master in Communication (MC)', 'MC', NULL),
-(110, 'Master in Business Administration (MBA)', 'MBA', NULL),
-(111, 'Master of Arts in Education Management (MAEM)', 'MAEM', NULL),
-(112, 'Master in Information Technology (MIT)', 'MIT', NULL),
-(113, 'Master in Public Administration (MPA)', 'MPA', NULL),
-(114, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
-(115, 'Post Baccalaureate Diploma in Information Technology (PBDIT)', 'PBDIT', NULL),
-(116, 'Bachelor of Science in Entrepreneurship (BSENTREP)', 'BSENTREP', NULL),
-(117, 'Bachelor of Arts in Broadcasting (BABR)', 'BABR', NULL),
-(118, 'Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)', 'BSBAHRM', NULL),
-(119, 'Bachelor of Science in Business Administration major in Marketing Management (BSBAMM)', 'BSBAMM', NULL),
-(120, 'Bachelor of Science in Office Administration (BSOA)', 'BSOA', NULL),
-(121, 'Bachelor of Science in Tourism Management (BSTM)', 'BSTM', NULL),
-(122, 'Bachelor of Public Administration (BPA)', 'BPA', NULL),
-(123, 'Bachelor of Science in Business Administration (BSBA)', 'BSBA', NULL),
-(124, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', NULL),
-(206, 'Master in Applied Statistics (MAS)', 'MAS', NULL),
-(207, 'Master in Business Administration (MBA)', 'MBA', NULL),
-(208, 'Master in Construction Management (MCM)', 'MCM', NULL),
-(209, 'Master in Educational Management (MEM)', 'MEM', NULL),
-(210, 'Master in Public Administration (MPA)', 'MPA', NULL),
-(211, 'Master of Arts in Communication (MAC)', 'MAC', NULL),
-(212, 'Master of Arts in English Language Studies (MAELS)', 'MAELS', NULL),
-(213, 'Master of Arts in History (MAH)', 'MAH', NULL),
-(214, 'Master of Arts in Filipino (MAF)', 'MAF', NULL),
-(215, 'Master of Arts in Psychology (MAP)', 'MAP', NULL),
-(216, 'Master of Arts in Technology Management (MATM)', 'MATM', NULL),
-(217, 'Master of Science in Biology (MSBio)', 'MSBio', NULL),
-(218, 'Master of Science in Civil Engineering (MSCE)', 'MSCE', NULL),
-(219, 'Master of Science in Computer Engineering (MSCpE)', 'MSCpE', NULL),
-(220, 'Master of Science in Computer Science (MSCS)', 'MSCS', NULL),
-(221, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
-(222, 'Master of Science in Information Technology (MSIT)', 'MSIT', NULL),
-(223, 'Master of Science in Mathematics (MSM)', 'MSM', NULL),
-(224, 'Doctor of Philosophy in Communication (PhD Com)', 'PhD Com', NULL),
-(225, 'Doctor of Philosophy in Economics (PhD Econ)', 'PhD Econ', NULL),
-(226, 'Doctor of Philosophy in English Language Studies (PhD ELS)', 'PhD ELS', NULL),
-(227, 'Doctor of Philosophy in Filipino (PhD Fil)', 'PhD Fil', NULL),
-(228, 'Doctor of Philosophy in Psychology (PhD Psy)', 'PhD Psy', NULL),
-(229, 'Doctor in Business Administration (DBA)', 'DBA', NULL),
-(230, 'Doctor in Engineering Management (D.Eng)', 'D.Eng', NULL),
-(231, 'Doctor of Philsophy in Education Management (PhDEM)', 'PhDEM', NULL),
-(232, 'Doctor in Public Administration (DPA)', 'DPA', NULL),
-(233, 'Master in Communication (MC)', 'MC', NULL),
-(234, 'Master in Business Administration (MBA)', 'MBA', NULL),
-(235, 'Master of Arts in Education Management (MAEM)', 'MAEM', NULL),
-(236, 'Master in Information Technology (MIT)', 'MIT', NULL),
-(237, 'Master in Public Administration (MPA)', 'MPA', NULL),
-(238, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
-(239, 'Post Baccalaureate Diploma in Information Technology (PBDIT)', 'PBDIT', NULL),
-(240, 'Bachelor of Science in Entrepreneurship (BSENTREP)', 'BSENTREP', NULL),
-(241, 'Bachelor of Arts in Broadcasting (BABR)', 'BABR', NULL),
-(242, 'Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)', 'BSBAHRM', NULL),
-(243, 'Bachelor of Science in Business Administration major in Marketing Management (BSBAMM)', 'BSBAMM', NULL),
-(244, 'Bachelor of Science in Office Administration (BSOA)', 'BSOA', NULL),
-(245, 'Bachelor of Science in Tourism Management (BSTM)', 'BSTM', NULL),
-(246, 'Bachelor of Public Administration (BPA)', 'BPA', NULL),
-(247, 'Bachelor of Science in Business Administration (BSBA)', 'BSBA', NULL),
-(248, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', NULL),
-(249, 'TEST', 'TEST', 31),
-(331, 'Master in Applied Statistics (MAS)', 'MAS', NULL),
-(332, 'Master in Business Administration (MBA)', 'MBA', NULL),
-(333, 'Master in Construction Management (MCM)', 'MCM', NULL),
-(334, 'Master in Educational Management (MEM)', 'MEM', NULL),
-(335, 'Master in Public Administration (MPA)', 'MPA', NULL),
-(336, 'Master of Arts in Communication (MAC)', 'MAC', NULL),
-(337, 'Master of Arts in English Language Studies (MAELS)', 'MAELS', NULL),
-(338, 'Master of Arts in History (MAH)', 'MAH', NULL),
-(339, 'Master of Arts in Filipino (MAF)', 'MAF', NULL),
-(340, 'Master of Arts in Psychology (MAP)', 'MAP', NULL),
-(341, 'Master of Arts in Technology Management (MATM)', 'MATM', NULL),
-(342, 'Master of Science in Biology (MSBio)', 'MSBio', NULL),
-(343, 'Master of Science in Civil Engineering (MSCE)', 'MSCE', NULL),
-(344, 'Master of Science in Computer Engineering (MSCpE)', 'MSCpE', NULL),
-(345, 'Master of Science in Computer Science (MSCS)', 'MSCS', NULL),
-(346, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
-(347, 'Master of Science in Information Technology (MSIT)', 'MSIT', NULL),
-(348, 'Master of Science in Mathematics (MSM)', 'MSM', NULL),
-(349, 'Doctor of Philosophy in Communication (PhD Com)', 'PhD Com', NULL),
-(350, 'Doctor of Philosophy in Economics (PhD Econ)', 'PhD Econ', NULL),
-(351, 'Doctor of Philosophy in English Language Studies (PhD ELS)', 'PhD ELS', NULL),
-(352, 'Doctor of Philosophy in Filipino (PhD Fil)', 'PhD Fil', NULL),
-(353, 'Doctor of Philosophy in Psychology (PhD Psy)', 'PhD Psy', NULL),
-(354, 'Doctor in Business Administration (DBA)', 'DBA', NULL),
-(355, 'Doctor in Engineering Management (D.Eng)', 'D.Eng', NULL),
-(356, 'Doctor of Philsophy in Education Management (PhDEM)', 'PhDEM', NULL),
-(357, 'Doctor in Public Administration (DPA)', 'DPA', NULL),
-(358, 'Master in Communication (MC)', 'MC', NULL),
-(359, 'Master in Business Administration (MBA)', 'MBA', NULL),
-(360, 'Master of Arts in Education Management (MAEM)', 'MAEM', NULL),
-(361, 'Master in Information Technology (MIT)', 'MIT', NULL),
-(362, 'Master in Public Administration (MPA)', 'MPA', NULL),
-(363, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
-(364, 'Post Baccalaureate Diploma in Information Technology (PBDIT)', 'PBDIT', NULL),
-(365, 'Bachelor of Science in Entrepreneurship (BSENTREP)', 'BSENTREP', NULL),
-(366, 'Bachelor of Arts in Broadcasting (BABR)', 'BABR', NULL),
-(367, 'Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)', 'BSBAHRM', NULL),
-(368, 'Bachelor of Science in Business Administration major in Marketing Management (BSBAMM)', 'BSBAMM', NULL),
-(369, 'Bachelor of Science in Office Administration (BSOA)', 'BSOA', NULL),
-(370, 'Bachelor of Science in Tourism Management (BSTM)', 'BSTM', NULL),
-(371, 'Bachelor of Public Administration (BPA)', 'BPA', NULL),
-(372, 'Bachelor of Science in Business Administration (BSBA)', 'BSBA', NULL),
-(373, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', NULL);
+INSERT INTO `resubmission_audit` (`id`, `submission_id`, `submission_code`, `user_id`, `doc_type`, `file_name`, `file_size`, `created_at`) VALUES
+(1, 127, 'SRID-2025-20251010-8', 1, 'approval_sheet', 'approval_sheet_1760138738_b27ebd26.pdf', 1831, '2025-10-10 23:25:38'),
+(2, 127, 'SRID-2025-20251010-8', 1, 'full_manuscript', 'full_manuscript_1760138738_73d76f1d.pdf', 1822, '2025-10-10 23:25:38'),
+(3, 127, 'SRID-2025-20251010-8', 1, 'journal_publication_format', 'journal_publication_format_1760138738_8581021b.pdf', 1831, '2025-10-10 23:25:38'),
+(4, 127, 'SRID-2025-20251010-8', 1, 'notarized_coauthorship', 'notarized_coauthorship_1760138738_428dd8ce.pdf', 1831, '2025-10-10 23:25:38'),
+(5, 127, 'SRID-2025-20251010-8', 1, 'notarized_copyright', 'notarized_copyright_1760138738_13cc0575.pdf', 1841, '2025-10-10 23:25:38'),
+(6, 127, 'SRID-2025-20251010-8', 1, 'receipt_payment', 'receipt_payment_1760138738_6e2fdf03.pdf', 1821, '2025-10-10 23:25:38'),
+(7, 127, 'SRID-2025-20251010-8', 1, 'record_copyright', 'record_copyright_1760138738_dd57888e.pdf', 1835, '2025-10-10 23:25:38'),
+(8, 120, 'SRID-2025-20251010-1', 1, 'approval_sheet', 'approval_sheet_1760139620_95f34b3b.pdf', 1831, '2025-10-10 23:40:20'),
+(9, 120, 'SRID-2025-20251010-1', 1, 'approval_sheet', 'approval_sheet_1760139919_fd34323c.pdf', 1831, '2025-10-10 23:45:19'),
+(10, 120, 'SRID-2025-20251010-1', 1, 'full_manuscript', 'full_manuscript_1760139919_dc7b90b4.pdf', 1822, '2025-10-10 23:45:19'),
+(11, 120, 'SRID-2025-20251010-1', 1, 'journal_publication_format', 'journal_publication_format_1760139919_c4565410.pdf', 1831, '2025-10-10 23:45:19'),
+(12, 120, 'SRID-2025-20251010-1', 1, 'notarized_coauthorship', 'notarized_coauthorship_1760139919_e873effe.pdf', 1831, '2025-10-10 23:45:19'),
+(13, 120, 'SRID-2025-20251010-1', 1, 'approval_sheet', 'approval_sheet_1760140181_559b3586.pdf', 1831, '2025-10-10 23:49:41'),
+(14, 120, 'SRID-2025-20251010-1', 1, 'full_manuscript', 'full_manuscript_1760140181_13883821.pdf', 1822, '2025-10-10 23:49:41'),
+(15, 120, 'SRID-2025-20251010-1', 1, 'journal_publication_format', 'journal_publication_format_1760140181_2897acf1.pdf', 1831, '2025-10-10 23:49:41'),
+(16, 120, 'SRID-2025-20251010-1', 1, 'notarized_coauthorship', 'notarized_coauthorship_1760140181_cf7aab20.pdf', 1831, '2025-10-10 23:49:41'),
+(17, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760141263_b893be9c.pdf', 1831, '2025-10-11 00:07:43'),
+(18, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760141263_23fc5d0f.pdf', 1822, '2025-10-11 00:07:43'),
+(19, 133, 'SRID-2025-20251011-4', 1, 'journal_publication_format', 'journal_publication_format_1760141263_702187e9.pdf', 1831, '2025-10-11 00:07:43'),
+(20, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760144875_baebb91f.pdf', 1831, '2025-10-11 01:07:55'),
+(21, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760144875_cccbd8cd.pdf', 1822, '2025-10-11 01:07:55'),
+(22, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760147473_5d91836d.pdf', 1831, '2025-10-11 01:51:13'),
+(23, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760147473_35836073.pdf', 1822, '2025-10-11 01:51:13'),
+(24, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760173573_a1366a56.pdf', 1831, '2025-10-11 09:06:13'),
+(25, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760173573_30d338f5.pdf', 1822, '2025-10-11 09:06:13'),
+(26, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760174607_8411e8ad.pdf', 1831, '2025-10-11 09:23:27'),
+(27, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760174607_e96f2229.pdf', 1822, '2025-10-11 09:23:27'),
+(28, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760174862_182cb0a5.pdf', 1831, '2025-10-11 09:27:42'),
+(29, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760174862_dff25200.pdf', 1822, '2025-10-11 09:27:42'),
+(30, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760176824_73db9a44.pdf', 1831, '2025-10-11 10:00:24'),
+(31, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760176970_df8a1772.pdf', 1831, '2025-10-11 10:02:50'),
+(32, 129, 'SRID-2025-20251010-10', 1, 'approval_sheet', 'approval_sheet_1760177324_8c701cf6.pdf', 1831, '2025-10-11 10:08:44'),
+(33, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760177343_9f446698.pdf', 1831, '2025-10-11 10:09:03'),
+(34, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760177343_c78e36e5.pdf', 1822, '2025-10-11 10:09:03'),
+(35, 133, 'SRID-2025-20251011-4', 1, 'receipt_payment', 'receipt_payment_1760178131_94d23a01.pdf', 1821, '2025-10-11 10:22:11'),
+(36, 133, 'SRID-2025-20251011-4', 1, 'notarized_coauthorship', 'notarized_coauthorship_1760178204_d3fe3dab.pdf', 1841, '2025-10-11 10:23:24'),
+(37, 129, 'SRID-2025-20251010-10', 1, 'approval_sheet', 'approval_sheet_1760178324_2b7dba29.pdf', 1831, '2025-10-11 10:25:24'),
+(38, 133, 'SRID-2025-20251011-4', 1, 'notarized_copyright', 'notarized_copyright_1760179244_c163b950.pdf', 1841, '2025-10-11 10:40:44'),
+(39, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760180819_3e10043b.pdf', 1831, '2025-10-11 11:06:59'),
+(40, 133, 'SRID-2025-20251011-4', 1, 'notarized_coauthorship', 'notarized_coauthorship_1760181249_89489ba7.pdf', 1831, '2025-10-11 11:14:09'),
+(41, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760181609_673ae258.pdf', 1831, '2025-10-11 11:20:09'),
+(42, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760181609_feff289d.pdf', 1822, '2025-10-11 11:20:09'),
+(43, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760182041_f12c1cbd.pdf', 1831, '2025-10-11 11:27:21'),
+(44, 133, 'SRID-2025-20251011-4', 1, 'journal_publication_format', 'journal_publication_format_1760182405_bd61025c.pdf', 1831, '2025-10-11 11:33:25'),
+(45, 133, 'SRID-2025-20251011-4', 1, 'receipt_payment', 'receipt_payment_1760185202_d35c9dd3.pdf', 1821, '2025-10-11 12:20:02'),
+(46, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760185992_51b270fe.pdf', 1822, '2025-10-11 12:33:12'),
+(47, 133, 'SRID-2025-20251011-4', 1, 'journal_publication_format', 'journal_publication_format_1760187647_b3fd7fae.pdf', 1831, '2025-10-11 13:00:47'),
+(48, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760188360_86570608.pdf', 1831, '2025-10-11 13:12:40'),
+(49, 133, 'SRID-2025-20251011-4', 1, 'full_manuscript', 'full_manuscript_1760188360_8ad430d3.pdf', 1822, '2025-10-11 13:12:40'),
+(50, 133, 'SRID-2025-20251011-4', 1, 'receipt_payment', 'receipt_payment_1760188649_0b358f6e.pdf', 1821, '2025-10-11 13:17:29'),
+(51, 130, 'SRID-2025-20251011-1', 1, 'approval_sheet', 'approval_sheet_1760188911_fa1523a5.pdf', 1831, '2025-10-11 13:21:51'),
+(52, 133, 'SRID-2025-20251011-4', 1, 'approval_sheet', 'approval_sheet_1760188919_61a1db00.pdf', 1831, '2025-10-11 13:21:59');
 
 -- --------------------------------------------------------
 
@@ -644,8 +371,8 @@ CREATE TABLE `student_profiles` (
 INSERT INTO `student_profiles` (`profile_id`, `user_id`, `student_number`, `last_name`, `first_name`, `middle_name`, `suffix`, `home_address`, `mobile_number`, `campus`, `academic_level`, `college`, `department`, `program`, `last_updated_at`) VALUES
 (16, 1, '2025-12346-MN-0', 'Minamo', 'Marisa', 'Mliinaw', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', '', 'Bachelor of Secondary Education - English (BSEd)', '2025-10-08 15:03:38'),
 (17, 5, '2022-00880-MN-0', 'Inocentes', 'Raebv Lielmo', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Architecture, Design and the Built Environment (CADBE)', '', 'Bachelor of Science in Interior Design (BSID)', '2025-10-11 00:49:12'),
-(25, 14, '2022-99999-MN-0', 'Cruz', 'Boa', 'Dela', '', '4334A V. Francisco St.', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Tourism, Hospitality and Transportation Management (CTHTM)', '', 'Please select a college first', '2025-10-11 01:05:00'),
-(30, 19, '2022-09091-MN-0', 'Inoasas', 'Rahae', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', '', 'Bachelor Of Science In Applied Mathematics (bsapmath)', NULL);
+(18, 7, '2022-08379-MN-0', 'Cruz', 'Juan', 'Dela', '', '4334A V. Francisco St.', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Accountancy and Finance (CAF)', '', 'Bachelor Of Science In Accountancy (bsa)', NULL),
+(25, 14, '2022-99999-MN-0', 'Cruz', 'Boa', 'Dela', '', '4334A V. Francisco St.', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Tourism, Hospitality and Transportation Management (CTHTM)', '', 'Please select a college first', '2025-10-11 01:05:00');
 
 -- --------------------------------------------------------
 
@@ -756,22 +483,20 @@ INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first
 (117, 'ERID-2025-20251009-20', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(n) Computer Programs', 'test', '2025-10-09', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-09 23:40:06', '2025-10-09 23:40:06', NULL, NULL, 45),
 (118, 'ERID-2025-20251009-21', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(l) Audiovisual works and cinematographic works', 'test2', '2025-10-09', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-09 23:45:56', '2025-10-09 23:45:56', NULL, NULL, 46),
 (119, 'ERID-2025-20251009-22', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(m) Pictorial illustrations and advertisements', 'testtttt', '2025-10-08', 1, 'completed', '2025-10-09 23:51:39', NULL, 1, 1, 'copyright', '2025-10-09 23:51:18', '2025-10-09 23:51:39', 3, '2025-10-09 23:51:35', 23),
-(120, 'SRID-2025-20251010-1', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(m) Pictorial illustrations and advertisements', 'a', '2025-10-10', 1, 'pending', '2025-10-10 21:01:45', 'For Evaluation', 1, 1, 'copyright', '2025-10-10 14:20:12', '2025-10-10 21:01:45', NULL, NULL, 25),
+(120, 'SRID-2025-20251010-1', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(m) Pictorial illustrations and advertisements', 'a', '2025-10-10', 1, 'pending_review', '2025-10-11 07:49:22', 'For Evaluation', 1, 1, 'copyright', '2025-10-10 14:20:12', '2025-10-11 07:49:41', NULL, NULL, 25),
 (121, 'SRID-2025-20251010-2', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(n) Computer Programs', 'tes', '2025-10-10', 1, 'approved', '2025-10-10 17:16:07', 'for evaluation', 1, 1, 'copyright', '2025-10-10 14:27:33', '2025-10-10 17:16:07', NULL, '2025-10-10 17:16:07', 25),
 (122, 'SRID-2025-20251010-3', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(i) Illustrations maps, plans, sketches, charts and three-dimensional works', 'a', '2025-10-10', 1, 'completed', '2025-10-10 17:04:44', NULL, 1, 1, 'copyright', '2025-10-10 14:55:15', '2025-10-10 17:04:44', 3, '2025-10-10 17:04:40', 25),
 (123, 'SRID-2025-20251010-4', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(q) Broadcast recordings', 'Alice\'s Adventures in Wonderland and Through the Looking-Glass or The Book of Going Forth by Day', '2025-10-10', 1, 'completed', '2025-10-10 18:01:46', 'GOGOGo', 1, 1, 'copyright', '2025-10-10 17:33:42', '2025-10-10 18:01:46', 3, '2025-10-10 17:55:25', 47),
 (124, 'SRID-2025-20251010-5', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(l) Audiovisual works and cinematographic works', 'test', '2025-10-10', 1, 'completed', '2025-10-10 18:14:01', NULL, 1, 1, 'copyright', '2025-10-10 17:39:44', '2025-10-10 18:14:01', 2, '2025-10-10 18:13:57', 48),
 (125, 'SRID-2025-20251010-6', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(b) Periodicals and newspaper', 'tes', '2025-10-10', 1, 'approved', '2025-10-10 21:00:01', 'test', 1, 1, 'copyright', '2025-10-10 20:21:42', '2025-10-10 21:00:01', NULL, '2025-10-10 21:00:01', 49),
 (126, 'ERID-2025-20251010-7', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(n) Computer Programs', 'te', '2025-10-10', 1, 'pending', '2025-10-10 21:00:57', 'For Evaluation', 1, 1, 'copyright', '2025-10-10 20:34:52', '2025-10-10 21:00:57', NULL, NULL, 44),
-(127, 'SRID-2025-20251010-8', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(m) Pictorial illustrations and advertisements', 'te', '2025-10-10', 1, 'pending', '2025-10-10 21:03:05', 'For Evaluation', 1, 1, 'copyright', '2025-10-10 21:02:49', '2025-10-10 21:03:05', NULL, NULL, 50),
+(127, 'SRID-2025-20251010-8', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(m) Pictorial illustrations and advertisements', 'te', '2025-10-10', 1, 'pending_review', '2025-10-10 21:03:05', 'For Evaluation', 1, 1, 'copyright', '2025-10-10 21:02:49', '2025-10-11 07:25:38', NULL, NULL, 50),
 (128, 'ERID-2025-20251010-9', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(q) Broadcast recordings', 't', '2025-10-10', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-10 21:04:10', '2025-10-10 21:04:10', NULL, NULL, 50),
-(129, 'SRID-2025-20251010-10', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(o) Other literary, scholarly, scientific and artistic works', 'test', '2025-10-10', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-10 23:50:38', '2025-10-10 23:50:38', NULL, NULL, 23),
-(130, 'SRID-2025-20251011-1', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(a) Books, Pamphlets, articles and other writings', 'as', '2025-10-10', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:00:35', '2025-10-11 00:00:35', NULL, NULL, 51),
+(129, 'SRID-2025-20251010-10', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(o) Other literary, scholarly, scientific and artistic works', 'test', '2025-10-10', 1, 'approved', '2025-10-11 19:19:16', 'Needs Attention', 1, 1, 'copyright', '2025-10-10 23:50:38', '2025-10-11 19:19:16', NULL, '2025-10-11 19:16:27', 23),
+(130, 'SRID-2025-20251011-1', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(a) Books, Pamphlets, articles and other writings', 'as', '2025-10-10', 1, 'pending_review', '2025-10-11 21:21:22', 'For Evaluation', 1, 1, 'copyright', '2025-10-11 00:00:35', '2025-10-11 21:21:51', NULL, NULL, 51),
 (131, 'ERID-2025-20251011-2', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(o) Other literary, scholarly, scientific and artistic works', ',you', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:02:07', '2025-10-11 00:02:07', NULL, NULL, 45),
 (132, 'ERID-2025-20251011-3', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(o) Other literary, scholarly, scientific and artistic works', 'asdasd', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:22:32', '2025-10-11 00:22:32', NULL, NULL, 55),
-(133, 'SRID-2025-20251011-4', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(o) Other literary, scholarly, scientific and artistic works', 'testtttt', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:27:03', '2025-10-11 00:27:03', NULL, NULL, 56),
-(134, 'SRID-2025-20251011-5', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(q) Broadcast recordings', 'test', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 18:56:56', '2025-10-11 18:56:56', NULL, NULL, 50),
-(135, 'SRID-2025-20251011-6', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(b) Periodicals and newspaper', 'test2', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 18:58:38', '2025-10-11 18:58:38', NULL, NULL, 25);
+(133, 'SRID-2025-20251011-4', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(o) Other literary, scholarly, scientific and artistic works', 'testtttt', '2025-10-11', 1, 'pending', '2025-10-11 21:22:09', 'For Evaluation', 1, 1, 'copyright', '2025-10-11 00:27:03', '2025-10-11 21:22:09', NULL, NULL, 56);
 
 -- --------------------------------------------------------
 
@@ -869,9 +594,7 @@ INSERT INTO `submission_authors` (`author_id`, `submission_id`, `first_name`, `m
 (67, 132, 'Tseess', '', '', '', '', '', '', 'Author', 1, '2025-10-11 00:22:32', NULL),
 (68, 132, 'Steset', '', '', '12312', '09892029499', '', 'asdas@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-11 00:22:32', NULL),
 (69, 133, 'Tesssdsd', '', '', '', '', '', '', 'Author', 1, '2025-10-11 00:27:03', NULL),
-(70, 133, 'Sdfsdfsd', '', '', '2022-08290-MN-0', '09892029999', '', 'fasdaselas@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-11 00:27:03', NULL),
-(71, 134, 'Tes', '', '', '', '', '', '', 'Author', 1, '2025-10-11 18:56:56', NULL),
-(72, 135, 'A', '', '', '', '', '', '', 'Author', 1, '2025-10-11 18:58:38', NULL);
+(70, 133, 'Sdfsdfsd', '', '', '2022-08290-MN-0', '09892029999', '', 'fasdaselas@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-11 00:27:03', NULL);
 
 -- --------------------------------------------------------
 
@@ -1329,12 +1052,12 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (429, 119, 'presentation', 'presentation_1760025078_ccc80550.pdf', '2025-10-09 23:51:18', 1831, 'application/pdf', 0, NULL, NULL),
 (430, 119, 'notarized_coauthorship', 'notarized_coauthorship_1760025078_604252da.pdf', '2025-10-09 23:51:18', 1831, 'application/pdf', 0, NULL, NULL),
 (431, 119, 'record_copyright', 'record_copyright_1760025078_b741ed45.pdf', '2025-10-09 23:51:18', 1831, 'application/pdf', 0, NULL, NULL),
-(432, 120, 'journal_publication_format', 'journal_publication_format_1760077212_3d32f4dd.pdf', '2025-10-10 14:20:12', 1831, 'application/pdf', 0, NULL, NULL),
+(432, 120, 'journal_publication_format', 'journal_publication_format_1760140181_2897acf1.pdf', '2025-10-11 07:49:41', 1831, 'application/pdf', 0, NULL, NULL),
 (433, 120, 'notarized_copyright', 'notarized_copyright_1760077212_6548b3bb.pdf', '2025-10-10 14:20:12', 1821, 'application/pdf', 0, NULL, NULL),
 (434, 120, 'receipt_payment', 'receipt_payment_1760077212_c58b90c7.pdf', '2025-10-10 14:20:12', 1822, 'application/pdf', 0, NULL, NULL),
-(435, 120, 'full_manuscript', 'full_manuscript_1760077212_5d2657a2.pdf', '2025-10-10 14:20:12', 1831, 'application/pdf', 0, NULL, NULL),
-(436, 120, 'notarized_coauthorship', 'notarized_coauthorship_1760077212_5973e440.pdf', '2025-10-10 14:20:12', 1822, 'application/pdf', 0, NULL, NULL),
-(437, 120, 'approval_sheet', 'approval_sheet_1760077212_e87bfbd3.pdf', '2025-10-10 14:20:12', 1831, 'application/pdf', 0, NULL, NULL),
+(435, 120, 'full_manuscript', 'full_manuscript_1760140181_13883821.pdf', '2025-10-11 07:49:41', 1822, 'application/pdf', 0, NULL, NULL),
+(436, 120, 'notarized_coauthorship', 'notarized_coauthorship_1760140181_cf7aab20.pdf', '2025-10-11 07:49:41', 1831, 'application/pdf', 0, NULL, NULL),
+(437, 120, 'approval_sheet', 'approval_sheet_1760140181_559b3586.pdf', '2025-10-11 07:49:41', 1831, 'application/pdf', 0, NULL, NULL),
 (438, 120, 'record_copyright', 'record_copyright_1760077212_33d6076d.pdf', '2025-10-10 14:20:12', 1835, 'application/pdf', 0, NULL, NULL),
 (439, 121, 'journal_publication_format', 'journal_publication_format_1760077653_ed96d1e9.pdf', '2025-10-10 14:27:33', 1821, 'application/pdf', 0, NULL, NULL),
 (440, 121, 'notarized_copyright', 'notarized_copyright_1760077653_8a5f9e91.pdf', '2025-10-10 14:27:33', 1831, 'application/pdf', 0, NULL, NULL),
@@ -1377,13 +1100,13 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (477, 126, 'presentation', 'presentation_20251010_203452_6941726b.pdf', '2025-10-10 20:34:53', 41341591, 'application/pdf', 0, NULL, NULL),
 (478, 126, 'record_copyright', 'record_copyright_20251010_203452_9c7b790b.pdf', '2025-10-10 20:34:53', 41341591, 'application/pdf', 0, NULL, NULL),
 (479, 126, 'notarized_coauthorship', 'notarized_coauthorship_20251010_203452_515a6b57.pdf', '2025-10-10 20:34:53', 41341591, 'application/pdf', 0, NULL, NULL),
-(480, 127, 'journal_publication_format', 'journal_publication_format_20251010_210248_3a63a83c.pdf', '2025-10-10 21:02:49', 12567220, 'application/pdf', 0, NULL, NULL),
-(481, 127, 'notarized_copyright', 'notarized_copyright_20251010_210248_b93cce3f.pdf', '2025-10-10 21:02:49', 12567220, 'application/pdf', 0, NULL, NULL),
-(482, 127, 'receipt_payment', 'receipt_payment_20251010_210248_cc85c187.pdf', '2025-10-10 21:02:49', 12567220, 'application/pdf', 0, NULL, NULL),
-(483, 127, 'full_manuscript', 'full_manuscript_20251010_210249_fbdff8b7.pdf', '2025-10-10 21:02:49', 41341591, 'application/pdf', 0, NULL, NULL),
-(484, 127, 'notarized_coauthorship', 'notarized_coauthorship_20251010_210249_5281c010.pdf', '2025-10-10 21:02:49', 41341591, 'application/pdf', 0, NULL, NULL),
-(485, 127, 'approval_sheet', 'approval_sheet_20251010_210249_9fd3b749.pdf', '2025-10-10 21:02:49', 41341591, 'application/pdf', 0, NULL, NULL),
-(486, 127, 'record_copyright', 'record_copyright_20251010_210249_00871d54.pdf', '2025-10-10 21:02:49', 41341591, 'application/pdf', 0, NULL, NULL),
+(480, 127, 'journal_publication_format', 'journal_publication_format_1760138738_8581021b.pdf', '2025-10-11 07:25:38', 1831, 'application/pdf', 0, NULL, NULL),
+(481, 127, 'notarized_copyright', 'notarized_copyright_1760138738_13cc0575.pdf', '2025-10-11 07:25:38', 1841, 'application/pdf', 0, NULL, NULL),
+(482, 127, 'receipt_payment', 'receipt_payment_1760138738_6e2fdf03.pdf', '2025-10-11 07:25:38', 1821, 'application/pdf', 0, NULL, NULL),
+(483, 127, 'full_manuscript', 'full_manuscript_1760138738_73d76f1d.pdf', '2025-10-11 07:25:38', 1822, 'application/pdf', 0, NULL, NULL),
+(484, 127, 'notarized_coauthorship', 'notarized_coauthorship_1760138738_428dd8ce.pdf', '2025-10-11 07:25:38', 1831, 'application/pdf', 0, NULL, NULL),
+(485, 127, 'approval_sheet', 'approval_sheet_1760138738_b27ebd26.pdf', '2025-10-11 07:25:38', 1831, 'application/pdf', 0, NULL, NULL),
+(486, 127, 'record_copyright', 'record_copyright_1760138738_dd57888e.pdf', '2025-10-11 07:25:38', 1835, 'application/pdf', 0, NULL, NULL),
 (487, 128, 'journal_publication_format', 'journal_publication_format_20251010_210409_84f50583.pdf', '2025-10-10 21:04:10', 12567220, 'application/pdf', 0, NULL, NULL),
 (488, 128, 'notarized_copyright', 'notarized_copyright_20251010_210409_f5be56a0.pdf', '2025-10-10 21:04:10', 12567220, 'application/pdf', 0, NULL, NULL),
 (489, 128, 'receipt_payment', 'receipt_payment_20251010_210409_6a3ade20.pdf', '2025-10-10 21:04:10', 12567220, 'application/pdf', 0, NULL, NULL),
@@ -1395,14 +1118,14 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (495, 129, 'receipt_payment', 'receipt_payment_20251010_235037_ece3aa03.pdf', '2025-10-10 23:50:38', 41341591, 'application/pdf', 0, NULL, NULL),
 (496, 129, 'full_manuscript', 'full_manuscript_20251010_235037_25bcb7fd.pdf', '2025-10-10 23:50:38', 41341591, 'application/pdf', 0, NULL, NULL),
 (497, 129, 'notarized_coauthorship', 'notarized_coauthorship_20251010_235037_e9699d6e.pdf', '2025-10-10 23:50:38', 41341591, 'application/pdf', 0, NULL, NULL),
-(498, 129, 'approval_sheet', 'approval_sheet_20251010_235037_2366546c.pdf', '2025-10-10 23:50:38', 41341591, 'application/pdf', 0, NULL, NULL),
+(498, 129, 'approval_sheet', 'approval_sheet_1760178324_2b7dba29.pdf', '2025-10-11 18:25:24', 1831, 'application/pdf', 0, NULL, NULL),
 (499, 129, 'record_copyright', 'record_copyright_20251010_235038_e91589d3.pdf', '2025-10-10 23:50:38', 41341591, 'application/pdf', 0, NULL, NULL),
 (500, 130, 'journal_publication_format', 'journal_publication_format_20251011_000034_7bbaba72.pdf', '2025-10-11 00:00:35', 12567220, 'application/pdf', 0, NULL, NULL),
 (501, 130, 'notarized_copyright', 'notarized_copyright_20251011_000035_f3c98af7.pdf', '2025-10-11 00:00:35', 41341591, 'application/pdf', 0, NULL, NULL),
 (502, 130, 'receipt_payment', 'receipt_payment_20251011_000035_06cddc3c.pdf', '2025-10-11 00:00:35', 12567220, 'application/pdf', 0, NULL, NULL),
 (503, 130, 'full_manuscript', 'full_manuscript_20251011_000035_59903ddf.pdf', '2025-10-11 00:00:35', 12567220, 'application/pdf', 0, NULL, NULL),
 (504, 130, 'notarized_coauthorship', 'notarized_coauthorship_20251011_000035_7a112cd4.pdf', '2025-10-11 00:00:35', 12567220, 'application/pdf', 0, NULL, NULL),
-(505, 130, 'approval_sheet', 'approval_sheet_20251011_000035_7ee95ba5.pdf', '2025-10-11 00:00:35', 12567220, 'application/pdf', 0, NULL, NULL),
+(505, 130, 'approval_sheet', 'approval_sheet_1760188911_fa1523a5.pdf', '2025-10-11 21:21:51', 1831, 'application/pdf', 0, NULL, NULL),
 (506, 130, 'record_copyright', 'record_copyright_20251011_000035_49e815db.pdf', '2025-10-11 00:00:35', 12567220, 'application/pdf', 0, NULL, NULL),
 (507, 131, 'journal_publication_format', 'journal_publication_format_20251011_000206_1c42b40c.pdf', '2025-10-11 00:02:07', 12567220, 'application/pdf', 0, NULL, NULL),
 (508, 131, 'notarized_copyright', 'notarized_copyright_20251011_000206_9db3d9c7.pdf', '2025-10-11 00:02:07', 12567220, 'application/pdf', 0, NULL, NULL),
@@ -1416,29 +1139,13 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (516, 132, 'presentation', 'presentation_20251011_002231_feed1982.pdf', '2025-10-11 00:22:32', 12567220, 'application/pdf', 0, NULL, NULL),
 (517, 132, 'record_copyright', 'record_copyright_20251011_002232_356d93c8.pdf', '2025-10-11 00:22:32', 12567220, 'application/pdf', 0, NULL, NULL),
 (518, 132, 'notarized_coauthorship', 'notarized_coauthorship_20251011_002232_2287fa42.pdf', '2025-10-11 00:22:32', 12567220, 'application/pdf', 0, NULL, NULL),
-(519, 133, 'journal_publication_format', 'journal_publication_format_20251011_002703_69bc15f9.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
-(520, 133, 'notarized_copyright', 'notarized_copyright_20251011_002703_ebdbbe90.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
-(521, 133, 'receipt_payment', 'receipt_payment_20251011_002703_0b0ece9a.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
-(522, 133, 'full_manuscript', 'full_manuscript_20251011_002703_f6b943e3.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
-(523, 133, 'notarized_coauthorship', 'notarized_coauthorship_20251011_002703_fad68af3.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
-(524, 133, 'approval_sheet', 'approval_sheet_20251011_002703_cec3b7fd.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
-(525, 133, 'record_copyright', 'record_copyright_20251011_002703_7db42b87.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
-(526, 134, 'approval_sheet_thesis', 'approval_sheet_thesis_20251011_185656_f2a19c54.pdf', '2025-10-11 18:56:56', 1822, 'application/pdf', 0, NULL, NULL),
-(527, 134, 'full_manuscript', 'full_manuscript_20251011_185656_ef4c9b1c.pdf', '2025-10-11 18:56:56', 177279, 'application/pdf', 0, NULL, NULL),
-(528, 134, 'heart', 'heart_20251011_185656_5da1ff07.pdf', '2025-10-11 18:56:56', 1822, 'application/pdf', 0, NULL, NULL),
-(529, 134, 'journal_publication_format', 'journal_publication_format_20251011_185656_f227fb2b.pdf', '2025-10-11 18:56:56', 1822, 'application/pdf', 0, NULL, NULL),
-(530, 134, 'notarized_co_authorship', 'notarized_co_authorship_20251011_185656_cf1ee9ef.pdf', '2025-10-11 18:56:56', 177280, 'application/pdf', 0, NULL, NULL),
-(531, 134, 'notarized_copyright_application_form', 'notarized_copyright_application_form_20251011_185656_f6c32fc8.pdf', '2025-10-11 18:56:56', 177280, 'application/pdf', 0, NULL, NULL),
-(532, 134, 'receipt_of_payment', 'receipt_of_payment_20251011_185656_c4689141.pdf', '2025-10-11 18:56:56', 1822, 'application/pdf', 0, NULL, NULL),
-(533, 134, 'record_of_copyright_application', 'record_of_copyright_application_20251011_185656_2cff4f9b.pdf', '2025-10-11 18:56:56', 177279, 'application/pdf', 0, NULL, NULL),
-(534, 135, 'approval_sheet_thesis', 'approval_sheet_thesis_20251011_185838_4d5482c2.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
-(535, 135, 'full_manuscript', 'full_manuscript_20251011_185838_ff948354.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
-(536, 135, 'heart', 'heart_20251011_185838_f9d713ef.pdf', '2025-10-11 18:58:38', 41341591, 'application/pdf', 0, NULL, NULL),
-(537, 135, 'journal_publication_format', 'journal_publication_format_20251011_185838_ff150010.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
-(538, 135, 'notarized_co_authorship', 'notarized_co_authorship_20251011_185838_3d6c9561.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
-(539, 135, 'notarized_copyright_application_form', 'notarized_copyright_application_form_20251011_185838_eba1ab9c.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
-(540, 135, 'receipt_of_payment', 'receipt_of_payment_20251011_185838_adb0ea62.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
-(541, 135, 'record_of_copyright_application', 'record_of_copyright_application_20251011_185838_15a57081.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL);
+(519, 133, 'journal_publication_format', 'journal_publication_format_1760187647_b3fd7fae.pdf', '2025-10-11 21:00:47', 1831, 'application/pdf', 0, NULL, NULL),
+(520, 133, 'notarized_copyright', 'notarized_copyright_1760179244_c163b950.pdf', '2025-10-11 18:40:44', 1841, 'application/pdf', 0, NULL, NULL),
+(521, 133, 'receipt_payment', 'receipt_payment_1760188649_0b358f6e.pdf', '2025-10-11 21:17:29', 1821, 'application/pdf', 0, NULL, NULL),
+(522, 133, 'full_manuscript', 'full_manuscript_1760188360_8ad430d3.pdf', '2025-10-11 21:12:40', 1822, 'application/pdf', 0, NULL, NULL),
+(523, 133, 'notarized_coauthorship', 'notarized_coauthorship_1760181249_89489ba7.pdf', '2025-10-11 19:14:09', 1831, 'application/pdf', 0, NULL, NULL),
+(524, 133, 'approval_sheet', 'approval_sheet_1760188919_61a1db00.pdf', '2025-10-11 21:21:59', 1831, 'application/pdf', 0, NULL, NULL),
+(525, 133, 'record_copyright', 'record_copyright_20251011_002703_7db42b87.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1505,13 +1212,17 @@ INSERT INTO `submission_incomplete_meta` (`submission_id`, `scope`, `issue_label
 (109, 'approved', NULL, 'gio', NULL, '2025-10-09 22:12:53', '2025-10-09 22:12:53', NULL, 0),
 (110, 'pending', NULL, 'test', 'approval_sheet', '2025-10-09 22:12:16', '2025-10-09 22:12:16', NULL, 0),
 (110, 'approved', NULL, 'test', NULL, '2025-10-09 22:12:35', '2025-10-09 22:12:35', NULL, 0),
-(120, 'pending', 'Incorrect Document/Upload', 'test', 'approval_sheet', '2025-10-10 21:01:45', '2025-10-10 21:01:32', NULL, 0),
+(120, 'pending', 'Error in Document/Upload', NULL, '', '2025-10-11 07:49:41', '2025-10-10 21:01:32', NULL, 0),
 (122, 'pending', 'Incorrect Document/Upload', 'test', '', '2025-10-10 15:15:22', '2025-10-10 15:14:47', NULL, 0),
 (123, 'pending', NULL, 'test3', '', '2025-10-10 17:55:07', '2025-10-10 17:46:12', NULL, 0),
 (123, 'approved', NULL, 'test', 'approval_sheet|full_manuscript|journal_publication_format|notarized_coauthorship|notarized_copyright|receipt_payment|record_copyright', '2025-10-10 18:01:15', '2025-10-10 17:55:25', NULL, 0),
 (125, 'approved', NULL, 'test', NULL, '2025-10-10 21:00:01', '2025-10-10 21:00:01', NULL, 0),
 (126, 'pending', NULL, 'test', 'journal_publication_format', '2025-10-10 21:00:57', '2025-10-10 21:00:57', NULL, 0),
-(127, 'pending', 'Error in Document/Upload', 'test', 'approval_sheet|full_manuscript|journal_publication_format|notarized_coauthorship|notarized_copyright|receipt_payment|record_copyright', '2025-10-10 21:03:05', '2025-10-10 21:03:05', NULL, 0);
+(127, 'pending', 'Error in Document/Upload', 'test', '', '2025-10-11 07:25:38', '2025-10-10 21:03:05', NULL, 0),
+(129, 'pending', 'Error in Document/Upload', 'kulang', '', '2025-10-11 18:25:24', '2025-10-11 09:37:05', NULL, 0),
+(129, 'approved', NULL, NULL, 'approval_sheet', '2025-10-11 19:19:16', '2025-10-11 19:19:16', NULL, 0),
+(130, 'pending', NULL, NULL, '', '2025-10-11 21:21:51', '2025-10-11 21:21:22', NULL, 0),
+(133, 'pending', NULL, NULL, 'journal_publication_format', '2025-10-11 21:22:09', '2025-10-11 08:07:12', NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -1553,8 +1264,8 @@ CREATE TABLE `submission_notes_admin_views` (
 --
 
 INSERT INTO `submission_notes_admin_views` (`id`, `submission_id`, `admin_id`, `last_viewed_at`) VALUES
-(1, 58, 4, '2025-10-07 01:06:44'),
-(5, 86, 4, '2025-10-08 13:44:16');
+(1, 58, 4, '2025-10-11 17:19:44'),
+(5, 86, 4, '2025-10-11 17:19:42');
 
 -- --------------------------------------------------------
 
@@ -1614,25 +1325,63 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `email`, `password`, `role`, `status`, `verification_code`, `code_expires_at`, `email_verified_at`, `created_at`, `password_reset_token`, `token_expiry`) VALUES
-(1, 'aceplanetary0@gmail.com', '$2y$10$hhH/xfeUKvwPOTBNhk3IaO5Uk3vlOrAui2Hdq05.qcYI/1U.TANwi', 'student', 'active', NULL, NULL, '2025-10-06 03:36:13', '2025-10-06 03:35:45', NULL, NULL),
-(2, 'errorloading19990@gmail.com', '$2y$10$.N/AIAFQjEvxRcOgrd9nVOpMGt3tODrdZoPpsnJAYGHM.k/zsVbtK', 'employee', 'active', NULL, NULL, '2025-10-06 03:39:03', '2025-10-06 03:38:36', NULL, NULL),
+(1, 'aceplanetary0@gmail.com', '$2y$10$fquyx3HkPHTLLufrk7sW2OtJ.7/CUbUC6C/n1tpGP0uOoT57GT6wq', 'student', 'active', NULL, NULL, '2025-10-06 03:36:13', '2025-10-06 03:35:45', NULL, NULL),
+(2, 'errorloading19990@gmail.com', '$2y$10$qfTnzMS3c0hMXbNxec5KHecE7i7TxdtiXNYJuR4IsSMXRPzkD.16q', 'employee', 'active', NULL, NULL, '2025-10-06 03:39:03', '2025-10-06 03:38:36', NULL, NULL),
 (4, 'admin@ipmo.local', '$2y$10$FcSO4or9z9oUzIEIJW/87uNeKHnf9wrdWOdN2w6A/N6E.jHnK2owy', 'admin', 'active', NULL, NULL, '2025-10-06 03:55:43', '2025-10-06 03:55:43', NULL, NULL),
 (5, 'inocentesraebv@gmail.com', '$2y$12$MvO.41oeGZKRmqJc6lM8Ueppkcugyq4/0lvZKR5m3ETVlNRPlvx2a', 'student', 'active', '9481d21b6c60ec81', '2025-10-07 22:30:53', NULL, '2025-10-06 22:30:53', NULL, NULL),
 (6, 'thinkingwan00@gmail.com', '$2y$12$0y66PWURrNDe6JcjfLEKq./G20X66tAdMqJP3lC6LriVPAPfN4eAS', 'employee', 'active', 'd8b22737708b65f0', '2025-10-08 22:19:24', NULL, '2025-10-07 22:19:24', NULL, NULL),
 (7, 'nadaone@gmail.com', '$2y$12$WPx18A4KGzbFRi4CtTJOMuuFtRE.ULuCNxYgklx7VA4S0TUBPL8hS', 'student', 'pending', '5517b8c4d76fa2bf', '2025-10-08 22:41:29', NULL, '2025-10-07 22:41:29', NULL, NULL),
 (14, 'hellohihihi1234567890@gmail.com', '$2y$12$6.K2IbpZUjnJzyI3wzVihOb7mDlXiXwZ6tMRECzaXVmdZH9UjL54i', 'student', 'active', '1d501032ef650c70', '2025-10-08 23:58:05', NULL, '2025-10-07 23:58:05', NULL, NULL),
-(17, 'markreinier.garcia@gmail.com', '$2y$10$NllV37z8YA35Qcpy3e/OQuTmjnoGF5W/cnzS8LzJbyT0keJ2cMs5q', 'employee', 'active', NULL, NULL, '2025-10-11 04:01:04', '2025-10-11 04:00:50', '8a8fd8f5333963235eb8efaf34ec862618e140c37bdfbeaa415374664a905d6f', '2025-10-10 23:50:21');
+(17, 'markreinier.garcia@gmail.com', '$2y$10$hX2KZmrKJe3HQUKaFthhdOKW2RveycvSO/6/9WeX.7/nmje5d1LEG', 'employee', 'active', NULL, NULL, '2025-10-11 04:01:04', '2025-10-11 04:00:50', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_notifications`
+--
+
+CREATE TABLE `user_notifications` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `meta` text DEFAULT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `user_notifications`
+--
+
+INSERT INTO `user_notifications` (`id`, `user_id`, `title`, `message`, `meta`, `is_read`, `created_at`, `deleted_at`) VALUES
+(12, 1, 'Documents require resubmission', 'Your application SRID-2025-20251010-10 requires resubmission of: approval_sheet. Note: kulang', '{\"submission_id\":129,\"submission_code\":\"SRID-2025-20251010-10\",\"doc_types\":[\"approval_sheet\"]}', 1, '2025-10-11 10:24:15', '2025-10-11 19:49:23'),
+(13, 1, 'Documents require resubmission', 'Your application SRID-2025-20251011-4 requires resubmission of: approval_sheet.', '{\"submission_id\":133,\"submission_code\":\"SRID-2025-20251011-4\",\"doc_types\":[\"approval_sheet\"]}', 1, '2025-10-11 11:24:17', '2025-10-11 19:26:57'),
+(14, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 18:49:42', '{\"test\":true}', 1, '2025-10-11 10:49:42', '2025-10-11 18:50:09'),
+(15, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 18:49:45', '{\"test\":true}', 1, '2025-10-11 10:49:45', '2025-10-11 18:50:06'),
+(16, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 18:49:48', '{\"test\":true}', 1, '2025-10-11 10:49:48', '2025-10-11 18:50:04'),
+(17, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 18:52:41', '{\"test\":true}', 0, '2025-10-11 10:52:41', '2025-10-11 18:52:43'),
+(18, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 18:54:35', '{\"test\":true}', 1, '2025-10-11 10:54:35', '2025-10-11 19:49:23'),
+(19, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:06:48', '{\"test\":true}', 1, '2025-10-11 11:06:48', '2025-10-11 19:49:23'),
+(20, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:06:49', '{\"test\":true}', 1, '2025-10-11 11:06:49', '2025-10-11 19:49:23'),
+(21, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:06:49', '{\"test\":true}', 1, '2025-10-11 11:06:49', '2025-10-11 19:49:23'),
+(22, 1, 'Application status updated', 'Your application SRID-2025-20251010-10 status changed to approved.', '{\"submission_id\":129,\"submission_code\":\"SRID-2025-20251010-10\",\"new_status\":\"approved\",\"old_status\":null}', 1, '2025-10-11 11:16:27', '2025-10-11 19:49:23'),
+(23, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:22:57', '{\"test\":true}', 1, '2025-10-11 11:22:57', '2025-10-11 19:24:09'),
+(24, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:23:03', '{\"test\":true}', 1, '2025-10-11 11:23:03', '2025-10-11 19:24:07'),
+(25, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:23:04', '{\"test\":true}', 1, '2025-10-11 11:23:04', '2025-10-11 19:24:05'),
+(26, 1, 'Documents require resubmission', 'Your application SRID-2025-20251011-4 requires resubmission of: journal_publication_format.', '{\"submission_id\":133,\"submission_code\":\"SRID-2025-20251011-4\",\"doc_types\":[\"journal_publication_format\"]}', 1, '2025-10-11 11:27:30', '2025-10-11 19:46:22'),
+(27, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:35:38', '{\"test\":true}', 1, '2025-10-11 11:35:38', '2025-10-11 19:46:22'),
+(28, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:35:41', '{\"test\":true}', 1, '2025-10-11 11:35:41', '2025-10-11 19:44:33'),
+(29, 1, 'Test notification from user panel', 'This is a test notification created at 2025-10-11 19:35:50', '{\"test\":true}', 1, '2025-10-11 11:35:50', '2025-10-11 19:44:33'),
+(30, 1, 'Documents require resubmission', 'Your application SRID-2025-20251011-4 requires resubmission of: notarized_coauthorship.', '{\"submission_id\":133,\"submission_code\":\"SRID-2025-20251011-4\",\"doc_types\":[\"notarized_coauthorship\"]}', 0, '2025-10-11 11:54:52', '2025-10-11 19:55:08'),
+(31, 1, 'Documents require resubmission', 'Your application SRID-2025-20251011-4 requires resubmission of: journal_publication_format.', '{\"submission_id\":133,\"submission_code\":\"SRID-2025-20251011-4\",\"doc_types\":[\"journal_publication_format\"]}', 1, '2025-10-11 11:56:38', '2025-10-11 19:57:09'),
+(32, 1, 'Documents require resubmission', 'Your application SRID-2025-20251011-4 requires resubmission of: journal_publication_format.', '{\"submission_id\":133,\"submission_code\":\"SRID-2025-20251011-4\",\"doc_types\":[\"journal_publication_format\"]}', 1, '2025-10-11 13:22:09', NULL),
+(33, 1, 'Documents require resubmission', 'Your application SRID-2025-20251011-1 requires resubmission of: approval_sheet.', '{\"submission_id\":130,\"submission_code\":\"SRID-2025-20251011-1\",\"doc_types\":[\"approval_sheet\"]}', 1, '2025-10-11 13:21:22', NULL);
 
 --
 -- Indexes for dumped tables
 --
-
---
--- Indexes for table `academic_levels`
---
-ALTER TABLE `academic_levels`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_levels_name` (`name`);
 
 --
 -- Indexes for table `admin_notifications`
@@ -1641,7 +1390,9 @@ ALTER TABLE `admin_notifications`
   ADD PRIMARY KEY (`id`),
   ADD KEY `is_read` (`is_read`),
   ADD KEY `submission_id` (`submission_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `idx_notification_type` (`notification_type`),
+  ADD KEY `idx_created_at` (`created_at`);
 
 --
 -- Indexes for table `admin_profiles`
@@ -1657,40 +1408,10 @@ ALTER TABLE `advisers`
   ADD PRIMARY KEY (`adviser_id`);
 
 --
--- Indexes for table `campuses`
---
-ALTER TABLE `campuses`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_campus_name` (`name`);
-
---
--- Indexes for table `colleges`
---
-ALTER TABLE `colleges`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_college_name` (`name`),
-  ADD KEY `idx_campus_id` (`campus_id`);
-
---
 -- Indexes for table `dashboard_summary`
 --
 ALTER TABLE `dashboard_summary`
   ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `departments`
---
-ALTER TABLE `departments`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_department_name_college` (`name`,`college_id`),
-  ADD KEY `idx_college_id` (`college_id`);
-
---
--- Indexes for table `documents`
---
-ALTER TABLE `documents`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_document_name_role` (`name`,`role`);
 
 --
 -- Indexes for table `employee_profiles`
@@ -1700,12 +1421,12 @@ ALTER TABLE `employee_profiles`
   ADD KEY `fk_employee_user` (`user_id`);
 
 --
--- Indexes for table `programs`
+-- Indexes for table `resubmission_audit`
 --
-ALTER TABLE `programs`
+ALTER TABLE `resubmission_audit`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_program_name_college` (`name`,`college_id`),
-  ADD KEY `idx_college_id` (`college_id`);
+  ADD KEY `submission_id` (`submission_id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `student_profiles`
@@ -1787,20 +1508,22 @@ ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- Indexes for table `user_notifications`
 --
+ALTER TABLE `user_notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `is_read` (`is_read`);
 
 --
--- AUTO_INCREMENT for table `academic_levels`
+-- AUTO_INCREMENT for dumped tables
 --
-ALTER TABLE `academic_levels`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=137;
 
 --
 -- AUTO_INCREMENT for table `admin_profiles`
@@ -1815,64 +1538,40 @@ ALTER TABLE `advisers`
   MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
--- AUTO_INCREMENT for table `campuses`
---
-ALTER TABLE `campuses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `colleges`
---
-ALTER TABLE `colleges`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
-
---
--- AUTO_INCREMENT for table `departments`
---
-ALTER TABLE `departments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
-
---
--- AUTO_INCREMENT for table `documents`
---
-ALTER TABLE `documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
-
---
 -- AUTO_INCREMENT for table `employee_profiles`
 --
 ALTER TABLE `employee_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `programs`
+-- AUTO_INCREMENT for table `resubmission_audit`
 --
-ALTER TABLE `programs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=374;
+ALTER TABLE `resubmission_audit`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
+  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT for table `submission_documents`
 --
 ALTER TABLE `submission_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=542;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=526;
 
 --
 -- AUTO_INCREMENT for table `submission_notes`
@@ -1884,7 +1583,7 @@ ALTER TABLE `submission_notes`
 -- AUTO_INCREMENT for table `submission_notes_admin_views`
 --
 ALTER TABLE `submission_notes_admin_views`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `ticket_tokens`
@@ -1902,7 +1601,13 @@ ALTER TABLE `ticket_validation_attempts`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT for table `user_notifications`
+--
+ALTER TABLE `user_notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- Constraints for dumped tables
@@ -1915,28 +1620,10 @@ ALTER TABLE `admin_profiles`
   ADD CONSTRAINT `fk_admin_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `colleges`
---
-ALTER TABLE `colleges`
-  ADD CONSTRAINT `fk_college_campus` FOREIGN KEY (`campus_id`) REFERENCES `campuses` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `departments`
---
-ALTER TABLE `departments`
-  ADD CONSTRAINT `fk_dept_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE;
-
---
 -- Constraints for table `employee_profiles`
 --
 ALTER TABLE `employee_profiles`
   ADD CONSTRAINT `fk_employee_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `programs`
---
-ALTER TABLE `programs`
-  ADD CONSTRAINT `fk_prog_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `student_profiles`

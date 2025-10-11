@@ -49,7 +49,7 @@ if (!password_verify($current, $hash)) {
     exit();
 }
 
-if (strlen($new) < 8) { echo json_encode(['success' => false, 'error' => 'New password must be at least 8 characters']); log_event('USER_PASSWORD_CHANGE_FAIL', 'New password too short'); exit(); }
+if (strlen($new) < 12) { echo json_encode(['success' => false, 'error' => 'New password must be at least 12 characters']); log_event('USER_PASSWORD_CHANGE_FAIL', 'New password too short'); exit(); }
 if (strlen($new) > 200) { echo json_encode(['success'=>false,'error'=>'Password too long']); exit(); }
 
 $newHash = password_hash($new, PASSWORD_BCRYPT);

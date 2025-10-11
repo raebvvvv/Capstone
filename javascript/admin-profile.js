@@ -150,7 +150,7 @@
       const conf = document.getElementById('profileConfirmPassword').value.trim();
 
       if(!cur || !pass || !conf) return showAlert('Please fill in all fields.');
-      if(pass.length < 8) return showAlert('New password must be at least 8 characters.');
+  if(pass.length < 12) return showAlert('New password must be at least 12 characters.');
       if(pass !== conf) return showAlert('New password and confirmation do not match.');
       if(cur === pass) return showAlert('New password must be different from current password.');
 

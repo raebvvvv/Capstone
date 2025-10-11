@@ -41,3 +41,4 @@ vendor/
 tmp/
 temp/
 cache/
+!/new_new.sql
