@@ -4,11 +4,11 @@ require app_path('conn.php');
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=UTF-8');
 
 function fail($msg, $code = 400) {
     http_response_code($code);
-    echo json_encode(['ok' => false, 'error' => $msg]);
+    echo json_encode(['ok' => false, 'error' => (string)$msg], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -114,7 +114,7 @@ try {
             $stmt = $pdo->query("SELECT * FROM `$table` ORDER BY name");
         }
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode(['ok' => true, 'data' => $rows]);
+        echo json_encode(['ok' => true, 'data' => $rows], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
 
@@ -122,16 +122,16 @@ try {
         // Return parent options for an entity
         if (!$parentTable) { echo json_encode(['ok'=>true,'data'=>[]]); exit; }
         $stmt = $pdo->query("SELECT id, name, code FROM `$parentTable` ORDER BY name");
-        echo json_encode(['ok'=>true,'data'=>$stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        echo json_encode(['ok'=>true,'data'=>$stmt->fetchAll(PDO::FETCH_ASSOC)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
 
     // Mutations: create/update/delete
     $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-    $name = trim($_POST['name'] ?? '');
-    $code = trim($_POST['code'] ?? '');
+    $name = function_exists('sanitize_text') ? sanitize_text($_POST['name'] ?? '', 255) : trim($_POST['name'] ?? '');
+    $code = function_exists('sanitize_text') ? sanitize_text($_POST['code'] ?? '', 50) : trim($_POST['code'] ?? '');
     $parentId = isset($_POST['parent_id']) && $_POST['parent_id'] !== '' ? (int)$_POST['parent_id'] : null;
-    $role = isset($_POST['role']) ? trim($_POST['role']) : '';
+    $role = isset($_POST['role']) ? (function_exists('clean_enum') ? clean_enum($_POST['role'], ['student','employee','both'], 'both') : trim($_POST['role'])) : '';
 
     if ($action === 'create') {
         if ($name === '') fail('Name is required');
@@ -143,7 +143,7 @@ try {
         $sql = 'INSERT INTO `'.$table.'` ('.implode(',', $cols).') VALUES ('.implode(',', $ph).')';
         $stmt = $pdo->prepare($sql);
         $stmt->execute($vals);
-        echo json_encode(['ok'=>true, 'id'=>(int)$pdo->lastInsertId()]);
+        echo json_encode(['ok'=>true, 'id'=>(int)$pdo->lastInsertId()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
 
@@ -158,7 +158,7 @@ try {
         $sql = 'UPDATE `'.$table.'` SET '.implode(',', $sets).' WHERE id = ?';
         $stmt = $pdo->prepare($sql);
         $stmt->execute($vals);
-        echo json_encode(['ok'=>true]);
+        echo json_encode(['ok'=>true], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
 
@@ -166,7 +166,7 @@ try {
         if ($id <= 0) fail('Invalid id');
         $stmt = $pdo->prepare('DELETE FROM `'.$table.'` WHERE id = ?');
         $stmt->execute([$id]);
-        echo json_encode(['ok'=>true]);
+        echo json_encode(['ok'=>true], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
 

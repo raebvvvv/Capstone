@@ -252,32 +252,7 @@ if ($profile) {
               </fieldset>
               <fieldset>
                 <legend>Upload Documents (PDF)</legend>
-                <div class="row g-3">
-                  <div class="col-md-4">
-                    <label class="form-label required">Journal Publication Format</label>
-                    <input type="file" name="journal_publication_format" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Notarized Copyright Application Form</label>
-                    <input type="file" name="notarized_copyright" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Receipt of Payment</label>
-                    <input type="file" name="receipt_payment" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Presentation</label>
-                    <input type="file" name="presentation" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Record of Copyright Application</label>
-                    <input type="file" name="record_copyright" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Notarized Co-Authorship (Optional)</label>
-                    <input type="file" name="notarized_coauthorship" class="form-control" accept="application/pdf">
-                  </div>
-                </div>
+                <div class="row g-3" id="dynamicDocuments"></div>
                 <small class="text-muted d-block mt-2">All PDFs must be clear, complete, and properly signed where applicable.</small>
               </fieldset>
               <div class="text-center mt-4">
@@ -363,6 +338,11 @@ if ($profile) {
   <script src="<?php echo asset_url('javascript/forms/employee-academic-dropdowns.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-author-modal.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
+  <script>
+    window.CATALOGS_API_URL = window.CATALOGS_API_URL || <?php echo json_encode(asset_url('catalogs_public_api.php')); ?>;
+    window.USER_ROLE = 'employee';
+  </script>
+  <script src="<?php echo asset_url('javascript/forms/dynamic-documents.js'); ?>" defer></script>
   <script>
     // Prefill Academic Affiliation fields (except Work Classification) from employee profile
     (function() {

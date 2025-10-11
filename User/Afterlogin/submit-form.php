@@ -184,29 +184,81 @@ if (!empty($data['date_accomplished'])) {
     }
 }
 
-// Files expected (role-aware)
-if ($role === 'employee') {
-    // Employees: 'presentation' replaces 'full_manuscript'. Notarized co-authorship is optional.
-    $fileFields = [
-        'journal_publication_format',
-        'notarized_copyright',
-        'receipt_payment',
-        'presentation',
-        // 'notarized_coauthorship' is optional for employees; process later if provided
-        'record_copyright'
-    ];
-} else {
-    // Students
-    $fileFields = [
-        'journal_publication_format',
-        'notarized_copyright',
-        'receipt_payment',
-        'full_manuscript',
-        'notarized_coauthorship',
-        'approval_sheet',
-        'record_copyright'
+// Determine expected documents dynamically from catalogs (documents table); preserve legacy names as fallback
+function normalize_doc_key($name, $code = null) {
+    // Prefer normalizing from name for stability and legacy compatibility; fallback to code if name missing
+    $base = $name ?: $code;
+    $s = strtolower(trim((string)$base));
+    // replace non-alnum with underscores and collapse repeats
+    $s = preg_replace('/[^a-z0-9]+/', '_', $s);
+    $s = trim($s, '_');
+    return $s ?: 'document';
+}
+
+// Load documents for this role (both + role)
+$docRows = [];
+try {
+    $stmt = $pdo->prepare("SELECT name, code, role FROM documents WHERE role IN ('both', ?) ORDER BY name ASC");
+    $stmt->execute([$role]);
+    $docRows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+} catch (Throwable $e) {
+    // If table missing or error, fall back to legacy static sets
+    $docRows = [];
+}
+
+// Build spec list; optional rule: Notarized Co-Authorship optional for employees only
+$docSpecs = [];
+foreach ($docRows as $r) {
+    $name = (string)($r['name'] ?? '');
+    $code = (string)($r['code'] ?? '');
+    $key  = normalize_doc_key($name, $code);
+    $isOptional = false;
+    if ($role === 'employee' && stripos($name, 'Notarized Co-Authorship') !== false) {
+        $isOptional = true;
+    }
+    $docSpecs[] = [
+        'name' => $name,
+        'code' => $code,
+        'key'  => $key,
+        'optional' => $isOptional,
     ];
 }
+
+// If no documents found (e.g., legacy), synthesize from legacy sets to avoid breaking
+if (!$docSpecs) {
+    if ($role === 'employee') {
+        $legacy = [
+            ['Journal Publication Format','JPF','journal_publication_format',false],
+            ['Notarized Copyright Application Form','NCAF','notarized_copyright',false],
+            ['Receipt of Payment','RCPT','receipt_payment',false],
+            ['Presentation','PRSN','presentation',false],
+            ['Record of Copyright Application','ROCA','record_copyright',false],
+        ];
+    } else {
+        $legacy = [
+            ['Journal Publication Format','JPF','journal_publication_format',false],
+            ['Notarized Copyright Application Form','NCAF','notarized_copyright',false],
+            ['Receipt of Payment','RCPT','receipt_payment',false],
+            ['Full Manuscript','FMSS','full_manuscript',false],
+            ['Notarized Co-Authorship','NCAU','notarized_coauthorship',false],
+            ['Approval Sheet (Thesis)','APRV','approval_sheet',false],
+            ['Record of Copyright Application','ROCA','record_copyright',false],
+        ];
+    }
+    foreach ($legacy as [$n,$c,$k,$o]) { $docSpecs[] = ['name'=>$n,'code'=>$c,'key'=>$k,'optional'=>$o]; }
+}
+
+// Legacy key mapping to allow old front-ends to submit successfully
+$legacyNameMap = [
+    'journal_publication_format' => 'journal_publication_format',
+    'notarized_copyright'       => 'notarized_copyright',
+    'receipt_payment'           => 'receipt_payment',
+    'full_manuscript'           => 'full_manuscript',
+    'notarized_coauthorship'    => 'notarized_coauthorship',
+    'approval_sheet'            => 'approval_sheet',
+    'record_copyright'          => 'record_copyright',
+    'presentation'              => 'presentation',
+];
 
 $uploadDir = storage_path('uploads');
 if (!is_dir($uploadDir)) {
@@ -214,28 +266,36 @@ if (!is_dir($uploadDir)) {
 }
 
 $storedFiles = [];
-foreach ($fileFields as $ff) {
-    if (!isset($_FILES[$ff]) || $_FILES[$ff]['error'] !== UPLOAD_ERR_OK) {
-        $errors[] = "File upload error: $ff";
+foreach ($docSpecs as $spec) {
+    $key = $spec['key'];
+    $optional = (bool)$spec['optional'];
+
+    // Find the uploaded file under normalized key or legacy alias
+    $fileArray = null;
+    if (isset($_FILES[$key])) {
+        $fileArray = $_FILES[$key];
+    } else {
+        // Try to guess legacy key by common patterns if names differ
+        foreach ($legacyNameMap as $legacyKey => $alias) {
+            if (isset($_FILES[$legacyKey])) {
+                // Match by name similarity
+                $legacyNorm = normalize_doc_key(str_replace('_', ' ', $legacyKey));
+                if ($legacyNorm === $key) { $fileArray = $_FILES[$legacyKey]; break; }
+            }
+        }
+    }
+
+    if (!$fileArray || $fileArray['error'] !== UPLOAD_ERR_OK) {
+        if (!$optional) { $errors[] = "File upload error: $key"; }
         continue;
     }
-    // Use secure upload helper which validates PDF content and MIME and sanitizes filename
-    $res = secure_upload_file($_FILES[$ff], $ff, $uploadDir);
-    if (!$res['success']) {
-        foreach ($res['errors'] as $err) { $errors[] = $ff . ': ' . $err; }
-    } else {
-        $storedFiles[$ff] = $res['filename'];
-    }
-}
 
-// Handle optional employee notarized_coauthorship if provided
-if ($role === 'employee' && isset($_FILES['notarized_coauthorship']) && $_FILES['notarized_coauthorship']['error'] === UPLOAD_ERR_OK) {
-    $ff = 'notarized_coauthorship';
-    $res = secure_upload_file($_FILES[$ff], $ff, $uploadDir);
+    // Use secure upload helper which validates PDF content and MIME and sanitizes filename
+    $res = secure_upload_file($fileArray, $key, $uploadDir);
     if (!$res['success']) {
-        foreach ($res['errors'] as $err) { $errors[] = $ff . ': ' . $err; }
+        foreach ($res['errors'] as $err) { $errors[] = $key . ': ' . $err; }
     } else {
-        $storedFiles[$ff] = $res['filename'];
+        $storedFiles[$key] = $res['filename'];
     }
 }
 

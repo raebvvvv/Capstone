@@ -19,6 +19,16 @@ function upsert(PDO $pdo, $table, $name, $code = null, $parentKey = null, $paren
     return (int)$pdo->lastInsertId();
 }
 
+function upsert_document(PDO $pdo, $name, $code = null, $role = 'both') {
+  $name = trim($name); if ($name === '') return 0;
+  $role = in_array($role, ['student','employee','both'], true) ? $role : 'both';
+  $sql = 'INSERT INTO `documents` (name, code, role) VALUES (?,?,?) '
+     . 'ON DUPLICATE KEY UPDATE code = VALUES(code)';
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute([$name, $code, $role]);
+  return (int)$pdo->lastInsertId();
+}
+
 // Ensure base tables exist by calling API ensure
 // Ensure tables exist
 try {
@@ -64,6 +74,15 @@ try {
     UNIQUE KEY uq_program_name_college (name, college_id),
     KEY idx_college_id (college_id),
     CONSTRAINT fk_prog_college FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+  // Documents table
+  $pdo->exec("CREATE TABLE IF NOT EXISTS documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(50) NULL,
+    role ENUM('student','employee','both') NOT NULL DEFAULT 'both',
+    UNIQUE KEY uq_document_name_role (name, role)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 } catch (Throwable $e) { echo "Failed to ensure tables: ".$e->getMessage()."\n"; exit(1); }
 
@@ -288,6 +307,29 @@ $programsMap = [
   ],
 ];
 
+// Seed documents based on current forms
+// Student-required documents
+$studentDocuments = [
+  ['Journal Publication Format', 'JPF'],
+  ['Notarized Copyright Application Form', 'NCAF'],
+  ['Receipt of Payment', 'RCPT'],
+  ['Full Manuscript', 'FMSS'],
+  ['Notarized Co-Authorship', 'NCAU'],
+  ['Approval Sheet (Thesis)', 'APRV'],
+  ['Record of Copyright Application', 'ROCA'],
+];
+
+// Employee-required documents
+$employeeDocuments = [
+  ['Journal Publication Format', 'JPF'],
+  ['Notarized Copyright Application Form', 'NCAF'],
+  ['Receipt of Payment', 'RCPT'],
+  ['Presentation', 'PRSN'],
+  ['Record of Copyright Application', 'ROCA'],
+  // Optional in employee form: Notarized Co-Authorship
+  ['Notarized Co-Authorship', 'NCAU'],
+];
+
 // Seed campuses
 $campusIds = [];
 foreach ($campuses as $name => $code) {
@@ -329,5 +371,24 @@ foreach ($programsMap as $key => $list) {
         upsert($pdo, 'programs', $pname, $pcode, 'college_id', $cid);
     }
 }
+
+// Seed documents: treat items present in both sets as 'both', otherwise as role-specific
+$studentNames = array_column($studentDocuments, 0);
+$employeeNames = array_column($employeeDocuments, 0);
+
+$allNames = array_unique(array_merge($studentNames, $employeeNames));
+foreach ($allNames as $docName) {
+  // find code from either list
+  $code = null;
+  foreach ([$studentDocuments, $employeeDocuments] as $list) {
+    foreach ($list as $row) { if ($row[0] === $docName) { $code = $row[1]; break 2; } }
+  }
+  $inStudent = in_array($docName, $studentNames, true);
+  $inEmployee = in_array($docName, $employeeNames, true);
+  $role = ($inStudent && $inEmployee) ? 'both' : ($inStudent ? 'student' : 'employee');
+  upsert_document($pdo, $docName, $code, $role);
+}
+
+echo "Seeded documents.\n";
 
 echo "Done.\n";

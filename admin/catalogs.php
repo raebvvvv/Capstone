@@ -96,7 +96,7 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
             </li>
         </ul>
 
-        <div class="tab-content mt-3">
+    <div class="tab-content mt-3">
             <!-- Campuses -->
             <div class="tab-pane fade show active" id="campuses" role="tabpanel">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -199,8 +199,6 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
 
             <!-- Documents -->
             <div class="tab-pane fade" id="documents" role="tabpanel">
@@ -222,6 +220,8 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
 
     <!-- Modal for Add/Edit -->
     <div class="modal fade" id="entityModal" tabindex="-1" aria-hidden="true">
