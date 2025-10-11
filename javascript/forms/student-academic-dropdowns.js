@@ -425,6 +425,13 @@ document.addEventListener('DOMContentLoaded', function() {
       selectElement.appendChild(optElement);
     });
   }
+  // Students should never see "Not Studying" as an academic level
+  function filterStudentLevels(levelNames) {
+    if (!Array.isArray(levelNames)) return [];
+    return levelNames.filter(name =>
+      typeof name === 'string' && name.trim().toLowerCase() !== 'not studying'
+    );
+  }
   
   // Initialize all dropdowns
   // campus select already declared above if present
@@ -439,8 +446,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (academicLevelSelect && !academicLevelSelect.disabled) {
       const lrows = await loadLevels();
-      if (Array.isArray(lrows) && lrows.length) populateDropdown(academicLevelSelect, lrows.map(r => r.name));
-      else populateDropdown(academicLevelSelect, academicData.academicLevel);
+      if (Array.isArray(lrows) && lrows.length) {
+        const levelNames = lrows.map(r => r.name);
+        populateDropdown(academicLevelSelect, filterStudentLevels(levelNames));
+      } else {
+        populateDropdown(academicLevelSelect, academicData.academicLevel);
+      }
     }
     if (collegeSelect && !collegeSelect.disabled) {
       const rows = await loadColleges();
