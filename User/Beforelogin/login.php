@@ -19,26 +19,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (!empty($login_identifier) && !empty($password)) {
         try {
-            // Unified lookup: match by email OR student_number OR employee_number OR admin_number
+            // Student-only lookup: match by email OR student_number; restrict to role=student
             $sql = "SELECT 
                         u.user_id, u.email, u.password, u.role, u.status,
-                        CASE 
-                            WHEN u.role = 'student'  THEN sp.student_number
-                            WHEN u.role = 'employee' THEN ep.employee_number
-                            WHEN u.role = 'admin'    THEN ap.admin_number
-                            ELSE NULL 
-                        END AS identifier
+                        sp.student_number AS identifier
                     FROM users u
                     LEFT JOIN student_profiles sp ON sp.user_id = u.user_id
-                    LEFT JOIN employee_profiles ep ON ep.user_id = u.user_id
-                    LEFT JOIN admin_profiles ap    ON ap.user_id = u.user_id
-                    WHERE u.email = ?
-                       OR sp.student_number = ?
-                       OR ep.employee_number = ?
-                       OR ap.admin_number = ?
+                    WHERE u.role = 'student' AND (u.email = ? OR sp.student_number = ?)
                     LIMIT 1";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$login_identifier, $login_identifier, $login_identifier, $login_identifier]);
+            $stmt->execute([$login_identifier, $login_identifier]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Throwable $ex) {
             // Graceful error; avoid fatal page crash
@@ -47,32 +37,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if ($user && password_verify($password, $user['password'])) {
-            if ($user['status'] == 'pending' && $user['role'] !== 'admin') {
+            if ($user['status'] == 'pending') {
                 $error = "Please wait for the confirmation of your account.";
             } else {
-                // Prevent admins from logging in via the student login page (security)
-                if (strtolower($user['role']) === 'admin') {
-                    $error = 'Admin accounts must use the dedicated admin login page.';
-                } else if (strtolower($user['role']) === 'employee') {
-                    $error = 'This account is for employees. Please use the Employee Login page.';
-                } else {
-                session_regenerate_id(true); // Security: Prevent session fixation attacks
-                $_SESSION['user_logged_in'] = true;
-                $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['email'] = $user['email'];
-                $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email']; // Store the number or email used to login
-                $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0; // Set admin status
-                $_SESSION['role'] = $user['role']; // Persist role (student/employee/admin)
+                // Proceed with student login (query is already restricted to student role)
+                    session_regenerate_id(true); // Security: Prevent session fixation attacks
+                    $_SESSION['user_logged_in'] = true;
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['email'] = $user['email'];
+                    $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email']; // Store the number or email used to login
+                    $_SESSION['is_admin'] = 0; // Students are never admin on this page
+                    $_SESSION['role'] = $user['role']; // Persist role (student)
 
-                if ($user['role'] === 'admin') {
-                    // Redirect administrators to the admin dashboard
-                    redirect('admin/admin.php');
-                } else {
                     // Redirect regular users to the after-login landing page
                     redirect('User/Afterlogin/after-landing.php');
-                }
-                exit();
-                }
+                    exit();
             }
         } else {
             $error = "Invalid login credentials.";

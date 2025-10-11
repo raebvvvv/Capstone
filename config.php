@@ -139,7 +139,7 @@ if (!function_exists('render_back_link')) {
     $user = 'root';
     $pass = ''; // or your MySQL password
     $charset = 'utf8mb4';
-    $port='3307'; // your database port, default is usually 3306
+    $port='3306'; // your database port, default is usually 3306
 
     $dsn = "mysql:host=$host;dbname=$db;charset=$charset;port=$port";
     $options = [
@@ -168,7 +168,7 @@ $db   = 'ipmo_users';
 $user = 'root';
 $pass = ''; // or your MySQL password
 $charset = 'utf8mb4';
-$port='3307'; // your database port, default is usually 3306
+$port='3306'; // your database port, default is usually 3306
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset;port=$port";
 $options = [
