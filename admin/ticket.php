@@ -408,10 +408,15 @@ try {
 } catch (Throwable $e) { /* ignore debug failures */ }
 // If this is a search and the current tab is empty, auto-pick the first tab with results (server-side)
 if ($search_query !== '') {
+    // Backwards-compatible aliases (some templates may reference $pending/$approved/$completed)
+    $pending   = isset($pending_items)   ? $pending_items   : [];
+    $approved  = isset($approved_items)  ? $approved_items  : [];
+    $completed = isset($completed_items) ? $completed_items : [];
+
     $byTab = [
-        'pending' => $pending,
-        'approved' => $approved,
-        'completed' => $completed,
+        'pending' => $pending_items,
+        'approved' => $approved_items,
+        'completed' => $completed_items,
     ];
     if (!isset($byTab[$active_tab]) || empty($byTab[$active_tab])) {
         foreach (['pending','approved','completed'] as $tabName) {
