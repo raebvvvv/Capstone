@@ -314,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="mb-2">
             <label for="email" class="form-label"><b>Webmail</b> <span class="text-danger">*</span></label>
             <input type="email" class="form-control" id="email" name="email" required>
-            <div class="invalid-feedback">Please fill in this field.</div>
+            <div class="invalid-feedback">Please use a valid email domain (e.g., @example.com).</div>
           </div>
           <div class="row g-3 mb-1">
             <div class="col-md-6">
@@ -329,11 +329,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   minlength="12"
                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.<>\/?~]).{12,}$"
                   title="At least 12 characters, with uppercase, lowercase, number, and special character"
-                  aria-describedby="togglePassword"
+                  
                 />
-                <button type="button" id="togglePassword" tabindex="-1" class="input-group-text rounded-end" style="background:transparent;border:none;outline:none;box-shadow:none;" aria-label="Show password">
-                  <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3.866-4.477 7-10 7S1 15.866 1 12 5.477 5 11 5s10 3.134 10 7z"/></svg>
-                </button>
+
               </div>
               <!-- Dynamic password error details (client-side, no refresh) -->
               <ul id="passwordErrors" class="text-danger small ps-3 mb-2 d-none" aria-live="polite"></ul>
