@@ -82,7 +82,7 @@ function render_pagination_controls_emp(string $tab, int $page, int $pages): voi
   <?php $roleLabel = 'Employee'; ?>
   <p class="text-danger fw-semibold mb-4" style="font-size:1.1rem;">(<?php echo $roleLabel; ?>)</p> 
    
- <div class="d-flex justify-content-center mb-3 gap-2">
+ <div class="d-flex flex-wrap justify-content-center mb-3 gap-2">
     <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Ethics Clearance</button></a>
     <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Patent</button></a>
     <a href="#"><button class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">Industrial Design</button></a>
@@ -242,7 +242,7 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
   <td class="text-nowrap"><?php echo htmlspecialchars($row['submission_code']); ?></td>
   <td class="text-nowrap"><?php echo htmlspecialchars($row['employee_number']); ?></td>
   <td>
-    <span class="d-inline-block text-truncate" style="max-width: 420px;">
+    <span class="d-inline-block text-truncate" style="max-width: min(65vw, 420px);">
       <?php echo htmlspecialchars($row['title']); ?>
     </span>
   </td>
@@ -499,7 +499,7 @@ $completed_items = array_slice($completedRows, ($completed_page - 1) * $perPage,
   <script src="<?php echo asset_url('javascript/student-application.js'); ?>"></script>
   <!-- Certificate Preview Modal -->
   <div class="modal fade" id="certificateModalUser" tabindex="-1" aria-labelledby="certificateModalUserLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="certificateModalUserLabel">Certificate</h5>

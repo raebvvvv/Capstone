@@ -40,7 +40,7 @@ require __DIR__ . '/../../auth_check.php';
     <div class="row g-5 align-items-start">
       <div class="d-flex flex-row justify-content-between align-items-start w-100 flex-wrap main-intro-row">
         <div class="d-flex flex-row justify-content-between align-items-start w-100 flex-wrap">
-          <div class="flex-grow-1" style="max-width: 60%;">
+          <div class="flex-grow-1 intro-text">
             <h1 class="fw-bold mb-2">Intellectual Property Management Office</h1>
             <p class="fw-bold mb-1" style="font-size:1.1rem;">The Intellectual Property Management Office (IPMO)</p>
             <p>
@@ -50,7 +50,7 @@ require __DIR__ . '/../../auth_check.php';
               The IPMO provides a portfolio of new technologies created through University research for licensing or collaborative development.
             </p>
           </div>
-          <div class="ms-5">
+          <div class="ms-lg-5 office-hours">
             <h2 class="fw-bold">Office Hours</h2>
             <div class="mb-2">
               <div>Monday - Friday<br>8:00 AM - 7:30 PM</div>
@@ -101,6 +101,6 @@ require __DIR__ . '/../../auth_check.php';
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfJWe1Y" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
 </body>
 </html>

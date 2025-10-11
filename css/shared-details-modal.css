@@ -120,3 +120,46 @@
 /* Badge spacing and file highlight */
 #submissionDetailsContent .badge { vertical-align: middle; }
 .reupload-highlight { background: #fff3cd !important; transition: background .3s; }
+
+/* =============================
+   Certificate Modal Responsiveness
+   Ensures certificate previews (image/pdf/iframe) fit on phones
+   and are scrollable when content is tall
+   ============================= */
+#certificateModalUser .modal-body {
+  overflow: auto;
+}
+
+#certificateModalUser .modal-body img,
+#certificateModalUser .modal-body canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+#certificateModalUser .modal-body iframe,
+#certificateModalUser .modal-body embed,
+#certificateModalUser .modal-body object {
+  width: 100%;
+  border: none;
+  display: block;
+  /* Give a sensible viewport-based height so content is visible */
+  height: 70vh;
+}
+
+/* Small screens: make modal effectively fullscreen and maximize preview area */
+@media (max-width: 576px) {
+  #certificateModalUser .modal-content {
+    border-radius: 0;
+  }
+  #certificateModalUser .modal-body {
+    /* header (~56px) + footer (~64px) */
+    max-height: calc(100vh - 120px);
+  }
+  #certificateModalUser .modal-body iframe,
+  #certificateModalUser .modal-body embed,
+  #certificateModalUser .modal-body object {
+    height: 80vh; /* a bit taller on phones */
+  }
+}

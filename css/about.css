@@ -4,6 +4,24 @@ main.container {
   padding-bottom: 40px !important;
 }
 
+/* About page specific layout tweaks */
+.main-intro-row .intro-text {
+  max-width: 60%;
+}
+.main-intro-row .office-hours {
+  min-width: 260px;
+}
+
+@media (max-width: 992px) {
+  .main-intro-row .intro-text {
+    max-width: 100%;
+  }
+  .main-intro-row .office-hours {
+    margin-left: 0 !important;
+    margin-top: 16px;
+  }
+}
+
 .col-lg-7 {
   padding-right: 32px !important;
   position: relative;
