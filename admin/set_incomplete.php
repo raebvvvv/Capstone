@@ -3,7 +3,20 @@ require __DIR__ . '/../config.php';
 require app_path('conn.php');
 // ensure bootstrap and auth are available
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
-require_admin();
+// For AJAX endpoints, avoid redirecting to HTML login pages which break JSON clients.
+// If this request appears to be an AJAX/JSON call and the user is not an admin, return JSON 401.
+$isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+    || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false)
+    || (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'],'application/json') !== false);
+if (empty($_SESSION['user_logged_in']) || empty($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
+    if ($isAjax) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'unauthenticated']);
+        exit;
+    }
+    // Non-AJAX fallback: use the existing redirect behaviour
+    require_admin();
+}
 
 // Always return JSON from this endpoint. Suppress direct HTML error output and
 // register a shutdown handler to catch fatal errors so the client doesn't receive

@@ -364,11 +364,19 @@
       try {
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         const res = await fetch('../admin/set_incomplete.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify({ request_id: requestId, remark, comment, file_ids: [], affected_doc_types: affected }) });
-        // Better error handling: check HTTP status first, then try to parse JSON.
+        // Better error handling: check HTTP status first, then verify Content-Type before parsing JSON.
         if(!res.ok){
           const text = await res.text().catch(()=>'(no body)');
           console.error('set_incomplete server error', res.status, text);
           alert('Save failed: server returned ' + res.status + '\n' + text);
+          return;
+        }
+        const contentType = (res.headers.get('content-type') || '').toLowerCase();
+        if(!contentType.includes('application/json')){
+          // Non-JSON response (often a login HTML page due to session expiry or redirect)
+          const txt = await res.text().catch(()=>'(no body)');
+          console.error('set_incomplete unexpected content-type', contentType, txt);
+          alert('Save failed: server returned non-JSON response:\n' + (txt || '(no body)'));
           return;
         }
         let data;
