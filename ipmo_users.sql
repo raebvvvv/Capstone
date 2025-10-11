@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 11, 2025 at 12:20 PM
+-- Generation Time: Oct 11, 2025 at 02:28 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.4.12
 
@@ -336,6 +336,21 @@ CREATE TABLE `documents` (
   `role` varchar(20) NOT NULL DEFAULT 'both'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `documents`
+--
+
+INSERT INTO `documents` (`id`, `name`, `code`, `role`) VALUES
+(1, 'Journal Publication Format', 'JPF', 'both'),
+(2, 'Notarized Copyright Application Form', 'NCAF', 'both'),
+(3, 'Receipt of Payment', 'RCPT', 'both'),
+(4, 'Full Manuscript', 'FMSS', 'student'),
+(5, 'Notarized Co-Authorship', 'NCAU', 'both'),
+(6, 'Approval Sheet (Thesis)', 'APRV', 'student'),
+(7, 'Record of Copyright Application', 'ROCA', 'both'),
+(8, 'Presentation', 'PRSN', 'employee'),
+(11, 'Heart', NULL, 'student');
+
 -- --------------------------------------------------------
 
 --
@@ -553,7 +568,50 @@ INSERT INTO `programs` (`id`, `name`, `code`, `college_id`) VALUES
 (246, 'Bachelor of Public Administration (BPA)', 'BPA', NULL),
 (247, 'Bachelor of Science in Business Administration (BSBA)', 'BSBA', NULL),
 (248, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', NULL),
-(249, 'TEST', 'TEST', 31);
+(249, 'TEST', 'TEST', 31),
+(331, 'Master in Applied Statistics (MAS)', 'MAS', NULL),
+(332, 'Master in Business Administration (MBA)', 'MBA', NULL),
+(333, 'Master in Construction Management (MCM)', 'MCM', NULL),
+(334, 'Master in Educational Management (MEM)', 'MEM', NULL),
+(335, 'Master in Public Administration (MPA)', 'MPA', NULL),
+(336, 'Master of Arts in Communication (MAC)', 'MAC', NULL),
+(337, 'Master of Arts in English Language Studies (MAELS)', 'MAELS', NULL),
+(338, 'Master of Arts in History (MAH)', 'MAH', NULL),
+(339, 'Master of Arts in Filipino (MAF)', 'MAF', NULL),
+(340, 'Master of Arts in Psychology (MAP)', 'MAP', NULL),
+(341, 'Master of Arts in Technology Management (MATM)', 'MATM', NULL),
+(342, 'Master of Science in Biology (MSBio)', 'MSBio', NULL),
+(343, 'Master of Science in Civil Engineering (MSCE)', 'MSCE', NULL),
+(344, 'Master of Science in Computer Engineering (MSCpE)', 'MSCpE', NULL),
+(345, 'Master of Science in Computer Science (MSCS)', 'MSCS', NULL),
+(346, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
+(347, 'Master of Science in Information Technology (MSIT)', 'MSIT', NULL),
+(348, 'Master of Science in Mathematics (MSM)', 'MSM', NULL),
+(349, 'Doctor of Philosophy in Communication (PhD Com)', 'PhD Com', NULL),
+(350, 'Doctor of Philosophy in Economics (PhD Econ)', 'PhD Econ', NULL),
+(351, 'Doctor of Philosophy in English Language Studies (PhD ELS)', 'PhD ELS', NULL),
+(352, 'Doctor of Philosophy in Filipino (PhD Fil)', 'PhD Fil', NULL),
+(353, 'Doctor of Philosophy in Psychology (PhD Psy)', 'PhD Psy', NULL),
+(354, 'Doctor in Business Administration (DBA)', 'DBA', NULL),
+(355, 'Doctor in Engineering Management (D.Eng)', 'D.Eng', NULL),
+(356, 'Doctor of Philsophy in Education Management (PhDEM)', 'PhDEM', NULL),
+(357, 'Doctor in Public Administration (DPA)', 'DPA', NULL),
+(358, 'Master in Communication (MC)', 'MC', NULL),
+(359, 'Master in Business Administration (MBA)', 'MBA', NULL),
+(360, 'Master of Arts in Education Management (MAEM)', 'MAEM', NULL),
+(361, 'Master in Information Technology (MIT)', 'MIT', NULL),
+(362, 'Master in Public Administration (MPA)', 'MPA', NULL),
+(363, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
+(364, 'Post Baccalaureate Diploma in Information Technology (PBDIT)', 'PBDIT', NULL),
+(365, 'Bachelor of Science in Entrepreneurship (BSENTREP)', 'BSENTREP', NULL),
+(366, 'Bachelor of Arts in Broadcasting (BABR)', 'BABR', NULL),
+(367, 'Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)', 'BSBAHRM', NULL),
+(368, 'Bachelor of Science in Business Administration major in Marketing Management (BSBAMM)', 'BSBAMM', NULL),
+(369, 'Bachelor of Science in Office Administration (BSOA)', 'BSOA', NULL),
+(370, 'Bachelor of Science in Tourism Management (BSTM)', 'BSTM', NULL),
+(371, 'Bachelor of Public Administration (BPA)', 'BPA', NULL),
+(372, 'Bachelor of Science in Business Administration (BSBA)', 'BSBA', NULL),
+(373, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', NULL);
 
 -- --------------------------------------------------------
 
@@ -711,7 +769,9 @@ INSERT INTO `submissions` (`submission_id`, `submission_code`, `user_id`, `first
 (130, 'SRID-2025-20251011-1', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(a) Books, Pamphlets, articles and other writings', 'as', '2025-10-10', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:00:35', '2025-10-11 00:00:35', NULL, NULL, 51),
 (131, 'ERID-2025-20251011-2', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(o) Other literary, scholarly, scientific and artistic works', ',you', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:02:07', '2025-10-11 00:02:07', NULL, NULL, 45),
 (132, 'ERID-2025-20251011-3', 6, 'Raebv Lielmo', 'A', 'Inocentes', '54321', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'thinkingwan00@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Doctorate', 'College of Computer and Information Sciences (CCIS)', 'Bachelor of Science in Computer Science (BSCS)', '(o) Other literary, scholarly, scientific and artistic works', 'asdasd', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:22:32', '2025-10-11 00:22:32', NULL, NULL, 55),
-(133, 'SRID-2025-20251011-4', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(o) Other literary, scholarly, scientific and artistic works', 'testtttt', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:27:03', '2025-10-11 00:27:03', NULL, NULL, 56);
+(133, 'SRID-2025-20251011-4', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(o) Other literary, scholarly, scientific and artistic works', 'testtttt', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 00:27:03', '2025-10-11 00:27:03', NULL, NULL, 56),
+(134, 'SRID-2025-20251011-5', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(q) Broadcast recordings', 'test', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 18:56:56', '2025-10-11 18:56:56', NULL, NULL, 50),
+(135, 'SRID-2025-20251011-6', 1, 'Marisa', 'Mliinaw', 'Minamo', '2025-12346-MN-0', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'aceplanetary0@gmail.com', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', 'Bachelor of Secondary Education - English (BSEd)', '(b) Periodicals and newspaper', 'test2', '2025-10-11', 1, 'pending_review', NULL, 'for evaluation', 1, 1, 'copyright', '2025-10-11 18:58:38', '2025-10-11 18:58:38', NULL, NULL, 25);
 
 -- --------------------------------------------------------
 
@@ -809,7 +869,9 @@ INSERT INTO `submission_authors` (`author_id`, `submission_id`, `first_name`, `m
 (67, 132, 'Tseess', '', '', '', '', '', '', 'Author', 1, '2025-10-11 00:22:32', NULL),
 (68, 132, 'Steset', '', '', '12312', '09892029499', '', 'asdas@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-11 00:22:32', NULL),
 (69, 133, 'Tesssdsd', '', '', '', '', '', '', 'Author', 1, '2025-10-11 00:27:03', NULL),
-(70, 133, 'Sdfsdfsd', '', '', '2022-08290-MN-0', '09892029999', '', 'fasdaselas@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-11 00:27:03', NULL);
+(70, 133, 'Sdfsdfsd', '', '', '2022-08290-MN-0', '09892029999', '', 'fasdaselas@iskolarngbayan.pup.edu.ph', 'Author', 0, '2025-10-11 00:27:03', NULL),
+(71, 134, 'Tes', '', '', '', '', '', '', 'Author', 1, '2025-10-11 18:56:56', NULL),
+(72, 135, 'A', '', '', '', '', '', '', 'Author', 1, '2025-10-11 18:58:38', NULL);
 
 -- --------------------------------------------------------
 
@@ -1360,7 +1422,23 @@ INSERT INTO `submission_documents` (`document_id`, `submission_id`, `doc_type`, 
 (522, 133, 'full_manuscript', 'full_manuscript_20251011_002703_f6b943e3.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
 (523, 133, 'notarized_coauthorship', 'notarized_coauthorship_20251011_002703_fad68af3.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
 (524, 133, 'approval_sheet', 'approval_sheet_20251011_002703_cec3b7fd.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
-(525, 133, 'record_copyright', 'record_copyright_20251011_002703_7db42b87.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL);
+(525, 133, 'record_copyright', 'record_copyright_20251011_002703_7db42b87.pdf', '2025-10-11 00:27:03', 12567220, 'application/pdf', 0, NULL, NULL),
+(526, 134, 'approval_sheet_thesis', 'approval_sheet_thesis_20251011_185656_f2a19c54.pdf', '2025-10-11 18:56:56', 1822, 'application/pdf', 0, NULL, NULL),
+(527, 134, 'full_manuscript', 'full_manuscript_20251011_185656_ef4c9b1c.pdf', '2025-10-11 18:56:56', 177279, 'application/pdf', 0, NULL, NULL),
+(528, 134, 'heart', 'heart_20251011_185656_5da1ff07.pdf', '2025-10-11 18:56:56', 1822, 'application/pdf', 0, NULL, NULL),
+(529, 134, 'journal_publication_format', 'journal_publication_format_20251011_185656_f227fb2b.pdf', '2025-10-11 18:56:56', 1822, 'application/pdf', 0, NULL, NULL),
+(530, 134, 'notarized_co_authorship', 'notarized_co_authorship_20251011_185656_cf1ee9ef.pdf', '2025-10-11 18:56:56', 177280, 'application/pdf', 0, NULL, NULL),
+(531, 134, 'notarized_copyright_application_form', 'notarized_copyright_application_form_20251011_185656_f6c32fc8.pdf', '2025-10-11 18:56:56', 177280, 'application/pdf', 0, NULL, NULL),
+(532, 134, 'receipt_of_payment', 'receipt_of_payment_20251011_185656_c4689141.pdf', '2025-10-11 18:56:56', 1822, 'application/pdf', 0, NULL, NULL),
+(533, 134, 'record_of_copyright_application', 'record_of_copyright_application_20251011_185656_2cff4f9b.pdf', '2025-10-11 18:56:56', 177279, 'application/pdf', 0, NULL, NULL),
+(534, 135, 'approval_sheet_thesis', 'approval_sheet_thesis_20251011_185838_4d5482c2.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
+(535, 135, 'full_manuscript', 'full_manuscript_20251011_185838_ff948354.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
+(536, 135, 'heart', 'heart_20251011_185838_f9d713ef.pdf', '2025-10-11 18:58:38', 41341591, 'application/pdf', 0, NULL, NULL),
+(537, 135, 'journal_publication_format', 'journal_publication_format_20251011_185838_ff150010.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
+(538, 135, 'notarized_co_authorship', 'notarized_co_authorship_20251011_185838_3d6c9561.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
+(539, 135, 'notarized_copyright_application_form', 'notarized_copyright_application_form_20251011_185838_eba1ab9c.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
+(540, 135, 'receipt_of_payment', 'receipt_of_payment_20251011_185838_adb0ea62.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL),
+(541, 135, 'record_of_copyright_application', 'record_of_copyright_application_20251011_185838_15a57081.pdf', '2025-10-11 18:58:38', 1822, 'application/pdf', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1713,7 +1791,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `academic_levels`
 --
 ALTER TABLE `academic_levels`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `admin_notifications`
@@ -1737,25 +1815,25 @@ ALTER TABLE `advisers`
 -- AUTO_INCREMENT for table `campuses`
 --
 ALTER TABLE `campuses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `colleges`
 --
 ALTER TABLE `colleges`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `departments`
 --
 ALTER TABLE `departments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `documents`
 --
 ALTER TABLE `documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `employee_profiles`
@@ -1767,7 +1845,7 @@ ALTER TABLE `employee_profiles`
 -- AUTO_INCREMENT for table `programs`
 --
 ALTER TABLE `programs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=250;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=374;
 
 --
 -- AUTO_INCREMENT for table `student_profiles`
@@ -1779,19 +1857,19 @@ ALTER TABLE `student_profiles`
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
+  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
 -- AUTO_INCREMENT for table `submission_documents`
 --
 ALTER TABLE `submission_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=526;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=542;
 
 --
 -- AUTO_INCREMENT for table `submission_notes`
