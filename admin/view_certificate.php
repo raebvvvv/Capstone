@@ -47,6 +47,19 @@ if (isset($_GET['tfs'])) { $options['title_font_size'] = (int)$_GET['tfs']; }
 if (isset($_GET['afs'])) { $options['authors_font_size'] = (int)$_GET['afs']; }
 if (isset($_GET['dfs'])) { $options['date_font_size'] = (int)$_GET['dfs']; }
 if (isset($_GET['rfs'])) { $options['receiver_font_size'] = (int)$_GET['rfs']; }
+// QR tuning: &qr=0 to disable, or provide qx,qy,qs (size in mm), qcaption, qttl
+if (isset($_GET['qr']) && (string)$_GET['qr'] === '0') {
+    $options['qr'] = false;
+} else {
+    $qr = [];
+    if (isset($_GET['qx'])) { $qr['x'] = (float)$_GET['qx']; }
+    if (isset($_GET['qy'])) { $qr['y'] = (float)$_GET['qy']; }
+    if (isset($_GET['qs'])) { $qr['size'] = (float)$_GET['qs']; }
+    if (isset($_GET['qcaption'])) { $qr['caption'] = (string)$_GET['qcaption']; }
+    if (isset($_GET['qttl'])) { $qr['ttl_seconds'] = (int)$_GET['qttl']; }
+    if (!empty($qr)) { $options['qr'] = $qr; }
+}
+if (!empty($_GET['qrdebug'])) { $options['qr_debug'] = true; $options['qr_fallback_text'] = true; }
 
 try {
         $pdfPath = generate_certificate($pdo, $sid, $options);

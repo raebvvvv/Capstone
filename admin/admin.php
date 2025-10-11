@@ -489,6 +489,7 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="<?php echo asset_url('css/admin.css?v=2'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/admin-navbar.css'); ?>">
+
 </head>
 <body>
     <header class="bg-light border-bottom py-3 shadow-sm" data-admin-name="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>">
