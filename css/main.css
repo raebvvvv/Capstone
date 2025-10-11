@@ -357,3 +357,11 @@ h6 {
     font-size: 0.9rem;
   }
 }
+
+/* Icon sizing - consistent for all users */
+.icon-sm {
+    width: 20px !important;
+    height: 20px !important;
+    vertical-align: middle !important;
+    margin-right: 4px !important;
+}
