@@ -70,8 +70,8 @@ function render_pagination_controls_stu(string $tab, int $page, int $pages): voi
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
           <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
           <li class="nav-item"><a class="nav-link active" aria-current="page" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
-          <li class="nav-item">
+          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a>
+      
           <?php // notifications bell for logged-in users ?>
           <div class="d-flex align-items-center ms-3">
           <?php include __DIR__ . '/../../partials/user_notifications.php'; ?>
