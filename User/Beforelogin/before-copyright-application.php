@@ -107,7 +107,7 @@ require __DIR__ . '/../../config.php';
           <a href="https://docs.google.com/document/d/1py-jLmvd_jbNyk4fCUZkwBVq28C6F4l6/edit?usp=sharing&ouid=104730774923126836253&rtpof=true&sd=true" 
              target="_blank" class="btn btn-warning btn-sm mb-1">View File</a>
           <a href="https://docs.google.com/document/d/1py-jLmvd_jbNyk4fCUZkwBVq28C6F4l6/export?format=docx" 
-             download class="btn download-btn btn-sm mb-1">Download as PDF</a>
+             class="btn btn-danger btn-sm mb-1">Download as PDF</a>
         </div>
       </div>
 

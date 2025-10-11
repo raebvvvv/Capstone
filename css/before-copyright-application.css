@@ -34,6 +34,13 @@
   gap: 0.5em;
 }
 
+/* Submission Form button — match Afterlogin style */
+.submission-btn {
+  background-color: #198754; /* Bootstrap success */
+  border: none;
+  color: #fff;
+}
+
 /* =========================================
    Button Hover Overrides (if different from main.css)
    ========================================= */
@@ -55,6 +62,7 @@
 .btn-success:hover,
 .submission-btn:hover {
   background-color: #157347; /* Darker green on hover */
+  color: #fff;
 }
 
 
