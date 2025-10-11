@@ -52,22 +52,11 @@ if($submissionCode === '' || $docType === ''){
     exit;
 }
 
-// Basic allowed doc types whitelist (can be expanded)
-$ALLOWED_DOC_TYPES = [
-    'journal_publication_format',
-    'notarized_copyright',
-    'receipt_payment',
-    'full_manuscript',
-    'presentation',
-    'notarized_coauthorship',
-    'approval_sheet',
-    'record_copyright'
-];
-if(!in_array($docType, $ALLOWED_DOC_TYPES, true)){
-    http_response_code(422);
-    echo json_encode(['success'=>false,'error'=>'Invalid document type']);
-    exit;
-}
+// Do NOT enforce a static whitelist here. The system now supports catalogs-driven
+// dynamic document sets whose keys are stored in submission_documents.doc_type.
+// Validity is ensured by two checks below:
+// 1) the doc type must be currently requested for resubmission in submission_incomplete_meta;
+// 2) the submission_documents row for this submission and doc_type must exist.
 
 try {
     $stmt = $pdo->prepare('SELECT submission_id,status,user_id FROM submissions WHERE submission_code = ? LIMIT 1');

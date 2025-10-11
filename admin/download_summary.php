@@ -150,12 +150,12 @@ try {
         $sql .= " AND LOWER(s.academic_level) = ?";
         $params[] = strtolower($level);
     }
-    // Group: Employee -> academic_level like %employee%; Student -> NOT like %employee%
+    // Group filter should reflect the UI which derives group from users.role
     if ($group !== '' && strcasecmp($group, 'All') !== 0) {
         if (strcasecmp($group, 'Employee') === 0) {
-            $sql .= " AND LOWER(s.academic_level) LIKE '%employee%'";
+            $sql .= " AND LOWER(u.role) = 'employee'";
         } elseif (strcasecmp($group, 'Student') === 0) {
-            $sql .= " AND LOWER(s.academic_level) NOT LIKE '%employee%'";
+            $sql .= " AND LOWER(u.role) = 'student'";
         }
     }
     // College code (accept code in multiple stored formats)
