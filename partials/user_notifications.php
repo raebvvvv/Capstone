@@ -62,3 +62,23 @@ if (!empty($_SESSION['user_id'])){
     /* Fallback pseudo-element removed to keep only the numeric badge indicator */
   </style>
   <script src="<?php echo asset_url('javascript/user-notifications.js'); ?>"></script>
+  <script>
+    // Quick client-side fallback: if the server rendered unread > 0 but the badge is hidden
+    // due to CSS/JS load ordering, un-hide it. Also log a helpful message for debugging.
+    (function(){
+      try{
+        var badge = document.getElementById('userNotifBadge');
+        if(badge){
+          var v = badge.textContent && badge.textContent.trim() ? parseInt(badge.textContent.trim(),10) : 0;
+          if(v && v > 0){
+            badge.classList.remove('d-none');
+            console.debug('user-notif: server-side unread=', v, 'badge forced visible');
+          } else {
+            console.debug('user-notif: server-side unread=0');
+          }
+        } else {
+          console.debug('user-notif: badge element not found');
+        }
+      }catch(e){ console.warn('user-notif fallback error', e); }
+    })();
+  </script>
