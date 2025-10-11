@@ -146,35 +146,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
       // Ensure required SMTP settings are present before attempting to send
       if (empty($smtp_config['host']) || empty($smtp_config['username']) || empty($smtp_config['password']) || empty($smtp_config['from_email'])) {
-        throw new RuntimeException("SMTP configuration missing. Provide email_config.php at project root or set SMTP_* environment variables.");
-      }
-            
-            $mail = new PHPMailer(true);
-            try {
-                $mail->isSMTP();
-                $mail->Host = $smtp_config['host'];
-                $mail->SMTPAuth = true;
-                $mail->Username = $smtp_config['username'];
-                $mail->Password = $smtp_config['password'];
-                $mail->SMTPSecure = $smtp_config['encryption'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
-                $mail->Port = $smtp_config['port'];
+        // Do not fail the registration; log and inform user to resend later
+        if (function_exists('log_event')) {
+          log_event('SMTP_MISSING', 'Student registration SMTP is not configured', [
+            'email' => $email,
+            'user_id' => $user_id ?? null,
+          ]);
+        }
+        $success = "Registration successful! However, we couldn't send a verification email right now. Please use the Resend Verification page later or contact support.";
+      } else {
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = $smtp_config['host'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $smtp_config['username'];
+            $mail->Password = $smtp_config['password'];
+            $mail->SMTPSecure = $smtp_config['encryption'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = $smtp_config['port'];
 
-                $mail->setFrom($smtp_config['from_email'], $smtp_config['from_name']);
-                $mail->addAddress($email, $firstName . ' ' . $lastName);
+            $mail->setFrom($smtp_config['from_email'], $smtp_config['from_name']);
+            $mail->addAddress($email, $firstName . ' ' . $lastName);
 
-                $mail->isHTML(true);
-                $mail->Subject = 'Verify your email address';
-                // Build verification URL using configured BASE_URL to respect subfolder paths (e.g., /fix/Capstone)
-                $verifyUrl = asset_url('User/Beforelogin/verify.php') . '?code=' . urlencode($verification_code) . '&email=' . urlencode($email);
-                $mail->Body    = "Dear $firstName,<br><br>Please verify your email by clicking the link below:<br>
-                <a href='$verifyUrl'>Verify Email</a><br><br>
-                This link will expire in 24 hours.<br><br>Thank you!";
+            $mail->isHTML(true);
+            $mail->Subject = 'Verify your email address';
+            // Build verification URL using configured BASE_URL to respect subfolder paths (e.g., /fix/Capstone)
+            $verifyUrl = asset_url('User/Beforelogin/verify.php') . '?code=' . urlencode($verification_code) . '&email=' . urlencode($email);
+            $mail->Body    = "Dear $firstName,<br><br>Please verify your email by clicking the link below:<br>
+            <a href='$verifyUrl'>Verify Email</a><br><br>
+            This link will expire in 24 hours.<br><br>Thank you!";
 
-                $mail->send();
-                $success = "Registration successful! Please check your email to verify your account.";
-            } catch (Exception $e) {
-                $error = "Registration successful, but email could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            $mail->send();
+            $success = "Registration successful! Please check your email to verify your account.";
+        } catch (Exception $e) {
+            if (function_exists('log_event')) {
+              log_event('SMTP_SEND_FAILED', 'Student registration email send failed', [
+                'email' => $email,
+                'error' => $mail->ErrorInfo ?? $e->getMessage(),
+              ]);
             }
+            // Don't mark as error to avoid alarming the user; account was created
+            $success = "Registration successful! However, we couldn't send the verification email. Please try Resend Verification later.";
+        }
+      }
     }
   }
 }

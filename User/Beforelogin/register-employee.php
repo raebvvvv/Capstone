@@ -215,11 +215,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                               $success = "Registration successful! Please check your email to verify your account.";
                           } catch (Exception $e) {
                               // Do not rollback; mirror student behavior
-                              $error = "Registration successful, but email could not be sent. Mailer Error: " . $mail->ErrorInfo;
+                              if (function_exists('log_event')) {
+                                log_event('SMTP_SEND_FAILED', 'Employee registration email send failed', [
+                                  'email' => $email,
+                                  'error' => $mail->ErrorInfo ?? $e->getMessage(),
+                                ]);
+                              }
+                              $success = "Registration successful! However, we couldn't send the verification email. Please try Resend Verification later.";
                           }
                         } else {
                           // Missing SMTP configuration, but account created
-                          $error = "Registration successful, but email could not be sent due to missing SMTP configuration.";
+                          if (function_exists('log_event')) {
+                            log_event('SMTP_MISSING', 'Employee registration SMTP is not configured', [
+                              'email' => $email,
+                              'user_id' => $user_id ?? null,
+                            ]);
+                          }
+                          $success = "Registration successful! However, we couldn't send a verification email right now. Please use the Resend Verification page later or contact support.";
                         }
                     } catch (PDOException $e) {
                         if ($pdo->inTransaction()) { $pdo->rollback(); }

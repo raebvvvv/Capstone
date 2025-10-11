@@ -63,9 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'from_name' => $get('SMTP_FROM_NAME', 'PUP e-IPMO'),
                     ];
                 }
-                if (empty($smtp_config['host']) || empty($smtp_config['username']) || empty($smtp_config['password']) || empty($smtp_config['from_email'])) {
-                    throw new RuntimeException('SMTP configuration missing.');
-                }
+        if (empty($smtp_config['host']) || empty($smtp_config['username']) || empty($smtp_config['password']) || empty($smtp_config['from_email'])) {
+          // Gracefully handle missing SMTP without throwing
+          if (function_exists('log_event')) {
+            log_event('SMTP_MISSING', 'Resend verification SMTP is not configured', [
+              'email' => $email,
+              'user_id' => $user['user_id'] ?? null,
+            ]);
+          }
+          $error = 'Email sending is temporarily unavailable. Please contact support or try again later.';
+        } else {
 
                 // Send email
                 $mail = new PHPMailer(true);
@@ -90,9 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $mail->send();
                 $success = 'A new verification email has been sent. Please check your inbox (or spam folder).';
-            } catch (Throwable $e) {
-                $error = 'Unable to resend verification email: ' . $e->getMessage();
-            }
+        }
+      } catch (Throwable $e) {
+        $error = 'Unable to resend verification email: ' . $e->getMessage();
+      }
         }
     }
 }
@@ -124,5 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
     </div>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
 </body>
 </html>

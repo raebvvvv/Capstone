@@ -1051,3 +1051,7 @@
 {"ts":"2025-10-11T03:04:13+08:00","type":"AUTH","user_id":4,"ip":"127.0.0.1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
 {"ts":"2025-10-11T03:51:04+08:00","type":"AUTH_FAIL","user_id":null,"ip":"127.0.0.1","msg":"Admin login failed","ctx":{"identifier":"54321"}}
 {"ts":"2025-10-11T03:51:07+08:00","type":"AUTH","user_id":4,"ip":"127.0.0.1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
+{"ts":"2025-10-11T14:23:55+08:00","type":"AUTH","user_id":4,"ip":"127.0.0.1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
+{"ts":"2025-10-11T14:52:36+08:00","type":"AUTH","user_id":4,"ip":"127.0.0.1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
+{"ts":"2025-10-11T14:53:20+08:00","type":"SMTP_MISSING","user_id":"17","ip":"127.0.0.1","msg":"Student registration SMTP is not configured","ctx":{"email":"kiri26891@gmail.com","user_id":"17"}}
+{"ts":"2025-10-11T15:12:26+08:00","type":"AUTH","user_id":4,"ip":"127.0.0.1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
