@@ -1,54 +1,47 @@
+/* ========================================
+   LANDING PAGE SPECIFIC STYLES
+   (Index.php only)
+======================================== */
 
-/* Announcement images grid styling */
+/* ---------- Announcement Images Grid ---------- */
 .announcement-card {
   border-radius: 14px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   margin-bottom: 0;
 }
 
-
+/* ---------- Landing Page Layout ---------- */
 .intro-left {
   flex: 1 1 350px;
   min-width: 320px;
   max-width: 700px;
 }
 
-.office-hours-box {
-  flex: 0 0 340px;
-  max-width: 370px;
-  margin-left: 32px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  padding: 2rem 1.5rem 1.5rem 1.5rem;
-  min-width: 270px;
-}
 
+/* Adjust layout for tablets and smaller screens */
 @media (max-width: 992px) {
   .main-intro-row {
     flex-direction: column;
     align-items: stretch;
   }
-  .office-hours-box {
-    margin-left: 0;
+
+  .ms-5 {
+    margin-left: 0 !important;
     margin-top: 2rem;
     max-width: 100%;
     width: 100%;
   }
 }
+
+/* ---------- Column Alignment Fix ---------- */
 .col-lg-7 {
   margin-left: 12px !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   position: static;
 }
-/* Ensure main content aligns with logo and navbar text */
-.col-lg-7 {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  position: static;
-}
-/* Align IP purpose paragraph with intro paragraph */
+
+/* ---------- IP Purpose Paragraph ---------- */
 p.ip-purpose {
   max-width: 520px;
   font-size: 1.05rem;
@@ -56,28 +49,18 @@ p.ip-purpose {
   margin-bottom: 1.1rem;
 }
 
-
-
-.icon-sm {
-  width: 20px;
-  height: 20px;
-  vertical-align: middle;
-  margin-right: 4px;
-}
-
-h1, h2, h5 {
-  letter-spacing: -1px;
-}
-
+/* ---------- Landing Page Card Adjustments ---------- */
 .card {
   border-radius: 14px;
   transition: box-shadow 0.2s;
 }
 
+/* Hover effect on cards */
 .card:hover {
   box-shadow: 0 8px 24px rgba(0,0,0,.08);
 }
 
+/* Adjust card image top styling */
 .card-img-top {
   border-radius: 14px 14px 0 0;
   object-fit: contain;
@@ -88,6 +71,7 @@ h1, h2, h5 {
   margin-right: auto;
 }
 
+/* Login button styling override for landing */
 .btn-login {
   background: #900c0c;
   color: #fff;
@@ -103,18 +87,17 @@ h1, h2, h5 {
   color: #fff;
 }
 
-
-
+/* ---------- Office Section Alignment ---------- */
 .office-right {
   margin-left: 220px; 
 }
-
 @media (max-width: 992px) {
   .office-right {
     margin-left: 0; 
   }
 }
 
+/* ---------- Centered Cards Row ---------- */
 .cards-center-row {
   display: flex;
   align-content: center;
@@ -123,6 +106,7 @@ h1, h2, h5 {
   margin-bottom: 32px;
 }
 
+/* Card sizing in landing row */
 .cards-center-row .card {
   width: 360px;
   min-width: 360px;
@@ -131,7 +115,7 @@ h1, h2, h5 {
   margin: 0;
 }
 
-/* Make the second card (IP types) wider */
+/* Make second card (IP types) wider */
 .cards-center-row .card:nth-child(2) {
   width: 420px;
   min-width: 420px;
@@ -139,6 +123,7 @@ h1, h2, h5 {
   flex: 0 0 420px;
 }
 
+/* Login section centering */
 .login-section-center {
   display: flex;
   flex-direction: column;
@@ -159,6 +144,7 @@ h1, h2, h5 {
   width: 100%;
 }
 
+/* ---------- Responsive Tweaks ---------- */
 @media (max-width: 1200px) {
   .cards-center-row {
     gap: 20px;
@@ -167,7 +153,6 @@ h1, h2, h5 {
     min-width: 260px;
     max-width: 350px;
   }
-  /* Make the second card slightly wider on medium screens */
   .cards-center-row .card:nth-child(2) {
     min-width: 300px;
     max-width: 380px;

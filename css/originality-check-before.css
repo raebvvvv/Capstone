@@ -1,3 +1,30 @@
+/* Ensure guide-card occupies full container width without affecting other cards */
+.guide-card {
+    width: 100% !important;       /* fill the container */
+    max-width: none !important; /* Remove max-width restriction completely */
+    margin: 0 auto 20px auto !important; /* center horizontally */
+    border-radius: 16px;
+    background: #f4f4f4;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+/* Optional: make inner step-box stretch fully */
+.guide-card .step-box {
+    width: 100% !important;
+}
+
+/* Make step items wider */
+.step-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 25px 35px !important; /* Much more padding */
+    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    margin-bottom: 15px;
+    border: none;
+    width: 100% !important;
+}
+
 html, body {
     height: 100%;
     margin: 0;
@@ -25,6 +52,8 @@ body {
   
 main.container {
     margin-top: 12px;
+    max-width: 1400px !important; /* Override Bootstrap container max-width */
+    width: 95% !important; /* Use more screen width */
 }
   
 .icon-sm {
@@ -40,20 +69,12 @@ main.container {
     margin-bottom: 3px;
 }
   
-.guide-card {
-    border-radius: 16px;
-    background: #f4f4f4;
-    margin-bottom: 20px;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
-}
-
 /* Added flex and left/top alignment for icons in guide-card */
 .guide-card .card-body {
     display: flex;
     align-items: flex-start; /* Align icon to top */
     flex-wrap: nowrap;
-    padding: 1.2rem 1.6rem;
+    padding: 2rem 3rem !important; /* Much more padding */
 }
 
 /* Updated step-icon for left alignment and spacing */
@@ -72,17 +93,8 @@ h2, h4, h5 {
 }
   
 .step-box {
-    width: 100%;
+    width: 100% !important;
     margin-top: 0;
-}
-  
-.step-item {
-    background: #fff;
-    border-radius: 10px;
-    padding: 16px 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.07);
-    margin-bottom: 15px;
-    border: none;
 }
   
 .step-title {
@@ -116,10 +128,14 @@ footer {
 }
   
 @media (max-width: 992px) {
+    main.container {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
     .guide-card .card-body {
         flex-direction: column !important;
         align-items: flex-start !important;
-        padding: 1.1rem 0.9rem;
+        padding: 1.5rem 1.2rem !important;
     }
     .step-icon {
         margin-bottom: 12px;
@@ -127,7 +143,7 @@ footer {
         width: 56px;
     }
     .step-box, .step-item {
-        padding: 12px 12px;
+        padding: 15px 18px !important;
     }
     .step-title {
         font-size: 1rem;

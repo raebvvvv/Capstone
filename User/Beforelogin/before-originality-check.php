@@ -8,8 +8,8 @@
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/originality-check-before.css?v=5'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/main.css?v=5'); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/originality-check-before.css?v=6'); ?>">
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
@@ -31,13 +31,13 @@
   </nav>
 
   <!-- Back Button Below Navbar, scrolls with content, transparent background -->
-  <div class="container d-flex justify-content-end mt-3 mb-2">
+  <div class="container-fluid d-flex justify-content-end mt-3 mb-2" style="max-width: 1400px; margin: 0 auto;">
     <?php if (function_exists('render_back_link')) { 
       render_back_link('User/Beforelogin/before-e-services.php'); 
     } ?>
   </div>
 
-  <main class="container pb-5">
+  <main class="container-fluid pb-5" style="max-width: 1400px; margin: 0 auto; padding-left: 2.5rem; padding-right: 2.5rem;">
     <h2 class="fw-bold mt-2 mb-3">How to get Originality Check Certificate?</h2>
     <p class="fs-5 mb-2">
       IPMO offers Originality Checking through 
