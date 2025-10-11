@@ -101,6 +101,22 @@ try {
     }
 
     if (function_exists('log_event')) { log_event('COMPLETE_REQUEST', 'Request completed', ['request_id'=>$requestId,'rows'=>$affected,'id_column'=>$idCol,'comment_set'=>($comment!=='')]); }
+
+    // Notify applicant about completion
+    try {
+        // Resolve numeric submission_id if necessary
+        $numericId = ctype_digit($requestId) ? (int)$requestId : null;
+        if (!$numericId) {
+            $tmp = $pdo->prepare('SELECT submission_id FROM submissions WHERE submission_code = ? LIMIT 1');
+            $tmp->execute([ $requestId ]);
+            $numericId = (int)$tmp->fetchColumn();
+        }
+        if ($numericId) {
+            require_once __DIR__ . '/../includes/notification_helpers.php';
+            notify_submission_status_change($pdo, $numericId, 'completed');
+        }
+    } catch (Throwable $e) { if (function_exists('log_event')) log_event('NOTIF_HOOK_FAIL','complete notify failed', ['err'=>substr($e->getMessage(),0,200)]); }
+
     echo json_encode(['success'=>true,'updated'=>$affected,'id_column'=>$idCol,'comment_set'=>($comment!=='')]);
 } catch(Throwable $e){
     $msg = substr($e->getMessage(),0,200);

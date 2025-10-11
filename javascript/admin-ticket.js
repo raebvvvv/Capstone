@@ -363,8 +363,23 @@
       }
       try {
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-  const res = await fetch('../admin/set_incomplete.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify({ request_id: requestId, remark, comment, file_ids: [], affected_doc_types: affected }) });
-        const data = await res.json();
+        const res = await fetch('../admin/set_incomplete.php',{ method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csrf}, body: JSON.stringify({ request_id: requestId, remark, comment, file_ids: [], affected_doc_types: affected }) });
+        // Better error handling: check HTTP status first, then try to parse JSON.
+        if(!res.ok){
+          const text = await res.text().catch(()=>'(no body)');
+          console.error('set_incomplete server error', res.status, text);
+          alert('Save failed: server returned ' + res.status + '\n' + text);
+          return;
+        }
+        let data;
+        try{
+          data = await res.json();
+        }catch(parseErr){
+          const txt = await res.text().catch(()=>'(no body)');
+          console.error('set_incomplete invalid JSON', parseErr, txt);
+          alert('Save failed: server returned invalid JSON:\n' + txt);
+          return;
+        }
         console.debug('[set_incomplete pending single] payload', { request_id: requestId, remark, comment, affected });
         console.debug('[set_incomplete pending single] response', data);
         if(data.success){
@@ -400,7 +415,7 @@
         } else {
           alert('Failed to mark incomplete: ' + (data.error || 'Unknown error'));
         }
-      } catch(err){ console.error('set_incomplete pending error', err); alert('Network error during save'); }
+  } catch(err){ console.error('set_incomplete pending error', err); alert('Network error during save: ' + (err && err.message ? err.message : String(err))); }
     }); }
 
     // Functions for multi-step incomplete workflow

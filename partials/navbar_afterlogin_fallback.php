@@ -20,6 +20,10 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
   <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Afterlogin/' . ($isEmployee ? 'employee-application.php' : 'student-application.php')); ?>">My Application</a></li>
   <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Afterlogin/' . ($isEmployee ? 'employee-profile.php' : 'student-profile.php')); ?>">My Profile</a></li>
       </ul>
+      <?php // include the notifications bell partial (shows unread badge and dropdown) ?>
+      <div class="d-flex align-items-center ms-3">
+        <?php include __DIR__ . '/user_notifications.php'; ?>
+      </div>
       <a href="<?php echo asset_url('User/Afterlogin/e-services.php'); ?>" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
     </div>
   </div>

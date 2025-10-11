@@ -1,9 +1,30 @@
 <?php
 require __DIR__ . '/../config.php';
 require app_path('conn.php');
+// ensure bootstrap and auth are available
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
 require_admin();
+
+// Always return JSON from this endpoint. Suppress direct HTML error output and
+// register a shutdown handler to catch fatal errors so the client doesn't receive
+// an empty response body (which causes JSON.parse failures).
+@ini_set('display_errors', '0');
+error_reporting(E_ALL);
 header('Content-Type: application/json');
+
+register_shutdown_function(function(){
+    $err = error_get_last();
+    if($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])){
+        http_response_code(500);
+        // Log the raw error server-side for diagnostics
+        error_log("FATAL in set_incomplete.php: " . ($err['message'] ?? '(no message)') . " on line " . ($err['line'] ?? '?'));
+        // Return safe JSON to the client (truncate details to avoid leaking sensitive info)
+        $detail = isset($err['message']) ? substr($err['message'],0,200) : 'fatal error';
+        echo json_encode(['success'=>false,'error'=>'fatal','detail'=>$detail]);
+        // Ensure output is flushed
+        @flush();
+    }
+});
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -111,6 +132,12 @@ try {
     ]);
 
     if($pdo->inTransaction()) { $pdo->commit(); }
+
+    // Notify applicant that documents need resubmission
+    try {
+        require_once __DIR__ . '/../includes/notification_helpers.php';
+        notify_documents_need_resubmission($pdo, $sid, $affectedDocTypes, $comment);
+    } catch (Throwable $e) { if (function_exists('log_event')) log_event('NOTIF_HOOK_FAIL','set_incomplete notify failed', ['err'=>substr($e->getMessage(),0,200)]); }
 
     echo json_encode([
         'success' => true,

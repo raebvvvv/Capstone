@@ -108,6 +108,13 @@ try {
     }
 
     if (function_exists('log_event')) { log_event('APPROVE_REQUEST', 'Request approved', ['request_id' => $requestId, 'rows'=>$affected, 'id_column'=>$idCol, 'comment_set'=> ($comment !== '') ]); }
+
+    // Notify applicant about approval (site + email) if we can
+    try {
+        require_once __DIR__ . '/includes/notification_helpers.php';
+        if ($sid) { notify_submission_status_change($pdo, $sid, 'approved'); }
+    } catch (Throwable $e) { if (function_exists('log_event')) log_event('NOTIF_HOOK_FAIL','approve notify failed', ['err'=>substr($e->getMessage(),0,200)]); }
+
     echo json_encode(['success' => true, 'updated' => $affected, 'id_column'=>$idCol, 'comment_set'=> ($comment !== '')]);
 } catch (Throwable $e) {
     $msg = substr($e->getMessage(),0,200);
