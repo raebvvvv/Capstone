@@ -1,9 +1,63 @@
 <?php
 require __DIR__ . '/../config.php';
 require app_path('conn.php');
+// ensure bootstrap and auth are available
 if (function_exists('secure_bootstrap')) { secure_bootstrap(); }
-require_admin();
+// For AJAX endpoints, avoid redirecting to HTML login pages which break JSON clients.
+// If this request appears to be an AJAX/JSON call and the user is not an admin, return JSON 401.
+$isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+    || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false)
+    || (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'],'application/json') !== false);
+if (empty($_SESSION['user_logged_in']) || empty($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
+    if ($isAjax) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'unauthenticated']);
+        exit;
+    }
+    // Non-AJAX fallback: use the existing redirect behaviour
+    require_admin();
+}
+
+// Always return JSON from this endpoint. Suppress direct HTML error output and
+// register a shutdown handler to catch fatal errors so the client doesn't receive
+// an empty response body (which causes JSON.parse failures).
+@ini_set('display_errors', '0');
+error_reporting(E_ALL);
 header('Content-Type: application/json');
+
+register_shutdown_function(function(){
+    $err = error_get_last();
+    if($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])){
+        http_response_code(500);
+        // Log the raw error server-side for diagnostics
+        error_log("FATAL in set_incomplete.php: " . ($err['message'] ?? '(no message)') . " on line " . ($err['line'] ?? '?'));
+        // Return safe JSON to the client (truncate details to avoid leaking sensitive info)
+        $detail = isset($err['message']) ? substr($err['message'],0,200) : 'fatal error';
+        echo json_encode(['success'=>false,'error'=>'fatal','detail'=>$detail]);
+        // Ensure output is flushed
+        @flush();
+    }
+});
+
+// Lightweight debug logging for incoming AJAX requests to help diagnose non-JSON responses.
+// Writes minimal information (method, URI, key headers, body preview) to a local debug file.
+$dbgLog = __DIR__ . '/../debug_set_incomplete.log';
+try{
+    $dbgRaw = file_get_contents('php://input');
+    $dbgHeaders = [];
+    if(function_exists('getallheaders')){
+        $gh = getallheaders();
+        $dbgHeaders['X-CSRF-Token'] = $gh['X-CSRF-Token'] ?? ($gh['X-Csrf-Token'] ?? null);
+        $dbgHeaders['Accept'] = $gh['Accept'] ?? null;
+        $dbgHeaders['Content-Type'] = $gh['Content-Type'] ?? null;
+    } else {
+        $dbgHeaders['X-CSRF-Token'] = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_SERVER['HTTP_X_CSRFTOKEN'] ?? null);
+        $dbgHeaders['Accept'] = $_SERVER['HTTP_ACCEPT'] ?? null;
+        $dbgHeaders['Content-Type'] = $_SERVER['CONTENT_TYPE'] ?? null;
+    }
+    $entry = ['ts'=>date('c'),'uri'=>($_SERVER['REQUEST_URI'] ?? ''),'method'=>($_SERVER['REQUEST_METHOD'] ?? ''),'headers'=>$dbgHeaders,'body_preview'=>substr($dbgRaw,0,200)];
+    @file_put_contents($dbgLog, json_encode($entry) . PHP_EOL, FILE_APPEND | LOCK_EX);
+}catch(Throwable $e){ /* ignore logging errors */ }
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -111,6 +165,12 @@ try {
     ]);
 
     if($pdo->inTransaction()) { $pdo->commit(); }
+
+    // Notify applicant that documents need resubmission
+    try {
+        require_once __DIR__ . '/../includes/notification_helpers.php';
+        notify_documents_need_resubmission($pdo, $sid, $affectedDocTypes, $comment);
+    } catch (Throwable $e) { if (function_exists('log_event')) log_event('NOTIF_HOOK_FAIL','set_incomplete notify failed', ['err'=>substr($e->getMessage(),0,200)]); }
 
     echo json_encode([
         'success' => true,

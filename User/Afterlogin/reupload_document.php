@@ -181,6 +181,9 @@ try {
         user_id INT NOT NULL,
         doc_type VARCHAR(100) NOT NULL,
         message VARCHAR(255) NOT NULL,
+        notification_type VARCHAR(50) DEFAULT 'resubmission',
+        occurrence_count INT DEFAULT 1,
+        meta TEXT DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         is_read TINYINT(1) DEFAULT 0,
         INDEX (is_read),
@@ -188,10 +191,69 @@ try {
         INDEX (user_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    // Compose message
-    $msg = sprintf('User #%d re-uploaded %s (%s)', $user_id, str_replace('_',' ', $docType), $submissionCode);
-    $ins = $pdo->prepare('INSERT INTO admin_notifications (submission_id, submission_code, user_id, doc_type, message) VALUES (?,?,?,?,?)');
-    $ins->execute([(int)$sub['submission_id'], $submissionCode, $user_id, $docType, $msg]);
+    // Ensure resubmission audit table exists
+    $pdo->exec("CREATE TABLE IF NOT EXISTS resubmission_audit (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        submission_id INT NOT NULL,
+        submission_code VARCHAR(100) NOT NULL,
+        user_id INT NOT NULL,
+        doc_type VARCHAR(100) NOT NULL,
+        file_name VARCHAR(255) DEFAULT NULL,
+        file_size INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX (submission_id),
+        INDEX (user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Insert immutable audit row for this document reupload
+    $auditIns = $pdo->prepare('INSERT INTO resubmission_audit (submission_id, submission_code, user_id, doc_type, file_name, file_size) VALUES (?,?,?,?,?,?)');
+    $auditIns->execute([(int)$sub['submission_id'], $submissionCode, $user_id, $docType, $newName, (int)$validation['size']]);
+
+    // Aggregation/dedupe window (minutes)
+    $dedupeMin = getenv('NOTIF_DEDUPE_WINDOW_MIN') ? (int)getenv('NOTIF_DEDUPE_WINDOW_MIN') : 10;
+
+    // Try to find a recent aggregated notification for this submission
+    $sel = $pdo->prepare('SELECT id, occurrence_count, meta, created_at FROM admin_notifications WHERE submission_id = ? AND notification_type = ? ORDER BY created_at DESC LIMIT 1');
+    $sel->execute([(int)$sub['submission_id'], 'resubmission']);
+    $last = $sel->fetch(PDO::FETCH_ASSOC);
+    $now = new DateTimeImmutable('now');
+    $metaArr = [];
+    // Prepare current item meta
+    $currentItem = [
+        'doc_type' => $docType,
+        'file_name' => $newName,
+        'file_size' => (int)$validation['size'],
+        'created_at' => $now->format('Y-m-d H:i:s'),
+        'user_id' => $user_id
+    ];
+
+    if ($last) {
+        // check window
+        $created = new DateTimeImmutable($last['created_at']);
+        $diffMin = ($now->getTimestamp() - $created->getTimestamp()) / 60;
+        if ($diffMin <= $dedupeMin) {
+            // update existing aggregated notification: increment count, append meta, set is_read=0
+            $existingMeta = [];
+            if (!empty($last['meta'])) {
+                $decoded = json_decode($last['meta'], true);
+                if (is_array($decoded)) { $existingMeta = $decoded; }
+            }
+            $existingMeta[] = $currentItem;
+            $newCount = max(1, (int)$last['occurrence_count']) + 1;
+            $newMsg = sprintf('User #%d resubmitted %d document%s for %s', $user_id, $newCount, $newCount>1? 's':'', $submissionCode);
+            $upd = $pdo->prepare('UPDATE admin_notifications SET occurrence_count = ?, meta = ?, message = ?, is_read = 0, created_at = NOW() WHERE id = ?');
+            $upd->execute([$newCount, json_encode($existingMeta, JSON_UNESCAPED_UNICODE), $newMsg, (int)$last['id']]);
+            // done
+            echo json_encode(['success'=>true,'doc_type'=>$docType,'file_name'=>$newName,'size'=>$file['size'],'notified'=>true,'aggregated'=>true,'remaining'=>$remaining,'updated_status'=>$updatedStatus]);
+            exit;
+        }
+    }
+
+    // No recent aggregate found -> insert a new aggregated notification
+    $metaArr[] = $currentItem;
+    $msg = sprintf('User #%d resubmitted 1 document for %s', $user_id, $submissionCode);
+    $ins = $pdo->prepare('INSERT INTO admin_notifications (submission_id, submission_code, user_id, doc_type, message, notification_type, occurrence_count, meta) VALUES (?,?,?,?,?,?,?,?)');
+    $ins->execute([(int)$sub['submission_id'], $submissionCode, $user_id, $docType, $msg, 'resubmission', 1, json_encode($metaArr, JSON_UNESCAPED_UNICODE)]);
 
     echo json_encode(['success'=>true,'doc_type'=>$docType,'file_name'=>$newName,'size'=>$file['size'],'notified'=>true,'remaining'=>$remaining,'updated_status'=>$updatedStatus]);
 } catch(Throwable $e){

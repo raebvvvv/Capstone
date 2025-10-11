@@ -33,7 +33,7 @@ $res = $stmt->get_result();
 $row = $res->fetch_assoc();
 if(!$row){ echo json_encode(['success'=>false,'error'=>'User not found']); exit(); }
 if(!password_verify($current, $row['password'])) { log_event('ADMIN_PASSWORD_CHANGE_FAIL','Incorrect current password'); echo json_encode(['success'=>false,'error'=>'Current password is incorrect']); exit(); }
-if(strlen($new) < 8){ log_event('ADMIN_PASSWORD_CHANGE_FAIL','Too short'); echo json_encode(['success'=>false,'error'=>'New password must be at least 8 characters']); exit(); }
+if(strlen($new) < 12){ log_event('ADMIN_PASSWORD_CHANGE_FAIL','Too short'); echo json_encode(['success'=>false,'error'=>'New password must be at least 12 characters']); exit(); }
 if(strlen($new) > 200){ echo json_encode(['success'=>false,'error'=>'Password too long']); exit(); }
 
 $newHash = password_hash($new, PASSWORD_BCRYPT);
