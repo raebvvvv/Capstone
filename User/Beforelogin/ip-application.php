@@ -144,8 +144,8 @@
             <span class="step-title fw-bold">Application Status and Remarks</span>
           </div>
           <div class="step-desc mb-1">
-          <!-- Pending Tab -->
-
+          
+      <!-- Pending Tab -->
       <div class="step-desc mb-1">
         <!-- Pending Tab -->
         <div class="mt-3">

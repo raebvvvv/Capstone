@@ -158,9 +158,3 @@ body.forms-page #copyrightForm .section-heading {
   font-size: 1rem; /* Original size */
 }
 
-.submission-form-card {
-  max-width: 1500px;
-  width: 100%;
-  margin-left: 60px;
-  margin-right: auto;
-}

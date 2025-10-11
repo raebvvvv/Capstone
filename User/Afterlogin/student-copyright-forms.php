@@ -50,8 +50,9 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   <main class="py-4">
     <div class="container-fluid">
       <div class="row justify-content-center">
-        <div class="col-12 d-flex justify-content-center">
-          <div id="termsGate" class="card shadow-sm mb-4" style="max-width:600px;width:100%;">
+        <div class="col-12 ">
+          <!-- Terms & Conditions -->
+          <div id="termsGate" class="card shadow-sm mb-4 mx-auto" style="max-width:800px;width:100%;">
         <div class="card-header bg-primary text-white py-2">
           <strong>Terms &amp; Conditions</strong>
         </div>
@@ -95,7 +96,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
       <div id="formSection" class="d-none">
         <h1 class="fw-bold text-center">Submission Form <small class="text-danger fw-normal" style="font-size:.55em;">(Student)</small></h1>
         <p class="text-muted small text-center">Please fill out the form below to submit your intellectual property for evaluation and processing. All fields marked with an asterisk (*) are required.</p>
-  <div class="card shadow-sm submission-form-card" style="max-width:900px;width:100%; margin-left:auto; margin-right:auto;">
+        <div class="card shadow-sm submission-form-card mx-auto" style="max-width:1300px;width:100%;">
           <div class="card-body">
             <!-- Student Information  -->
             <?php $perFileMB = 50; ?>
