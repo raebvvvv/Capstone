@@ -7,7 +7,7 @@ $db   = Environment::get('DB_NAME', 'ipmo_users'); // your database name
 $user = Environment::get('DB_USERNAME', 'root');   // your database username
 $pass = Environment::get('DB_PASSWORD', '');       // your database password
 $charset = 'utf8mb4';
-$port = Environment::get('DB_PORT', '3306');       // your database port
+$port = Environment::get('DB_PORT', '3307');       // your database port
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset;port=$port";
 $options = [

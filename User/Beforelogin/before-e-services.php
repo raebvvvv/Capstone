@@ -16,6 +16,15 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/e-services.css'); ?>">
+  <style>
+    /* Only widen the Industrial Property card, keep others unchanged */
+    @media (min-width: 768px) {
+      .ip-card-wide {
+        width: 520px !important;
+        max-width: 98vw;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -46,7 +55,7 @@
       Inside each e-Service are <strong>registration forms and application guidelines.</strong>
     </p>
 
-    <!-- Service Cards -->
+    <!-- Service Cards (Row 1) -->
     <div class="row justify-content-center g-4">
       <!-- Originality Check -->
       <div class="col-md-4">
@@ -78,10 +87,12 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Industrial Property -->
-      <div class="col-md-8">
-        <div class="card h-100 shadow-sm">
+    <!-- Service Cards (Row 2) - centered with extra top margin -->
+    <div class="row justify-content-center g-4 mt-3 mt-md-4">
+      <div class="col-12 col-md-5">
+        <div class="card h-100 shadow-sm ip-card-wide">
           <div class="card-body text-center">
             <img src="<?php echo asset_url('Photos/Icons/Patent-icon.png'); ?>" alt="Patent" class="mb-2" width="60">
             <h5 class="card-title">Industrial Property</h5>

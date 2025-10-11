@@ -1,3 +1,5 @@
+/* Center and widen the Submission Form card */
+
 .required::after 
 { 
     content:" *"; color:#dc3545; 
@@ -83,12 +85,7 @@ body.forms-page #termsGate .btn-primary:focus {
   border-color: #b02a37 !important;
 }
 
-/* Make ONLY the submission form wider - not Terms & Conditions */
-body.forms-page #formSection {
-  width: 180% !important; /* Make submission form 80% wider */
-  margin-left: -40% !important; /* Center it by offsetting half the extra width */
-  max-width: none !important; /* Remove any max-width constraints */
-}
+
 
 /* Make "Choose file" buttons match maroon theme */
 body.forms-page input[type="file"] {
@@ -159,4 +156,11 @@ body.forms-page #copyrightForm fieldset legend {
 
 body.forms-page #copyrightForm .section-heading {
   font-size: 1rem; /* Original size */
+}
+
+.submission-form-card {
+  max-width: 1500px;
+  width: 100%;
+  margin-left: 60px;
+  margin-right: auto;
 }
