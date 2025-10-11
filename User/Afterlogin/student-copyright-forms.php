@@ -50,7 +50,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   <main class="py-4">
     <div class="container">
       <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-7">
+        <div class="col-12"> <!-- Changed from col-lg-8 col-xl-7 to col-12 for full width -->
           <!-- Terms & Conditions -->
           <div id="termsGate" class="card shadow-sm mb-4">
         <div class="card-header bg-primary text-white py-2">
