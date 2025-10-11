@@ -371,21 +371,21 @@
           alert('Save failed: server returned ' + res.status + '\n' + text);
           return;
         }
+        // Read the full response text first so we can show the server body on error
+        const responseText = await res.text().catch(()=>null);
         const contentType = (res.headers.get('content-type') || '').toLowerCase();
         if(!contentType.includes('application/json')){
           // Non-JSON response (often a login HTML page due to session expiry or redirect)
-          const txt = await res.text().catch(()=>'(no body)');
-          console.error('set_incomplete unexpected content-type', contentType, txt);
-          alert('Save failed: server returned non-JSON response:\n' + (txt || '(no body)'));
+          console.error('set_incomplete unexpected content-type', contentType, responseText);
+          alert('Save failed: server returned non-JSON response:\n' + (responseText || '(no body)'));
           return;
         }
         let data;
         try{
-          data = await res.json();
+          data = JSON.parse(responseText || '{}');
         }catch(parseErr){
-          const txt = await res.text().catch(()=>'(no body)');
-          console.error('set_incomplete invalid JSON', parseErr, txt);
-          alert('Save failed: server returned invalid JSON:\n' + txt);
+          console.error('set_incomplete invalid JSON', parseErr, responseText);
+          alert('Save failed: server returned invalid JSON:\n' + (responseText || '(no body)'));
           return;
         }
         console.debug('[set_incomplete pending single] payload', { request_id: requestId, remark, comment, affected });
