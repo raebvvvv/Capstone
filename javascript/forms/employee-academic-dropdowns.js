@@ -1,4 +1,4 @@
-// Academic Program Data for PUP
+// Academic Program Data for PUP (fallbacks if API unavailable)
 const academicData = {
   campus: [
     "PUP Main (Sta. Mesa, Manila)"
@@ -226,11 +226,95 @@ const academicData = {
 
 // Initialize dropdown relationships on document load
 document.addEventListener('DOMContentLoaded', function() {
+  const API_URL = window.CATALOGS_API_URL || '/capstone/catalogs_public_api.php';
+  const catalogsCache = {
+    campuses: null,
+    levels: null,
+    colleges: null,
+    campusNameToId: new Map(),
+    collegeNameToId: new Map(),
+    collegesByCampusId: new Map(),
+    departmentsByCollegeId: new Map(),
+    programsByCollegeId: new Map()
+  };
+
+  async function fetchJSON(params) {
+    const qs = new URLSearchParams(params).toString();
+    const url = `${API_URL}?${qs}`;
+    try {
+      const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'Invalid API');
+      return data.data || [];
+    } catch (e) {
+      return null; // signal fallback
+    }
+  }
+
+  async function loadCampuses() {
+    if (catalogsCache.campuses) return catalogsCache.campuses;
+    const rows = await fetchJSON({ entity: 'campus' });
+    catalogsCache.campuses = rows; // can be null (fallback)
+    catalogsCache.campusNameToId.clear();
+    if (Array.isArray(rows)) {
+      rows.forEach(r => catalogsCache.campusNameToId.set(r.name, r.id));
+    }
+    return catalogsCache.campuses;
+  }
+  async function loadLevels() {
+    if (catalogsCache.levels) return catalogsCache.levels;
+    const rows = await fetchJSON({ entity: 'level' });
+    catalogsCache.levels = rows;
+    return catalogsCache.levels;
+  }
+  async function loadColleges() {
+    if (catalogsCache.colleges) return catalogsCache.colleges;
+    const rows = await fetchJSON({ entity: 'college' });
+    catalogsCache.colleges = rows;
+    catalogsCache.collegeNameToId.clear();
+    if (Array.isArray(rows)) {
+      rows.forEach(r => catalogsCache.collegeNameToId.set(r.name, r.id));
+    }
+    return catalogsCache.colleges;
+  }
+  async function loadCollegesByCampusId(campusId) {
+    if (!campusId) return null;
+    if (catalogsCache.collegesByCampusId.has(campusId)) return catalogsCache.collegesByCampusId.get(campusId);
+    const rows = await fetchJSON({ entity: 'college', parent_id: String(campusId) });
+    catalogsCache.collegesByCampusId.set(campusId, rows);
+    // also update name->id map for convenience
+    if (Array.isArray(rows)) {
+      rows.forEach(r => catalogsCache.collegeNameToId.set(r.name, r.id));
+    }
+    return rows;
+  }
+  async function loadDepartmentsByCollegeName(collegeName) {
+    const colleges = await loadColleges();
+    if (!Array.isArray(colleges)) return null;
+    const cid = catalogsCache.collegeNameToId.get(collegeName);
+    if (!cid) return null;
+    if (catalogsCache.departmentsByCollegeId.has(cid)) return catalogsCache.departmentsByCollegeId.get(cid);
+    const rows = await fetchJSON({ entity: 'department', parent_id: String(cid) });
+    catalogsCache.departmentsByCollegeId.set(cid, rows);
+    return rows;
+  }
+  async function loadProgramsByCollegeName(collegeName) {
+    const colleges = await loadColleges();
+    if (!Array.isArray(colleges)) return null;
+    const cid = catalogsCache.collegeNameToId.get(collegeName);
+    if (!cid) return null;
+    if (catalogsCache.programsByCollegeId.has(cid)) return catalogsCache.programsByCollegeId.get(cid);
+    const rows = await fetchJSON({ entity: 'program', parent_id: String(cid) });
+    catalogsCache.programsByCollegeId.set(cid, rows);
+    return rows;
+  }
   // Support both employee and student pages
   const academicLevelSelect = document.getElementById('academicLevel') || document.getElementById('academic_level');
   const collegeSelect = document.getElementById('college');
   const programSelect = document.getElementById('program');
   const departmentSelect = document.getElementById('department');
+  const campusSelect = document.getElementById('campus');
   // Remember which fields were disabled when page loaded; never unlock them client-side
   const initiallyLocked = new Set();
   [academicLevelSelect, collegeSelect, programSelect, departmentSelect].forEach(el=>{ if(el && el.disabled){ initiallyLocked.add(el.id); el.dataset.locked = '1'; } });
@@ -252,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
           progNA.value = 'N/A';
           progNA.textContent = 'N/A';
           programSelect.appendChild(progNA);
-        } else if (isGradOrOU) {
+  } else if (isGradOrOU) {
           // Only enable if it wasn't locked initially
           programSelect.disabled = progLocked ? true : false;
           let options = academicData.program[selectedLevel] || academicData.program.default;
@@ -264,8 +348,17 @@ document.addEventListener('DOMContentLoaded', function() {
           // Undergraduate/other: program depends on currently selected college
           programSelect.disabled = progLocked ? true : false;
           const selCollege = collegeSelect ? collegeSelect.value : null;
-          const options = (selCollege && academicData.program[selCollege]) ? academicData.program[selCollege] : academicData.program.default;
-          populateDropdown(programSelect, options);
+          (async () => {
+            if (selCollege) {
+              const prows = await loadProgramsByCollegeName(selCollege);
+              if (Array.isArray(prows)) {
+                populateDropdown(programSelect, prows.map(p => p.name));
+                return;
+              }
+            }
+            const options = (selCollege && academicData.program[selCollege]) ? academicData.program[selCollege] : academicData.program.default;
+            populateDropdown(programSelect, options);
+          })();
         }
       }
     });
@@ -273,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // When college selection changes, update programs
   if (collegeSelect) {
-    collegeSelect.addEventListener('change', function() {
+    collegeSelect.addEventListener('change', async function() {
     const selectedCollege = this.value;
     
     // Update programs dropdown only for Undergraduate; for Masters/Doctorate/OU keep level-specific list
@@ -282,31 +375,193 @@ document.addEventListener('DOMContentLoaded', function() {
         const isGradOrOU = (level === 'Masters' || level === 'Doctorate' || level === 'Open University');
         const isNS = (level === 'Not Studying');
         if (!isGradOrOU && !isNS) {
-          populateDropdown(
-            programSelect,
-            academicData.program[selectedCollege] || academicData.program.default
-          );
+          const prows = await loadProgramsByCollegeName(selectedCollege);
+          if (Array.isArray(prows)) {
+            populateDropdown(programSelect, prows.map(p => p.name));
+          } else {
+            populateDropdown(
+              programSelect,
+              academicData.program[selectedCollege] || academicData.program.default
+            );
+          }
         }
       }
 
       // Update departments dropdown (lock to N/A when no mapping exists)
       if (departmentSelect) {
         const depLocked = departmentSelect && departmentSelect.dataset.locked === '1';
-        const deps = academicData.department[selectedCollege];
-        if (Array.isArray(deps) && deps.length) {
-          // Only enable if it wasn't locked initially
+        const drows = await loadDepartmentsByCollegeName(selectedCollege);
+        if (Array.isArray(drows) && drows.length) {
           departmentSelect.disabled = depLocked ? true : false;
-          populateDropdown(departmentSelect, deps);
+          populateDropdown(departmentSelect, drows.map(d => d.name));
         } else {
-          departmentSelect.disabled = true;
-          departmentSelect.innerHTML = '';
-          const na = document.createElement('option');
-          na.value = 'N/A';
-          na.textContent = 'N/A';
-          departmentSelect.appendChild(na);
+          const deps = academicData.department[selectedCollege];
+          if (Array.isArray(deps) && deps.length) {
+            departmentSelect.disabled = depLocked ? true : false;
+            populateDropdown(departmentSelect, deps);
+          } else {
+            departmentSelect.disabled = true;
+            departmentSelect.innerHTML = '';
+            const na = document.createElement('option');
+            na.value = 'N/A';
+            na.textContent = 'N/A';
+            departmentSelect.appendChild(na);
+          }
         }
       }
     });
+  }
+
+  // Update colleges when campus changes (cascading campus -> college)
+  async function updateCollegesForCampus(campusName) {
+    if (!collegeSelect) return;
+    const wasLocked = collegeSelect && collegeSelect.dataset.locked === '1';
+    // If API available, filter by campus
+    await loadCampuses();
+    const cid = catalogsCache.campusNameToId.get(campusName || '');
+    if (cid) {
+      const crows = await loadCollegesByCampusId(cid);
+      if (Array.isArray(crows) && crows.length) {
+        collegeSelect.disabled = wasLocked ? true : false;
+        populateDropdown(collegeSelect, crows.map(c => c.name));
+        // Trigger downstream updates (programs/departments)
+        collegeSelect.dispatchEvent(new Event('change'));
+        return;
+      }
+    }
+    // Fallback: all colleges from API, else static list
+    const all = await loadColleges();
+    if (Array.isArray(all) && all.length) {
+      collegeSelect.disabled = wasLocked ? true : false;
+      populateDropdown(collegeSelect, all.map(c => c.name));
+    } else {
+      collegeSelect.disabled = wasLocked ? true : false;
+      populateDropdown(collegeSelect, getDynamicCollegeList());
+    }
+    collegeSelect.dispatchEvent(new Event('change'));
+  }
+
+  if (campusSelect) {
+    campusSelect.addEventListener('change', async function() {
+      const campusName = this.value;
+      await updateCollegesForCampus(campusName);
+    });
+  }
+
+  // Force-populate when fields become editable (profile edit toggled)
+  async function forcePopulateAll() {
+    const prev = {
+      campus: campusSelect ? campusSelect.value : '',
+      college: collegeSelect ? collegeSelect.value : '',
+      level: academicLevelSelect ? academicLevelSelect.value : '',
+      dept: departmentSelect ? departmentSelect.value : '',
+      prog: programSelect ? programSelect.value : ''
+    };
+
+    // Campuses
+    if (campusSelect) {
+      const crows = await loadCampuses();
+      if (Array.isArray(crows) && crows.length) populateDropdown(campusSelect, crows.map(r => r.name));
+      else populateDropdown(campusSelect, academicData.campus);
+      if (prev.campus) campusSelect.value = prev.campus;
+    }
+
+    // Academic levels (filter out Undergraduate)
+    if (academicLevelSelect) {
+      const lrows = await loadLevels();
+      if (Array.isArray(lrows) && lrows.length) {
+        const levels = lrows.map(r => r.name).filter(n => n !== 'Undergraduate');
+        if (levels.length) populateDropdown(academicLevelSelect, levels);
+        else populateDropdown(academicLevelSelect, ["Not Studying", "Doctorate", "Masters", "Open University"]);
+      } else {
+        populateDropdown(academicLevelSelect, ["Not Studying", "Doctorate", "Masters", "Open University"]);
+      }
+      if (prev.level) academicLevelSelect.value = prev.level;
+    }
+
+    // Colleges (by campus if selected)
+    if (collegeSelect) {
+      if (campusSelect && campusSelect.value) {
+        const cname = campusSelect.value;
+        const cid = catalogsCache.campusNameToId.get(cname || '');
+        if (cid) {
+          const colRows = await loadCollegesByCampusId(cid);
+          if (Array.isArray(colRows) && colRows.length) populateDropdown(collegeSelect, colRows.map(r => r.name));
+          else {
+            const all = await loadColleges();
+            if (Array.isArray(all) && all.length) populateDropdown(collegeSelect, all.map(r => r.name));
+            else populateDropdown(collegeSelect, getDynamicCollegeList());
+          }
+        } else {
+          const all = await loadColleges();
+          if (Array.isArray(all) && all.length) populateDropdown(collegeSelect, all.map(r => r.name));
+          else populateDropdown(collegeSelect, getDynamicCollegeList());
+        }
+      } else {
+        const all = await loadColleges();
+        if (Array.isArray(all) && all.length) populateDropdown(collegeSelect, all.map(r => r.name));
+        else populateDropdown(collegeSelect, getDynamicCollegeList());
+      }
+      if (prev.college) collegeSelect.value = prev.college;
+    }
+
+    // Departments (by college)
+    if (departmentSelect) {
+      if (collegeSelect && collegeSelect.value) {
+        const drows = await loadDepartmentsByCollegeName(collegeSelect.value);
+        if (Array.isArray(drows) && drows.length) populateDropdown(departmentSelect, drows.map(d => d.name));
+        else {
+          const deps = academicData.department[collegeSelect.value];
+          if (Array.isArray(deps) && deps.length) populateDropdown(departmentSelect, deps);
+          else {
+            departmentSelect.disabled = false;
+            departmentSelect.innerHTML = '';
+            const na = document.createElement('option');
+            na.value = 'N/A'; na.textContent = 'N/A';
+            departmentSelect.appendChild(na);
+          }
+        }
+      }
+      if (prev.dept) departmentSelect.value = prev.dept;
+    }
+
+    // Programs (by level + college)
+    if (programSelect) {
+      const level = (academicLevelSelect && academicLevelSelect.value) || '';
+      const isGradOrOU = (level === 'Masters' || level === 'Doctorate' || level === 'Open University');
+      const isNS = (level === 'Not Studying');
+      if (isNS) {
+        programSelect.disabled = false;
+        programSelect.innerHTML = '';
+        const progNA = document.createElement('option');
+        progNA.value = 'N/A'; progNA.textContent = 'N/A';
+        programSelect.appendChild(progNA);
+      } else if (isGradOrOU) {
+        const options = academicData.program[level] || academicData.program.default;
+        populateDropdown(programSelect, options);
+      } else {
+        const selCollege = collegeSelect ? collegeSelect.value : '';
+        if (selCollege) {
+          const prows = await loadProgramsByCollegeName(selCollege);
+          if (Array.isArray(prows)) populateDropdown(programSelect, prows.map(p => p.name));
+          else populateDropdown(programSelect, (academicData.program[selCollege] || academicData.program.default));
+        }
+      }
+      if (prev.prog) programSelect.value = prev.prog;
+    }
+  }
+
+  // Observe when any select gets enabled (disabled attribute removed)
+  if (campusSelect || collegeSelect || departmentSelect || academicLevelSelect || programSelect) {
+    const targets = [campusSelect, collegeSelect, departmentSelect, academicLevelSelect, programSelect].filter(Boolean);
+    const observer = new MutationObserver(async (mutations, obs) => {
+      const becameEditable = mutations.some(m => m.type === 'attributes' && m.attributeName === 'disabled' && m.target instanceof HTMLElement && m.target.disabled === false);
+      if (becameEditable) {
+        await forcePopulateAll();
+        obs.disconnect(); // populate once when edit enabled
+      }
+    });
+    targets.forEach(t => observer.observe(t, { attributes: true, attributeFilter: ['disabled'] }));
   }
   
   // Helper function to populate dropdowns
@@ -340,7 +595,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Initialize all dropdowns
-  const campusSelect = document.getElementById('campus');
+  // campusSelect declared earlier
   const workClassificationSelect = document.getElementById('workClassification');
   
   // Build dynamic college list from program keys, excluding level keys and defaults
@@ -363,16 +618,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Populate selects even if disabled, but don't overwrite a single server value
   if (campusSelect && (!campusSelect.options || campusSelect.options.length === 0 || (campusSelect.options.length === 1 && !hasServerSelection(campusSelect)))) {
-    populateDropdown(campusSelect, academicData.campus);
+    (async () => {
+      const crows = await loadCampuses();
+      if (Array.isArray(crows) && crows.length) populateDropdown(campusSelect, crows.map(r => r.name));
+      else populateDropdown(campusSelect, academicData.campus);
+    })();
   }
   // Populate academic level options (respect server-provided selection)
   if (academicLevelSelect && (!academicLevelSelect.options || academicLevelSelect.options.length === 0 || (academicLevelSelect.options.length === 1 && !hasServerSelection(academicLevelSelect)))) {
-    // For employee pages (id 'academicLevel'), show requested options only
-    const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"];
-    populateDropdown(academicLevelSelect, employeeLevelOptions);
+    (async () => {
+      const lrows = await loadLevels();
+      if (Array.isArray(lrows) && lrows.length) {
+        // Employees should not see 'Undergraduate'
+        const levels = lrows.map(r => r.name).filter(n => n !== 'Undergraduate');
+        if (levels.length) populateDropdown(academicLevelSelect, levels);
+        else {
+          const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"]; 
+          populateDropdown(academicLevelSelect, employeeLevelOptions);
+        }
+      } else {
+        const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"]; 
+        populateDropdown(academicLevelSelect, employeeLevelOptions);
+      }
+    })();
   }
   if (collegeSelect && (!collegeSelect.options || collegeSelect.options.length === 0 || (collegeSelect.options.length === 1 && !hasServerSelection(collegeSelect)))) {
-    populateDropdown(collegeSelect, getDynamicCollegeList());
+    (async () => {
+      // If a campus is already selected, filter colleges by that campus
+      const selectedCampus = campusSelect && campusSelect.value ? campusSelect.value : null;
+      if (selectedCampus) {
+        await updateCollegesForCampus(selectedCampus);
+      } else {
+        const rows = await loadColleges();
+        if (Array.isArray(rows) && rows.length) populateDropdown(collegeSelect, rows.map(r => r.name));
+        else populateDropdown(collegeSelect, getDynamicCollegeList());
+      }
+    })();
   }
   if (programSelect && (!programSelect.options || programSelect.options.length === 0 || (programSelect.options.length === 1 && !hasServerSelection(programSelect)))) {
     populateDropdown(programSelect, academicData.program.default);
@@ -411,13 +692,35 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Re-initialize after terms acceptance if form was hidden initially
-  document.addEventListener('ipmo:form:show', function () {
-    if (campusSelect && (!campusSelect.options || campusSelect.options.length === 0 || (campusSelect.options.length === 1 && !hasServerSelection(campusSelect)))) populateDropdown(campusSelect, academicData.campus);
-    if (academicLevelSelect && (!academicLevelSelect.options || academicLevelSelect.options.length === 0 || (academicLevelSelect.options.length === 1 && !hasServerSelection(academicLevelSelect)))) {
-      const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"];
-      populateDropdown(academicLevelSelect, employeeLevelOptions);
+  document.addEventListener('ipmo:form:show', async function () {
+    if (campusSelect && (!campusSelect.options || campusSelect.options.length === 0 || (campusSelect.options.length === 1 && !hasServerSelection(campusSelect)))) {
+      const crows = await loadCampuses();
+      if (Array.isArray(crows) && crows.length) populateDropdown(campusSelect, crows.map(r => r.name));
+      else populateDropdown(campusSelect, academicData.campus);
     }
-    if (collegeSelect && (!collegeSelect.options || collegeSelect.options.length === 0 || (collegeSelect.options.length === 1 && !hasServerSelection(collegeSelect)))) populateDropdown(collegeSelect, getDynamicCollegeList());
+    if (academicLevelSelect && (!academicLevelSelect.options || academicLevelSelect.options.length === 0 || (academicLevelSelect.options.length === 1 && !hasServerSelection(academicLevelSelect)))) {
+      const lrows = await loadLevels();
+      if (Array.isArray(lrows) && lrows.length) {
+        const levels = lrows.map(r => r.name).filter(n => n !== 'Undergraduate');
+        if (levels.length) populateDropdown(academicLevelSelect, levels);
+        else {
+          const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"]; 
+          populateDropdown(academicLevelSelect, employeeLevelOptions);
+        }
+      } else {
+        const employeeLevelOptions = ["Not Studying", "Doctorate", "Masters", "Open University"]; 
+        populateDropdown(academicLevelSelect, employeeLevelOptions);
+      }
+    }
+    if (collegeSelect && (!collegeSelect.options || collegeSelect.options.length === 0 || (collegeSelect.options.length === 1 && !hasServerSelection(collegeSelect)))) {
+      const selectedCampus = campusSelect && campusSelect.value ? campusSelect.value : null;
+      if (selectedCampus) await updateCollegesForCampus(selectedCampus);
+      else {
+        const rows = await loadColleges();
+        if (Array.isArray(rows) && rows.length) populateDropdown(collegeSelect, rows.map(r => r.name));
+        else populateDropdown(collegeSelect, getDynamicCollegeList());
+      }
+    }
     if (programSelect && (!programSelect.options || programSelect.options.length === 0 || (programSelect.options.length === 1 && !hasServerSelection(programSelect)))) populateDropdown(programSelect, academicData.program.default);
     if (departmentSelect && (!departmentSelect.options || departmentSelect.options.length === 0 || (departmentSelect.options.length === 1 && !hasServerSelection(departmentSelect)))) populateDropdown(departmentSelect, academicData.department.default);
 

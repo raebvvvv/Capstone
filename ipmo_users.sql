@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 10, 2025 at 09:55 PM
+-- Generation Time: Oct 11, 2025 at 12:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.4.12
 
@@ -20,6 +20,29 @@ SET time_zone = "+00:00";
 --
 -- Database: `ipmo_users`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `academic_levels`
+--
+
+CREATE TABLE `academic_levels` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `code` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `academic_levels`
+--
+
+INSERT INTO `academic_levels` (`id`, `name`, `code`) VALUES
+(1, 'Undergraduate', 'UG'),
+(2, 'Masters', 'MS'),
+(3, 'Doctorate', 'PhD'),
+(4, 'Open University', 'OU'),
+(5, 'Not Studying', 'NS');
 
 -- --------------------------------------------------------
 
@@ -185,6 +208,61 @@ INSERT INTO `advisers` (`adviser_id`, `first_name`, `middle_name`, `last_name`, 
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `campuses`
+--
+
+CREATE TABLE `campuses` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `code` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `campuses`
+--
+
+INSERT INTO `campuses` (`id`, `name`, `code`) VALUES
+(1, 'PUP Main (Sta. Mesa, Manila)', 'MAIN'),
+(7, 'test', 'test');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `colleges`
+--
+
+CREATE TABLE `colleges` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `code` varchar(50) DEFAULT NULL,
+  `campus_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `colleges`
+--
+
+INSERT INTO `colleges` (`id`, `name`, `code`, `campus_id`) VALUES
+(1, 'College of Accountancy and Finance (CAF)', 'CAF', 1),
+(2, 'College of Architecture, Design and the Built Environment (CADBE)', 'CADBE', 1),
+(3, 'College of Arts and Letters (CAL)', 'CAL', 1),
+(4, 'College of Business Administration (CBA)', 'CBA', 1),
+(5, 'College of Communication (COC)', 'COC', 1),
+(6, 'College of Computer and Information Sciences (CCIS)', 'CCIS', 1),
+(7, 'College of Education (COED)', 'COED', 1),
+(8, 'College of Engineering (CE)', 'CE', 1),
+(9, 'College of Human Kinetics (CHK)', 'CHK', 1),
+(10, 'College of Law (CL)', 'CL', 1),
+(11, 'College of Political Science and Public Administration (CPSPA)', 'CPSPA', 1),
+(12, 'College of Social Sciences and Development (CSSD)', 'CSSD', 1),
+(13, 'College of Science (CS)', 'CS', 1),
+(14, 'College of Tourism, Hospitality and Transportation Management (CTHTM)', 'CTHTM', 1),
+(15, 'Institute of Technology', 'ITech', 1),
+(31, 'TEST', 'TEST', NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `dashboard_summary`
 --
 
@@ -209,7 +287,54 @@ CREATE TABLE `dashboard_summary` (
 --
 
 INSERT INTO `dashboard_summary` (`id`, `last_updated`, `total_users`, `total_apps`, `pending_apps`, `approved_apps`, `completed_apps`, `overview_undergrad`, `overview_grad`, `overview_open`, `by_college_json`, `by_campus_json`, `work_class_json`) VALUES
-(1, '2025-10-11 03:09:40', 5, 80, 15, 15, 50, 41, 38, 1, '{\"labels\":[\"College of Education (COED)\",\"College of Computer and Information Sciences (CCIS)\",\"College of Social Sciences and Development (CSSD)\",\"College of Human Kinetics (CHK)\",\"College of Accountancy and Finance (CAF)\",\"College of Science (CS)\"],\"values\":[24,21,19,9,1,1]}', '{\"labels\":[\"PUP Main (Sta. Mesa, Manila)\"],\"values\":[80]}', '{\"labels\":[\"(b) Periodicals and newspaper\",\"(a) Books, Pamphlets, articles and other writings\",\"(n) Computer Programs\",\"(p) Sound recordings\",\"(m) Pictorial illustrations and advertisements\",\"(o) Other literary, scholarly, scientific and artistic works\",\"(q) Broadcast recordings\",\"(l) Audiovisual works and cinematographic works\",\"(k) Photographic works including works produced by a process analogous to photography\",\"(c) Lectures, sermons, addresses, dissertations for oral delivery\",\"Others\"],\"values\":[15,13,11,9,8,8,6,5,2,2,1]}');
+(1, '2025-10-11 15:44:39', 6, 80, 15, 15, 50, 41, 38, 1, '{\"labels\":[\"College of Education (COED)\",\"College of Computer and Information Sciences (CCIS)\",\"College of Social Sciences and Development (CSSD)\",\"College of Human Kinetics (CHK)\",\"College of Accountancy and Finance (CAF)\",\"College of Science (CS)\"],\"values\":[24,21,19,9,1,1]}', '{\"labels\":[\"PUP Main (Sta. Mesa, Manila)\"],\"values\":[80]}', '{\"labels\":[\"(b) Periodicals and newspaper\",\"(a) Books, Pamphlets, articles and other writings\",\"(n) Computer Programs\",\"(p) Sound recordings\",\"(m) Pictorial illustrations and advertisements\",\"(o) Other literary, scholarly, scientific and artistic works\",\"(q) Broadcast recordings\",\"(l) Audiovisual works and cinematographic works\",\"(k) Photographic works including works produced by a process analogous to photography\",\"(c) Lectures, sermons, addresses, dissertations for oral delivery\",\"Others\"],\"values\":[15,13,11,9,8,8,6,5,2,2,1]}');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `departments`
+--
+
+CREATE TABLE `departments` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `code` varchar(50) DEFAULT NULL,
+  `college_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `departments`
+--
+
+INSERT INTO `departments` (`id`, `name`, `code`, `college_id`) VALUES
+(1, 'Department of Accountancy', NULL, 1),
+(2, 'Department of Finance and Economics', NULL, 1),
+(3, 'Department of Management Accounting', NULL, 1),
+(4, 'Department of Computer Science', NULL, 6),
+(5, 'Department of Information Technology', NULL, 6),
+(6, 'Department of Civil Engineering', NULL, 8),
+(7, 'Department of Computer Engineering', NULL, 8),
+(8, 'Department of Electrical Engineering', NULL, 8),
+(9, 'Department of Electronics Engineering', NULL, 8),
+(10, 'Department of Industrial Engineering', NULL, 8),
+(11, 'Department of Mechanical Engineering', NULL, 8),
+(12, 'Department of Railway Engineering', NULL, 8),
+(13, 'Department of Business Administration', NULL, 4),
+(14, 'Department of Entrepreneurship', NULL, 4),
+(15, 'Department of Office Administration', NULL, 4);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `documents`
+--
+
+CREATE TABLE `documents` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `code` varchar(50) DEFAULT NULL,
+  `role` varchar(20) NOT NULL DEFAULT 'both'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -246,6 +371,193 @@ INSERT INTO `employee_profiles` (`profile_id`, `user_id`, `employee_number`, `la
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `programs`
+--
+
+CREATE TABLE `programs` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `code` varchar(50) DEFAULT NULL,
+  `college_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `programs`
+--
+
+INSERT INTO `programs` (`id`, `name`, `code`, `college_id`) VALUES
+(1, 'Bachelor of Science in Accountancy (BSA)', 'BSA', 1),
+(2, 'Bachelor of Science in Business Administration Major in Financial Management (BSBAFM)', 'BSBAFM', 1),
+(3, 'Bachelor of Science in Management Accounting (BSMA)', 'BSMA', 1),
+(4, 'Bachelor of Science in Architecture (BS-ARCH)', 'BS-ARCH', 2),
+(5, 'Bachelor of Science in Interior Design (BSID)', 'BSID', 2),
+(6, 'Bachelor of Science in Environmental Planning (BSEP)', 'BSEP', 2),
+(7, 'Bachelor of Arts in English Language Studies (ABELS)', 'ABELS', 3),
+(8, 'Bachelor of Arts in Filipinology (ABF)', 'ABF', 3),
+(9, 'Bachelor of Arts in Literary and Cultural Studies (ABLCS)', 'ABLCS', 3),
+(10, 'Bachelor of Arts in Philosophy (AB-PHILO)', 'AB-PHILO', 3),
+(11, 'Bachelor of Performing Arts major in Theater Arts (BPEA)', 'BPEA', 3),
+(12, 'Doctor in Business Administration (DBA)', 'DBA', 4),
+(13, 'Master in Business Administration (MBA)', 'MBA', 4),
+(14, 'Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)', 'BSBAHRM', 4),
+(15, 'Bachelor of Science in Business Administration major in Marketing Management (BSBA-MM)', 'BSBA-MM', 4),
+(16, 'Bachelor of Science in Entrepreneurship (BSENTREP)', 'BSENTREP', 4),
+(17, 'Bachelor of Science in Office Administration (BSOA)', 'BSOA', 4),
+(18, 'Bachelor in Advertising and Public Relations (BADPR)', 'BADPR', 5),
+(19, 'Bachelor of Arts in Broadcasting (BA Broadcasting)', 'BA Broadcasting', 5),
+(20, 'Bachelor of Arts in Communication Research (BACR)', 'BACR', 5),
+(21, 'Bachelor of Arts in Journalism (BAJ)', 'BAJ', 5),
+(22, 'Bachelor of Science in Computer Science (BSCS)', 'BSCS', 6),
+(23, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', 6),
+(24, 'Doctor of Philsophy in Education Management (PhDEM)', 'PhDEM', 7),
+(25, 'Master of Arts in Education Management (MAEM)', 'MAEM', 7),
+(26, 'Master in Business Education (MBE)', 'MBE', 7),
+(27, 'Master in Library and Information Science (MLIS)', 'MLIS', 7),
+(28, 'Master of Arts in English Language Teaching (MAELT)', 'MAELT', 7),
+(29, 'Master of Arts in Education major in Mathematics Education (MAEd-ME)', 'MAEd-ME', 7),
+(30, 'Master of Arts in Physical Education and Sports (MAPES)', 'MAPES', 7),
+(31, 'Master of Arts in Education major in Teaching in the Challenged Areas (MAED-TCA)', 'MAED-TCA', 7),
+(32, 'Post-Baccalaureate Diploma in Education (PBDE)', 'PBDE', 7),
+(33, 'Bachelor of Technology and Livelihood Education - Home Economics (BTLEd)', 'BTLEd', 7),
+(34, 'Bachelor of Technology and Livelihood Education - Industrial Arts (BTLEd)', 'BTLEd', 7),
+(35, 'Bachelor of Technology and Livelihood Education - ICT (BTLEd)', 'BTLEd', 7),
+(36, 'Bachelor of Library and Information Science (BLIS)', 'BLIS', 7),
+(37, 'Bachelor of Secondary Education - English (BSEd)', 'BSEd', 7),
+(38, 'Bachelor of Secondary Education - Mathematics (BSEd)', 'BSEd', 7),
+(39, 'Bachelor of Secondary Education - Science (BSEd)', 'BSEd', 7),
+(40, 'Bachelor of Secondary Education - Filipino (BSEd)', 'BSEd', 7),
+(41, 'Bachelor of Secondary Education - Social Studies (BSEd)', 'BSEd', 7),
+(42, 'Bachelor of Elementary Education (BEEd)', 'BEEd', 7),
+(43, 'Bachelor of Early Childhood Education (BECEd)', 'BECEd', 7),
+(44, 'Bachelor of Science in Civil Engineering (BSCE)', 'BSCE', 8),
+(45, 'Bachelor of Science in Computer Engineering (BSCpE)', 'BSCpE', 8),
+(46, 'Bachelor of Science in Electrical Engineering (BSEE)', 'BSEE', 8),
+(47, 'Bachelor of Science in Electronics Engineering (BSECE)', 'BSECE', 8),
+(48, 'Bachelor of Science in Industrial Engineering (BSIE)', 'BSIE', 8),
+(49, 'Bachelor of Science in Mechanical Engineering (BSME)', 'BSME', 8),
+(50, 'Bachelor of Science in Railway Engineering (BSRE)', 'BSRE', 8),
+(51, 'Bachelor of Physical Education (BPE)', 'BPE', 9),
+(52, 'Bachelor of Science in Exercises and Sports (BSESS)', 'BSESS', 9),
+(53, 'Juris Doctor (JD)', 'JD', 10),
+(54, 'Doctor in Public Administration (DPA)', 'DPA', 11),
+(55, 'Master in Public Administration (MPA)', 'MPA', 11),
+(56, 'Bachelor of Arts in Political Science (BAPS)', 'BAPS', 11),
+(57, 'Bachelor of Arts in Political Economy (BAPE)', 'BAPE', 11),
+(58, 'Bachelor of Arts in International Studies (BAIS)', 'BAIS', 11),
+(59, 'Bachelor of Public Administration (BPA)', 'BPA', 11),
+(60, 'Bachelor of Arts in History (BAH)', 'BAH', 12),
+(61, 'Bachelor of Arts in Sociology (BAS)', 'BAS', 12),
+(62, 'Bachelor of Science in Cooperatives (BSC)', 'BSC', 12),
+(63, 'Bachelor of Science in Economics (BSE)', 'BSE', 12),
+(64, 'Bachelor of Science in Psychology (BSPSY)', 'BSPSY', 12),
+(65, 'Bachelor of Science Food Technology (BSFT)', 'BSFT', 13),
+(66, 'Bachelor of Science in Applied Mathematics (BSAPMATH)', 'BSAPMATH', 13),
+(67, 'Bachelor of Science in Biology (BSBIO)', 'BSBIO', 13),
+(68, 'Bachelor of Science in Chemistry (BSCHEM)', 'BSCHEM', 13),
+(69, 'Bachelor of Science in Mathematics (BSMATH)', 'BSMATH', 13),
+(70, 'Bachelor of Science in Nutrition and Dietetics (BSND)', 'BSND', 13),
+(71, 'Bachelor of Science in Physics (BSPHY)', 'BSPHY', 13),
+(72, 'Bachelor of Science in Statistics (BSSTAT)', 'BSSTAT', 13),
+(73, 'Bachelor of Science in Hospitality Management (BSHM)', 'BSHM', 14),
+(74, 'Bachelor of Science in Tourism Management (BSTM)', 'BSTM', 14),
+(75, 'Bachelor of Science in Transportation Management (BSTRM)', 'BSTRM', 14),
+(76, 'Diploma in Computer Engineering Technology (DCET)', 'DCET', 15),
+(77, 'Diploma in Electrical Engineering Technology (DEET)', 'DEET', 15),
+(78, 'Diploma in Electronics Engineering Technology (DECET)', 'DECET', 15),
+(79, 'Diploma in Information Communication Technology (DICT)', 'DICT', 15),
+(80, 'Diploma in Mechanical Engineering Technology (DMET)', 'DMET', 15),
+(81, 'Diploma in Office Management (DOMT)', 'DOMT', 15),
+(82, 'Master in Applied Statistics (MAS)', 'MAS', NULL),
+(83, 'Master in Business Administration (MBA)', 'MBA', NULL),
+(84, 'Master in Construction Management (MCM)', 'MCM', NULL),
+(85, 'Master in Educational Management (MEM)', 'MEM', NULL),
+(86, 'Master in Public Administration (MPA)', 'MPA', NULL),
+(87, 'Master of Arts in Communication (MAC)', 'MAC', NULL),
+(88, 'Master of Arts in English Language Studies (MAELS)', 'MAELS', NULL),
+(89, 'Master of Arts in History (MAH)', 'MAH', NULL),
+(90, 'Master of Arts in Filipino (MAF)', 'MAF', NULL),
+(91, 'Master of Arts in Psychology (MAP)', 'MAP', NULL),
+(92, 'Master of Arts in Technology Management (MATM)', 'MATM', NULL),
+(93, 'Master of Science in Biology (MSBio)', 'MSBio', NULL),
+(94, 'Master of Science in Civil Engineering (MSCE)', 'MSCE', NULL),
+(95, 'Master of Science in Computer Engineering (MSCpE)', 'MSCpE', NULL),
+(96, 'Master of Science in Computer Science (MSCS)', 'MSCS', NULL),
+(97, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
+(98, 'Master of Science in Information Technology (MSIT)', 'MSIT', NULL),
+(99, 'Master of Science in Mathematics (MSM)', 'MSM', NULL),
+(100, 'Doctor of Philosophy in Communication (PhD Com)', 'PhD Com', NULL),
+(101, 'Doctor of Philosophy in Economics (PhD Econ)', 'PhD Econ', NULL),
+(102, 'Doctor of Philosophy in English Language Studies (PhD ELS)', 'PhD ELS', NULL),
+(103, 'Doctor of Philosophy in Filipino (PhD Fil)', 'PhD Fil', NULL),
+(104, 'Doctor of Philosophy in Psychology (PhD Psy)', 'PhD Psy', NULL),
+(105, 'Doctor in Business Administration (DBA)', 'DBA', NULL),
+(106, 'Doctor in Engineering Management (D.Eng)', 'D.Eng', NULL),
+(107, 'Doctor of Philsophy in Education Management (PhDEM)', 'PhDEM', NULL),
+(108, 'Doctor in Public Administration (DPA)', 'DPA', NULL),
+(109, 'Master in Communication (MC)', 'MC', NULL),
+(110, 'Master in Business Administration (MBA)', 'MBA', NULL),
+(111, 'Master of Arts in Education Management (MAEM)', 'MAEM', NULL),
+(112, 'Master in Information Technology (MIT)', 'MIT', NULL),
+(113, 'Master in Public Administration (MPA)', 'MPA', NULL),
+(114, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
+(115, 'Post Baccalaureate Diploma in Information Technology (PBDIT)', 'PBDIT', NULL),
+(116, 'Bachelor of Science in Entrepreneurship (BSENTREP)', 'BSENTREP', NULL),
+(117, 'Bachelor of Arts in Broadcasting (BABR)', 'BABR', NULL),
+(118, 'Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)', 'BSBAHRM', NULL),
+(119, 'Bachelor of Science in Business Administration major in Marketing Management (BSBAMM)', 'BSBAMM', NULL),
+(120, 'Bachelor of Science in Office Administration (BSOA)', 'BSOA', NULL),
+(121, 'Bachelor of Science in Tourism Management (BSTM)', 'BSTM', NULL),
+(122, 'Bachelor of Public Administration (BPA)', 'BPA', NULL),
+(123, 'Bachelor of Science in Business Administration (BSBA)', 'BSBA', NULL),
+(124, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', NULL),
+(206, 'Master in Applied Statistics (MAS)', 'MAS', NULL),
+(207, 'Master in Business Administration (MBA)', 'MBA', NULL),
+(208, 'Master in Construction Management (MCM)', 'MCM', NULL),
+(209, 'Master in Educational Management (MEM)', 'MEM', NULL),
+(210, 'Master in Public Administration (MPA)', 'MPA', NULL),
+(211, 'Master of Arts in Communication (MAC)', 'MAC', NULL),
+(212, 'Master of Arts in English Language Studies (MAELS)', 'MAELS', NULL),
+(213, 'Master of Arts in History (MAH)', 'MAH', NULL),
+(214, 'Master of Arts in Filipino (MAF)', 'MAF', NULL),
+(215, 'Master of Arts in Psychology (MAP)', 'MAP', NULL),
+(216, 'Master of Arts in Technology Management (MATM)', 'MATM', NULL),
+(217, 'Master of Science in Biology (MSBio)', 'MSBio', NULL),
+(218, 'Master of Science in Civil Engineering (MSCE)', 'MSCE', NULL),
+(219, 'Master of Science in Computer Engineering (MSCpE)', 'MSCpE', NULL),
+(220, 'Master of Science in Computer Science (MSCS)', 'MSCS', NULL),
+(221, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
+(222, 'Master of Science in Information Technology (MSIT)', 'MSIT', NULL),
+(223, 'Master of Science in Mathematics (MSM)', 'MSM', NULL),
+(224, 'Doctor of Philosophy in Communication (PhD Com)', 'PhD Com', NULL),
+(225, 'Doctor of Philosophy in Economics (PhD Econ)', 'PhD Econ', NULL),
+(226, 'Doctor of Philosophy in English Language Studies (PhD ELS)', 'PhD ELS', NULL),
+(227, 'Doctor of Philosophy in Filipino (PhD Fil)', 'PhD Fil', NULL),
+(228, 'Doctor of Philosophy in Psychology (PhD Psy)', 'PhD Psy', NULL),
+(229, 'Doctor in Business Administration (DBA)', 'DBA', NULL),
+(230, 'Doctor in Engineering Management (D.Eng)', 'D.Eng', NULL),
+(231, 'Doctor of Philsophy in Education Management (PhDEM)', 'PhDEM', NULL),
+(232, 'Doctor in Public Administration (DPA)', 'DPA', NULL),
+(233, 'Master in Communication (MC)', 'MC', NULL),
+(234, 'Master in Business Administration (MBA)', 'MBA', NULL),
+(235, 'Master of Arts in Education Management (MAEM)', 'MAEM', NULL),
+(236, 'Master in Information Technology (MIT)', 'MIT', NULL),
+(237, 'Master in Public Administration (MPA)', 'MPA', NULL),
+(238, 'Master of Science in Construction Management (MSCM)', 'MSCM', NULL),
+(239, 'Post Baccalaureate Diploma in Information Technology (PBDIT)', 'PBDIT', NULL),
+(240, 'Bachelor of Science in Entrepreneurship (BSENTREP)', 'BSENTREP', NULL),
+(241, 'Bachelor of Arts in Broadcasting (BABR)', 'BABR', NULL),
+(242, 'Bachelor of Science in Business Administration major in Human Resource Management (BSBAHRM)', 'BSBAHRM', NULL),
+(243, 'Bachelor of Science in Business Administration major in Marketing Management (BSBAMM)', 'BSBAMM', NULL),
+(244, 'Bachelor of Science in Office Administration (BSOA)', 'BSOA', NULL),
+(245, 'Bachelor of Science in Tourism Management (BSTM)', 'BSTM', NULL),
+(246, 'Bachelor of Public Administration (BPA)', 'BPA', NULL),
+(247, 'Bachelor of Science in Business Administration (BSBA)', 'BSBA', NULL),
+(248, 'Bachelor of Science in Information Technology (BSIT)', 'BSIT', NULL),
+(249, 'TEST', 'TEST', 31);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `student_profiles`
 --
 
@@ -274,8 +586,8 @@ CREATE TABLE `student_profiles` (
 INSERT INTO `student_profiles` (`profile_id`, `user_id`, `student_number`, `last_name`, `first_name`, `middle_name`, `suffix`, `home_address`, `mobile_number`, `campus`, `academic_level`, `college`, `department`, `program`, `last_updated_at`) VALUES
 (16, 1, '2025-12346-MN-0', 'Minamo', 'Marisa', 'Mliinaw', '', '4746 Peralta St. V. Mapa Sta. Mesa Manila', '09171234567', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Education (COED)', '', 'Bachelor of Secondary Education - English (BSEd)', '2025-10-08 15:03:38'),
 (17, 5, '2022-00880-MN-0', 'Inocentes', 'Raebv Lielmo', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Architecture, Design and the Built Environment (CADBE)', '', 'Bachelor of Science in Interior Design (BSID)', '2025-10-11 00:49:12'),
-(18, 7, '2022-08379-MN-0', 'Cruz', 'Juan', 'Dela', '', '4334A V. Francisco St.', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Accountancy and Finance (CAF)', '', 'Bachelor Of Science In Accountancy (bsa)', NULL),
-(25, 14, '2022-99999-MN-0', 'Cruz', 'Boa', 'Dela', '', '4334A V. Francisco St.', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Tourism, Hospitality and Transportation Management (CTHTM)', '', 'Please select a college first', '2025-10-11 01:05:00');
+(25, 14, '2022-99999-MN-0', 'Cruz', 'Boa', 'Dela', '', '4334A V. Francisco St.', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Tourism, Hospitality and Transportation Management (CTHTM)', '', 'Please select a college first', '2025-10-11 01:05:00'),
+(30, 19, '2022-09091-MN-0', 'Inoasas', 'Rahae', 'A', '', '4334A V. Francisco St. Sta. Mesa, Manila', '09156574831', 'PUP Main (Sta. Mesa, Manila)', 'Undergraduate', 'College of Science (CS)', '', 'Bachelor Of Science In Applied Mathematics (bsapmath)', NULL);
 
 -- --------------------------------------------------------
 
@@ -1227,12 +1539,19 @@ INSERT INTO `users` (`user_id`, `email`, `password`, `role`, `status`, `verifica
 (4, 'admin@ipmo.local', '$2y$10$FcSO4or9z9oUzIEIJW/87uNeKHnf9wrdWOdN2w6A/N6E.jHnK2owy', 'admin', 'active', NULL, NULL, '2025-10-06 03:55:43', '2025-10-06 03:55:43'),
 (5, 'inocentesraebv@gmail.com', '$2y$12$MvO.41oeGZKRmqJc6lM8Ueppkcugyq4/0lvZKR5m3ETVlNRPlvx2a', 'student', 'active', '9481d21b6c60ec81', '2025-10-07 22:30:53', NULL, '2025-10-06 22:30:53'),
 (6, 'thinkingwan00@gmail.com', '$2y$12$0y66PWURrNDe6JcjfLEKq./G20X66tAdMqJP3lC6LriVPAPfN4eAS', 'employee', 'active', 'd8b22737708b65f0', '2025-10-08 22:19:24', NULL, '2025-10-07 22:19:24'),
-(7, 'nadaone@gmail.com', '$2y$12$WPx18A4KGzbFRi4CtTJOMuuFtRE.ULuCNxYgklx7VA4S0TUBPL8hS', 'student', 'pending', '5517b8c4d76fa2bf', '2025-10-08 22:41:29', NULL, '2025-10-07 22:41:29'),
-(14, 'hellohihihi1234567890@gmail.com', '$2y$12$6.K2IbpZUjnJzyI3wzVihOb7mDlXiXwZ6tMRECzaXVmdZH9UjL54i', 'student', 'active', '1d501032ef650c70', '2025-10-08 23:58:05', NULL, '2025-10-07 23:58:05');
+(14, 'hellohihihi1234567890@gmail.com', '$2y$12$6.K2IbpZUjnJzyI3wzVihOb7mDlXiXwZ6tMRECzaXVmdZH9UjL54i', 'student', 'active', '1d501032ef650c70', '2025-10-08 23:58:05', NULL, '2025-10-07 23:58:05'),
+(19, 'kiri26891@gmail.com', '$2y$12$n8qHPE7tfTt.jYDpd0/mA.9zFEV4dsSIi.0uoKonIyFZIgngF1Nl.', 'student', 'active', NULL, NULL, '2025-10-11 15:16:02', '2025-10-11 15:15:47');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `academic_levels`
+--
+ALTER TABLE `academic_levels`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_levels_name` (`name`);
 
 --
 -- Indexes for table `admin_notifications`
@@ -1257,10 +1576,40 @@ ALTER TABLE `advisers`
   ADD PRIMARY KEY (`adviser_id`);
 
 --
+-- Indexes for table `campuses`
+--
+ALTER TABLE `campuses`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_campus_name` (`name`);
+
+--
+-- Indexes for table `colleges`
+--
+ALTER TABLE `colleges`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_college_name` (`name`),
+  ADD KEY `idx_campus_id` (`campus_id`);
+
+--
 -- Indexes for table `dashboard_summary`
 --
 ALTER TABLE `dashboard_summary`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `departments`
+--
+ALTER TABLE `departments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_department_name_college` (`name`,`college_id`),
+  ADD KEY `idx_college_id` (`college_id`);
+
+--
+-- Indexes for table `documents`
+--
+ALTER TABLE `documents`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_document_name_role` (`name`,`role`);
 
 --
 -- Indexes for table `employee_profiles`
@@ -1268,6 +1617,14 @@ ALTER TABLE `dashboard_summary`
 ALTER TABLE `employee_profiles`
   ADD PRIMARY KEY (`profile_id`),
   ADD KEY `fk_employee_user` (`user_id`);
+
+--
+-- Indexes for table `programs`
+--
+ALTER TABLE `programs`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_program_name_college` (`name`,`college_id`),
+  ADD KEY `idx_college_id` (`college_id`);
 
 --
 -- Indexes for table `student_profiles`
@@ -1353,6 +1710,12 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `academic_levels`
+--
+ALTER TABLE `academic_levels`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
@@ -1371,16 +1734,46 @@ ALTER TABLE `advisers`
   MODIFY `adviser_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
+-- AUTO_INCREMENT for table `campuses`
+--
+ALTER TABLE `campuses`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `colleges`
+--
+ALTER TABLE `colleges`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+
+--
+-- AUTO_INCREMENT for table `departments`
+--
+ALTER TABLE `departments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
+--
+-- AUTO_INCREMENT for table `documents`
+--
+ALTER TABLE `documents`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `employee_profiles`
 --
 ALTER TABLE `employee_profiles`
   MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `programs`
+--
+ALTER TABLE `programs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=250;
+
+--
 -- AUTO_INCREMENT for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `submissions`
@@ -1428,7 +1821,7 @@ ALTER TABLE `ticket_validation_attempts`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Constraints for dumped tables
@@ -1441,10 +1834,28 @@ ALTER TABLE `admin_profiles`
   ADD CONSTRAINT `fk_admin_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `colleges`
+--
+ALTER TABLE `colleges`
+  ADD CONSTRAINT `fk_college_campus` FOREIGN KEY (`campus_id`) REFERENCES `campuses` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `departments`
+--
+ALTER TABLE `departments`
+  ADD CONSTRAINT `fk_dept_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `employee_profiles`
 --
 ALTER TABLE `employee_profiles`
   ADD CONSTRAINT `fk_employee_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `programs`
+--
+ALTER TABLE `programs`
+  ADD CONSTRAINT `fk_prog_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `student_profiles`

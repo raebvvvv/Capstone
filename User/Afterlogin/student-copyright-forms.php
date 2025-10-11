@@ -263,36 +263,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
               </fieldset>
               <fieldset>
                 <legend>Upload Documents (PDF)</legend>
-                <div class="row g-3">
-                  <div class="col-md-4">
-                    <label class="form-label required">Journal Publication Format</label>
-                    <input type="file" name="journal_publication_format" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Notarized Copyright Application Form</label>
-                    <input type="file" name="notarized_copyright" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Receipt of Payment</label>
-                    <input type="file" name="receipt_payment" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Full Manuscript</label>
-                    <input type="file" name="full_manuscript" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Notarized Co-Authorship</label>
-                    <input type="file" name="notarized_coauthorship" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Approval Sheet (Thesis)</label>
-                    <input type="file" name="approval_sheet" class="form-control" accept="application/pdf" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label required">Record of Copyright Application</label>
-                    <input type="file" name="record_copyright" class="form-control" accept="application/pdf" required>
-                  </div>
-                </div>
+                <div class="row g-3" id="dynamicDocuments"></div>
                 <small class="text-muted d-block mt-2">All PDFs must be clear, complete, and properly signed where applicable.</small>
               </fieldset>
               <div class="text-center mt-4">
@@ -387,6 +358,11 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/student-academic-dropdowns.js'); ?>"></script>
    <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
+   <script>
+     window.CATALOGS_API_URL = window.CATALOGS_API_URL || <?php echo json_encode(asset_url('catalogs_public_api.php')); ?>;
+     window.USER_ROLE = 'student';
+   </script>
+   <script src="<?php echo asset_url('javascript/forms/dynamic-documents.js'); ?>" defer></script>
  
 
 </body>

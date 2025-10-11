@@ -1,4 +1,4 @@
-// Academic Program Data for PUP
+// Academic Program Data for PUP (fallbacks if API unavailable)
 const academicData = {
   campus: [
     "PUP Main (Sta. Mesa, Manila)"
@@ -244,51 +244,163 @@ const academicData = {
 
 // Initialize dropdown relationships on document load
 document.addEventListener('DOMContentLoaded', function() {
-  const academicLevelSelect = document.getElementById('academicLevel');
+  const API_URL = window.CATALOGS_API_URL || '/capstone/catalogs_public_api.php';
+  const catalogsCache = {
+    campuses: null,
+    levels: null,
+    colleges: null,
+    campusNameToId: new Map(),
+    collegeNameToId: new Map(),
+    departmentsByCollegeId: new Map(),
+    programsByCollegeId: new Map()
+  };
+
+  async function fetchJSON(params) {
+    const qs = new URLSearchParams(params).toString();
+    const url = `${API_URL}?${qs}`;
+    try {
+      const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data || data.ok !== true) throw new Error(data && data.error ? data.error : 'Invalid API');
+      return data.data || [];
+    } catch (e) {
+      return null; // signal fallback
+    }
+  }
+
+  async function loadCampuses() {
+    if (catalogsCache.campuses) return catalogsCache.campuses;
+    const rows = await fetchJSON({ entity: 'campus' });
+    catalogsCache.campuses = rows; // can be null (fallback)
+    catalogsCache.campusNameToId.clear();
+    if (Array.isArray(rows)) {
+      rows.forEach(r => catalogsCache.campusNameToId.set(r.name, r.id));
+    }
+    return catalogsCache.campuses;
+  }
+  async function loadLevels() {
+    if (catalogsCache.levels) return catalogsCache.levels;
+    const rows = await fetchJSON({ entity: 'level' });
+    catalogsCache.levels = rows;
+    return catalogsCache.levels;
+  }
+  async function loadColleges() {
+    if (catalogsCache.colleges) return catalogsCache.colleges;
+    const rows = await fetchJSON({ entity: 'college' });
+    catalogsCache.colleges = rows;
+    catalogsCache.collegeNameToId.clear();
+    if (Array.isArray(rows)) {
+      rows.forEach(r => catalogsCache.collegeNameToId.set(r.name, r.id));
+    }
+    return catalogsCache.colleges;
+  }
+  async function loadCollegesByCampusName(campusName) {
+    const camps = await loadCampuses();
+    if (!Array.isArray(camps)) return null;
+    const capId = catalogsCache.campusNameToId.get(campusName);
+    if (!capId) return null;
+    // No cache per-campus for now; small data set
+    const rows = await fetchJSON({ entity: 'college', parent_id: String(capId) });
+    return rows;
+  }
+  async function loadDepartmentsByCollegeName(collegeName) {
+    const colleges = await loadColleges();
+    if (!Array.isArray(colleges)) return null;
+    const cid = catalogsCache.collegeNameToId.get(collegeName);
+    if (!cid) return null;
+    if (catalogsCache.departmentsByCollegeId.has(cid)) return catalogsCache.departmentsByCollegeId.get(cid);
+    const rows = await fetchJSON({ entity: 'department', parent_id: String(cid) });
+    catalogsCache.departmentsByCollegeId.set(cid, rows);
+    return rows;
+  }
+  async function loadProgramsByCollegeName(collegeName) {
+    const colleges = await loadColleges();
+    if (!Array.isArray(colleges)) return null;
+    const cid = catalogsCache.collegeNameToId.get(collegeName);
+    if (!cid) return null;
+    if (catalogsCache.programsByCollegeId.has(cid)) return catalogsCache.programsByCollegeId.get(cid);
+    const rows = await fetchJSON({ entity: 'program', parent_id: String(cid) });
+    catalogsCache.programsByCollegeId.set(cid, rows);
+    return rows;
+  }
+  let academicLevelSelect = document.getElementById('academicLevel') || document.getElementById('academic_level');
   const collegeSelect = document.getElementById('college');
   const programSelect = document.getElementById('program');
   
+  // academicLevelSelect already resolved from either academicLevel or academic_level
+
   // When academic level changes
   if (academicLevelSelect && collegeSelect && programSelect) {
-    academicLevelSelect.addEventListener('change', function() {
-    const selectedLevel = this.value;
-    
-    if (selectedLevel === 'Masters' || selectedLevel === 'Doctorate' || selectedLevel === 'Open University') {
-      // Set college to N/A for graduate programs and Open University
-      collegeSelect.disabled = true;
-      
-      // Create and set N/A option for college
-      collegeSelect.innerHTML = '';
-      const naOption = document.createElement('option');
-      naOption.value = 'N/A';
-      naOption.textContent = 'N/A';
-      collegeSelect.appendChild(naOption);
-      
-      // Populate program dropdown with appropriate programs
-      populateDropdown(programSelect, academicData.program[selectedLevel]);
-    } else {
-      // Enable college dropdown for undergraduate
-      collegeSelect.disabled = false;
-      
-      // Reset college dropdown
-      populateDropdown(collegeSelect, academicData.college);
-      
-      // Reset program dropdown
-      populateDropdown(programSelect, academicData.program.default);
-    }
+    academicLevelSelect.addEventListener('change', async function() {
+      const selectedLevel = this.value;
+      const isGradOrOU = (selectedLevel === 'Masters' || selectedLevel === 'Doctorate' || selectedLevel === 'Open University');
+      if (isGradOrOU) {
+        // Disable college and set to N/A for graduate/OU
+        collegeSelect.disabled = true;
+        collegeSelect.innerHTML = '';
+        const naOption = document.createElement('option');
+        naOption.value = 'N/A';
+        naOption.textContent = 'N/A';
+        collegeSelect.appendChild(naOption);
+        // Use predefined level-specific program lists (DB doesn't tag by level yet)
+        populateDropdown(programSelect, academicData.program[selectedLevel] || academicData.program.default);
+      } else {
+        collegeSelect.disabled = false;
+        // Populate colleges from API if available; fallback to static list
+        let rows = null;
+        const campusSelect = document.getElementById('campus');
+        const chosenCampus = campusSelect ? campusSelect.value : '';
+        if (chosenCampus) {
+          rows = await loadCollegesByCampusName(chosenCampus);
+        }
+        if (!Array.isArray(rows) || rows.length === 0) {
+          rows = await loadColleges();
+        }
+        if (Array.isArray(rows) && rows.length) populateDropdown(collegeSelect, rows.map(r => r.name));
+        else populateDropdown(collegeSelect, academicData.college);
+        // Reset program dropdown
+        populateDropdown(programSelect, academicData.program.default);
+      }
     });
   }
   
   // When college selection changes, update programs
   if (collegeSelect && programSelect) {
-    collegeSelect.addEventListener('change', function() {
-    const selectedCollege = this.value;
-    
-    // Update programs dropdown
-    populateDropdown(
-      programSelect,
-      academicData.program[selectedCollege] || academicData.program.default
-    );
+    collegeSelect.addEventListener('change', async function() {
+      const selectedCollege = this.value;
+      // If undergrad, try API for programs under the selected college; otherwise fallback to static
+      const level = academicLevelSelect ? academicLevelSelect.value : 'Undergraduate';
+      const isGradOrOU = (level === 'Masters' || level === 'Doctorate' || level === 'Open University');
+      if (!isGradOrOU) {
+        const prows = await loadProgramsByCollegeName(selectedCollege);
+        if (Array.isArray(prows)) {
+          populateDropdown(programSelect, prows.map(p => p.name));
+          return;
+        }
+      }
+      populateDropdown(
+        programSelect,
+        academicData.program[selectedCollege] || academicData.program.default
+      );
+    });
+  }
+
+  // When campus changes, filter colleges (undergraduate only)
+  const campusSelect = document.getElementById('campus');
+  if (campusSelect && collegeSelect) {
+    campusSelect.addEventListener('change', async function () {
+      const level = academicLevelSelect ? academicLevelSelect.value : 'Undergraduate';
+      const isGradOrOU = (level === 'Masters' || level === 'Doctorate' || level === 'Open University');
+      if (isGradOrOU) return; // college is N/A when grad/OU
+      const chosenCampus = this.value;
+      let rows = null;
+      if (chosenCampus) rows = await loadCollegesByCampusName(chosenCampus);
+      if (!Array.isArray(rows) || rows.length === 0) rows = await loadColleges();
+      if (Array.isArray(rows) && rows.length) populateDropdown(collegeSelect, rows.map(r => r.name));
+      else populateDropdown(collegeSelect, academicData.college);
+      // Reset programs when college list changes
+      if (programSelect) populateDropdown(programSelect, academicData.program.default);
     });
   }
   
@@ -315,17 +427,28 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Initialize all dropdowns
-  const campusSelect = document.getElementById('campus');
+  // campus select already declared above if present
   const workClassificationSelect = document.getElementById('workClassification');
   
   // Only populate selects that are not fixed/disabled by server profile values
-  if (campusSelect && !campusSelect.disabled) populateDropdown(campusSelect, academicData.campus);
-  // Only populate academic level if it's not locked by server profile
-  if (academicLevelSelect && !academicLevelSelect.disabled) {
-    populateDropdown(academicLevelSelect, academicData.academicLevel);
-  }
-  if (collegeSelect && !collegeSelect.disabled) populateDropdown(collegeSelect, academicData.college);
-  if (programSelect && !programSelect.disabled) populateDropdown(programSelect, academicData.program.default);
+  (async () => {
+    if (campusSelect && !campusSelect.disabled) {
+      const crows = await loadCampuses();
+      if (Array.isArray(crows) && crows.length) populateDropdown(campusSelect, crows.map(r => r.name));
+      else populateDropdown(campusSelect, academicData.campus);
+    }
+    if (academicLevelSelect && !academicLevelSelect.disabled) {
+      const lrows = await loadLevels();
+      if (Array.isArray(lrows) && lrows.length) populateDropdown(academicLevelSelect, lrows.map(r => r.name));
+      else populateDropdown(academicLevelSelect, academicData.academicLevel);
+    }
+    if (collegeSelect && !collegeSelect.disabled) {
+      const rows = await loadColleges();
+      if (Array.isArray(rows) && rows.length) populateDropdown(collegeSelect, rows.map(r => r.name));
+      else populateDropdown(collegeSelect, academicData.college);
+    }
+    if (programSelect && !programSelect.disabled) populateDropdown(programSelect, academicData.program.default);
+  })();
   if (workClassificationSelect) populateDropdown(workClassificationSelect, academicData.workClassification);
 
   // If college/program are fixed (disabled), ensure their displayed option remains selected
@@ -341,15 +464,21 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Re-initialize after terms acceptance if form was hidden initially
-  document.addEventListener('ipmo:form:show', function () {
+  document.addEventListener('ipmo:form:show', async function () {
     if (campusSelect && !campusSelect.disabled && campusSelect.options.length <= 1) {
-      populateDropdown(campusSelect, academicData.campus);
+      const crows = await loadCampuses();
+      if (Array.isArray(crows) && crows.length) populateDropdown(campusSelect, crows.map(r => r.name));
+      else populateDropdown(campusSelect, academicData.campus);
     }
     if (academicLevelSelect && !academicLevelSelect.disabled && academicLevelSelect.options.length <= 1) {
-      populateDropdown(academicLevelSelect, academicData.academicLevel);
+      const lrows = await loadLevels();
+      if (Array.isArray(lrows) && lrows.length) populateDropdown(academicLevelSelect, lrows.map(r => r.name));
+      else populateDropdown(academicLevelSelect, academicData.academicLevel);
     }
     if (collegeSelect && !collegeSelect.disabled && collegeSelect.options.length <= 1) {
-      populateDropdown(collegeSelect, academicData.college);
+      const rows = await loadColleges();
+      if (Array.isArray(rows) && rows.length) populateDropdown(collegeSelect, rows.map(r => r.name));
+      else populateDropdown(collegeSelect, academicData.college);
     }
     if (programSelect && !programSelect.disabled && programSelect.options.length <= 1) {
       populateDropdown(programSelect, academicData.program.default);
