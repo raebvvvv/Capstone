@@ -94,7 +94,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
       <!-- Form Section (hidden until acceptance) -->
       <div id="formSection" class="d-none">
-        <h1 class="fw-bold">Submission Form <small class="text-danger fw-normal" style="font-size:.55em;">(Student)</small></h1>
+        <h1 class="fw-bold text-center">Submission Form <small class="text-danger fw-normal" style="font-size:.55em;">(Student)</small></h1>
         <p class="text-muted small">Please fill out the form below to submit your intellectual property for evaluation and processing. All fields marked with an asterisk (*) are required.</p>
         <div class="card shadow-sm">
           <div class="card-body">
