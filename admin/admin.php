@@ -507,6 +507,7 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
                             <li class="nav-item ms-auto"><a class="nav-link fw-bold" aria-current="page" href="admin.php">Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="completed_applications.php">Completed Applications</a></li>
                             <li class="nav-item"><a class="nav-link" href="manageuser.php">Manage Users</a></li>
+                            <li class="nav-item"><a class="nav-link" href="catalogs.php">Catalogs</a></li>
                             <li class="nav-item"><a class="nav-link" href="ticket.php">Applications</a></li>
                             <li class="nav-item d-flex align-items-center header-actions ms-lg-3 mt-2 mt-lg-0">
                                 <button type="button" class="btn btn-outline-secondary btn-profile" data-bs-toggle="modal" data-bs-target="#adminProfileModal">My Profile</button>

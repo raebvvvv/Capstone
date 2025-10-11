@@ -3,6 +3,8 @@ require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php';
 $isLoggedIn = true;
 
+$DEBUG_UNLOCK_EDIT_PROFILE = true; // Debug: bypass 30-day edit restriction for employee profile
+
 $user_id = $_SESSION['user_id'];
 // Initialize common vars to avoid notices
 $errors = [];
@@ -25,21 +27,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
   // reset errors for this POST
   $errors = [];
 
-    // Check last update timestamp
+  // Check last update timestamp (skipped in debug mode)
+  if (!(isset($DEBUG_UNLOCK_EDIT_PROFILE) && $DEBUG_UNLOCK_EDIT_PROFILE)) {
     $stmt = $pdo->prepare("SELECT last_updated_at FROM employee_profiles WHERE user_id = ?");
     $stmt->execute([$user_id]);
     $lastUpdate = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($lastUpdate && $lastUpdate['last_updated_at']) {
-        $lastUpdateDate = new DateTime($lastUpdate['last_updated_at']);
-        $now = new DateTime();
-        $diff = $lastUpdateDate->diff($now)->days;
+      $lastUpdateDate = new DateTime($lastUpdate['last_updated_at']);
+      $now = new DateTime();
+      $diff = $lastUpdateDate->diff($now)->days;
 
       if ($diff < 30) {
-            $daysLeft = 30 - $diff;
-            $errors[] = "Profile can only be updated once every 30 days. Please wait {$daysLeft} more days.";
-        }
+        $daysLeft = 30 - $diff;
+        $errors[] = "Profile can only be updated once every 30 days. Please wait {$daysLeft} more days.";
+      }
     }
+  }
 
   // Validation logic
   if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $firstName)) {
@@ -236,10 +240,18 @@ if (!empty($profile['last_updated_at'])) {
   <div class="d-flex align-items-center mb-3">
     <h1 class="fw-bold mb-0" style="font-size:2.5rem;">My Profile</h1>
     <button id="editProfileBtn" type="button" class="btn btn-primary btn-sm ms-3" 
-            <?php echo ($now < $nextEditAllowed) ? 'disabled' : ''; ?>>
+            <?php 
+              $shouldDisable = false;
+              if (!(isset($DEBUG_UNLOCK_EDIT_PROFILE) && $DEBUG_UNLOCK_EDIT_PROFILE)) {
+                if (!empty($nextEditAllowed) && ($now < $nextEditAllowed)) {
+                  $shouldDisable = true;
+                }
+              }
+              echo $shouldDisable ? 'disabled' : '';
+            ?>>
         Edit Profile
     </button>
-    <?php if ($now < $nextEditAllowed): ?>
+    <?php if (!(isset($DEBUG_UNLOCK_EDIT_PROFILE) && $DEBUG_UNLOCK_EDIT_PROFILE) && !empty($nextEditAllowed) && ($now < $nextEditAllowed)): ?>
         <small class="text-muted ms-2">
             Available for editing in <?php echo $daysUntilEdit; ?> days
         </small>
@@ -261,9 +273,9 @@ if (!empty($errors)) {
         if (strpos($err, '30 days') !== false) {
             $hasRestrictionError = true;
             ?>
-            <div class="alert alert-warning py-1 px-2 small border-0 d-inline-block" style="background-color: #fffbe6; color: #856404; font-size: 0.95rem;">
-                <i class="fas fa-clock me-1"></i> <?php echo $err; ?>
-            </div>
+      <div class="alert alert-warning py-1 px-2 small border-0 d-inline-block" style="background-color: #fffbe6; color: #856404; font-size: 0.95rem;">
+        <i class="fas fa-clock me-1"></i> <?php echo (isset($DEBUG_UNLOCK_EDIT_PROFILE) && $DEBUG_UNLOCK_EDIT_PROFILE) ? 'Debug mode: 30-day restriction is currently bypassed.' : $err; ?>
+      </div>
             <?php
             break;
         }
@@ -456,6 +468,10 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
   <!-- Scripts -->
+  <script>
+    // Ensure catalogs API base is set for profile pages too
+    window.CATALOGS_API_URL = "<?php echo asset_url('catalogs_public_api.php'); ?>";
+  </script>
   <script src="<?php echo asset_url('javascript/forms/employee-academic-dropdowns.js'); ?>" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="<?php echo asset_url('javascript/date-limit.js'); ?>"></script>
