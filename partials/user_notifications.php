@@ -82,3 +82,39 @@ if (!empty($_SESSION['user_id'])){
       }catch(e){ console.warn('user-notif fallback error', e); }
     })();
   </script>
+
+  <!-- Opt-in debug: append ?notif_debug=1 to the page URL to run these checks in the browser console -->
+  <script>
+    (function(){
+      try{
+        if(!location.search || location.search.indexOf('notif_debug=1') === -1) return;
+        console.group('user-notif-debug');
+        console.info('Running opt-in notification debug checks...');
+        var base = window.APP_BASE || '';
+        function jlog(name, obj){ try{ console.log(name, obj); }catch(e){console.log(name);} }
+
+        // 1) fetch unread count endpoint
+        fetch((base || '') + '/admin/get_unread_count.php', { credentials: 'same-origin' })
+          .then(function(r){ return r.text().then(function(t){ jlog('GET /admin/get_unread_count.php -> status:'+r.status, t); try{ jlog('parsed', JSON.parse(t)); }catch(e){} }); })
+          .catch(function(err){ console.error('GET unread error', err); });
+
+        // 2) fetch full notifications endpoint
+        fetch((base || '') + '/admin/get_user_notifications.php?limit=10', { credentials: 'same-origin' })
+          .then(function(r){ return r.text().then(function(t){ jlog('GET /admin/get_user_notifications.php -> status:'+r.status, t); try{ jlog('parsed', JSON.parse(t)); }catch(e){} }); })
+          .catch(function(err){ console.error('GET full-notifs error', err); });
+
+        // 3) hit the local debug helper if present
+        fetch((base || '') + '/debug/debug_user_notif.php', { credentials: 'same-origin' })
+          .then(function(r){ return r.text().then(function(t){ jlog('GET /debug/debug_user_notif.php -> status:'+r.status, t); try{ jlog('parsed', JSON.parse(t)); }catch(e){} }); })
+          .catch(function(err){ console.error('GET debug helper error', err); });
+
+        // 4) inspect DOM presence of the badge
+        setTimeout(function(){
+          var badge = document.getElementById('userNotifBadge');
+          if(!badge){ console.warn('user-notif-debug: badge element (#userNotifBadge) not found in DOM'); }
+          else { console.log('user-notif-debug: badge element found, classes:', badge.className, 'text:', badge.textContent.trim()); }
+          console.groupEnd();
+        }, 700);
+      }catch(e){ console.error('user-notif-debug exception', e); }
+    })();
+  </script>

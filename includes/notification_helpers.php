@@ -21,7 +21,18 @@ function ensure_user_notifications_table(PDO $pdo) {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 }
 
-function create_site_notification(PDO $pdo, int $user_id, string $title, string $message, $meta = null) {
+/**
+ * Create a site notification for a user.
+ *
+ * @param PDO $pdo
+ * @param int $user_id
+ * @param string $title
+ * @param string $message
+ * @param mixed $meta
+ * @param bool $force_unread  When true, ensure the notification is marked unread even if a recent duplicate exists and was previously read.
+ * @return bool
+ */
+function create_site_notification(PDO $pdo, int $user_id, string $title, string $message, $meta = null, bool $force_unread = false) {
     try {
         ensure_user_notifications_table($pdo);
         $metaJson = is_null($meta) ? null : json_encode($meta);
@@ -41,18 +52,19 @@ function create_site_notification(PDO $pdo, int $user_id, string $title, string 
                 if (is_array($m) && isset($m['submission_id']) && ((int)$m['submission_id'] === $submissionId)) { $found = $r; break; }
             }
             if ($found) {
-                // update existing record instead of inserting a new duplicate.
-                // Preserve the user's read state: if the existing notification is already read, do not flip it back to unread.
-                $existingIsRead = (int)($found['is_read'] ?? 0);
-                if ($existingIsRead === 1) {
-                    $up = $pdo->prepare('UPDATE user_notifications SET message = ?, meta = ?, created_at = NOW() WHERE id = ?');
-                    $up->execute([$message, $metaJson, (int)$found['id']]);
-                } else {
-                    $up = $pdo->prepare('UPDATE user_notifications SET message = ?, meta = ?, is_read = 0, created_at = NOW() WHERE id = ?');
-                    $up->execute([$message, $metaJson, (int)$found['id']]);
+                    // update existing record instead of inserting a new duplicate.
+                    // By default preserve the user's read state (don't flip read -> unread).
+                    // If $force_unread is true, mark the notification unread so the badge increments for the user.
+                    $existingIsRead = (int)($found['is_read'] ?? 0);
+                    if ($existingIsRead === 1 && !$force_unread) {
+                        $up = $pdo->prepare('UPDATE user_notifications SET message = ?, meta = ?, created_at = NOW() WHERE id = ?');
+                        $up->execute([$message, $metaJson, (int)$found['id']]);
+                    } else {
+                        $up = $pdo->prepare('UPDATE user_notifications SET message = ?, meta = ?, is_read = 0, created_at = NOW() WHERE id = ?');
+                        $up->execute([$message, $metaJson, (int)$found['id']]);
+                    }
+                    return true;
                 }
-                return true;
-            }
         }
 
         $stmt = $pdo->prepare('INSERT INTO user_notifications (user_id, title, message, meta) VALUES (:uid, :t, :m, :meta)');
@@ -178,7 +190,8 @@ function notify_documents_need_resubmission(PDO $pdo, int $submission_id, array 
         $docList = $doc_types ? implode(', ', $doc_types) : 'one or more documents';
         $msg = "Your application " . ($code ?: "#{$submission_id}") . " requires resubmission of: {$docList}.";
         if ($comment) $msg .= ' Note: ' . $comment;
-        create_site_notification($pdo, $uid, $title, $msg, ['submission_id'=>$submission_id, 'submission_code'=>$code, 'doc_types'=>$doc_types]);
+    // Always force unread for resubmission notifications so applicants notice the action
+    create_site_notification($pdo, $uid, $title, $msg, ['submission_id'=>$submission_id, 'submission_code'=>$code, 'doc_types'=>$doc_types], true);
         $subj = "Action required: Documents need resubmission for {$code}";
         $body = "<p>Dear user,</p><p>Your application <strong>" . htmlspecialchars($code) . "</strong> requires resubmission of the following documents: <strong>" . htmlspecialchars($docList) . "</strong>.</p>";
         if ($comment) $body .= "<p>Comment from admin: " . htmlspecialchars($comment) . "</p>";

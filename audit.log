@@ -1116,3 +1116,4 @@
 {"ts":"2025-10-11T19:54:48+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
 {"ts":"2025-10-11T20:19:05+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
 {"ts":"2025-10-11T20:28:14+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
+{"ts":"2025-10-11T21:09:59+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
