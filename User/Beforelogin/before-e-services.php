@@ -11,11 +11,11 @@
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+  <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/e-services.css'); ?>">
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/e-services.css">
   <style>
     /* Only widen the Industrial Property card, keep others unchanged */
     @media (min-width: 768px) {
@@ -32,7 +32,7 @@
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="../../index.php">
-        <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+  <img src="../../Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -61,7 +61,7 @@
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="<?php echo asset_url('Photos/Icons/Originality-icon.png'); ?>" alt="Originality Check" class="mb-2" width="60">
+            <img src="../../Photos/Icons/Originality-icon.png" alt="Originality Check" class="mb-2" width="60">
             <h5 class="card-title">Originality Check</h5>
             <p class="card-text">
               PUP IPMO offers Originality Checking through <strong>Turnit-in</strong>.<br>
@@ -77,7 +77,7 @@
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="<?php echo asset_url('Photos/Icons/Copyright-icon.png'); ?>" alt="Copyright" class="mb-2" width="60">
+            <img src="../../Photos/Icons/Copyright-icon.png" alt="Copyright" class="mb-2" width="60">
             <h5 class="card-title">Copyright</h5>
             <p class="card-text">
               Copyright is the legal protection extended to the owner of rights in an original work, such as
@@ -94,7 +94,7 @@
       <div class="col-12 col-md-5">
         <div class="card h-100 shadow-sm ip-card-wide">
           <div class="card-body text-center">
-            <img src="<?php echo asset_url('Photos/Icons/Patent-icon.png'); ?>" alt="Patent" class="mb-2" width="60">
+            <img src="../../Photos/Icons/Patent-icon.png" alt="Patent" class="mb-2" width="60">
             <h5 class="card-title">Industrial Property</h5>
             <h6><i>Patent | Trademark | Utility Model | Industrial Design</i></h6>
             <p class="card-text">
@@ -114,10 +114,10 @@
       <p class="contact-info-small mb-0">
         For any questions or concerns, feel free to contact us via:<br>
         <span class="me-3">
-          <img src="<?php echo asset_url('Photos/Icons/Email-icon.png'); ?>" alt="email" class="icon-sm align-text-bottom"> ipmo@pup.edu.ph
+          <img src="../../Photos/Icons/Email-icon.png" alt="email" class="icon-sm align-text-bottom"> ipmo@pup.edu.ph
         </span>
         <span>
-          <img src="<?php echo asset_url('Photos/Icons/Landline-icon.png'); ?>" alt="phone" class="icon-sm align-text-bottom"> (+632) 5335-1787
+          <img src="../../Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm align-text-bottom"> (+632) 5335-1787
         </span>
       </p>
     </div>

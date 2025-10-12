@@ -7,16 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/originality-form.css'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
+  <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
+  <link rel="stylesheet" href="../../css/originality-form.css">
+  <link rel="stylesheet" href="../../css/main.css">
 </head>
 <body>
   <!-- Navbar (copied from index.php) -->
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
   <a class="navbar-brand d-flex align-items-center" href="../../index.php">
-  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+  <img src="../../Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -41,7 +41,7 @@
     </div>
     <div class="form-bg mx-auto shadow-sm p-4 rounded-4 mb-4 d-flex justify-content-center">
       <!-- Form image as in your screenshot -->
-  <img src="<?php echo asset_url('Photos/originality-check-form.jpg'); ?>" alt="Originality Check Form" class="form-img" style="width: auto; height: 645px;" />
+  <img src="../../Photos/originality-check-form.jpg" alt="Originality Check Form" class="form-img" style="width: auto; height: 645px;" />
     </div>
   </div>
 
@@ -51,6 +51,6 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-  <script src="<?php echo asset_url('javascript/originality-form.js'); ?>"></script>
+  <script src="../../javascript/originality-form.js"></script>
 </body>
 </html>

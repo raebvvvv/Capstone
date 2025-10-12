@@ -8,9 +8,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/e-services.css'); ?>">
+  <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/e-services.css">
   <style>
     /* Only widen the Industrial Property card, keep others unchanged */
     @media (min-width: 768px) {
@@ -26,7 +26,7 @@
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="../../index.php">
-        <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+  <img src="../../Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -67,7 +67,7 @@
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="<?php echo asset_url('Photos/Icons/Originality-icon.png'); ?>" alt="Originality Check" class="mb-2" width="60">
+            <img src="../../Photos/Icons/Originality-icon.png" alt="Originality Check" class="mb-2" width="60">
             <h5 class="card-title">Originality Check</h5>
             <p class="card-text">
               PUP IPMO offers Originality Checking through <strong>Turnit-in</strong>.<br>
@@ -85,7 +85,7 @@
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <div class="card-body text-center">
-            <img src="<?php echo asset_url('Photos/Icons/Copyright-icon.png'); ?>" alt="Copyright" class="mb-2" width="60">
+            <img src="../../Photos/Icons/Copyright-icon.png" alt="Copyright" class="mb-2" width="60">
             <h5 class="card-title">Copyright</h5>
             <p class="card-text">
               Copyright is the legal protection extended to the owner of the rights in an original work, such as <b>intellectual creations in the
@@ -104,7 +104,7 @@
       <div class="col-12 col-md-5">
         <div class="card h-100 shadow-sm ip-card-wide">
           <div class="card-body text-center">
-            <img src="<?php echo asset_url('Photos/Icons/Patent-icon.png'); ?>" alt="Patent" class="mb-2" width="60">
+            <img src="../../Photos/Icons/Patent-icon.png" alt="Patent" class="mb-2" width="60">
             <h5 class="card-title">Industrial Property</h5>
             <h6><i>Patent | Trademark | Utility Model | Industrial Design</i></h6>
             <p class="card-text">
@@ -126,6 +126,6 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-  <script src="<?php echo asset_url('javascript/e-services.js'); ?>"></script>
+  <script src="../../javascript/e-services.js"></script>
 </body>
 </html>

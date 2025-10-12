@@ -47,30 +47,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if ($user && password_verify($password, $user['password'])) {
-            if ($user['status'] == 'pending' && $user['role'] !== 'admin') {
+            // Explicitly block admin login on this page
+            if (strtolower($user['role']) === 'admin') {
+                $error = 'This account is for administrators. Please use the Admin Login page.';
+            } elseif (strtolower($user['role']) === 'employee') {
+                // Prevent employees from logging in here; direct them to the dedicated page
+                $error = 'This account is for employees. Please use the Employee Login page.';
+            } elseif ($user['status'] == 'pending') {
                 $error = "Please wait for the confirmation of your account.";
             } else {
-                // Prevent admins from logging in via the student login page (security)
-                if (strtolower($user['role']) === 'employee') {
-                    $error = 'This account is for employees. Please use the Employee Login page.';
-                } else {
+                // Proceed with regular (student) login
                 session_regenerate_id(true); // Security: Prevent session fixation attacks
                 $_SESSION['user_logged_in'] = true;
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['email'] = $user['email'];
-                $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email']; // Store the number or email used to login
-                $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0; // Set admin status
-                $_SESSION['role'] = $user['role']; // Persist role (student/employee/admin)
+                $_SESSION['user_identifier'] = $user['identifier'] ?? $user['email'];
+                $_SESSION['is_admin'] = 0; // Never set admin via this page
+                $_SESSION['role'] = $user['role'];
 
-                if ($user['role'] === 'admin') {
-                    // Redirect administrators to the admin dashboard
-                    redirect('admin/admin.php');
-                } else {
-                    // Redirect regular users to the after-login landing page
-                    redirect('User/Afterlogin/after-landing.php');
-                }
+                // Redirect regular users to the after-login landing page
+                redirect('User/Afterlogin/after-landing.php');
                 exit();
-                }
             }
         } else {
             $error = "Invalid login credentials.";
@@ -92,16 +89,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - PUP e-IPMO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
-    <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
-    <link rel="stylesheet" href="<?php echo asset_url('css/login.css'); ?>">
+    <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/login.css">
 </head>
 <body class="login-page-body">
     <!-- Navbar (matches index.php) -->
         <nav class="navbar navbar-expand-lg bg-white border-bottom w-100">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="<?php echo asset_url('index.php'); ?>">
-                    <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+                <a class="navbar-brand d-flex align-items-center" href="../../index.php">
+                    <img src="../../Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
                     <span>PUP e-IPMO</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -109,8 +106,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Beforelogin/about.php'); ?>">About Us</a></li>
+                        <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
                     </ul>
                 </div>
             </div>
@@ -119,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container-fluid d-flex justify-content-center align-items-center login-container">
         <div class="card shadow-sm p-4 login-card-custom">
             <div class="text-center mb-3">
-                <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" class="login-logo">
+                <img src="../../Photos/pup-logo.png" alt="PUP Logo" class="login-logo">
             </div>
             <div class="text-center mb-3">
                 <span class="fw-normal student-login-text"><?php echo ($loginMode === 'employee') ? 'Employee Login' : 'Student Login.'; ?></span>
@@ -155,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <button type="submit" class="btn w-100 login-btn-custom">Login</button>
             </form>
-            <a href="<?php echo asset_url('User/Beforelogin/register-student-v2.php'); ?>" class="w-100 d-block"><button class="btn w-100 mt-1 register-btn-custom" type="button">Register</button></a>
+            <a href="register-student-v2.php" class="w-100 d-block"><button class="btn w-100 mt-1 register-btn-custom" type="button">Register</button></a>
         </div>
     </div>
    
@@ -164,6 +161,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-    <script src="<?php echo asset_url('javascript/show-password.js'); ?>" defer></script>
+    <script src="../../javascript/show-password.js" defer></script>
 </body>
 </html>

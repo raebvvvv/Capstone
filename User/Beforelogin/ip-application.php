@@ -6,9 +6,9 @@
   <title>How do I apply for IP? | PUP e-IPMO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/ip-application.css'); ?>">
+  <link rel="icon" type="image/png" href="../../Photos/pup-logo.png">
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/ip-application.css">
 
 </head>
 <body>
@@ -16,7 +16,7 @@
   <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+  <img src="../../Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -42,7 +42,7 @@
       <!-- Step 1 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="<?php echo asset_url('Photos/Icons/security.png'); ?>" alt="Register Icon" class="img-fluid">
+          <img src="../../Photos/Icons/security.png" alt="Register Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1 d-flex flex-column flex-md-row w-100">
           <div class="card-desc flex-grow-1">
@@ -66,7 +66,7 @@
       <!-- Step 2 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="<?php echo asset_url('Photos/Icons/choice.png'); ?>" alt="Choose Service Icon" class="img-fluid">
+          <img src="../../Photos/Icons/choice.png" alt="Choose Service Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1 d-flex flex-column flex-md-row w-100">
           <div class="card-desc flex-grow-1">
@@ -88,7 +88,7 @@
       <!-- Step 3 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="<?php echo asset_url('Photos/Icons/online-library.png'); ?>" alt="Read Guide Icon" class="img-fluid">
+          <img src="../../Photos/Icons/online-library.png" alt="Read Guide Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -104,7 +104,7 @@
       <!-- Step 4 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="<?php echo asset_url('Photos/Icons/attachment.png'); ?>" alt="Download Forms Icon" class="img-fluid">
+          <img src="../../Photos/Icons/attachment.png" alt="Download Forms Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -120,7 +120,7 @@
       <!-- Step 5 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="<?php echo asset_url('Photos/Icons/online.png'); ?>" alt="Submission Form Icon" class="img-fluid">
+          <img src="../../Photos/Icons/online.png" alt="Submission Form Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -136,7 +136,7 @@
       <!-- Step 6 -->
       <div class="guide-card d-flex flex-wrap flex-xl-nowrap align-items-start mb-4">
         <div class="step-icon">
-          <img src="<?php echo asset_url('Photos/Icons/complaint.png'); ?>" alt="Evaluation Icon" class="img-fluid">
+          <img src="../../Photos/Icons/complaint.png" alt="Evaluation Icon" class="img-fluid">
         </div>
         <div class="flex-grow-1">
           <div>
@@ -234,6 +234,6 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-  <script src="<?php echo asset_url('javascript/ip-application.js'); ?>"></script>
+  <script src="../../javascript/ip-application.js"></script>
 </body>
 </html>
