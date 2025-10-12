@@ -41,11 +41,13 @@ try {
     $fs = storage_path('uploads' . DIRECTORY_SEPARATOR . $filename);
     if (!is_file($fs)) { http_response_code(404); exit('File missing'); }
 
-    $mime = $row['mime_type'] ?: 'application/pdf';
-    header('Content-Type: ' . $mime);
+    // Always serve as PDF inline (documents are restricted to PDFs)
+    header('Content-Type: application/pdf');
     header('Content-Disposition: inline; filename="' . $filename . '"');
     header('X-Content-Type-Options: nosniff');
     header('Cache-Control: private, no-store');
+    $size = @filesize($fs);
+    if ($size !== false) { header('Content-Length: ' . $size); }
     readfile($fs);
     exit;
 } catch (Throwable $e) {
