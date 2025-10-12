@@ -3,8 +3,9 @@
 // Page for students and employees to request a password reset
 // No design changes, basic form only
 
-require_once 'conn.php'; // adjust path if needed
-$emailConfig = require 'email_config.php'; // load config as array
+require_once __DIR__ . '/env_config.php';
+require_once __DIR__ . '/conn.php'; // centralized PDO
+$emailConfig = require __DIR__ . '/email_config.php'; // load config as array from project root
 require_once 'PHPMailer/src/PHPMailer.php';
 require_once 'PHPMailer/src/SMTP.php';
 require_once 'PHPMailer/src/Exception.php';

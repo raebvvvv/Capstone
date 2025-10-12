@@ -10,27 +10,34 @@ require __DIR__ . '/../../PHPMailer/vendor/autoload.php'; // Adjust path as need
 
 $success = '';
 $error = '';
+// When true, show a convenient link to resend verification
+$showResendLink = false;
 // Collect detailed error messages (e.g., password requirement failures)
 $errorDetails = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get and sanitize inputs
-    $lastName      = ucwords(strtolower(trim($_POST['lastName'])));
-    $firstName     = ucwords(strtolower(trim($_POST['firstName'])));
-    $middleName    = ucwords(strtolower(trim($_POST['middleName'])));
-    $suffix        = ucwords(strtolower(trim($_POST['suffix'])));
-    $homeAddress   = trim($_POST['homeAddress']);
-    $studentNumber = trim($_POST['studentNumber']);
-    $mobileNumber  = trim($_POST['mobileNumber']);
-    $academicLevel = isset($_POST['academic_level']) ? trim($_POST['academic_level']) : '';
-    $campus        = trim($_POST['campus']);
-    $college       = trim($_POST['college']);
+  // Helper to safely fetch and trim string inputs
+  $input = function(string $key, string $default = ''): string {
+    return isset($_POST[$key]) ? trim((string)$_POST[$key]) : $default;
+  };
+
+  // Get and sanitize inputs (with safe defaults)
+  $lastName      = ucwords(strtolower($input('lastName')));
+  $firstName     = ucwords(strtolower($input('firstName')));
+  $middleName    = ucwords(strtolower($input('middleName')));
+  $suffix        = ucwords(strtolower($input('suffix')));
+  $homeAddress   = $input('homeAddress');
+  $studentNumber = $input('studentNumber');
+  $mobileNumber  = $input('mobileNumber');
+  $academicLevel = isset($_POST['academic_level']) ? trim((string)$_POST['academic_level']) : '';
+  $campus        = $input('campus');
+  $college       = $input('college');
   // Department removed from registration; keep blank for DB compatibility
   $department    = '';
-    $program       = ucwords(strtolower(trim($_POST['program'])));
-  $email         = strtolower(trim($_POST['email']));
-    $password      = $_POST['password'];
-    $repassword    = $_POST['repassword'];
+  $program       = ucwords(strtolower($input('program')));
+  $email         = strtolower($input('email'));
+  $password      = $_POST['password']   ?? '';
+  $repassword    = $_POST['repassword'] ?? '';
 
     // Basic validation
     if (
@@ -154,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           ]);
         }
         $success = "Registration successful! However, we couldn't send a verification email right now. Please use the Resend Verification page later or contact support.";
+        $showResendLink = true;
       } else {
         $mail = new PHPMailer(true);
         try {
@@ -187,6 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             // Don't mark as error to avoid alarming the user; account was created
             $success = "Registration successful! However, we couldn't send the verification email. Please try Resend Verification later.";
+            $showResendLink = true;
         }
       }
     }
@@ -240,7 +249,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
           </div>
         <?php elseif ($success): ?>
-          <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
+          <div class="alert alert-success">
+            <?php echo htmlspecialchars($success); ?>
+            <?php if (!empty($showResendLink) && !empty($email)): ?>
+              <div class="mt-2">
+                <a class="btn btn-sm btn-outline-secondary" href="<?php echo asset_url('User/Beforelogin/resend_verification.php'); ?>?email=<?php echo urlencode($email); ?>">Resend verification email</a>
+              </div>
+            <?php endif; ?>
+          </div>
         <?php endif; ?>
         
         <form method="POST" action="#" enctype="multipart/form-data" autocomplete="off" id="studentRegForm" novalidate>

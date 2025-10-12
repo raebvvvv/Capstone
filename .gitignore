@@ -1,8 +1,9 @@
 # Sensitive configuration files
-email_config.php
-config.php
+# These files are now safe to commit (no secrets). Keep .env files ignored.
 .env
 *.env
+# Keep any local signing keys out of Git
+ticket_signing.key
 
 # Database files
 *.sql

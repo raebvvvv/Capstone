@@ -12,6 +12,8 @@ $success = '';
 $error = '';
 // Collect detailed error messages (e.g., password requirement failures)
 $errorDetails = [];
+// When true, show a convenient link to resend verification
+$showResendLink = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get and sanitize inputs
@@ -222,6 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 ]);
                               }
                               $success = "Registration successful! However, we couldn't send the verification email. Please try Resend Verification later.";
+                                $showResendLink = true;
                           }
                         } else {
                           // Missing SMTP configuration, but account created
@@ -232,6 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             ]);
                           }
                           $success = "Registration successful! However, we couldn't send a verification email right now. Please use the Resend Verification page later or contact support.";
+                              $showResendLink = true;
                         }
                     } catch (PDOException $e) {
                         if ($pdo->inTransaction()) { $pdo->rollback(); }
@@ -292,7 +296,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
           </div>
         <?php elseif ($success): ?>
-          <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
+          <div class="alert alert-success">
+            <?php echo htmlspecialchars($success); ?>
+            <?php if (!empty($showResendLink) && !empty($email)): ?>
+              <div class="mt-2">
+                <a class="btn btn-sm btn-outline-secondary" href="<?php echo asset_url('User/Beforelogin/resend_verification.php'); ?>?email=<?php echo urlencode($email); ?>">Resend verification email</a>
+              </div>
+            <?php endif; ?>
+          </div>
         <?php endif; ?>
         
         <form method="POST" action="#" autocomplete="off" id="employeeRegForm" class="needs-validation" novalidate>

@@ -1100,3 +1100,6 @@
 {"ts":"2025-10-12T06:17:43+08:00","type":"COMPLETE_RESOLVE_REVIEWER","user_id":4,"ip":"127.0.0.1","msg":"Resolved reviewer for completion (JSON endpoint)","ctx":{"uid":4,"admin_number":"ADM-001","profile_id":2,"request_id":"SRID-2025-20251012-3"}}
 {"ts":"2025-10-12T06:17:43+08:00","type":"COMPLETE_REQUEST","user_id":4,"ip":"127.0.0.1","msg":"Request completed","ctx":{"request_id":"SRID-2025-20251012-3","rows":1,"id_column":"submission_code","comment_set":true}}
 {"ts":"2025-10-12T06:18:05+08:00","type":"CERT_GENERATED","user_id":4,"ip":"127.0.0.1","msg":"Certificate generated","ctx":{"submission_id":138,"file":"C:\\xampp\\ipmo_storage\\certificates\\SRID-2025-20251012-3.pdf"}}
+{"ts":"2025-10-12T15:32:18+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
+{"ts":"2025-10-12T16:06:17+08:00","type":"SMTP_SEND_FAILED","user_id":null,"ip":"::1","msg":"Student registration email send failed","ctx":{"email":"thinkingwan00@gmail.com","error":"Extension missing: openssl"}}
+{"ts":"2025-10-12T16:15:45+08:00","type":"SMTP_SEND_FAILED","user_id":null,"ip":"::1","msg":"Student registration email send failed","ctx":{"email":"thinkingwan00@gmail.com","error":"Extension missing: openssl"}}

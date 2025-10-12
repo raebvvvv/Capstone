@@ -133,26 +133,8 @@ if (!function_exists('render_back_link')) {
             echo '<a href="' . back_href($fallbackRelative) . '" class="' . htmlspecialchars($classes, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</a>';
     }
 
-    // Database connection
-    $host = 'localhost';
-    $db   = 'ipmo_users';
-    $user = 'root';
-    $pass = ''; // or your MySQL password
-    $charset = 'utf8mb4';
-    $port='3306'; // your database port, default is usually 3306
-
-    $dsn = "mysql:host=$host;dbname=$db;charset=$charset;port=$port";
-    $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
-
-    try {
-        $pdo = new PDO($dsn, $user, $pass, $options);
-    } catch (\PDOException $e) {
-        throw new \PDOException($e->getMessage(), (int)$e->getCode());
-    }
+    // DB connection is centralized in conn.php; include it where needed.
+    // If a $pdo instance is required here, require conn.php explicitly.
 }
 
 // Optional: unify session + security bootstrap
@@ -163,22 +145,8 @@ if (file_exists(__DIR__ . '/security_bootstrap.php')) {
     }
 }
 
-$host = 'localhost';
-$db   = 'ipmo_users';
-$user = 'root';
-$pass = ''; // or your MySQL password
-$charset = 'utf8mb4';
-$port='3306'; // your database port, default is usually 3306
-
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset;port=$port";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
-    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+// Centralize DB connection: include once so scripts that require config.php have $pdo
+// If a script needs to avoid DB for performance, it can skip requiring config.php and include specific helpers only.
+if (file_exists(__DIR__ . '/conn.php')) {
+    require_once __DIR__ . '/conn.php'; // defines $pdo
 }

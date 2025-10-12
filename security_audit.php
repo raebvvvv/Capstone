@@ -29,12 +29,15 @@ function security_audit() {
         $issues[] = "❌ Profile helper functions missing";
     }
     
-    // Check 4: Database connection security
+    // Check 4: Database connection security (using centralized conn.php)
     try {
-        $pdo = new PDO("mysql:host=localhost;dbname=ipmo_users", "root", "");
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $fixes[] = "✅ Database connection working with error handling";
-    } catch (PDOException $e) {
+        if (!isset($pdo)) { require_once __DIR__ . '/conn.php'; }
+        if ($pdo instanceof PDO) {
+            $fixes[] = "✅ Database connection working with error handling";
+        } else {
+            $issues[] = "❌ Database connection not initialized";
+        }
+    } catch (Throwable $e) {
         $issues[] = "❌ Database connection issue: " . $e->getMessage();
     }
     
