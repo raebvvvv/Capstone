@@ -1,14 +1,34 @@
 <?php
 // forgot_password.php
 // Page for students and employees to request a password reset
-// No design changes, basic form only
-
-require_once __DIR__ . '/env_config.php';
-require_once __DIR__ . '/conn.php'; // centralized PDO
+// Bootstrap config (paths, BASE_URL, security) and DB
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/conn.php';
 $emailConfig = require __DIR__ . '/email_config.php'; // load config as array from project root
-require_once 'PHPMailer/src/PHPMailer.php';
-require_once 'PHPMailer/src/SMTP.php';
-require_once 'PHPMailer/src/Exception.php';
+
+// Robust PHPMailer loading: prefer Composer, then vendor fallback, then direct src includes
+$phpmailerReady = false;
+try {
+    $candidates = [
+        __DIR__ . '/vendor/autoload.php',
+        __DIR__ . '/PHPMailer/vendor/autoload.php',
+    ];
+    foreach ($candidates as $auto) {
+        if (is_readable($auto)) { require_once $auto; $phpmailerReady = class_exists('PHPMailer\\PHPMailer\\PHPMailer'); break; }
+    }
+    if (!$phpmailerReady) {
+        $srcBase = __DIR__ . '/PHPMailer/src';
+        if (is_readable($srcBase . '/PHPMailer.php')) {
+            require_once $srcBase . '/PHPMailer.php';
+            require_once $srcBase . '/SMTP.php';
+            require_once $srcBase . '/Exception.php';
+            $phpmailerReady = class_exists('PHPMailer\\PHPMailer\\PHPMailer');
+        }
+    }
+} catch (Throwable $e) {
+    $phpmailerReady = false;
+}
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -36,31 +56,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
             $update = $pdo->prepare("UPDATE users SET password_reset_token = ?, token_expiry = ? WHERE user_id = ?");
             $update->execute([$token, $expiry, $user_id]);
-            // Send password reset email
-            $mail = new PHPMailer(true);
-            try {
-                // Server settings from email_config.php
-                $mail->isSMTP();
-                $mail->Host = $emailConfig['smtp']['host'];
-                $mail->SMTPAuth = true;
-                $mail->Username = $emailConfig['smtp']['username'];
-                $mail->Password = $emailConfig['smtp']['password'];
-                $mail->SMTPSecure = $emailConfig['smtp']['encryption'];
-                $mail->Port = $emailConfig['smtp']['port'];
+            // Build absolute reset link using BASE_URL for portability
+            $reset_link = asset_url('reset_password.php') . '?token=' . urlencode($token);
 
-                // Recipients
-                $mail->setFrom($emailConfig['smtp']['from_email'], $emailConfig['smtp']['from_name']);
-                $mail->addAddress($row['email']);
+            // Send password reset email (best effort; do not reveal status)
+            if ($phpmailerReady && !empty($emailConfig['smtp']['from_email'])) {
+                try {
+                    $mail = new PHPMailer(true);
+                    // Server settings from email_config.php
+                    $mail->isSMTP();
+                    $mail->Host = $emailConfig['smtp']['host'];
+                    $mail->SMTPAuth = true;
+                    $mail->Username = $emailConfig['smtp']['username'];
+                    $mail->Password = $emailConfig['smtp']['password'];
+                    $mail->SMTPSecure = $emailConfig['smtp']['encryption'];
+                    $mail->Port = $emailConfig['smtp']['port'];
 
-                // Content
-                $mail->isHTML(true);
-                $mail->Subject = 'Password Reset Request';
-                $reset_link = 'https://' . $_SERVER['HTTP_HOST'] . '/Capstone/reset_password.php?token=' . urlencode($token);
-                $mail->Body = 'Click <a href="' . $reset_link . '">here</a> to reset your password. This link will expire in 1 hour.';
+                    // Recipients
+                    $mail->setFrom($emailConfig['smtp']['from_email'], $emailConfig['smtp']['from_name'] ?? '');
+                    $mail->addAddress($row['email']);
 
-                $mail->send();
-            } catch (Exception $e) {
-                // Log error or handle as needed
+                    // Content
+                    $mail->isHTML(true);
+                    $mail->Subject = 'Password Reset Request';
+                    $mail->Body = 'Click <a href="' . htmlspecialchars($reset_link, ENT_QUOTES, 'UTF-8') . '">here</a> to reset your password. This link will expire in 1 hour.';
+
+                    $mail->send();
+                } catch (Throwable $e) {
+                    // Log quietly
+                    @error_log('Forgot password mail error: ' . $e->getMessage());
+                }
+            } else {
+                // If email cannot be sent on this host, we can still show the link to the user discreetly (optional)
+                // $message .= ' If email delivery is delayed, you can use this link: ' . htmlspecialchars($reset_link, ENT_QUOTES, 'UTF-8');
             }
             $message = 'If your account exists, you will receive an email with reset instructions.';
         } else {
@@ -79,15 +107,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password - PUP e-IPMO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="Photos/pup-logo.png">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/login.css">
+    <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/login.css'); ?>">
 </head>
 <body class="login-page-body">
     <nav class="navbar navbar-expand-lg bg-white border-bottom w-100">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="index.php">
-                <img src="Photos/pup-logo.png" alt="PUP Logo" width="50" class="me-2">
+            <a class="navbar-brand d-flex align-items-center" href="<?php echo asset_url('index.php'); ?>">
+                <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
                 <span>PUP e-IPMO</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -95,8 +123,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="User/Beforelogin/about.php">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('User/Beforelogin/about.php'); ?>">About Us</a></li>
                 </ul>
             </div>
         </div>
@@ -104,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container-fluid d-flex justify-content-center align-items-center login-container">
         <div class="card shadow-sm p-4 login-card-custom">
             <div class="text-center mb-3">
-                <img src="Photos/pup-logo.png" alt="PUP Logo" class="login-logo">
+                <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" class="login-logo">
             </div>
             <div class="text-center mb-3">
                 <span class="fw-normal student-login-text">Forgot Password</span>

@@ -77,7 +77,7 @@
               <div class="step-title fw-bold mb-1"><span class="step-number">2.</span> Adviser Conducts Originality Check</div>
               <div class="step-desc">
                 Using <strong>Turnitin</strong>, a plagiarism detection software, the adviser reviews the document and records the results in the Originality Check Form.<br>
-                <a href="originality-form.php" class="btn btn-originality btn-sm mt-2">Originality Check Form</a>
+                <a href="https://drive.google.com/uc?export=download&id=1tMiLMefbv2VjzbQfrbbi9-oZCmpCHqCW" class="btn btn-originality btn-sm mt-2">Originality Check Form</a>
               </div>
             </div>
             <div class="step-item mb-3">

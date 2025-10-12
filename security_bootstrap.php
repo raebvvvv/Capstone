@@ -44,7 +44,7 @@ if (!function_exists('secure_bootstrap')) {
         }
         // Admin pages stricter idle window (5 minutes) unless overridden by env ADMIN_SESSION_IDLE_TIMEOUT
         if (!defined('ADMIN_SESSION_IDLE_TIMEOUT')) {
-            define('ADMIN_SESSION_IDLE_TIMEOUT', Environment::getInt('ADMIN_SESSION_IDLE_TIMEOUT', 300)); // 5 minutes
+            define('ADMIN_SESSION_IDLE_TIMEOUT', Environment::getInt('ADMIN_SESSION_IDLE_TIMEOUT', 1800)); // 30 minutes
         }
         if (!defined('SESSION_ABSOLUTE_LIFETIME')) {
             define('SESSION_ABSOLUTE_LIFETIME', Environment::getInt('SESSION_LIFETIME', 28800)); // 8 hours
