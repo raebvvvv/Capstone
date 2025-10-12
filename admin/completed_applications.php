@@ -98,7 +98,7 @@ try {
             LEFT JOIN employee_profiles ep ON u.user_id = ep.user_id AND u.role = 'employee'
             LEFT JOIN submission_incomplete_meta mp ON mp.submission_id = s.submission_id AND mp.scope = 'pending'
             LEFT JOIN submission_incomplete_meta ma ON ma.submission_id = s.submission_id AND ma.scope = 'approved'
-            WHERE LOWER(s.status) = 'completed'
+            WHERE LOWER(s.status) IN ('completed','approved')
             ORDER BY s.status_updated_at DESC, s.created_at DESC";
     $stmt = $pdo->query($sql);
     $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -407,7 +407,7 @@ try {
             </div>
             <div class="ipapp-mini-dropdown" style="position:relative;">
                 <button class="ipapp-mini-btn" data-target="departmentMenu">Department<span>▼</span></button>
-                <div class="ipapp-mini-menu" id="departmentMenu">
+                <div class="ipapp-mini-menu" id="departmentMenu" style="max-height: 320px; overflow-y: auto; overscroll-behavior: contain;">
                     <button class="dropdown-item" type="button">All</button>
                     <button class="dropdown-item" type="button">N/A</button>
                 </div>
@@ -617,7 +617,8 @@ try {
         </div>
     </div>
 
-    <script src="../javascript/admin-completed-applications.js?v=18"></script>
+    <?php $v = time(); ?>
+    <script src="../javascript/admin-completed-applications.js?v=<?php echo $v; ?>"></script>
 <script src="../javascript/admin-profile.js?v=5" defer></script>
  <script src="../javascript/admin-notifications.js?v=1" defer></script>
 

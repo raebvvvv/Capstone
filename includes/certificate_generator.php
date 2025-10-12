@@ -175,9 +175,9 @@ if (!function_exists('generate_certificate')) {
         $coords = $opts['coords'] ?? [];
         // Final default coordinates (mm) — tuned layout
         $titlePos     = $coords['title']     ?? ['x'=>48,'y'=>95,'w'=>180];
-        $authorsPos   = $coords['authors']   ?? ['x'=>62.5,'y'=>110,'w'=>180];
-        $datePos      = $coords['date']      ?? ['x'=>15,'y'=>163.5,'w'=>120];
-        $receiverPos  = $coords['receiver']  ?? ['x'=>113,'y'=>142,'w'=>50]; // area labeled "Name of Receiver/staff from RMIPO"
+        $authorsPos   = $coords['authors']   ?? ['x'=>62.5,'y'=>110.5,'w'=>180];
+        $datePos      = $coords['date']      ?? ['x'=>15,'y'=>176.5,'w'=>120];
+        $receiverPos  = $coords['receiver']  ?? ['x'=>113,'y'=>152,'w'=>50]; // area labeled "Name of Receiver/staff from RMIPO"
         $receiverFont = (int)($opts['receiver_font_size'] ?? 15);
     $qrCfg = $opts['qr'] ?? true; // default: enable QR; true to use defaults, or array for config
     // Default QR position/size as per admin preference

@@ -740,144 +740,161 @@ $result_inactive = $stmt_inactive->fetchAll();
     <script src="../javascript/admin-notifications.js?v=1" defer></script>
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
     <script src="../javascript/admin-manageuser.js?v=2" defer></script>
-        <!-- Academic data and modal dropdown initializer (use employee dataset for both) -->
-    <script src="../javascript/forms/employee-academic-dropdowns.js?v=1" defer></script>
     <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>" defer>
-            // Populate campus/college/program selects in Edit User modals using academicData
-            document.addEventListener('DOMContentLoaded', function () {
-                if (typeof academicData === 'undefined') return;
+        // Populate campus/college/department/program selects in Edit User modals using Catalogs API
+        document.addEventListener('DOMContentLoaded', function () {
+            const CAT_API = (window.CATALOGS_API_URL || 'catalogs_api.php');
 
-                function populateSelect(selectEl, options, currentValue) {
-                    if (!selectEl) return;
-                    // Clear existing options
-                    selectEl.innerHTML = '';
-                    // Default prompt
-                    const def = document.createElement('option');
-                    def.value = '';
-                    def.disabled = true;
-                    def.selected = true;
-                    def.textContent = 'Choose...';
-                    selectEl.appendChild(def);
-                    // Add options
-                    (options || []).forEach(opt => {
-                        const o = document.createElement('option');
-                        o.value = opt;
-                        o.textContent = opt;
-                        if (currentValue && currentValue === opt) {
-                            o.selected = true;
-                            def.selected = false;
-                        }
-                        selectEl.appendChild(o);
-                    });
-                }
+            const Catalogs = {
+                levels: [], // [{id,name,code}]
+                campuses: [], // [{id,name,code}]
+                colleges: [], // [{id,name,code}]
+                departments: [], // raw rows with college_id
+                programs: [], // raw rows with college_id
+                depsByCollege: {}, // college_id -> [name]
+                progsByCollege: {}, // college_id -> [name]
+                collegeIdByName: {}, // name -> id
+            };
 
-                function getCollegeListFromPrograms() {
-                    const exclude = new Set(['Masters','Doctorate','Open University','default']);
-                    return Object.keys(academicData.program || {}).filter(k => !exclude.has(k)).sort();
-                }
-
-                function initStudentSection(section) {
-                    const campusSel = section.querySelector('.acad-campus');
-                    const collegeSel = section.querySelector('.acad-college');
-                    const programSel = section.querySelector('.acad-program');
-                    const levelSel = section.querySelector('.acad-level-student');
-                    if (!campusSel || !collegeSel || !programSel) return;
-
-                    const campusCurrent = campusSel.dataset.current || '';
-                    const collegeCurrent = collegeSel.dataset.current || '';
-                    const programCurrent = programSel.dataset.current || '';
-                    const levelCurrent = levelSel ? (levelSel.dataset.current || '') : '';
-
-                    populateSelect(campusSel, academicData.campus || [], campusCurrent);
-                    if (levelSel) {
-                        const rawLevels = (academicData.academicLevel && Array.isArray(academicData.academicLevel)) ? academicData.academicLevel : ['Undergraduate','Masters','Doctorate','Open University'];
-                        const studentLevels = rawLevels.filter(l => l !== 'Not Studying');
-                        populateSelect(levelSel, studentLevels, levelCurrent);
+            function populateSelect(selectEl, options, currentValue) {
+                if (!selectEl) return;
+                selectEl.innerHTML = '';
+                const def = document.createElement('option');
+                def.value = '';
+                def.disabled = true;
+                def.selected = true;
+                def.textContent = 'Choose...';
+                selectEl.appendChild(def);
+                (options || []).forEach(opt => {
+                    const o = document.createElement('option');
+                    o.value = opt;
+                    o.textContent = opt;
+                    if (currentValue && currentValue === opt) {
+                        o.selected = true;
+                        def.selected = false;
                     }
-                    populateSelect(collegeSel, getCollegeListFromPrograms(), collegeCurrent);
+                    selectEl.appendChild(o);
+                });
+            }
 
-                    const initialCollege = collegeCurrent || collegeSel.value;
-                    const programList = (academicData.program && academicData.program[initialCollege])
-                        ? academicData.program[initialCollege]
-                        : (academicData.program && academicData.program.default) || [];
-                    populateSelect(programSel, programList, programCurrent);
+            async function fetchEntity(entity) {
+                const url = `${CAT_API}?action=list&entity=${encodeURIComponent(entity)}`;
+                const r = await fetch(url, { credentials: 'same-origin' });
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const d = await r.json();
+                if (!d || d.ok !== true || !Array.isArray(d.data)) throw new Error('Bad response');
+                return d.data;
+            }
 
-                    collegeSel.addEventListener('change', function () {
-                        const list = (academicData.program && academicData.program[this.value])
-                            ? academicData.program[this.value]
-                            : (academicData.program && academicData.program.default) || [];
-                        populateSelect(programSel, list, '');
-                    });
+            async function loadCatalogs() {
+                const [levels, campuses, colleges, departments, programs] = await Promise.all([
+                    fetchEntity('level'), fetchEntity('campus'), fetchEntity('college'), fetchEntity('department'), fetchEntity('program')
+                ]);
+                Catalogs.levels = levels;
+                Catalogs.campuses = campuses;
+                Catalogs.colleges = colleges;
+                Catalogs.departments = departments;
+                Catalogs.programs = programs;
+                Catalogs.collegeIdByName = Object.fromEntries((colleges||[]).map(c => [c.name, c.id]));
+                Catalogs.depsByCollege = {};
+                (departments||[]).forEach(d => {
+                    const k = String(d.college_id||'');
+                    if (!Catalogs.depsByCollege[k]) Catalogs.depsByCollege[k] = [];
+                    Catalogs.depsByCollege[k].push(d.name);
+                });
+                Catalogs.progsByCollege = {};
+                (programs||[]).forEach(p => {
+                    const k = String(p.college_id||'');
+                    if (!Catalogs.progsByCollege[k]) Catalogs.progsByCollege[k] = [];
+                    Catalogs.progsByCollege[k].push(p.name);
+                });
+            }
+
+            function initStudentSection(section) {
+                const campusSel = section.querySelector('.acad-campus');
+                const collegeSel = section.querySelector('.acad-college');
+                const programSel = section.querySelector('.acad-program');
+                const levelSel = section.querySelector('.acad-level-student');
+                if (!campusSel || !collegeSel || !programSel) return;
+
+                const campusCurrent = campusSel.dataset.current || '';
+                const collegeCurrent = collegeSel.dataset.current || '';
+                const programCurrent = programSel.dataset.current || '';
+                const levelCurrent = levelSel ? (levelSel.dataset.current || '') : '';
+
+                const campusNames = (Catalogs.campuses||[]).map(c => c.name);
+                populateSelect(campusSel, campusNames, campusCurrent);
+
+                if (levelSel) {
+                    const levelNames = (Catalogs.levels||[]).map(l => l.name);
+                    const studentLevels = levelNames.filter(l => l.toLowerCase() !== 'not studying');
+                    populateSelect(levelSel, studentLevels, levelCurrent);
                 }
 
-                function initEmployeeSection(section) {
-                    const campusSel = section.querySelector('.emp-campus');
-                    const collegeSel = section.querySelector('.emp-college');
-                    const deptSel = section.querySelector('.emp-department');
-                    const programSel = section.querySelector('.emp-program');
-                    const levelSel = section.querySelector('.emp-level');
-                    if (!campusSel || !collegeSel || !deptSel || !programSel) return;
+                const collegeNames = (Catalogs.colleges||[]).map(c => c.name);
+                populateSelect(collegeSel, collegeNames, collegeCurrent);
 
-                    const campusCurrent = campusSel.dataset.current || '';
-                    const collegeCurrent = collegeSel.dataset.current || '';
-                    const deptCurrent = deptSel.dataset.current || '';
-                    const programCurrent = programSel.dataset.current || '';
-                    const levelCurrent = levelSel ? (levelSel.dataset.current || '') : '';
+                function rebuildProgramsFor(collegeName, current) {
+                    const id = Catalogs.collegeIdByName[collegeName] || null;
+                    const list = id ? (Catalogs.progsByCollege[String(id)] || []) : [];
+                    populateSelect(programSel, list, current || '');
+                }
 
-                    populateSelect(campusSel, academicData.campus || [], campusCurrent);
-                    if (levelSel) {
-                        const employeeLevels = ["Not Studying","Doctorate","Masters","Open University"];
-                        populateSelect(levelSel, employeeLevels, levelCurrent);
-                    }
-                    populateSelect(collegeSel, getCollegeListFromPrograms(), collegeCurrent);
+                rebuildProgramsFor(collegeCurrent || collegeSel.value, programCurrent);
+                collegeSel.addEventListener('change', function(){ rebuildProgramsFor(this.value, ''); });
+            }
 
-                    const initialCollege = collegeCurrent || collegeSel.value;
-                    const depList = (academicData.department && academicData.department[initialCollege])
-                        ? academicData.department[initialCollege]
-                        : null;
-                    if (Array.isArray(depList) && depList.length) {
+            function initEmployeeSection(section) {
+                const campusSel = section.querySelector('.emp-campus');
+                const collegeSel = section.querySelector('.emp-college');
+                const deptSel = section.querySelector('.emp-department');
+                const programSel = section.querySelector('.emp-program');
+                const levelSel = section.querySelector('.emp-level');
+                if (!campusSel || !collegeSel || !deptSel || !programSel) return;
+
+                const campusCurrent = campusSel.dataset.current || '';
+                const collegeCurrent = collegeSel.dataset.current || '';
+                const deptCurrent = deptSel.dataset.current || '';
+                const programCurrent = programSel.dataset.current || '';
+                const levelCurrent = levelSel ? (levelSel.dataset.current || '') : '';
+
+                const campusNames = (Catalogs.campuses||[]).map(c => c.name);
+                populateSelect(campusSel, campusNames, campusCurrent);
+
+                if (levelSel) {
+                    // Ensure Not Studying, Doctorate, Masters, Open University (preserve order when possible)
+                    const set = new Set((Catalogs.levels||[]).map(l => l.name));
+                    const preferred = ['Not Studying','Doctorate','Masters','Open University'];
+                    const employeeLevels = preferred.filter(n => set.has(n)).concat(Array.from(set).filter(n => !preferred.includes(n)));
+                    populateSelect(levelSel, employeeLevels, levelCurrent);
+                }
+
+                const collegeNames = (Catalogs.colleges||[]).map(c => c.name);
+                populateSelect(collegeSel, collegeNames, collegeCurrent);
+
+                function rebuildDepsAndProgs(collegeName, depCur, progCur) {
+                    const id = Catalogs.collegeIdByName[collegeName] || null;
+                    const deps = id ? (Catalogs.depsByCollege[String(id)] || []) : [];
+                    const progs = id ? (Catalogs.progsByCollege[String(id)] || []) : [];
+                    if (deps.length) {
                         deptSel.disabled = false;
-                        populateSelect(deptSel, depList, deptCurrent);
+                        populateSelect(deptSel, deps, depCur || '');
                     } else {
-                        // No departments for this college: lock to N/A
                         deptSel.disabled = true;
                         deptSel.innerHTML = '';
                         const na = document.createElement('option');
-                        na.value = 'N/A';
-                        na.textContent = 'N/A';
+                        na.value = 'N/A'; na.textContent = 'N/A';
                         deptSel.appendChild(na);
                     }
-
-                    const progList = (academicData.program && academicData.program[initialCollege])
-                        ? academicData.program[initialCollege]
-                        : (academicData.program && academicData.program.default) || [];
-                    populateSelect(programSel, progList, programCurrent);
-
-                    collegeSel.addEventListener('change', function () {
-                        const c = this.value;
-                        const deps = (academicData.department && academicData.department[c])
-                            ? academicData.department[c]
-                            : null;
-                        if (Array.isArray(deps) && deps.length) {
-                            deptSel.disabled = false;
-                            populateSelect(deptSel, deps, '');
-                        } else {
-                            deptSel.disabled = true;
-                            deptSel.innerHTML = '';
-                            const na = document.createElement('option');
-                            na.value = 'N/A';
-                            na.textContent = 'N/A';
-                            deptSel.appendChild(na);
-                        }
-
-                        const progs = (academicData.program && academicData.program[c])
-                            ? academicData.program[c]
-                            : (academicData.program && academicData.program.default) || [];
-                        populateSelect(programSel, progs, '');
-                    });
+                    populateSelect(programSel, progs, progCur || '');
                 }
 
-                // Initialize sections when their modal is first shown
+                rebuildDepsAndProgs(collegeCurrent || collegeSel.value, deptCurrent, programCurrent);
+                collegeSel.addEventListener('change', function(){ rebuildDepsAndProgs(this.value, '', ''); });
+            }
+
+            // Fetch catalogs once, then init modals on open
+            loadCatalogs().then(() => {
                 document.querySelectorAll('.modal[id^="editUserModal"]').forEach(modal => {
                     modal.addEventListener('shown.bs.modal', function () {
                         const sSec = modal.querySelector('.student-profile-section');
@@ -886,7 +903,10 @@ $result_inactive = $stmt_inactive->fetchAll();
                         if (eSec && !eSec.dataset.initialized) { initEmployeeSection(eSec); eSec.dataset.initialized = '1'; }
                     });
                 });
+            }).catch(() => {
+                // If catalogs fetch fails, leave selects as-is (fallback to existing behavior)
             });
-        </script>
+        });
+    </script>
 </body>
 </html>

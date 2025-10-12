@@ -69,117 +69,53 @@ function initCompletedAppsFilters() {
 	const openDownloadModalBtn = document.getElementById('openDownloadSummaryModal');
 
 	// Dependent dropdowns: College -> Program mapping
-	const COLLEGE_PROGRAMS = {
-		CAF: [
-			'Bachelor of Science in Accountancy (BSA)',
-			'Bachelor of Science in Management Accounting (BSMA)',
-			'BSBA Major in Financial Management (BSBAFM)'
-		],
-		CADBE: [
-			'Bachelor of Science in Architecture (BS-ARCH)',
-			'Bachelor of Science in Interior Design (BSID)',
-			'Bachelor of Science in Environmental Planning (BSEP)'
-		],
-		CAL: [
-			'BA in English Language Studies (ABELS)',
-			'Bachelor of Arts in Filipinology (ABF)',
-			'BA in Literary and Cultural Studies (ABLCS)',
-			'Bachelor of Arts in Philosophy (AB-PHILO)',
-			'Bachelor of Performing Arts major in Theater Arts (BPEA)'
-		],
-		CBA: [
-			'Doctor in Business Administration (DBA)',
-			'Master in Business Administration (MBA)',
-			'BSBA major in Human Resource Management (BSBAHRM)',
-			'BSBA major in Marketing Management (BSBA-MM)',
-			'Bachelor of Science in Entrepreneurship (BSENTREP)',
-			'Bachelor of Science in Office Administration (BSOA)'
-		],
-		COC: [
-			'Bachelor in Advertising and Public Relations (BADPR)',
-			'Bachelor of Arts in Broadcasting',
-			'Bachelor of Arts in Communication Research (BACR)',
-			'Bachelor of Arts in Journalism (BAJ)'
-		],
-		CCIS: [
-			'Bachelor of Science in Computer Science (BSCS)',
-			'Bachelor of Science in Information Technology (BSIT)'
-		],
-		COED: [
-			'Doctor of Philosophy in Education Management (PhDEM)',
-			'Master of Arts in Education Management (MAEM)',
-			'Master in Business Education (MBE)',
-			'Master in Library and Information Science (MLIS)',
-			'MA in English Language Teaching (MAELT)',
-			'MA in Education major in Mathematics Education (MAEd-ME)',
-			'MA in Physical Education and Sports (MAPES)',
-			'MA in Education major in Teaching in the Challenged Areas (MAED-TCA)',
-			'Post-Baccalaureate Diploma in Education (PBDE)',
-			'Bachelor of Technology and Livelihood Education (BTLEd)',
-			'Bachelor of Library and Information Science (BLIS)',
-			'Bachelor of Secondary Education (BSEd)',
-			'Bachelor of Elementary Education (BEEd)',
-			'Bachelor of Early Childhood Education (BECEd)'
-		],
-		CE: [
-			'Bachelor of Science in Civil Engineering (BSCE)',
-			'Bachelor of Science in Computer Engineering (BSCpE)',
-			'Bachelor of Science in Electrical Engineering (BSEE)',
-			'Bachelor of Science in Electronics Engineering (BSECE)',
-			'Bachelor of Science in Industrial Engineering (BSIE)',
-			'Bachelor of Science in Mechanical Engineering (BSME)',
-			'Bachelor of Science in Railway Engineering (BSRE)'
-		],
-		CHK: [
-			'Bachelor of Physical Education (BPE)',
-			'Bachelor of Science in Exercises and Sports (BSESS)'
-		],
-		CL: [ 'Juris Doctor (JD)' ],
-		CPSPA: [
-			'Doctor in Public Administration (DPA)',
-			'Master in Public Administration (MPA)',
-			'Bachelor of Public Administration (BPA)',
-			'Bachelor of Arts in International Studies (BAIS)',
-			'Bachelor of Arts in Political Economy (BAPE)',
-			'Bachelor of Arts in Political Science (BAPS)'
-		],
-		CSSD: [
-			'Bachelor of Arts in History (BAH)',
-			'Bachelor of Arts in Sociology (BAS)',
-			'Bachelor of Science in Cooperatives (BSC)',
-			'Bachelor of Science in Economics (BSE)',
-			'Bachelor of Science in Psychology (BSPSY)'
-		],
-		CS: [
-			'Bachelor of Science in Food Technology (BSFT)',
-			'Bachelor of Science in Applied Mathematics (BSAPMATH)',
-			'Bachelor of Science in Biology (BSBIO)',
-			'Bachelor of Science in Chemistry (BSCHEM)',
-			'Bachelor of Science in Mathematics (BSMATH)',
-			'Bachelor of Science in Nutrition and Dietetics (BSND)',
-			'Bachelor of Science in Physics (BSPHY)',
-			'Bachelor of Science in Statistics (BSSTAT)'
-		],
-		CTHTM: [
-			'Bachelor of Science in Hospitality Management (BSHM)',
-			'Bachelor of Science in Tourism Management (BSTM)',
-			'Bachelor of Science in Transportation Management (BSTRM)'
-		]
+	// Catalogs-driven data containers (populated at runtime)
+	const Catalogs = {
+		levels: [], // [{name, code}]
+		campuses: [], // [{name, code}]
+		colleges: [], // [{id, name, code, campus_id}]
+		departmentsByCollege: {}, // codeLower -> [department names]
+		programsByCollege: {} // codeLower -> [program names]
 	};
 
 	// Departments per College
-	const COLLEGE_DEPARTMENTS = {
-		CBA: [
-			'Department of Marketing Management',
-			'Department of Human Resource Management',
-			'Department of Office Administration',
-			'Department of Entrepreneurship'
-		],
-		CCIS: [
-			'Department of Computer Science',
-			'Department of Information Technology'
-		]
-	};
+	// Fetch catalogs (admin endpoint)
+	const CAT_API = (window.CATALOGS_API_URL || 'catalogs_api.php');
+	async function fetchCatalogs() {
+		async function req(entity) {
+			const url = `${CAT_API}?action=list&entity=${encodeURIComponent(entity)}`;
+			const r = await fetch(url, { credentials: 'same-origin' });
+			if (!r.ok) throw new Error(`HTTP ${r.status}`);
+			const d = await r.json();
+			if (!d || d.ok !== true || !Array.isArray(d.data)) throw new Error('Bad response');
+			return d.data;
+		}
+		try {
+			const [levels, campuses, colleges, departments, programs] = await Promise.all([
+				req('level'), req('campus'), req('college'), req('department'), req('program')
+			]);
+			Catalogs.levels = levels.map(x => ({ name: x.name, code: x.code || x.name })).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+			Catalogs.campuses = campuses.map(x => ({ name: x.name, code: x.code || x.name })).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+			Catalogs.colleges = colleges.map(x => ({ id: x.id, name: x.name, code: x.code || x.name, campus_id: x.campus_id })).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+			const idToCode = Object.fromEntries(Catalogs.colleges.map(c => [String(c.id), (c.code||'').toString()]));
+			Catalogs.departmentsByCollege = {};
+			(departments||[]).forEach(d => {
+				const code = (idToCode[String(d.college_id)] || '').toLowerCase();
+				if (!code) return;
+				if (!Catalogs.departmentsByCollege[code]) Catalogs.departmentsByCollege[code] = [];
+				Catalogs.departmentsByCollege[code].push(d.name);
+			});
+			Catalogs.programsByCollege = {};
+			(programs||[]).forEach(p => {
+				const code = (idToCode[String(p.college_id)] || '').toLowerCase();
+				if (!code) return;
+				if (!Catalogs.programsByCollege[code]) Catalogs.programsByCollege[code] = [];
+				Catalogs.programsByCollege[code].push(p.name);
+			});
+		} catch (e) {
+			// Leave Catalogs empty; fallbacks will kick in
+		}
+	}
 
 	// Map short college codes used in UI to full names used by academicData.program keys
 	const CODE_TO_COLLEGE_FULL = {
@@ -200,10 +136,13 @@ function initCompletedAppsFilters() {
 		// Note: Institute of Technology isn't in the College menu; add if needed
 	};
 
-	// Safe accessor for academicData defined in forms/academic-dropdowns.js
-	function getAD(){
-		try { if (typeof academicData !== 'undefined') return academicData; } catch(_) {}
-		return (window.academicData || null);
+	// Build union of all programs from catalogs
+	function getAllPrograms() {
+		const set = new Set();
+		if (Catalogs && Catalogs.programsByCollege) {
+			Object.values(Catalogs.programsByCollege).forEach(arr => (arr||[]).forEach(p => set.add(p)));
+		}
+		return Array.from(set);
 	}
 
 	const acadLevelBtn = filtersBar ? filtersBar.querySelector('.ipapp-mini-btn[data-target="acadLevelMenu"]') : null;
@@ -230,40 +169,23 @@ function initCompletedAppsFilters() {
 	let selectedType = 'All';
 	let selectedGroup = 'All';
 
-	function getAllPrograms() {
-		const set = new Set();
-		Object.values(COLLEGE_PROGRAMS).forEach(arr => arr.forEach(p => set.add(p)));
-		return Array.from(set);
-	}
+	// (removed duplicate getAllPrograms using static maps)
 
 	// Utility: normalize text for matching
 	function norm(text){ return (text||'').toLowerCase().replace(/\s+/g,' ').trim(); }
 
 	// Build a mapping of lowercase program name -> display (proper case) per college
-	const PROGRAM_DISPLAY_MAP = (()=>{
-		const map = {};
-		Object.keys(COLLEGE_PROGRAMS).forEach(code=>{
-			const entries = COLLEGE_PROGRAMS[code] || [];
-			const m = {};
-			entries.forEach(name=>{ m[norm(name)] = name; });
-			map[code] = m;
-		});
-		// Also create an 'ALL' union map for fallback display across colleges
-		const all = {};
-		Object.values(map).forEach(m=>{ Object.keys(m).forEach(k=>{ if(!(k in all)) all[k]=m[k]; }); });
-		map.ALL = all;
-		return map;
-	})();
+	// Display map for programs: lowercase -> original label
+	function programDisplayMapFor(code){
+		const entries = (code && code !== 'ALL' && Catalogs.programsByCollege[code.toLowerCase()]) ? Catalogs.programsByCollege[code.toLowerCase()] : getAllPrograms();
+		const m = {};
+		(entries || []).forEach(name => { m[norm(name)] = name; });
+		return m;
+	}
 
 	function getAllDepartments() {
-		const ad = getAD();
-		const dep = (ad && ad.department) || {};
 		const all = new Set();
-		Object.keys(dep).forEach(k => {
-			if (k === 'default') return;
-			const arr = dep[k] || [];
-			arr.forEach(d => all.add(d));
-		});
+		Object.values(Catalogs.departmentsByCollege || {}).forEach(arr => (arr||[]).forEach(d => all.add(d)));
 		return Array.from(all).sort((a,b)=> (a||'').localeCompare(b||''));
 	}
 
@@ -276,17 +198,11 @@ function initCompletedAppsFilters() {
 	function buildProgramMenuFromValues(programValues, collegeCode){
 		if(!programMenu) return;
 		const code = (!collegeCode || collegeCode==='All') ? 'ALL' : (collegeCode||'');
-		const dict = PROGRAM_DISPLAY_MAP[code] || PROGRAM_DISPLAY_MAP.ALL || {};
+		const dict = programDisplayMapFor(code);
 		// Fallbacks: if derived values are empty, try static list for selected college, then ALL union
 		let values = Array.isArray(programValues) ? programValues.slice() : [];
-		if (values.length === 0) {
-			const staticList = (code !== 'ALL' && COLLEGE_PROGRAMS[code]) ? COLLEGE_PROGRAMS[code] : [];
-			values = staticList.slice();
-		}
-		if (values.length === 0) {
-			const all = Object.values(PROGRAM_DISPLAY_MAP.ALL || {});
-			values = all.slice();
-		}
+		if (values.length === 0) { values = (code !== 'ALL') ? (Catalogs.programsByCollege[code.toLowerCase()] || []) : getAllPrograms(); }
+		if (values.length === 0) { values = getAllPrograms(); }
 		// Dedupe and sort by display label
 		const seen = new Set();
 		values = values.filter(v=>{
@@ -305,27 +221,12 @@ function initCompletedAppsFilters() {
 		programMenu.innerHTML = items;
 	}
 
-	// Helpers to get program lists from academicData based on selection
-	function listUndergradCollegeKeys(){
-		const ad = getAD();
-		const data = (ad && ad.program) || {};
-		return Object.keys(data).filter(k => !['Masters','Doctorate','Open University','default'].includes(k));
-	}
+	// Helpers to get program lists
 	function programsForUndergradCollege(code){
-		const ad = getAD();
-		const data = (ad && ad.program) || {};
-		if(!data || Object.keys(data).length===0){ return []; }
-		if(!code || code==='All'){
-			// Union of all undergrad colleges
-			const keys = listUndergradCollegeKeys();
-			const set = new Set();
-			keys.forEach(k=> (data[k]||[]).forEach(p=> set.add(p)) );
-			return Array.from(set);
-		}
-		const full = CODE_TO_COLLEGE_FULL[code] || null;
-		if(full && data[full]) return data[full].slice();
-		// Fallback: collect from dataset on the page
-		return collectProgramsFor(code);
+		// Using catalogs: return programs for the given college code; if All/empty, return union
+		if (!code || code==='All') return getAllPrograms();
+		const arr = Catalogs.programsByCollege[code.toLowerCase()] || [];
+		return arr.slice();
 	}
 
 	// Derive program list from actual items on the page, filtered by college code if provided
@@ -369,18 +270,13 @@ function initCompletedAppsFilters() {
 		setBtnLabel(programBtn, 'Program', 'All');
 		selectedProgram = 'All';
 
-		// Rebuild Department menu based on selected college using academicData.department
+		// Rebuild Department menu based on selected college using catalogs
 		if (departmentMenu) {
-			const ad = getAD();
-			const depMap = (ad && ad.department) || {};
-			const full = CODE_TO_COLLEGE_FULL[selectedCollegeCode] || null;
 			let deps = [];
-			if (full && Array.isArray(depMap[full])) {
-				deps = depMap[full];
-			} else if (Array.isArray(depMap.default)) {
-				deps = depMap.default;
+			if (selectedCollegeCode && selectedCollegeCode !== 'All' && selectedCollegeCode !== 'N/A') {
+				deps = (Catalogs.departmentsByCollege[selectedCollegeCode.toLowerCase()] || []).slice();
 			} else {
-				deps = [];
+				deps = getAllDepartments();
 			}
 			buildDepartmentMenu(deps);
 			selectedDepartment = 'All';
@@ -396,14 +292,10 @@ function initCompletedAppsFilters() {
 			const gradLevels = ['masters','doctorate','open university'];
 			const isGrad = gradLevels.includes((selectedAcademicLevel||'').toLowerCase());
 			if (isGrad) {
-				// Force College to N/A (display) and program list from academicData
+				// Force College to N/A (display); build program list using catalogs union
 				selectedCollegeCode = 'N/A';
 				setBtnLabel(collegeBtn, 'College', 'N/A');
-				// Build program menu
-				const ad = getAD();
-				const list = (ad && ad.program && ad.program[selectedAcademicLevel]) ? ad.program[selectedAcademicLevel] : [];
-				// Fall back to undergrad union from academicData (proper case) if list empty
-				const values = (list && list.length) ? list : programsForUndergradCollege('All');
+				const values = programsForUndergradCollege('All');
 				buildProgramMenuFromValues(values, 'ALL');
 				// Reset selected program
 				selectedProgram = 'All';
@@ -1107,24 +999,40 @@ function initCompletedAppsFilters() {
 	} catch (_) {}
 
 	// Initialize dependent dropdowns with full list
-	if (programMenu) {
-		// Initialize with all undergraduate programs from academicData for better accuracy
-		buildProgramMenuFromValues(programsForUndergradCollege('All'), 'All');
-	}
-	if (departmentMenu) {
-		buildDepartmentMenu(getAllDepartments());
-	}
-	setBtnLabel(collegeBtn, 'College', '');
-	setBtnLabel(programBtn, 'Program', 'All');
-	setBtnLabel(campusBtn, 'Campus', '');
-	setBtnLabel(typesBtn, 'Types', '');
-	setBtnLabel(groupBtn, 'Group', '');
-	setBtnLabel(departmentBtn, 'Department', '');
+	// Populate menus from catalogs, then initialize labels
+	(async () => {
+		await fetchCatalogs();
+		// Academic Level
+		if (acadLevelMenu) {
+			const levels = (Catalogs.levels || []).map(l => l.name);
+			acadLevelMenu.innerHTML = ['All'].concat(levels).map(lbl => `<button class="dropdown-item" type="button">${lbl}</button>`).join('');
+		}
+		// Campus
+		if (campusMenu) {
+			const campuses = (Catalogs.campuses || []).map(c => c.name);
+			campusMenu.innerHTML = ['All'].concat(campuses).map(lbl => `<button class="dropdown-item" type="button">${lbl}</button>`).join('');
+		}
+		// College
+		if (collegeMenu) {
+			const colleges = (Catalogs.colleges || []).map(c => ({ code: c.code, label: `${c.code} - ${c.name}` }));
+			const items = [{code:'All', label:'All'}].concat(colleges);
+			collegeMenu.innerHTML = items.map(it => `<button class="dropdown-item" type="button" data-code="${it.code}">${it.label}</button>`).join('');
+		}
+		// Program/Department initial (All)
+		if (programMenu) buildProgramMenuFromValues(getAllPrograms(), 'ALL');
+		if (departmentMenu) buildDepartmentMenu(getAllDepartments());
+		setBtnLabel(collegeBtn, 'College', '');
+		setBtnLabel(programBtn, 'Program', 'All');
+		setBtnLabel(campusBtn, 'Campus', '');
+		setBtnLabel(typesBtn, 'Types', '');
+		setBtnLabel(groupBtn, 'Group', '');
+		setBtnLabel(departmentBtn, 'Department', '');
+	})();
 }
 
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', initCompletedAppsFilters);
 } else {
 	initCompletedAppsFilters();
-}
+};
 
