@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                   }
                   if(file.size > 50*1024*1024){
-                    alert('File exceed 50mb');
+                    alert('File exceeds 50mb limit');
                     input.value='';
                     badge.textContent = '✗';
                     badge.className = 'badge bg-danger doc-status';

@@ -58,8 +58,8 @@
       if (!input.files || input.files.length === 0) return { ok: true, size: 0 };
       var f = input.files[0];
       if (perFileMaxBytes && f.size > perFileMaxBytes) {
-        // Align with exact required message
-        showFieldError(input, 'File exceed 50mb');
+  // Align with exact required message
+  showFieldError(input, 'File exceeds 50mb limit');
         // Clear the selected file to prevent accidental submit
         try { input.value = ''; } catch (e) {}
         return { ok: false, size: 0 };
@@ -67,21 +67,22 @@
       return { ok: true, size: f.size };
     }
 
-    // Attach change listeners to file inputs
-    var fileInputs = Array.prototype.slice.call(form.querySelectorAll('input[type="file"]'));
-    fileInputs.forEach(function (inp) {
-      inp.addEventListener('change', function () {
+    // Event delegation: handle dynamically added file inputs
+    form.addEventListener('change', function (ev) {
+      var inp = ev.target && ev.target.closest && ev.target.closest('input[type="file"]');
+      if (inp && form.contains(inp)) {
         validateInput(inp);
-      });
+      }
     });
 
     // On submit, enforce per-file limit
     form.addEventListener('submit', function (ev) {
       var firstInvalid = null;
-      for (var i = 0; i < fileInputs.length; i++) {
-        var res = validateInput(fileInputs[i]);
+      var inputsNow = form.querySelectorAll('input[type="file"]');
+      for (var i = 0; i < inputsNow.length; i++) {
+        var res = validateInput(inputsNow[i]);
         if (!res.ok && !firstInvalid) {
-          firstInvalid = fileInputs[i];
+          firstInvalid = inputsNow[i];
         }
       }
 

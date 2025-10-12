@@ -267,6 +267,20 @@ foreach ($expectedDocs as $doc) {
 
     $res = secure_upload_file($_FILES[$ff], $ff, $uploadDir);
     if (!$res['success']) {
+        // If any error indicates a 50MB limit exceed, show that single message and abort early
+        $joined = strtolower(implode(' ', $res['errors']));
+        if (strpos($joined, '50mb') !== false && strpos($joined, 'exceeds') !== false) {
+            http_response_code(400);
+            $back = isset($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER'], ENT_QUOTES, 'UTF-8') : asset_url('index.php');
+            echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Upload Error</title>';
+            echo '<meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"></head><body class="bg-light">';
+            echo '<div class="container py-5"><div class="alert alert-danger shadow-sm"><h4 class="alert-heading mb-3">Upload Error</h4><p class="mb-3">File exceeds 50mb limit</p>';
+            echo '<a class="btn btn-sm btn-secondary" href="' . $back . '">Go Back</a> ';
+            echo '<a class="btn btn-sm btn-outline-primary" href="' . asset_url('index.php') . '">Home</a></div></div></body></html>';
+            // Clean any already moved files
+            foreach ($storedFiles as $sf) { @unlink($uploadDir . DIRECTORY_SEPARATOR . $sf); }
+            exit;
+        }
         foreach ($res['errors'] as $err) { $errors[] = $ff . ': ' . $err; }
     } else {
         $storedFiles[$ff] = $res['filename'];
