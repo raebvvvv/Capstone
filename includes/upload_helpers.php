@@ -116,10 +116,9 @@ function display_upload_requirements() {
     
     $html = '<div class="upload-requirements text-muted small mb-3">';
     $html .= '<strong>Upload Requirements:</strong><br>';
-    $html .= '• Maximum file size: ' . $limits['max_size_text'] . '<br>';
-    $html .= '• Allowed file types: ' . $limits['allowed_types_text'] . '<br>';
+    $html .= '• Maximum file size: ' .'50MB per document' . '<br>';
+    $html .= '• Allowed file type: ' . $limits['allowed_types_text'] . '<br>';
     $html .= '• Maximum filename length: ' . $limits['max_filename_length'] . ' characters<br>';
-    $html .= '• Files are scanned for security threats';
     $html .= '</div>';
     
     return $html;
