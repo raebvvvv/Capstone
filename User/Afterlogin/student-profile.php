@@ -182,8 +182,27 @@ if (!empty($profile['last_updated_at'])) {
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link" href="student-application.php">My Application</a></li>
-          <li class="nav-item"><a class="nav-link active" href="student-profile.php">My Profile</a></li>
+          <!-- Add this inside your <ul class="navbar-nav ms-auto mb-2 mb-lg-0"> -->
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <img src="<?php echo asset_url('Photos/Icons/user-icon.png'); ?>" alt="User" width="25" height="25" class="rounded-circle me-2">
+    <span><?php echo htmlspecialchars($_SESSION['username'] ?? 'Account'); ?></span>
+  </a>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+    <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+    <li>
+      <a class="dropdown-item" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">
+        My Profile
+      </a>
+    </li>
+    <li><hr class="dropdown-divider"></li>
+    <li>
+      <a class="dropdown-item text-danger" href="../../logout.php">Logout</a>
+    </li>
+  </ul>
+</li>
+
+          <li><?php include __DIR__ . '/../../partials/user_notifications.php'; ?></li>
         </ul>
         <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
         <!-- Logout button triggers confirmation modal -->
@@ -191,7 +210,6 @@ if (!empty($profile['last_updated_at'])) {
           Logout
         </button>
       </div>
-      
     </div>
   </nav>
 

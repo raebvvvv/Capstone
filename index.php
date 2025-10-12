@@ -41,15 +41,44 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link active maroon-underline" aria-current="page" href="index.php">Home</a></li>
-          <?php if ($isLoggedIn): ?>
-            <!-- Logged in navigation -->
-            <li class="nav-item"><a class="nav-link" href="User/Afterlogin/about.php">About Us</a></li>
-            <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
-            <li class="nav-item"><a class="nav-link" href="<?php echo 'User/Afterlogin/' . ($isEmployee ? 'employee-application.php' : 'student-application.php'); ?>">My Application</a></li>
-            <li class="nav-item"><a class="nav-link" href="<?php echo 'User/Afterlogin/' . ($isEmployee ? 'employee-profile.php' : 'student-profile.php'); ?>">My Profile</a></li>
-            <li class="nav-item">
-              <?php include __DIR__ . '/partials/user_notifications.php'; ?>
+<?php if ($isLoggedIn): ?>
+  <!-- Logged in navigation -->
+  <li class="nav-item"><a class="nav-link" href="User/Afterlogin/about.php">About Us</a></li>
+
+  <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+  <li class="nav-item">
+    <a class="nav-link" href="<?php echo 'User/Afterlogin/' . ($isEmployee ? 'employee-application.php' : 'student-application.php'); ?>">
+      My Application
+    </a>
+  </li>
+  <li class="nav-item"><?php include __DIR__ . '/partials/user_notifications.php'; ?>
             </li>
+
+  <!-- User dropdown (icon only) -->
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <!-- User icon (SVG only, no text) -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+        <path d="M14 14s-1-1.5-6-1.5S2 14 2 14s1-4 6-4 6 4 6 4z"/>
+      </svg>
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+      <li>
+        <a class="dropdown-item" href="<?php echo 'User/Afterlogin/' . ($isEmployee ? 'employee-profile.php' : 'student-profile.php'); ?>">
+          My Profile
+        </a>
+      </li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal" style="cursor: pointer;">
+          Logout
+        </a>
+      </li>
+    </ul>
+  </li>
+              
           
           <?php else: ?>
             <!-- Not logged in navigation -->
@@ -250,5 +279,27 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
   <?php else: ?>
   <script src="javascript/landing.js"></script>
   <?php endif; ?>
+
+  <!-- Logout Confirmation Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to log out?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form method="POST" action="<?php echo asset_url('logout.php'); ?>" class="d-inline">
+          <?php csrf_input(); ?>
+          <button type="submit" class="btn btn-danger">Yes, log me out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
