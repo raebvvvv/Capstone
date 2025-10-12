@@ -1139,3 +1139,19 @@
 {"ts":"2025-10-12T19:34:24+08:00","type":"COMPLETE_RESOLVE_REVIEWER","user_id":4,"ip":"::1","msg":"Resolved reviewer for completion (JSON endpoint)","ctx":{"uid":4,"admin_number":"ADM-003","profile_id":4,"request_id":"SRID-2025-20251012-3"}}
 {"ts":"2025-10-12T19:34:24+08:00","type":"COMPLETE_REQUEST","user_id":4,"ip":"::1","msg":"Request completed","ctx":{"request_id":"SRID-2025-20251012-3","rows":1,"id_column":"submission_code","comment_set":false}}
 {"ts":"2025-10-12T19:34:30+08:00","type":"CERT_GENERATED","user_id":4,"ip":"::1","msg":"Certificate generated","ctx":{"submission_id":138,"file":"C:\\Program Files\\xampp\\ipmo_storage\\certificates\\SRID-2025-20251012-3.pdf"}}
+{"ts":"2025-10-12T20:51:50+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-003"}}
+{"ts":"2025-10-12T20:52:59+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
+2025-10-12T13:09:07+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-student-v2.php | Blocked: inline
+2025-10-12T13:09:11+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-employee.php | Blocked: inline
+2025-10-12T13:10:49+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-employee.php | Blocked: inline
+{"ts":"2025-10-12T21:11:24+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-003"}}
+2025-10-12T13:59:24+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-student-v2.php | Blocked: inline
+2025-10-12T14:00:17+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-student-v2.php | Blocked: inline
+2025-10-12T14:02:05+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-student-v2.php | Blocked: inline
+2025-10-12T14:07:05+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-student-v2.php | Blocked: inline
+2025-10-12T14:07:41+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-student-v2.php | Blocked: inline
+2025-10-12T14:08:38+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-student-v2.php | Blocked: inline
+{"ts":"2025-10-12T22:13:40+08:00","type":"AUTH","user_id":4,"ip":"::1","msg":"Admin login success","ctx":{"user_id":4,"identifier":"ADM-001"}}
+2025-10-12T14:16:07+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Afterlogin/student-profile.php | Blocked: inline
+2025-10-12T14:16:16+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-employee.php | Blocked: inline
+2025-10-12T14:17:10+00:00 | CSP_VIOLATION_HIGH | IP: ::1 | Directive: script-src-elem | URI: http://localhost/Capstone/User/Beforelogin/register-employee.php | Blocked: inline

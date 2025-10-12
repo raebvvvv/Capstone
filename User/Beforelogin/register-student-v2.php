@@ -39,10 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $password      = $_POST['password']   ?? '';
   $repassword    = $_POST['repassword'] ?? '';
 
-    // Basic validation
+    // Permit College to be 'N/A' for graduate levels
+    $isGradLevel = in_array($academicLevel, ['Masters','Doctorate','Open University'], true);
+    if ($isGradLevel && ($college === '' || strcasecmp($college, 'N/A') === 0)) {
+        $college = 'N/A';
+    }
+    $collegeMissing = (!$isGradLevel && !$college);
+
+    // Basic validation (college required unless graduate level)
     if (
     !$lastName || !$firstName || !$middleName|| !$homeAddress ||
-  !$studentNumber || !$mobileNumber || !$academicLevel || !$campus || !$college ||
+  !$studentNumber || !$mobileNumber || !$academicLevel || !$campus || $collegeMissing ||
   !$program || !$email || !$password || !$repassword
     ) {
         $error = "All required fields must be filled.";
@@ -390,7 +397,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-  <script>
+  <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">
     // Configure catalogs API base dynamically to respect subfolder/base URL
     window.CATALOGS_API_URL = "<?php echo asset_url('catalogs_public_api.php'); ?>";
   </script>
