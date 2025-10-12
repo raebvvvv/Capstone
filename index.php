@@ -155,10 +155,10 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
     </div>
   </section>
 
-  <!-- Announcements Section -->
+  <!-- Announcements Section --> 
   <section class="container py-1 mb-5" id="announcements">
     <h2 class="fw-bold mb-4">Announcements</h2>
-    <!-- Announcement images only; link removed for admin simplicity -->
+    <!-- Announcement images only; link removed for admin simplicity 
     <div class="row g-4">
       <div class="col-md-4">
         <div class="card announcement-card">
@@ -191,7 +191,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- Policy Section -->
   <section class="container py-5" id="policy">
