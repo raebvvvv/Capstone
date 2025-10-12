@@ -221,3 +221,41 @@ h1, h2, h5 {
     padding: 0.7rem 1.5rem;
   }
 }
+
+/* === Mobile alignment fixes === */
+@media (max-width: 992px) {
+  /* Center text for the intro section */
+  .main-intro-row {
+    text-align: center !important;
+  }
+
+  .main-intro-row .flex-grow-1,
+  .main-intro-row .office-hours-box {
+    margin: 0 auto !important;
+    text-align: center !important;
+  }
+
+  /* Center contact info */
+  .main-intro-row p,
+  .main-intro-row h1,
+  .main-intro-row h2 {
+    text-align: center !important;
+  }
+
+  /* Make cards and login sections perfectly centered */
+  .cards-center-row {
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .cards-center-row .card {
+    margin: 0 auto !important;
+  }
+
+  /* Reduce left/right margin inside containers */
+  .container {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
