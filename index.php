@@ -1,5 +1,16 @@
 <?php 
-require __DIR__ . '/config.php'; 
+// Robust bootstrap: support deployments where the project is in web root or inside a Capstone/ subfolder
+$cfgPrimary = __DIR__ . '/config.php';
+$cfgAlt     = __DIR__ . '/Capstone/config.php';
+if (is_file($cfgPrimary)) {
+  require $cfgPrimary;
+} elseif (is_file($cfgAlt)) {
+  require $cfgAlt;
+} else {
+  http_response_code(500);
+  echo 'Configuration file not found. Upload config.php to the web root (or Capstone/config.php).';
+  exit;
+}
 
 // Check if the user is logged in
 $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true;

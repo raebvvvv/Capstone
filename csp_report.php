@@ -9,10 +9,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('Method not allowed');
 }
 
-// Check content type
-$contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-if (strpos($contentType, 'application/csp-report') === false && 
-    strpos($contentType, 'application/json') === false) {
+// Check content type (be lenient on shared hosts which may omit/mangle headers)
+$contentType = $_SERVER['CONTENT_TYPE'] ?? ($_SERVER['HTTP_CONTENT_TYPE'] ?? '');
+if ($contentType && strpos($contentType, 'application/csp-report') === false && strpos($contentType, 'application/json') === false) {
+    // Don't reject if header missing; only reject when header present and clearly wrong
     http_response_code(400);
     exit('Invalid content type');
 }
@@ -55,9 +55,10 @@ try {
     $clientIP = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     $rateLimitFile = __DIR__ . '/csp_rate_limit.json';
     $rateLimit = [];
+    $canWrite = is_writable(__DIR__);
     
-    if (file_exists($rateLimitFile)) {
-        $rateLimit = json_decode(file_get_contents($rateLimitFile), true) ?: [];
+    if ($canWrite && file_exists($rateLimitFile)) {
+        $rateLimit = json_decode(@file_get_contents($rateLimitFile), true) ?: [];
     }
     
     $now = time();
@@ -65,25 +66,29 @@ try {
     $maxReports = 10;  // Max 10 reports per IP per 5 minutes
     
     // Clean old entries
-    foreach ($rateLimit as $ip => $data) {
-        if ($data['timestamp'] < ($now - $windowSize)) {
-            unset($rateLimit[$ip]);
+    if ($canWrite) {
+        foreach ($rateLimit as $ip => $data) {
+            if (($data['timestamp'] ?? 0) < ($now - $windowSize)) {
+                unset($rateLimit[$ip]);
+            }
         }
     }
     
     // Check current IP rate limit
-    if (isset($rateLimit[$clientIP])) {
-        if ($rateLimit[$clientIP]['count'] >= $maxReports) {
-            http_response_code(429);
-            exit('Rate limit exceeded');
+    if ($canWrite) {
+        if (isset($rateLimit[$clientIP])) {
+            if (($rateLimit[$clientIP]['count'] ?? 0) >= $maxReports) {
+                http_response_code(204); // Quietly drop when rate-limited
+                exit();
+            }
+            $rateLimit[$clientIP]['count'] = ($rateLimit[$clientIP]['count'] ?? 0) + 1;
+        } else {
+            $rateLimit[$clientIP] = ['timestamp' => $now, 'count' => 1];
         }
-        $rateLimit[$clientIP]['count']++;
-    } else {
-        $rateLimit[$clientIP] = ['timestamp' => $now, 'count' => 1];
     }
     
     // Save rate limit data
-    file_put_contents($rateLimitFile, json_encode($rateLimit));
+    if ($canWrite) { @file_put_contents($rateLimitFile, json_encode($rateLimit)); }
     
     // Log the CSP violation
     $logEntry = [
@@ -101,7 +106,7 @@ try {
     
     // Write to CSP violation log
     $logLine = json_encode($logEntry) . PHP_EOL;
-    file_put_contents(__DIR__ . '/csp_violations.log', $logLine, FILE_APPEND | LOCK_EX);
+    if ($canWrite) { @file_put_contents(__DIR__ . '/csp_violations.log', $logLine, FILE_APPEND | LOCK_EX); }
     
     // For high-severity violations, also log to security audit
     $highSeverityDirectives = [
@@ -119,18 +124,21 @@ try {
                          'Directive: ' . $violatedDirective . ' | ' .
                          'URI: ' . $cspReport['document-uri'] . ' | ' .
                          'Blocked: ' . ($cspReport['blocked-uri'] ?? 'unknown') . PHP_EOL;
-            file_put_contents(__DIR__ . '/audit.log', $auditEntry, FILE_APPEND | LOCK_EX);
+            if ($canWrite) { @file_put_contents(__DIR__ . '/audit.log', $auditEntry, FILE_APPEND | LOCK_EX); }
             break;
         }
     }
     
-    // Return success response
+    // Return success response with no body
     http_response_code(204); // No Content
+    header('Content-Length: 0');
+    exit();
     
 } catch (Exception $e) {
     // Log the error
-    error_log('CSP Report Handler Error: ' . $e->getMessage());
-    http_response_code(500);
-    exit('Internal server error');
+    // Fail closed but silent in production-like hosting; avoid provider 302 error pages
+    http_response_code(204);
+    header('Content-Length: 0');
+    exit();
 }
 ?>

@@ -32,6 +32,16 @@ function secure_upload_file($fileInput, $fieldName, $destinationDir) {
             ];
         }
     }
+
+    // Add protective files to the destination directory
+    $ht = rtrim($destinationDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '.htaccess';
+    if (!file_exists($ht)) {
+        @file_put_contents($ht, "Options -Indexes\n<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n");
+    }
+    $idx = rtrim($destinationDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'index.html';
+    if (!file_exists($idx)) {
+        @file_put_contents($idx, '<!doctype html><title>403</title>');
+    }
     
     // Create destination path with sanitized filename
     $destination = $destinationDir . DIRECTORY_SEPARATOR . $validation['sanitized_name'];

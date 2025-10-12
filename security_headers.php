@@ -14,7 +14,12 @@ class SecurityHeaders {
     public static function init() {
         self::$isProduction = Environment::isProduction();
         self::$isHttps = function_exists('is_running_https') ? is_running_https() : false;
-        self::$baseUrl = Environment::get('APP_URL', 'http://localhost/Capstone');
+        // Prefer explicit APP_URL, otherwise use global BASE_URL if defined, fallback to localhost
+        $appUrl = Environment::get('APP_URL');
+        if (!$appUrl && defined('BASE_URL')) {
+            $appUrl = BASE_URL;
+        }
+        self::$baseUrl = $appUrl ?: 'http://localhost/Capstone/';
     }
     
     /**
@@ -89,8 +94,10 @@ class SecurityHeaders {
             header('Strict-Transport-Security: max-age=86400; includeSubDomains');
         }
         
-        // Ensure cookies are secure in HTTPS
-        ini_set('session.cookie_secure', '1');
+        // Ensure cookies are secure in HTTPS (only when session not started yet)
+        if (session_status() === PHP_SESSION_NONE) {
+            @ini_set('session.cookie_secure', '1');
+        }
     }
     
     /**
@@ -143,14 +150,20 @@ class SecurityHeaders {
         // Script sources
         if (self::$isProduction) {
             // Production: strict script policy
-            $cspDirectives[] = "script-src 'self' 'nonce-" . self::generateCSPNonce() . "' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
+            $scriptSrc = "script-src 'self' 'nonce-" . self::generateCSPNonce() . "' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
         } else {
             // Development: allow unsafe-inline for easier development
-            $cspDirectives[] = "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
+            $scriptSrc = "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
         }
+        $cspDirectives[] = $scriptSrc;
+        // Explicitly set script-src-elem to mirror script-src to avoid browser fallback warnings
+        $cspDirectives[] = str_replace('script-src', 'script-src-elem', $scriptSrc);
         
         // Style sources
-        $cspDirectives[] = "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com";
+    $styleSrc = "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com";
+    $cspDirectives[] = $styleSrc;
+    // Explicitly set style-src-elem to mirror style-src
+    $cspDirectives[] = str_replace('style-src', 'style-src-elem', $styleSrc);
         
         // Image sources
         $cspDirectives[] = "img-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
@@ -194,10 +207,10 @@ class SecurityHeaders {
         // Manifest sources
         $cspDirectives[] = "manifest-src 'self'";
         
-        // Compute a sane default report URI that respects app base path (e.g., /Capstone)
-        $basePath = rtrim(parse_url(self::$baseUrl, PHP_URL_PATH) ?? '', '/');
-        $defaultReportPath = ($basePath ? $basePath : '') . '/csp_report.php';
-        $reportUri = Environment::get('CSP_REPORT_URI', $defaultReportPath);
+    // Compute report URI using absolute URL to avoid host rewrites on shared hosting
+    $absBase = rtrim(self::$baseUrl, '/');
+    $defaultReport = $absBase . '/csp_report.php';
+    $reportUri = Environment::get('CSP_REPORT_URI', $defaultReport);
 
         if (self::$isProduction) {
             // Production: enforce CSP with reporting

@@ -31,24 +31,45 @@ if (!defined('TICKET_SIGNING_KEY')) {
     define('TICKET_SIGNING_KEY', $signingKey);
 }
 
-// Try to derive base URL automatically (works for typical XAMPP localhost setups)
+// Try to derive base URL robustly; allow explicit override via environment
 if (!defined('BASE_URL')) {
-    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    // Assume the project directory name is the web root folder (capstonks)
-    $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
-    // If accessed from a nested script (e.g. /capstonks/admin/page.php) remove trailing segment(s) until we find folder name
-    $parts = explode('/', trim($scriptDir, '/'));
-    // Attempt to detect project folder by matching physical directory name
-    $projectFolder = basename(BASE_PATH);
-    $idx = array_search($projectFolder, $parts, true);
-    if ($idx !== false) {
-        $basePathParts = array_slice($parts, 0, $idx + 1);
-        $basePathUrl = implode('/', $basePathParts);
-    } else {
-        $basePathUrl = $projectFolder; // Fallback
+    $envBaseUrl = null;
+    if (class_exists('Environment') && method_exists('Environment', 'get')) {
+        // Prefer APP_URL if provided; fall back to legacy BASE_URL env key
+        $envBaseUrl = Environment::get('APP_URL');
+        if (!$envBaseUrl) {
+            $envBaseUrl = Environment::get('BASE_URL');
+        }
     }
-    define('BASE_URL', rtrim($https . $host . '/' . $basePathUrl, '/') . '/');
+    if (is_string($envBaseUrl) && $envBaseUrl !== '') {
+        $base = rtrim($envBaseUrl, '/') . '/';
+        define('BASE_URL', $base);
+    } else {
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+        // Compute web path of BASE_PATH relative to DOCUMENT_ROOT when possible
+        $docRoot = isset($_SERVER['DOCUMENT_ROOT']) ? realpath((string)$_SERVER['DOCUMENT_ROOT']) : false;
+        $baseDir = realpath(BASE_PATH);
+        $basePathUrl = '';
+        if ($docRoot && $baseDir) {
+            $docRoot = rtrim(str_replace('\\', '/', $docRoot), '/');
+            $baseDir = rtrim(str_replace('\\', '/', $baseDir), '/');
+            if (strpos($baseDir, $docRoot) === 0) {
+                $relative = trim(substr($baseDir, strlen($docRoot)), '/');
+                $basePathUrl = $relative; // may be empty if deployed at web root
+            }
+        }
+        // Fallback: use script directory if mapping failed
+        if ($basePathUrl === '') {
+            $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+            $basePathUrl = ltrim($scriptDir, '/');
+        }
+
+        $prefix = $https . $host . '/';
+        $full = rtrim($prefix . $basePathUrl, '/') . '/';
+        define('BASE_URL', $full);
+    }
 }
 
 if (!function_exists('app_path')) {
@@ -59,13 +80,13 @@ if (!function_exists('app_path')) {
 
 // Secure storage path (outside webroot) for user uploads and generated files
 if (!defined('STORAGE_BASE')) {
-    // Allow override via env: STORAGE_PATH=C:\secure\ipmo_storage or /var/ipmo_storage
+    // Allow override via env: STORAGE_PATH=C:\\secure\\ipmo_storage or /var/ipmo_storage
     $envStorage = Environment::get('STORAGE_PATH');
     if ($envStorage && is_string($envStorage)) {
         $base = rtrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $envStorage), DIRECTORY_SEPARATOR);
     } else {
         // Default: place storage outside typical webroot folders when detected
-        // If BASE_PATH = C:\xampp\htdocs\capstone, prefer C:\xampp\ipmo_storage
+        // If BASE_PATH = C:\\xampp\\htdocs\\capstone, prefer C:\\xampp\\ipmo_storage
         $projectParent = rtrim(dirname(BASE_PATH), DIRECTORY_SEPARATOR);
         $parentOfParent = rtrim(dirname($projectParent), DIRECTORY_SEPARATOR);
         $webRootFolder = strtolower(basename($projectParent));
@@ -77,6 +98,29 @@ if (!defined('STORAGE_BASE')) {
             $base = $projectParent . DIRECTORY_SEPARATOR . 'ipmo_storage';
         }
     }
+
+    // Honor open_basedir and shared-hosting constraints (e.g., InfinityFree) by
+    // falling back to a storage directory under the project root if needed.
+    $docRoot = isset($_SERVER['DOCUMENT_ROOT']) ? str_replace('\\', '/', (string)$_SERVER['DOCUMENT_ROOT']) : '';
+    $normBase = str_replace('\\', '/', $base);
+    $basePathNorm = str_replace('\\', '/', BASE_PATH);
+    $withinDocRoot = ($docRoot !== '' && strpos($normBase, rtrim($docRoot, '/')) === 0);
+    $withinProject = (strpos($normBase, rtrim($basePathNorm, '/')) === 0);
+    $openBaseDir = (string)ini_get('open_basedir');
+
+    if ($openBaseDir !== '') {
+        // If target base is not within document root or project path, it's likely disallowed.
+        if (!$withinDocRoot && !$withinProject) {
+            $base = BASE_PATH . DIRECTORY_SEPARATOR . 'storage';
+        }
+    }
+
+    // As a final safety, if the computed base is outside DOC_ROOT, but DOC_ROOT exists,
+    // prefer a storage folder under the project root (which is under DOC_ROOT in most deployments)
+    if ($docRoot !== '' && strpos(str_replace('\\', '/', $base), rtrim($docRoot, '/')) !== 0) {
+        $base = BASE_PATH . DIRECTORY_SEPARATOR . 'storage';
+    }
+
     define('STORAGE_BASE', $base);
 }
 
@@ -86,6 +130,17 @@ if (!function_exists('storage_path')) {
         if (!is_dir($base)) {
             // Best-effort create base storage folder
             @mkdir($base, 0775, true);
+        }
+        // When storage is under webroot (shared hosting), drop a protective .htaccess and index.html
+        if (is_dir($base)) {
+            $ht = $base . DIRECTORY_SEPARATOR . '.htaccess';
+            if (!file_exists($ht)) {
+                @file_put_contents($ht, "Options -Indexes\n<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n");
+            }
+            $idx = $base . DIRECTORY_SEPARATOR . 'index.html';
+            if (!file_exists($idx)) {
+                @file_put_contents($idx, '<!doctype html><title>403</title>');
+            }
         }
         return $path ? ($base . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR)) : $base;
     }

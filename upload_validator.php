@@ -22,12 +22,17 @@ class UploadValidator {
         self::$allowedMimeTypes = [
             'pdf' => ['application/pdf', 'application/x-pdf', 'application/acrobat', 'applications/pdf']
         ];
-    // Keep quarantine outside webroot
+    // Keep quarantine in configured storage path; may be under webroot on shared hosting
     self::$quarantineDir = storage_path('quarantine');
         
         // Create quarantine directory if it doesn't exist
         if (!is_dir(self::$quarantineDir)) {
             @mkdir(self::$quarantineDir, 0700, true);
+        }
+        // Protect quarantine directory from web access if it resides under webroot
+        $ht = rtrim(self::$quarantineDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '.htaccess';
+        if (!file_exists($ht)) {
+            @file_put_contents($ht, "Options -Indexes\n<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n");
         }
     }
     

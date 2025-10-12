@@ -186,37 +186,50 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
 }
 
-/* Cards centering enhancement */
-.cards-center-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 32px !important;
-  margin-bottom: 32px !important;
-  width: 100% !important;
+  /* Cards layout: stack and be fluid on small screens */
+  .cards-center-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    gap: 18px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+  }
+
+  .cards-center-row .card,
+  .cards-center-row .card.shadow-sm.h-100 {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+    margin: 0 !important;
+  }
+
+  /* Avoid global text centering; let content align naturally */
+  .container {
+    margin: 0 auto !important;
+  }
 }
 
-/* Force all cards to have equal width - override landing.css */
-.cards-center-row .card.shadow-sm.h-100 {
-  width: 360px !important;
-  min-width: 360px !important;
-  max-width: 360px !important;
-  flex: 0 0 360px !important;
-  margin: 0 !important;
+/* Ensure images scale inside narrow screens to prevent overflow */
+img {
+  max-width: 100%;
+  height: auto;
 }
 
-.cards-center-row .card {
-  width: 360px !important;
-  min-width: 360px !important;
-  max-width: 360px !important;
-  flex: 0 0 360px !important;
-  margin: 0 !important;
-}
-
-/* Page content centering */
-.container {
-  margin: 0 auto !important;
-  text-align: center !important;
-}
+/* Stack intro columns and remove fixed widths on tablets/phones */
+@media (max-width: 992px) {
+  .main-intro-row > .d-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .main-intro-row .flex-grow-1 {
+    max-width: 100% !important; /* override inline max-width: 40%/60% */
+    width: 100% !important;
+  }
+  .main-intro-row .ms-5 {
+    margin-left: 0 !important;
+  }
 }
 

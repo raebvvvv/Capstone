@@ -3,10 +3,26 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require __DIR__ . '/../../config.php';
 
-// Include PHPMailer
+// Include PHPMailer with robust fallbacks (works with/without Composer, and case-sensitive hosts)
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-require __DIR__ . '/../../PHPMailer/vendor/autoload.php'; // Adjust path as needed
+// Try common autoloaders first
+$__autoloaders = [
+  __DIR__ . '/../../vendor/autoload.php',
+  __DIR__ . '/../../PHPMailer/vendor/autoload.php',
+];
+foreach ($__autoloaders as $__al) {
+  if (is_file($__al)) {
+    require_once $__al;
+  }
+}
+// If class still not available, require PHPMailer classes directly
+if (!class_exists('PHPMailer\\PHPMailer\\PHPMailer')) {
+  $base = __DIR__ . '/../../PHPMailer/src/';
+  if (is_file($base . 'Exception.php')) { require_once $base . 'Exception.php'; }
+  if (is_file($base . 'PHPMailer.php')) { require_once $base . 'PHPMailer.php'; }
+  if (is_file($base . 'SMTP.php')) { require_once $base . 'SMTP.php'; }
+}
 
 $success = '';
 $error = '';
@@ -170,6 +186,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $success = "Registration successful! However, we couldn't send a verification email right now. Please use the Resend Verification page later or contact support.";
         $showResendLink = true;
       } else {
+        $canSend = class_exists('PHPMailer\\PHPMailer\\PHPMailer');
+        if (!$canSend) {
+          if (function_exists('log_event')) {
+            log_event('SMTP_CLASS_MISSING', 'PHPMailer class not found on host; skipping email send', [
+              'email' => $email,
+            ]);
+          }
+          $success = "Registration successful! However, we couldn't send the verification email. Please try Resend Verification later.";
+          $showResendLink = true;
+        } else {
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -192,8 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             This link will expire in 24 hours.<br><br>Thank you!";
 
             $mail->send();
-            $success = "Registration successful! Please check your email to verify your account.";
-        } catch (Exception $e) {
+      $success = "Registration successful! Please check your email to verify your account.";
+    } catch (Exception $e) {
             if (function_exists('log_event')) {
               log_event('SMTP_SEND_FAILED', 'Student registration email send failed', [
                 'email' => $email,
@@ -203,7 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Don't mark as error to avoid alarming the user; account was created
             $success = "Registration successful! However, we couldn't send the verification email. Please try Resend Verification later.";
             $showResendLink = true;
-        }
+    }
+    }
       }
     }
   }

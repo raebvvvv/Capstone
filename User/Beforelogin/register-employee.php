@@ -3,10 +3,24 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require __DIR__ . '/../../config.php';
 
-// Include PHPMailer
+// Include PHPMailer with robust fallbacks (works with/without Composer, and case-sensitive hosts)
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-require __DIR__ . '/../../PHPMailer/vendor/autoload.php'; // Adjust path as needed
+$__autoloaders = [
+  __DIR__ . '/../../vendor/autoload.php',
+  __DIR__ . '/../../PHPMailer/vendor/autoload.php',
+];
+foreach ($__autoloaders as $__al) {
+  if (is_file($__al)) {
+    require_once $__al;
+  }
+}
+if (!class_exists('PHPMailer\\PHPMailer\\PHPMailer')) {
+  $base = __DIR__ . '/../../PHPMailer/src/';
+  if (is_file($base . 'Exception.php')) { require_once $base . 'Exception.php'; }
+  if (is_file($base . 'PHPMailer.php')) { require_once $base . 'PHPMailer.php'; }
+  if (is_file($base . 'SMTP.php')) { require_once $base . 'SMTP.php'; }
+}
 
 $success = '';
 $error = '';
@@ -192,8 +206,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
 
                         if (!empty($smtp_config['host']) && !empty($smtp_config['username']) && !empty($smtp_config['password']) && !empty($smtp_config['from_email'])) {
-                          $mail = new PHPMailer(true);
-                          try {
+                          $canSend = class_exists('PHPMailer\\PHPMailer\\PHPMailer');
+                          if (!$canSend) {
+                            if (function_exists('log_event')) {
+                              log_event('SMTP_CLASS_MISSING', 'PHPMailer class not found on host; skipping email send', [
+                                'email' => $email,
+                              ]);
+                            }
+                            $success = "Registration successful! However, we couldn't send the verification email. Please try Resend Verification later.";
+                            $showResendLink = true;
+                          } else {
+                            $mail = new PHPMailer(true);
+                            try {
                               $mail->isSMTP();
                               $mail->Host = $smtp_config['host'];
                               $mail->SMTPAuth = true;
@@ -225,6 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                               }
                               $success = "Registration successful! However, we couldn't send the verification email. Please try Resend Verification later.";
                                 $showResendLink = true;
+                          }
                           }
                         } else {
                           // Missing SMTP configuration, but account created
@@ -438,7 +463,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-  <script>
+  <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">
     // Configure catalogs API base dynamically to respect subfolder/base URL
     window.CATALOGS_API_URL = "<?php echo asset_url('catalogs_public_api.php'); ?>";
   </script>
