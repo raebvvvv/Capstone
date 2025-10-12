@@ -1,5 +1,11 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth_check.php';
+if (empty($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
+    http_response_code(403);
+    echo 'Forbidden: Admin access required';
+    exit;
+}
 
 echo "<h2>Database Table Structure Check</h2>";
 

@@ -266,8 +266,9 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
             </form>
             <?php
               // Optional: display upload requirements
-              if (file_exists(__DIR__ . '/../../upload_helpers.php')) {
-                require_once __DIR__ . '/../../upload_helpers.php';
+              $upl = __DIR__ . '/../../includes/upload_helpers.php';
+              if (file_exists($upl)) {
+                require_once $upl;
                 echo display_upload_requirements();
               }
             ?>
@@ -351,7 +352,7 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
  <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/author-modal.js'); ?>"></script>
  <script src="<?php echo asset_url('javascript/forms/student-academic-dropdowns.js'); ?>"></script>
- <script>
+ <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">
    window.USER_ROLE = 'student';
    window.CATALOGS_API_URL = '<?php echo rtrim(asset_url('catalogs_public_api.php'), '/'); ?>';
  </script>

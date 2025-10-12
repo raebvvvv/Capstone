@@ -67,8 +67,8 @@ class UploadValidator {
         
         // File size validation
         if ($file['size'] > self::$maxFileSize) {
-            $maxSizeMB = round(self::$maxFileSize / 1048576, 1);
-            $errors[] = "File $fieldName exceeds maximum size of {$maxSizeMB}MB";
+            // Align with requested UX copy exactly
+            $errors[] = "File exceed 50mb";
         }
         
         // Filename validation and sanitization

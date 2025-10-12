@@ -185,8 +185,8 @@ class SecurityHeaders {
         // Media sources
         $cspDirectives[] = "media-src 'self'";
         
-        // Connection sources
-        $cspDirectives[] = "connect-src 'self'";
+    // Connection sources (allow same-origin and approved CDNs used for scripts/styles)
+    $cspDirectives[] = "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
         
         // Worker sources
         $cspDirectives[] = "worker-src 'none'";
@@ -194,14 +194,17 @@ class SecurityHeaders {
         // Manifest sources
         $cspDirectives[] = "manifest-src 'self'";
         
+        // Compute a sane default report URI that respects app base path (e.g., /Capstone)
+        $basePath = rtrim(parse_url(self::$baseUrl, PHP_URL_PATH) ?? '', '/');
+        $defaultReportPath = ($basePath ? $basePath : '') . '/csp_report.php';
+        $reportUri = Environment::get('CSP_REPORT_URI', $defaultReportPath);
+
         if (self::$isProduction) {
             // Production: enforce CSP with reporting
-            $reportUri = Environment::get('CSP_REPORT_URI', '/csp_report.php');
             $cspDirectives[] = "report-uri $reportUri";
             header('Content-Security-Policy: ' . implode('; ', $cspDirectives));
         } else {
             // Development: report-only mode for testing (with report URI to suppress browser warnings)
-            $reportUri = Environment::get('CSP_REPORT_URI', '/csp_report.php');
             $cspDirectives[] = "report-uri $reportUri";
             header('Content-Security-Policy-Report-Only: ' . implode('; ', $cspDirectives));
         }

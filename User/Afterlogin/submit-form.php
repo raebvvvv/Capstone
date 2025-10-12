@@ -2,7 +2,7 @@
 require __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../auth_check.php';
 require_once __DIR__ . '/../../includes/debug_helpers.php';
-require_once __DIR__ . '/../../upload_helpers.php';
+require_once __DIR__ . '/../../includes/upload_helpers.php';
 
 // Setup error logging
 setupErrorLogging();

@@ -106,7 +106,7 @@ ini_set('session.cookie_samesite', 'Strict'); // CSRF protection
 
 #### **Implementation Files:**
 - `upload_validator.php` - Comprehensive  file validation
-- `upload_helpers.php` - Integration helpers
+- `includes/upload_helpers.php` - Integration helpers (non-public)
 - `config.php` - Defines `STORAGE_BASE`/`STORAGE_PATH` and `storage_path()` helper
 - `User/Afterlogin/download_document.php` - User-secure streaming endpoint (ownership-validated)
 - `admin/stream_document.php` - Admin-secure streaming endpoint (role-validated)

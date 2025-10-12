@@ -45,17 +45,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     }
   }
 
-  // Validation logic
-  if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $firstName)) {
-    $errors[] = "First name should only contain letters and single spaces between words";
+  // Validation logic (allow letters, optional dots, and single spaces between words; e.g., "Ma. Criselle")
+  $namePattern = '/^[A-Za-z]+(?:\.)?(?:\s[A-Za-z]+(?:\.)?)*$/';
+  if (!preg_match($namePattern, $firstName)) {
+    $errors[] = "First name should only contain letters, optional dots, and single spaces between words";
   }
-  if (!preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $lastName)) {
-    $errors[] = "Last name should only contain letters and single spaces between words";
+  if (!preg_match($namePattern, $lastName)) {
+    $errors[] = "Last name should only contain letters, optional dots, and single spaces between words";
   }
 
   // Validate middle name (optional)
-  if ($middleName && !preg_match('/^[A-Za-z]+(?:\s[A-Za-z]+)*$/', $middleName)) {
-    $errors[] = "Middle name should only contain letters and single spaces between words";
+  if ($middleName && !preg_match($namePattern, $middleName)) {
+    $errors[] = "Middle name should only contain letters, optional dots, and single spaces between words";
   }
 
   // Validate suffix (optional, but must be valid if provided)
@@ -468,7 +469,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
   <!-- Scripts -->
-  <script>
+  <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">
     // Ensure catalogs API base is set for profile pages too
     window.CATALOGS_API_URL = "<?php echo asset_url('catalogs_public_api.php'); ?>";
   </script>

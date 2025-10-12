@@ -64,8 +64,8 @@ Capstone/
 ├── security_headers.php        # Security headers management
 ├── secure_session_config.php   # Session security
 ├── upload_validator.php        # File upload validation
-├── upload_helpers.php          # Upload utility functions
-└── profile_helpers.php         # Profile security helpers
+├── includes/upload_helpers.php # Upload utility functions (non-public)
+└── includes/profile_helpers.php# Profile security helpers (non-public)
 
 👤 Authentication & User Management:
 ├── register.php                # User registration

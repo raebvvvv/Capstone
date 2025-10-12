@@ -58,7 +58,8 @@
       if (!input.files || input.files.length === 0) return { ok: true, size: 0 };
       var f = input.files[0];
       if (perFileMaxBytes && f.size > perFileMaxBytes) {
-        showFieldError(input, 'File exceeds ' + perFileMaxMB + 'MB limit. Please choose a smaller file.');
+        // Align with exact required message
+        showFieldError(input, 'File exceed 50mb');
         // Clear the selected file to prevent accidental submit
         try { input.value = ''; } catch (e) {}
         return { ok: false, size: 0 };

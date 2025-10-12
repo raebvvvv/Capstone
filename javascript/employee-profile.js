@@ -176,17 +176,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Name validation
-    const nameRegex = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+    // Allow letters with optional trailing dot per token, single spaces (e.g., "Ma. Criselle")
+    const nameRegex = /^[A-Za-z]+(?:\.)?(?:\s[A-Za-z]+(?:\.)?)*$/;
     if (!nameRegex.test(firstName.value.trim())) { 
-      showError(firstName, 'First name should contain letters and single spaces.'); 
+  showError(firstName, 'First name should contain letters, optional dots, and single spaces.'); 
       isValid = false; 
     }
     if (!nameRegex.test(lastName.value.trim())) { 
-      showError(lastName, 'Last name should contain letters and single spaces.'); 
+  showError(lastName, 'Last name should contain letters, optional dots, and single spaces.'); 
       isValid = false; 
     }
     if (middleName.value.trim() && !nameRegex.test(middleName.value.trim())) { 
-      showError(middleName, 'Middle name should contain letters and single spaces.'); 
+  showError(middleName, 'Middle name should contain letters, optional dots, and single spaces.'); 
       isValid = false; 
     }
 

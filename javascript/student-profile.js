@@ -172,10 +172,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Basic client-side checks for names and dropdowns
-    const nameRegex = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
-    if (!nameRegex.test(firstName.value.trim())) { showError(firstName, 'First name should contain letters and single spaces.'); isValid = false; }
-    if (!nameRegex.test(lastName.value.trim())) { showError(lastName, 'Last name should contain letters and single spaces.'); isValid = false; }
-    if (middleName.value.trim() && !nameRegex.test(middleName.value.trim())) { showError(middleName, 'Middle name should contain letters and single spaces.'); isValid = false; }
+    // Allow letters with optional trailing dot per token, single spaces (e.g., "Ma. Criselle")
+    const nameRegex = /^[A-Za-z]+(?:\.)?(?:\s[A-Za-z]+(?:\.)?)*$/;
+  if (!nameRegex.test(firstName.value.trim())) { showError(firstName, 'First name should contain letters, optional dots, and single spaces.'); isValid = false; }
+  if (!nameRegex.test(lastName.value.trim())) { showError(lastName, 'Last name should contain letters, optional dots, and single spaces.'); isValid = false; }
+  if (middleName.value.trim() && !nameRegex.test(middleName.value.trim())) { showError(middleName, 'Middle name should contain letters, optional dots, and single spaces.'); isValid = false; }
     if (!campusSel.value) { showError(campusSel, 'Please select a campus.'); isValid = false; }
     if (!levelSel.value) { showError(levelSel, 'Please select an academic level.'); isValid = false; }
     if (!collegeSel.value) { showError(collegeSel, 'Please select a college.'); isValid = false; }

@@ -741,8 +741,8 @@ $result_inactive = $stmt_inactive->fetchAll();
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
     <script src="../javascript/admin-manageuser.js?v=2" defer></script>
         <!-- Academic data and modal dropdown initializer (use employee dataset for both) -->
-        <script src="../javascript/forms/employee-academic-dropdowns.js?v=1" defer></script>
-        <script defer>
+    <script src="../javascript/forms/employee-academic-dropdowns.js?v=1" defer></script>
+    <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>" defer>
             // Populate campus/college/program selects in Edit User modals using academicData
             document.addEventListener('DOMContentLoaded', function () {
                 if (typeof academicData === 'undefined') return;

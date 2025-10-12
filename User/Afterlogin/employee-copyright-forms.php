@@ -58,9 +58,7 @@ if ($profile) {
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
-          <li class="nav-item">
-            <?php include __DIR__ . '/../../partials/user_notifications.php'; ?>
-          </li>
+         
         </ul>
       </div>
     </div>
@@ -263,8 +261,9 @@ if ($profile) {
               </div>
             </form>
             <?php
-              if (file_exists(__DIR__ . '/../../upload_helpers.php')) {
-                require_once __DIR__ . '/../../upload_helpers.php';
+              $upl = __DIR__ . '/../../includes/upload_helpers.php';
+              if (file_exists($upl)) {
+                require_once $upl;
                 echo display_upload_requirements();
               }
             ?>
@@ -340,13 +339,13 @@ if ($profile) {
   <script src="<?php echo asset_url('javascript/forms/terms-accept.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-academic-dropdowns.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/employee-author-modal.js'); ?>" defer></script>
-  <script>
+  <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">
     window.USER_ROLE = 'employee';
     window.CATALOGS_API_URL = '<?php echo rtrim(asset_url('catalogs_public_api.php'), '/'); ?>';
   </script>
   <script src="<?php echo asset_url('javascript/forms/dynamic-documents.js'); ?>" defer></script>
   <script src="<?php echo asset_url('javascript/forms/upload-size-guard.js'); ?>" defer></script>
-  <script>
+  <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">
     // Prefill Academic Affiliation fields (except Work Classification) from employee profile
     (function() {
       const prefill = {

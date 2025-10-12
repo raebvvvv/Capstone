@@ -9,7 +9,10 @@
   if (!container) return;
 
   const role = (window.USER_ROLE || 'student');
-  const base = (window.CATALOGS_API_URL || '/catalogs_public_api.php');
+  const base = (window.CATALOGS_API_URL 
+    || (window.location.pathname.toLowerCase().includes('/capstone/')
+        ? '/Capstone/catalogs_public_api.php'
+        : '/catalogs_public_api.php'));
   const url = `${base}?entity=document&role=${encodeURIComponent(role)}`;
 
   function normKey(s){
@@ -19,14 +22,31 @@
     return s || 'document';
   }
 
-  fetch(url, { credentials: 'same-origin' })
+  const fallbackDocs = {
+    student: [
+      'Manuscript (PDF)',
+      'Abstract (PDF)',
+      'Plagiarism Report (PDF)'
+    ],
+    employee: [
+      'Manuscript (PDF)',
+      'Abstract (PDF)',
+      'Notarized Co-Authorship (PDF)'
+    ],
+    both: [
+      'Manuscript (PDF)'
+    ]
+  };
+
+  fetch(url, { credentials: 'same-origin', cache: 'no-store' })
     .then(r => r.ok ? r.json() : Promise.reject(new Error('Failed to fetch documents')))
     .then(resp => {
-      const list = (resp && resp.ok && Array.isArray(resp.data)) ? resp.data : [];
+      let list = (resp && resp.ok && Array.isArray(resp.data)) ? resp.data : [];
       container.innerHTML = '';
       if (!Array.isArray(list) || list.length === 0) {
-        container.innerHTML = '<div class="col-12"><div class="alert alert-info small mb-0">No document requirements are configured yet. Please contact the administrator.</div></div>';
-        return;
+        // Fallback to a minimal default set so form remains usable
+        const names = (fallbackDocs[role] || fallbackDocs.both);
+        list = names.map(n => ({ name: n }));
       }
       const frag = document.createDocumentFragment();
       list.forEach(item => {
@@ -62,5 +82,6 @@
     })
     .catch(err => {
       console.error('Dynamic documents failed:', err);
+      container.innerHTML = '<div class="col-12"><div class="alert alert-warning small mb-0">Unable to load document requirements from server. You can still upload core files like Manuscript and Abstract.</div></div>';
     });
 })();

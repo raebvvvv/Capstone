@@ -36,7 +36,7 @@ if (!empty($_SESSION['user_id'])){
   </div>
   </div>
   <?php // expose app base for the client so JS doesn't need hard-coded paths ?>
-  <script>window.APP_BASE = '<?php echo rtrim(asset_url(''), '/'); ?>';</script>
+  <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">window.APP_BASE = '<?php echo rtrim(asset_url(''), '/'); ?>';</script>
   <style>
     /* Slightly smaller font inside the dropdown for compactness */
     #userNotifDropdown .list-group-item { font-size: 0.95rem; }
@@ -82,7 +82,7 @@ if (!empty($_SESSION['user_id'])){
   }
   </style>
   <script src="<?php echo asset_url('javascript/user-notifications.js'); ?>"></script>
-  <script>
+  <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">
     // Quick client-side fallback: if the server rendered unread > 0 but the badge is hidden
     // due to CSS/JS load ordering, un-hide it. Also log a helpful message for debugging.
     (function(){
@@ -104,7 +104,7 @@ if (!empty($_SESSION['user_id'])){
   </script>
 
   <!-- Opt-in debug: append ?notif_debug=1 to the page URL to run these checks in the browser console -->
-  <script>
+  <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>">
     (function(){
       try{
         if(!location.search || location.search.indexOf('notif_debug=1') === -1) return;

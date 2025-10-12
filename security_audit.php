@@ -2,7 +2,14 @@
 // Security Audit and Error Handling Improvements
 // Run this file to check for security issues and generate a report
 
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
+// Admin guard: require authenticated admin
+require_once __DIR__ . '/auth_check.php';
+if (empty($_SESSION['is_admin']) || (int)$_SESSION['is_admin'] !== 1) {
+    http_response_code(403);
+    echo 'Forbidden: Admin access required';
+    exit;
+}
 
 function security_audit() {
     $issues = [];
@@ -31,7 +38,7 @@ function security_audit() {
     
     // Check 4: Database connection security (using centralized conn.php)
     try {
-        if (!isset($pdo)) { require_once __DIR__ . '/conn.php'; }
+    if (!isset($pdo)) { require_once __DIR__ . '/conn.php'; }
         if ($pdo instanceof PDO) {
             $fixes[] = "✅ Database connection working with error handling";
         } else {

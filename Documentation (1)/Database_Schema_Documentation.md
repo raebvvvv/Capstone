@@ -25,79 +25,50 @@ The system implements a **two-tier database structure**:
 
 ## 🗂️ **DATABASE SCHEMA**
 
-### **Core Database: `ipmo_users`**
+
 
 #### **1. Authentication Table: `users`**
-```sql
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role ENUM('student', 'employee', 'admin') NOT NULL,
     status ENUM('pending', 'approved', 'rejected', 'suspended') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_email (email),
-    INDEX idx_role (role),
     INDEX idx_status (status)
 );
-```
 
 **Purpose:** Central authentication and role management
-**Security:** Passwords hashed with PHP `password_hash()`
 **Performance:** Indexed on email, role, and status
 
----
 
-#### **2. Student Profiles: `student_profiles`**
 ```sql
-CREATE TABLE student_profiles (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
     student_number VARCHAR(50) UNIQUE NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL,
     college VARCHAR(100),
-    course VARCHAR(100),
     year_level ENUM('1', '2', '3', '4', '5', 'Graduate') DEFAULT '1',
-    cor_file_path VARCHAR(255),
     phone VARCHAR(20),
-    address TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_student_number (student_number),
-    INDEX idx_name (first_name, last_name),
     INDEX idx_college (college),
-    INDEX idx_email (email)
 );
-```
 
-**Purpose:** Student-specific profile information
 **Key Fields:** Student number, academic information, documents
-**Search Optimization:** Indexed on student_number, names, college
 
 ---
 
-#### **3. Employee Profiles: `employee_profiles`**
 ```sql
-CREATE TABLE employee_profiles (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
     employee_id VARCHAR(50) UNIQUE NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
     department VARCHAR(100) NOT NULL,
-    position VARCHAR(100),
     employment_type ENUM('faculty', 'staff', 'contractor') DEFAULT 'staff',
-    hire_date DATE,
     phone VARCHAR(20),
     address TEXT,
-    supervisor VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
