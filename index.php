@@ -100,7 +100,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
           <div class="card-body text-center">
             <img src="Photos/Icons/who.png" alt="users" class="mb-3 mx-auto d-block" style="height:40px;">
             <h5 class="fw-bold mb-2">Who can use e-IPMO?</h5>
-            <p class="mb-0">Bonafide students and Non-students (Faculty and Staff) of all PUP branches.</p>
+            <p class="mb-0">Bonafide students and employees (Faculty and Staff) of all PUP branches.</p>
           </div>
         </div>
         <div class="card shadow-sm h-100">

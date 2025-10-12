@@ -51,7 +51,7 @@
               <span class="step-title fw-bold">Register or Login</span>
             </div>
             <div class="step-desc mb-1">
-              To get started, please <b>create an account</b> or <b>login</b> with your existing one. Choose whether you are a <a href="#" class="text-dark text-decoration-underline fw-bold">Student</a> or <a href="#" class="text-dark text-decoration-underline fw-bold">Non-student</a>.
+              To get started, please <b>create an account</b> or <b>login</b> with your existing one. Choose whether you are a <a href="#" class="text-dark text-decoration-underline fw-bold">Student</a> or <a href="#" class="text-dark text-decoration-underline fw-bold">Employee</a>.
             </div>
           </div>
           <div class="step-actions d-flex flex-column justify-content-center align-items-md-end align-items-start ms-md-3 mt-3 mt-md-0">
