@@ -14,30 +14,48 @@ require __DIR__ . '/../../auth_check.php';
   <link rel="stylesheet" href="<?php echo asset_url('css/main.css?v=5'); ?>">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="../../index.php">
-        <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
-        <span>PUP e-IPMO</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link active" aria-current="page" href="about.php">About Us</a></li>
-          <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
-          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
-          <li class="nav-item">
-            <?php include __DIR__ . '/../../partials/user_notifications.php'; ?>
-          </li>
-        </ul>
+  <!-- Navbar (uniform across project) -->
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="../../index.php">
+      <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+      <span>PUP e-IPMO</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+        <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" href="about.php">About Us</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
+
+        <li class="nav-item"><?php include __DIR__ . '/../../partials/user_notifications.php'; ?></li>
+
+        <!-- User Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              <path d="M14 14s-1-1.5-6-1.5S2 14 2 14s1-4 6-4 6 4 6 4z"/>
+            </svg>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+
         <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
-      </div>
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <section class="container py-5">
     <div class="row g-5 align-items-start">
@@ -104,5 +122,27 @@ require __DIR__ . '/../../auth_check.php';
   <?php include __DIR__ . '/../../partials/standard_footer.php'; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Logout Confirmation Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to log out?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form method="POST" action="<?php echo asset_url('logout.php'); ?>" class="d-inline">
+          <?php csrf_input(); ?>
+          <button type="submit" class="btn btn-danger">Yes, log me out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

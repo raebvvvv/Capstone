@@ -37,6 +37,51 @@ footer.standard-footer a:hover {
   border-bottom: 3px solid #800000;
 }
 
+.navbar .dropdown-toggle img {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dropdown-menu {
+  min-width: 180px;
+}
+
+.navbar .nav-link svg {
+  margin-top: 2px;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.navbar .nav-link:hover svg {
+  color: #800000; /* maroon hover color */
+}
+
+.dropdown-menu {
+  min-width: 160px;
+  font-size: 0.9rem;
+}
+
+.dropdown-item {
+  cursor: pointer;
+}
+
+/* Remove blue active/focus color for dropdown links */
+.dropdown-item:active,
+.dropdown-item:focus {
+  background-color: transparent !important;
+  color: inherit !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Optional: custom hover color for consistency */
+.dropdown-item:hover {
+  background-color: #f8f9fa; /* light gray hover */
+  color: #900c0c !important; /* maroon text hover */
+}
+
+
+
 .oc-rule-small {
   font-size: 0.85em !important;
 }
@@ -136,6 +181,50 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 32px;
 }
 
+/* ===== Responsive form layout fix ===== */
+
+/* For small devices (phones) */
+@media (max-width: 576px) {
+  /* Stack all column divs vertically */
+  .row.g-3 > [class*="col-md-"],
+  .row.g-3 > [class*="col-sm-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* Reduce horizontal padding for small screens */
+  .card-body {
+    padding: 1rem;
+  }
+
+  /* Make labels and inputs fit better */
+  .form-label {
+    font-size: 0.9rem;
+  }
+
+  input.form-control,
+  select.form-select {
+    font-size: 0.9rem;
+  }
+
+  /* Ensure buttons and small text don’t overflow */
+  button,
+  .btn {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  /* Prevent long fieldset legends from overflowing */
+  legend {
+    font-size: 1rem;
+    white-space: normal;
+  }
+
+  .section-heading {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+}
 
 
 
