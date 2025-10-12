@@ -18,16 +18,38 @@ verify_csrf_post();
 
 $user_id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
 if ($user_id > 0) {
-    $query = 'DELETE FROM users WHERE user_id = ? LIMIT 1';
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $user_id);
-    if ($stmt->execute()) {
+    // Use transaction to delete child rows first, then user
+    $conn->begin_transaction();
+    try {
+        // Delete from profile tables explicitly (if present)
+        if ($stmt = $conn->prepare('DELETE FROM student_profiles WHERE user_id = ?')) {
+            $stmt->bind_param('i', $user_id);
+            $stmt->execute();
+            $stmt->close();
+        }
+        if ($stmt = $conn->prepare('DELETE FROM employee_profiles WHERE user_id = ?')) {
+            $stmt->bind_param('i', $user_id);
+            $stmt->execute();
+            $stmt->close();
+        }
+        if ($stmt = $conn->prepare('DELETE FROM admin_profiles WHERE user_id = ?')) {
+            $stmt->bind_param('i', $user_id);
+            $stmt->execute();
+            $stmt->close();
+        }
+        // Finally delete from users
+        if ($stmt = $conn->prepare('DELETE FROM users WHERE user_id = ? LIMIT 1')) {
+            $stmt->bind_param('i', $user_id);
+            $stmt->execute();
+            $stmt->close();
+        }
+        $conn->commit();
         $_SESSION['success'] = 'User deleted successfully.';
-        log_event('USER_DELETE', 'Deleted user', ['target_user_id' => $user_id]);
-    } else {
+        if (function_exists('log_event')) { log_event('USER_DELETE', 'Deleted user', ['target_user_id' => $user_id]); }
+    } catch (Throwable $e) {
+        $conn->rollback();
         $_SESSION['error'] = 'Error deleting user.';
     }
-    $stmt->close();
 }
 header('Location: manageuser.php');
 exit();
