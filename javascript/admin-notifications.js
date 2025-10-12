@@ -2,6 +2,8 @@
 (function(){
   const POLL_INTERVAL = 15000; // 15s
   let timer = null;
+  let currentPage = 1;
+  const pageLimit = 20;
 
   function qs(sel, ctx=document){ return ctx.querySelector(sel); }
   function ce(tag, cls){ const el=document.createElement(tag); if(cls) el.className=cls; return el; }
@@ -10,7 +12,32 @@
     let nav = document.querySelector('header nav .navbar-nav');
     if(!nav) return null;
     let existing = qs('#adminNotifWrapper');
-    if(existing) return existing;
+    if(existing){
+      // Upgrade existing inner HTML if it's from an older version (no footer container)
+      if(!qs('#notifFooter', existing)){
+        existing.innerHTML = `
+      <button type="button" id="notifBell" class="btn btn-outline-secondary position-relative" title="Re-upload Notifications" style="display:inline-flex;align-items:center;gap:4px;">
+        <span class="notif-bell-icon" aria-hidden="true" style="display:inline-flex;">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16m6-5c-1.098 0-1.918-.5-2.401-1.326-.49-.838-.599-1.87-.599-2.674 0-1.742-.454-2.83-1.276-3.472-.353-.276-.77-.463-1.224-.563V2.5a1.5 1.5 0 0 0-3 0v.465c-.454.1-.87.287-1.224.563-.822.643-1.276 1.73-1.276 3.472 0 .803-.108 1.836-.599 2.674C3.918 10.5 3.098 11 2 11v1h12z"/>
+          </svg>
+        </span>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notifBadge">0</span>
+      </button>
+      <div id="notifDropdown" class="card shadow position-absolute end-0 mt-2" style="width:360px; display:none; z-index:1050;">
+        <div class="card-header py-2 d-flex justify-content-between align-items-center gap-2">
+          <span class="fw-semibold small mb-0">Recent Re-uploads</span>
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-secondary" id="notifMarkAllBtn" title="Mark all as read">Mark all</button>
+            <button class="btn btn-sm btn-outline-secondary" id="notifRefreshBtn" title="Refresh">↻</button>
+          </div>
+        </div>
+        <ul class="list-group list-group-flush small" id="notifList" style="max-height:300px; overflow-y:auto;"></ul>
+        <div class="card-footer small py-1 d-flex justify-content-between align-items-center" id="notifFooter"></div>
+      </div>`;
+      }
+      return existing;
+    }
     const li = ce('li','nav-item position-relative me-3');
     li.id='adminNotifWrapper';
     li.innerHTML = `
@@ -31,7 +58,7 @@
           </div>
         </div>
         <ul class="list-group list-group-flush small" id="notifList" style="max-height:300px; overflow-y:auto;"></ul>
-        <div class="card-footer text-center small py-1"><em>Showing latest 20</em></div>
+        <div class="card-footer small py-1 d-flex justify-content-between align-items-center" id="notifFooter"></div>
       </div>`;
     // insert near beginning before profile/logout item
     const profileLi = nav.querySelector('.header-actions');
@@ -40,7 +67,8 @@
   }
 
   function fetchNotifications(){
-    fetch('get_notifications.php')
+    const url = `get_notifications.php?page=${encodeURIComponent(currentPage)}&limit=${encodeURIComponent(pageLimit)}`;
+    fetch(url)
       .then(r=>r.json())
       .then(data=>{
         if(!data.success) return;
@@ -61,6 +89,7 @@
       const li = ce('li','list-group-item text-center text-muted py-2');
       li.textContent='No notifications';
       list.appendChild(li);
+      renderFooter(data.pagination);
       return;
     }
     data.notifications.forEach(n=>{
@@ -74,6 +103,34 @@
         <button class="btn btn-sm ${n.is_read? 'btn-outline-secondary' : 'btn-outline-primary'} mark-read-btn">${n.is_read? 'Read' : 'Mark Read'}</button>`;
       list.appendChild(li);
     });
+    renderFooter(data.pagination);
+  }
+
+  function renderFooter(pagination){
+    const wrap = ensureUI(); if(!wrap) return;
+    const footer = qs('#notifFooter', wrap);
+    if(!footer) return;
+    const page = pagination && pagination.page ? pagination.page : 1;
+    const totalPages = pagination && pagination.totalPages ? pagination.totalPages : 1;
+    const hasPrev = pagination ? !!pagination.hasPrev : page>1;
+    const hasNext = pagination ? !!pagination.hasNext : page<totalPages;
+    footer.innerHTML = '';
+    const left = ce('div','');
+    const right = ce('div','d-flex gap-1');
+    const info = ce('span','text-muted');
+    info.style.fontSize = '12px';
+    info.textContent = `Page ${page} of ${totalPages}`;
+    left.appendChild(info);
+    const prevBtn = ce('button','btn btn-sm btn-outline-secondary notif-page-prev');
+    prevBtn.textContent = 'Prev';
+    prevBtn.disabled = !hasPrev;
+    const nextBtn = ce('button','btn btn-sm btn-outline-secondary notif-page-next');
+    nextBtn.textContent = 'Next';
+    nextBtn.disabled = !hasNext;
+    right.appendChild(prevBtn);
+    right.appendChild(nextBtn);
+    footer.appendChild(left);
+    footer.appendChild(right);
   }
 
   function escapeHtml(str){
@@ -123,7 +180,7 @@
   const markAll = qs('#notifMarkAllBtn', wrap);
     bell.addEventListener('click', ()=>{
       dropdown.style.display = dropdown.style.display==='none' || !dropdown.style.display ? 'block':'none';
-      if(dropdown.style.display==='block'){ fetchNotifications(); }
+      if(dropdown.style.display==='block'){ currentPage = 1; fetchNotifications(); }
     });
   refresh.addEventListener('click', ()=> fetchNotifications());
   if (markAll) { markAll.addEventListener('click', (e)=>{ e.preventDefault(); markAllRead(); }); }
@@ -138,6 +195,14 @@
       const li = btn.closest('li');
       const id = li ? li.dataset.id : null;
       if(id) markRead(id, li);
+    });
+
+    // Pagination controls
+    dropdown.addEventListener('click', (e)=>{
+      const prev = e.target.closest('.notif-page-prev');
+      const next = e.target.closest('.notif-page-next');
+      if(prev){ if(currentPage>1){ currentPage--; fetchNotifications(); } }
+      if(next){ currentPage++; fetchNotifications(); }
     });
   }
 

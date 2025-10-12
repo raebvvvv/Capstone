@@ -620,7 +620,7 @@ try {
     <?php $v = time(); ?>
     <script src="../javascript/admin-completed-applications.js?v=<?php echo $v; ?>"></script>
 <script src="../javascript/admin-profile.js?v=5" defer></script>
- <script src="../javascript/admin-notifications.js?v=1" defer></script>
+ <script src="../javascript/admin-notifications.js?v=2" defer></script>
 
 <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileLabel" aria-hidden="true">
     <div class="modal-dialog">

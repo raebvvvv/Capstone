@@ -737,7 +737,7 @@ $result_inactive = $stmt_inactive->fetchAll();
         </div>
     </div>
     <script src="../javascript/admin-profile.js?v=5" defer></script>
-    <script src="../javascript/admin-notifications.js?v=1" defer></script>
+    <script src="../javascript/admin-notifications.js?v=2" defer></script>
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
     <script src="../javascript/admin-manageuser.js?v=2" defer></script>
     <script nonce="<?php echo SecurityHeaders::getCSPNonce(); ?>" defer>

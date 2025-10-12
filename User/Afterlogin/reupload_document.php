@@ -254,6 +254,16 @@ try {
         // Aggregation/dedupe window (minutes)
         $dedupeMin = getenv('NOTIF_DEDUPE_WINDOW_MIN') ? (int)getenv('NOTIF_DEDUPE_WINDOW_MIN') : 10;
 
+        // Determine the current resubmission "cycle" based on when admin last flagged this submission
+        // We use the max(updated_at) from submission_incomplete_meta across scopes as the cycle marker.
+        $cycleAt = null;
+        try {
+            $cy = $pdo->prepare('SELECT MAX(updated_at) AS cycle_at FROM submission_incomplete_meta WHERE submission_id = ?');
+            $cy->execute([(int)$sub['submission_id']]);
+            $cycleAt = $cy->fetchColumn();
+            if ($cycleAt) { $cycleAt = (string)$cycleAt; }
+        } catch (Throwable $e) { /* best-effort */ }
+
         // Try to find a recent aggregated notification for this submission
         $sel = $pdo->prepare('SELECT id, occurrence_count, meta, created_at FROM admin_notifications WHERE submission_id = ? AND notification_type = ? ORDER BY created_at DESC LIMIT 1');
         $sel->execute([(int)$sub['submission_id'], 'resubmission']);
@@ -266,14 +276,25 @@ try {
             'file_name' => $newName,
             'file_size' => (int)$validation['size'],
             'created_at' => $now->format('Y-m-d H:i:s'),
-            'user_id' => $user_id
+            'user_id' => $user_id,
+            // include cycle marker so we aggregate only within the same admin flagging round
+            'cycle_at' => $cycleAt
         ];
 
         if ($last) {
             // check window
             $created = new DateTimeImmutable($last['created_at']);
             $diffMin = ($now->getTimestamp() - $created->getTimestamp()) / 60;
-            if ($diffMin <= $dedupeMin) {
+            // decode last meta to compare cycle marker (if present)
+            $lastCycleAt = null;
+            if (!empty($last['meta'])) {
+                $decodedMeta = json_decode($last['meta'], true);
+                if (is_array($decodedMeta) && isset($decodedMeta[0]) && is_array($decodedMeta[0]) && isset($decodedMeta[0]['cycle_at'])) {
+                    $lastCycleAt = (string)$decodedMeta[0]['cycle_at'];
+                }
+            }
+            // Aggregate only when within the same dedupe window AND the same resubmission cycle
+            if ($diffMin <= $dedupeMin && ($cycleAt !== null && $lastCycleAt === $cycleAt)) {
                 // update existing aggregated notification: increment count, append meta, set is_read=0
                 $existingMeta = [];
                 if (!empty($last['meta'])) {

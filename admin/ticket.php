@@ -1157,7 +1157,7 @@ Samples: <?php echo htmlspecialchars(json_encode($__dbgSamples, JSON_UNESCAPED_S
 
 <script src="../javascript/admin-ticket.js?v=13" defer></script>
 <script src="../javascript/admin-profile.js?v=5" defer></script>
- <script src="../javascript/admin-notifications.js?v=1" defer></script>
+ <script src="../javascript/admin-notifications.js?v=2" defer></script>
 
 <div class="modal fade" id="authorInfoModal" tabindex="-1" aria-labelledby="authorInfoModalLabel" aria-hidden="true">
     <div class="modal-dialog">
