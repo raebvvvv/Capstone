@@ -32,9 +32,22 @@ try {
         $stmt = $pdo->prepare("UPDATE users SET status = 'inactive' WHERE user_id IN ($in)");
         $stmt->execute($user_ids);
     } elseif ($action === 'delete') {
-        // Hard delete; consider soft-delete if needed
-        $stmt = $pdo->prepare("DELETE FROM users WHERE user_id IN ($in)");
-        $stmt->execute($user_ids);
+        // Hard delete; remove profiles first then users within a transaction
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare("DELETE FROM student_profiles WHERE user_id IN ($in)");
+            $stmt->execute($user_ids);
+            $stmt = $pdo->prepare("DELETE FROM employee_profiles WHERE user_id IN ($in)");
+            $stmt->execute($user_ids);
+            $stmt = $pdo->prepare("DELETE FROM admin_profiles WHERE user_id IN ($in)");
+            $stmt->execute($user_ids);
+            $stmt = $pdo->prepare("DELETE FROM users WHERE user_id IN ($in)");
+            $stmt->execute($user_ids);
+            $pdo->commit();
+        } catch (Exception $ex) {
+            $pdo->rollBack();
+            throw $ex;
+        }
     }
 } catch (Exception $e) {
     // Optionally log error
