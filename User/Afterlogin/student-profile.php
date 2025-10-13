@@ -169,49 +169,46 @@ if (!empty($profile['last_updated_at'])) {
     </div>
 </div>
   <!-- Navbar (uniform across project) -->
-  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-  <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
-        <span>PUP e-IPMO</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
-          <!-- Add this inside your <ul class="navbar-nav ms-auto mb-2 mb-lg-0"> -->
-<li class="nav-item dropdown">
-  <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <img src="<?php echo asset_url('Photos/Icons/user-icon.png'); ?>" alt="User" width="25" height="25" class="rounded-circle me-2">
-    <span><?php echo htmlspecialchars($_SESSION['username'] ?? 'Account'); ?></span>
-  </a>
-  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-    <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
-    <li>
-      <a class="dropdown-item" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">
-        My Profile
-      </a>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    <li>
-      <a class="dropdown-item text-danger" href="../../logout.php">Logout</a>
-    </li>
-  </ul>
-</li>
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="../../index.php">
+      <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
+      <span>PUP e-IPMO</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-          <li><?php include __DIR__ . '/../../partials/user_notifications.php'; ?></li>
-        </ul>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+        <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
+
+        <li class="nav-item"><?php include __DIR__ . '/../../partials/user_notifications.php'; ?></li>
+
+        <!-- User Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              <path d="M14 14s-1-1.5-6-1.5S2 14 2 14s1-4 6-4 6 4 6 4z"/>
+            </svg>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+
         <a href="e-services.php" class="btn btn-success ms-3" style="background-color: #900c0c !important; border-color: #900c0c !important; color: #fff !important;">Proceed to e-Services</a>
-        <!-- Logout button triggers confirmation modal -->
-        <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#logoutModal">
-          Logout
-        </button>
-      </div>
     </div>
-  </nav>
+  </div>
+</nav>
 
 
   
