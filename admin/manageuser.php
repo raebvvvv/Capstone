@@ -753,8 +753,32 @@ $result_inactive = $stmt_inactive->fetchAll();
                 programs: [], // raw rows with college_id
                 depsByCollege: {}, // college_id -> [name]
                 progsByCollege: {}, // college_id -> [name]
-                collegeIdByName: {}, // name -> id
+                collegeIdByName: {}, // normalized name -> id
             };
+
+            // Helper normalizer for case/whitespace-insensitive comparisons
+            function norm(s){ return (s||'').toString().trim().toLowerCase(); }
+
+            // Ensure a select picks a value by case-insensitive text match, or add it if missing
+            function ensureSelectedOrAdd(selectEl, value){
+                if (!selectEl) return;
+                const v = (value||'').toString().trim();
+                if (!v) return;
+                const n = norm(v);
+                let matched = false;
+                for (const opt of Array.from(selectEl.options)){
+                    if (norm(opt.textContent) === n){
+                        opt.selected = true;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched){
+                    const o = document.createElement('option');
+                    o.value = v; o.textContent = v; o.selected = true;
+                    selectEl.appendChild(o);
+                }
+            }
 
             function populateSelect(selectEl, options, currentValue) {
                 if (!selectEl) return;
@@ -795,7 +819,8 @@ $result_inactive = $stmt_inactive->fetchAll();
                 Catalogs.colleges = colleges;
                 Catalogs.departments = departments;
                 Catalogs.programs = programs;
-                Catalogs.collegeIdByName = Object.fromEntries((colleges||[]).map(c => [c.name, c.id]));
+                // Build normalized name -> id map for colleges
+                Catalogs.collegeIdByName = Object.fromEntries((colleges||[]).map(c => [norm(c.name), c.id]));
                 Catalogs.depsByCollege = {};
                 (departments||[]).forEach(d => {
                     const k = String(d.college_id||'');
@@ -835,9 +860,13 @@ $result_inactive = $stmt_inactive->fetchAll();
                 populateSelect(collegeSel, collegeNames, collegeCurrent);
 
                 function rebuildProgramsFor(collegeName, current) {
-                    const id = Catalogs.collegeIdByName[collegeName] || null;
+                    const id = Catalogs.collegeIdByName[norm(collegeName)] || null;
                     const list = id ? (Catalogs.progsByCollege[String(id)] || []) : [];
                     populateSelect(programSel, list, current || '');
+                    // Fallback: if current program not found in list, still show it
+                    if (current && (!programSel.value || programSel.value === '')) {
+                        ensureSelectedOrAdd(programSel, current);
+                    }
                 }
 
                 rebuildProgramsFor(collegeCurrent || collegeSel.value, programCurrent);
@@ -873,7 +902,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                 populateSelect(collegeSel, collegeNames, collegeCurrent);
 
                 function rebuildDepsAndProgs(collegeName, depCur, progCur) {
-                    const id = Catalogs.collegeIdByName[collegeName] || null;
+                    const id = Catalogs.collegeIdByName[norm(collegeName)] || null;
                     const deps = id ? (Catalogs.depsByCollege[String(id)] || []) : [];
                     const progs = id ? (Catalogs.progsByCollege[String(id)] || []) : [];
                     if (deps.length) {
@@ -887,6 +916,9 @@ $result_inactive = $stmt_inactive->fetchAll();
                         deptSel.appendChild(na);
                     }
                     populateSelect(programSel, progs, progCur || '');
+                    // Fallbacks: ensure preselected values appear even if catalogs changed
+                    if (depCur && (!deptSel.value || deptSel.value === '')) { ensureSelectedOrAdd(deptSel, depCur); }
+                    if (progCur && (!programSel.value || programSel.value === '')) { ensureSelectedOrAdd(programSel, progCur); }
                 }
 
                 rebuildDepsAndProgs(collegeCurrent || collegeSel.value, deptCurrent, programCurrent);
