@@ -893,6 +893,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                     let list = [];
                     if (n === 'masters') list = Catalogs.levelProgs.masters || [];
                     else if (n === 'doctorate') list = Catalogs.levelProgs.doctorate || [];
+                    else if (n === 'open university') list = (Catalogs.levelProgs.open_university || []);
                     else list = [];
                     populateSelect(programSel, list, current || '');
                     if (current && (!programSel.value || programSel.value === '')) {
@@ -900,11 +901,23 @@ $result_inactive = $stmt_inactive->fetchAll();
                     }
                 }
 
+                function setCollegeToNA() {
+                    // Show college, set single N/A option, keep enabled so value posts
+                    if (collegeBlock) collegeBlock.style.display = '';
+                    collegeSel.disabled = false;
+                    collegeSel.innerHTML = '';
+                    const na = document.createElement('option');
+                    na.value = 'N/A';
+                    na.textContent = 'N/A';
+                    na.selected = true;
+                    collegeSel.appendChild(na);
+                }
+
                 function syncStudentProgramOptions() {
                     const lv = levelSel ? (levelSel.value || levelCurrent) : '';
                     const lvNorm = norm(lv);
-                    if (lvNorm === 'masters' || lvNorm === 'doctorate') {
-                        // Hide and disable college when level-driven
+                    if (lvNorm === 'masters' || lvNorm === 'doctorate' || lvNorm === 'open university') {
+                        // Hide and disable college when level-driven (Masters/Doctorate/Open University)
                         if (collegeBlock) collegeBlock.style.display = 'none';
                         collegeSel.disabled = true;
                         // Rebuild programs by level
@@ -913,6 +926,10 @@ $result_inactive = $stmt_inactive->fetchAll();
                         // Show/enable college and rebuild by selected/current college
                         if (collegeBlock) collegeBlock.style.display = '';
                         collegeSel.disabled = false;
+                        // If previously hidden or N/A, restore full college list
+                        if (collegeSel.options.length <= 1 || (collegeSel.options[0] && norm(collegeSel.options[0].textContent) === norm('N/A'))) {
+                            populateSelect(collegeSel, collegeNames, collegeCurrent);
+                        }
                         const colName = collegeSel.value || collegeCurrent;
                         rebuildProgramsByCollege(colName, programCurrent);
                     }
@@ -928,7 +945,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                 });
                 collegeSel.addEventListener('change', function(){
                     const lvNorm = norm(levelSel ? levelSel.value : '');
-                    if (lvNorm !== 'masters' && lvNorm !== 'doctorate') {
+                    if (lvNorm !== 'masters' && lvNorm !== 'doctorate' && lvNorm !== 'open university') {
                         rebuildProgramsByCollege(this.value, '');
                     }
                 });
