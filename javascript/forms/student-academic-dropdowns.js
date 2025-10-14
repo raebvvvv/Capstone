@@ -460,6 +460,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (programSelect && !programSelect.disabled) populateDropdown(programSelect, academicData.program.default);
   })();
+
+  // Initial sync: if current academic level is Masters/Doctorate/Open University,
+  // disable College and show N/A, and populate Program from level list (if editable)
+  if (academicLevelSelect && collegeSelect) {
+    const currentLevel = academicLevelSelect.value;
+    const isGradOrOU = (currentLevel === 'Masters' || currentLevel === 'Doctorate' || currentLevel === 'Open University');
+    if (isGradOrOU) {
+      collegeSelect.disabled = true;
+      collegeSelect.innerHTML = '';
+      const naOption = document.createElement('option');
+      naOption.value = 'N/A';
+      naOption.textContent = 'N/A';
+      collegeSelect.appendChild(naOption);
+      if (programSelect && !programSelect.disabled) {
+        populateDropdown(programSelect, academicData.program[currentLevel] || academicData.program.default);
+      }
+    }
+  }
   if (workClassificationSelect) populateDropdown(workClassificationSelect, academicData.workClassification);
 
   // If college/program are fixed (disabled), ensure their displayed option remains selected
