@@ -23,21 +23,45 @@ $input = json_decode($raw, true);
 if(!is_array($input)) { echo json_encode(['success'=>false,'error'=>'Invalid payload']); exit(); }
 $current = $input['current_password'] ?? '';
 $new = $input['new_password'] ?? '';
+$profileId = isset($input['profile_id']) && ctype_digit((string)$input['profile_id']) ? (int)$input['profile_id'] : 0;
 if(!$current || !$new){ echo json_encode(['success'=>false,'error'=>'Missing fields']); exit(); }
 
-$user_id = (int)$_SESSION['user_id'];
-$stmt = $conn->prepare('SELECT password FROM users WHERE user_id = ? LIMIT 1');
-$stmt->bind_param('i',$user_id);
-$stmt->execute();
-$res = $stmt->get_result();
-$row = $res->fetch_assoc();
+// Resolve target user via admin_profiles.profile_id (if provided) or infer from current admin's profile
+$sessionUserId = (int)$_SESSION['user_id'];
+$targetUserId = null;
+if ($profileId > 0) {
+    $mp = $pdo->prepare('SELECT user_id FROM admin_profiles WHERE profile_id = ? LIMIT 1');
+    $mp->execute([$profileId]);
+    $map = $mp->fetch(PDO::FETCH_ASSOC);
+    if (!$map) { echo json_encode(['success'=>false,'error'=>'Profile not found']); exit(); }
+    if ((int)$map['user_id'] !== $sessionUserId) { echo json_encode(['success'=>false,'error'=>'Unauthorized']); exit(); }
+    $targetUserId = (int)$map['user_id'];
+} else {
+    // Infer latest admin profile for this user
+    $mp = $pdo->prepare('SELECT profile_id, user_id FROM admin_profiles WHERE user_id = ? ORDER BY profile_id DESC LIMIT 1');
+    $mp->execute([$sessionUserId]);
+    $map = $mp->fetch(PDO::FETCH_ASSOC);
+    if (!$map) { echo json_encode(['success'=>false,'error'=>'Admin profile not found']); exit(); }
+    $profileId = (int)$map['profile_id'];
+    $targetUserId = (int)$map['user_id'];
+}
+
+// Use PDO ($pdo) from conn.php
+$stmt = $pdo->prepare('SELECT password FROM users WHERE user_id = ? LIMIT 1');
+$stmt->execute([$targetUserId]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
 if(!$row){ echo json_encode(['success'=>false,'error'=>'User not found']); exit(); }
 if(!password_verify($current, $row['password'])) { log_event('ADMIN_PASSWORD_CHANGE_FAIL','Incorrect current password'); echo json_encode(['success'=>false,'error'=>'Current password is incorrect']); exit(); }
 if(strlen($new) < 12){ log_event('ADMIN_PASSWORD_CHANGE_FAIL','Too short'); echo json_encode(['success'=>false,'error'=>'New password must be at least 12 characters']); exit(); }
 if(strlen($new) > 200){ echo json_encode(['success'=>false,'error'=>'Password too long']); exit(); }
 
 $newHash = password_hash($new, PASSWORD_BCRYPT);
-$upd = $conn->prepare('UPDATE users SET password = ? WHERE user_id = ?');
-$upd->bind_param('si',$newHash,$user_id);
-if($upd->execute()) { log_event('ADMIN_PASSWORD_CHANGE','Password changed'); echo json_encode(['success'=>true]); }
-else { log_event('ADMIN_PASSWORD_CHANGE_FAIL','DB update failed',['err'=>$upd->error]); echo json_encode(['success'=>false,'error'=>'Operation failed']); }
+$upd = $pdo->prepare('UPDATE users SET password = ? WHERE user_id = ?');
+try {
+    $ok = $upd->execute([$newHash, $targetUserId]);
+    if($ok) { if(function_exists('log_event')) { log_event('ADMIN_PASSWORD_CHANGE','Password changed'); } echo json_encode(['success'=>true]); }
+    else { if(function_exists('log_event')) { log_event('ADMIN_PASSWORD_CHANGE_FAIL','DB update failed'); } echo json_encode(['success'=>false,'error'=>'Operation failed']); }
+} catch (Throwable $e) {
+    if(function_exists('log_event')) { log_event('ADMIN_PASSWORD_CHANGE_FAIL','DB exception',['err'=>$e->getMessage()]); }
+    echo json_encode(['success'=>false,'error'=>'Operation failed']);
+}

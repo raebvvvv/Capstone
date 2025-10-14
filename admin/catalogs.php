@@ -15,8 +15,10 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
             $stmt = $pdo->prepare("SELECT u.email, ap.first_name, ap.last_name FROM users u LEFT JOIN admin_profiles ap ON u.user_id = ap.user_id WHERE u.user_id = ? LIMIT 1");
             $stmt->execute([$user_id]);
         }
-        $admin = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
-        $admin['username'] = trim(($admin['first_name'] ?? '') . ' ' . ($admin['last_name'] ?? '')) ?: 'Admin User';
+    $admin = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    $admin['username'] = trim(($admin['first_name'] ?? '') . ' ' . ($admin['last_name'] ?? '')) ?: 'Admin User';
+    // expose admin_number from session for profile modal display
+    $admin['admin_number'] = $_SESSION['admin_number'] ?? '';
     } catch (Throwable $e) { $admin = ['username' => 'Admin User', 'email' => '']; }
 } else {
     if (function_exists('redirect')) { redirect('admin/login.php'); }
@@ -223,6 +225,68 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
         </div>
     </div>
 
+    <!-- Admin Profile Modal (required for My Profile button) -->
+    <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminProfileLabel">My Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="adminProfileBody">
+                    <div class="border rounded p-3 mb-4 bg-light-subtle" style="border-color:#ddd!important;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-bold">Account Information</h6>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary" id="profileEditBtn">Edit</button>
+                                <button type="button" class="btn btn-outline-secondary d-none" id="profileCancelBtn">Cancel</button>
+                            </div>
+                        </div>
+                        <form id="profileInfoForm">
+                            <div class="mb-3">
+                                <label for="profileAdminName" class="form-label fw-semibold">Name</label>
+                                <input type="text" class="form-control" id="profileAdminName" value="<?php echo htmlspecialchars($admin['username'] ?? ''); ?>" required disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="profileAdminEmail" class="form-label fw-semibold">Email</label>
+                                <input type="email" class="form-control" id="profileAdminEmail" value="<?php echo htmlspecialchars($admin['email'] ?? ''); ?>" required disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="profileAdminNumber" class="form-label fw-semibold">Admin Number</label>
+                                <input type="text" class="form-control" id="profileAdminNumber" value="<?php echo htmlspecialchars($admin['admin_number'] ?? ''); ?>" disabled>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary d-none" id="profileSaveBtn">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                    <hr>
+                    <h6 class="fw-bold mb-3">Change Password</h6>
+                    <form id="profileChangePasswordForm">
+                        <div class="mb-3">
+                            <label for="profileCurrentPassword" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="profileCurrentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="profileNewPassword" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="profileNewPassword" minlength="8" required>
+                            <div class="form-text">At least 8 characters.</div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="profileConfirmPassword" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="profileConfirmPassword" minlength="8" required>
+                        </div>
+                        <div id="profileChangePassAlert" class="alert d-none mt-3" role="alert"></div>
+                        <div class="modal-footer px-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal for Add/Edit -->
     <div class="modal fade" id="entityModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -258,6 +322,7 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['user_logged_in']) && !empt
         </div>
     </div>
  <script src="../javascript/admin-notifications.js?v=2" defer></script>
+ <script src="../javascript/admin-profile.js?v=5" defer></script>
     <?php include __DIR__ . '/../partials/standard_footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>

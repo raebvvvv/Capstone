@@ -71,8 +71,9 @@
     }
     originalProfile.name = nameInput.value;
     originalProfile.email = emailInput.value;
-    nameInput.disabled = false;
-    emailInput.disabled = false;
+  nameInput.disabled = false;
+  // Keep email locked for admins
+  emailInput.disabled = true;
     editBtn?.classList.add('d-none');
     cancelBtn?.classList.remove('d-none');
     saveBtn?.classList.remove('d-none');
@@ -86,8 +87,8 @@
       nameInput.value = originalProfile.name;
       emailInput.value = originalProfile.email;
     }
-    nameInput.disabled = true;
-    emailInput.disabled = true;
+  nameInput.disabled = true;
+  emailInput.disabled = true;
     editBtn?.classList.remove('d-none');
     cancelBtn?.classList.add('d-none');
     saveBtn?.classList.add('d-none');
@@ -112,14 +113,13 @@
       e.preventDefault();
       hideAlert();
       const nameVal = nameInput.value.trim();
-      const emailVal = emailInput.value.trim();
-      if(!nameVal || !emailVal) return showAlert('Name and Email are required.');
+      if(!nameVal) return showAlert('Name is required.');
       try {
-  // Try admin-specific endpoint first
+  // Admin endpoint: email is locked, send only name
   const res = await fetch('admin_update_profile.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-          body: JSON.stringify({ name: nameVal, email: emailVal })
+          body: JSON.stringify({ name: nameVal })
         });
         let data; const text = await res.text();
         try { data = JSON.parse(text); } catch { data = { success:false, error:text.trim() || 'Unexpected response' }; }
