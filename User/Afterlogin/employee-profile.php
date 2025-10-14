@@ -23,12 +23,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $college       = trim($_POST['college'] ?? '');
     $department    = trim($_POST['department'] ?? '');
   $academicLevel = trim($_POST['academic_level'] ?? '');
+  // Program may be optional; initialize early to avoid undefined variable warnings
+  $program = trim($_POST['program'] ?? '');
 
   // reset errors for this POST
   $errors = [];
 
   // If some academic select fields are disabled, they may post empty values. Fallback to current DB values.
-  if ($campus === '' || $college === '' || $department === '' || $academicLevel === '' || ($program === '' && isset($_POST['program']))) {
+  // We check the common selects (campus/college/department/academic_level) and program separately.
+  if ($campus === '' || $college === '' || $department === '' || $academicLevel === '' || (isset($_POST['program']) && $program === '')) {
     try {
       $stmt = $pdo->prepare("SELECT campus, college, program, department, academic_level FROM employee_profiles WHERE user_id = ? LIMIT 1");
       $stmt->execute([$user_id]);
