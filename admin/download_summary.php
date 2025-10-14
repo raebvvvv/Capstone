@@ -78,6 +78,7 @@ $hasRange = ($start !== '' && $end !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/',
 $level  = isset($_GET['level'])  ? trim($_GET['level'])  : 'All';
 $college= isset($_GET['college'])? trim($_GET['college']): 'All'; // code like CCIS
 $program= isset($_GET['program'])? trim($_GET['program']): 'All'; // expect lowercased
+$department = isset($_GET['department']) ? trim($_GET['department']) : 'All';
 $campus = isset($_GET['campus']) ? trim($_GET['campus']) : 'All';
 $itype  = isset($_GET['type'])   ? trim($_GET['type'])   : 'All'; // maps to work_classification
 $group  = isset($_GET['group'])  ? trim($_GET['group'])  : 'All'; // Employee/Student (derived)
@@ -170,6 +171,16 @@ try {
     if ($program !== '' && strcasecmp($program, 'All') !== 0) {
         $sql .= " AND LOWER(s.program) = ?";
         $params[] = strtolower($program);
+    }
+    // Department (for employee submissions). Matches exact lowercased value; 'N/A' handled as empty/na match.
+    if ($department !== '' && strcasecmp($department, 'All') !== 0) {
+        if (strcasecmp($department, 'N/A') === 0) {
+            // consider rows where department is NULL, empty, or literally 'N/A'
+            $sql .= " AND (ep.department IS NULL OR TRIM(ep.department) = '' OR LOWER(ep.department) = 'n/a')";
+        } else {
+            $sql .= " AND LOWER(ep.department) = ?";
+            $params[] = strtolower($department);
+        }
     }
     // Campus (substring, case-insensitive)
     if ($campus !== '' && strcasecmp($campus, 'All') !== 0) {

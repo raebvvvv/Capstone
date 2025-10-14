@@ -563,6 +563,8 @@ function initCompletedAppsFilters() {
 		if (selectedAcademicLevel && selectedAcademicLevel !== 'All') params.set('level', selectedAcademicLevel);
 		if (selectedCollegeCode && selectedCollegeCode !== 'All') params.set('college', selectedCollegeCode);
 		if (selectedProgram && selectedProgram !== 'All') params.set('program', selectedProgram);
+		// Department (applies primarily to Employee records)
+		if (selectedDepartment && selectedDepartment !== 'All') params.set('department', selectedDepartment);
 		if (selectedCampus && selectedCampus !== 'All') params.set('campus', selectedCampus);
 		if (selectedType && selectedType !== 'All') params.set('type', selectedType);
 		if (selectedGroup && selectedGroup !== 'All') params.set('group', selectedGroup);
