@@ -38,14 +38,20 @@ if ($profile) {
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
-  <link rel="stylesheet" href="<?php echo asset_url('css/forms.css'); ?>">
+  <?php
+    $mainCssPath = __DIR__ . '/../../css/main.css';
+    $formsCssPath = __DIR__ . '/../../css/forms.css';
+    $mainVer = @filemtime($mainCssPath) ?: time();
+    $formsVer = @filemtime($formsCssPath) ?: time();
+  ?>
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css?v=' . $mainVer); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/forms.css?v=' . $formsVer); ?>">
 </head>
 <body class="forms-page">
-  <!-- Navbar -->
-<nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <!-- Navbar (uniform across project) -->
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-  <a class="navbar-brand d-flex align-items-center" href="../../index.php">
+      <a class="navbar-brand d-flex align-items-center" href="#">
   <img src="<?php echo asset_url('Photos/pup-logo.png'); ?>" alt="PUP Logo" width="50" class="me-2">
         <span>PUP e-IPMO</span>
       </a>
@@ -54,20 +60,53 @@ if ($profile) {
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="../../index.php">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo asset_url('index.php'); ?>">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="about.php">About Us</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-application.php' : 'student-application.php'; ?>">My Application</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">My Profile</a></li>
-         
+          <li class="nav-item"><a class="nav-link" href="employee-application.php">My Application</a></li>
+          <li class="nav-item"><?php include __DIR__ . '/../../partials/user_notifications.php'; ?></li>
+
+          <!-- Add this inside your <ul class="navbar-nav ms-auto mb-2 mb-lg-0"> -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <!-- User icon (SVG only, no text) -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                <path d="M14 14s-1-1.5-6-1.5S2 14 2 14s1-4 6-4 6 4 6 4z"/>
+              </svg>
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <?php $isEmployee = (($_SESSION['role'] ?? '') === 'employee'); ?>
+              <li>
+                <a class="dropdown-item" href="<?php echo $isEmployee ? 'employee-profile.php' : 'student-profile.php'; ?>">
+                  My Profile
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a>
+              </li>
+            </ul>
+          </li>
+
+
         </ul>
+        
+        <!-- Logout button triggers confirmation modal 
+        <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#logoutModal"> 
+          Logout
+        </button> -->
       </div>
+      
     </div>
   </nav>
+
+
 
   <main class="py-4">
     <div class="container">
       <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-7">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-7">
           <!-- Terms & Conditions (match student structure) -->
           <div id="termsGate" class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white py-2">
@@ -460,5 +499,6 @@ if ($profile) {
     </div>
   </div>
 </div>
+
 </body>
 </html>

@@ -18,6 +18,14 @@ $profile = $stmt->fetch(PDO::FETCH_ASSOC);
   <link rel="icon" type="image/png" href="<?php echo asset_url('Photos/pup-logo.png'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/main.css'); ?>">
   <link rel="stylesheet" href="<?php echo asset_url('css/forms.css'); ?>">
+    <?php
+    $mainCssPath = __DIR__ . '/../../css/main.css';
+    $formsCssPath = __DIR__ . '/../../css/forms.css';
+    $mainVer = @filemtime($mainCssPath) ?: time();
+    $formsVer = @filemtime($formsCssPath) ?: time();
+  ?>
+  <link rel="stylesheet" href="<?php echo asset_url('css/main.css?v=' . $mainVer); ?>">
+  <link rel="stylesheet" href="<?php echo asset_url('css/forms.css?v=' . $formsVer); ?>">
 </head>
 <body class="forms-page">
   <!-- Navbar -->

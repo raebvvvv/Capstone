@@ -1,0 +1,59 @@
+/* Mobile-first overrides to ensure formSection is fluid and stacked */
+/* This file loads after forms.css to override any older cached rules. */
+
+html body.forms-page #formSection {
+  width: 100% !important;
+  max-width: 100% !important; /* Override on mobile */
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+/* Make card inside formSection full width on all screens */
+html body.forms-page #formSection .card {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Container full width on smaller desktops/tablets */
+@media (max-width: 1400px) {
+  body.forms-page main .container {
+    max-width: 100% !important;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+/* On large desktops (1200px+), limit container max-width but allow formSection to be wider and centered */
+@media (min-width: 1200px) {
+  body.forms-page main .container {
+    max-width: 1280px !important; /* wider than before */
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  html body.forms-page #formSection {
+    max-width: 1140px !important; /* wider form */
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* Stack columns up to md (tablets) */
+@media (max-width: 991.98px) {
+  #formSection .row > [class^="col-"],
+  #formSection .row > [class*=" col-"] {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+  #formSection .card-body {
+    padding: 1rem !important;
+  }
+}
+
+/* Extra safe-guard for any residual wide/transform hacks */
+html body.forms-page #formSection[style] {
+  width: 100% !important;
+  transform: none !important;
+}

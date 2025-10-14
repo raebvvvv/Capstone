@@ -160,3 +160,20 @@ body.forms-page #copyrightForm fieldset legend {
 body.forms-page #copyrightForm .section-heading {
   font-size: 1rem; /* Original size */
 }
+
+/* ===== Responsive fixes for submission form ===== */
+/* Ensure the submission form does not overflow on small and medium screens */
+@media (max-width: 1399.98px) {
+  body.forms-page #formSection {
+    width: 100% !important;
+    margin-left: 0 !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Disable Terms card scaling on small phones to avoid horizontal scroll */
+@media (max-width: 576px) {
+  body.forms-page #termsGate {
+    transform: none !important;
+  }
+}
