@@ -750,10 +750,11 @@ $result_inactive = $stmt_inactive->fetchAll();
                 campuses: [], // [{id,name,code}]
                 colleges: [], // [{id,name,code}]
                 departments: [], // raw rows with college_id
-                programs: [], // raw rows with college_id
+                programs: [], // raw rows with college_id (null for level-specific like Masters/Doctorate/Open University)
                 depsByCollege: {}, // college_id -> [name]
                 progsByCollege: {}, // college_id -> [name]
                 collegeIdByName: {}, // normalized name -> id
+                levelProgs: { masters: [], doctorate: [], open_university: [] }, // level -> [program name]
             };
 
             // Helper normalizer for case/whitespace-insensitive comparisons
@@ -833,6 +834,21 @@ $result_inactive = $stmt_inactive->fetchAll();
                     if (!Catalogs.progsByCollege[k]) Catalogs.progsByCollege[k] = [];
                     Catalogs.progsByCollege[k].push(p.name);
                 });
+                // Build level-specific program buckets from programs with no college_id
+                const nullCollege = (programs||[]).filter(p => p.college_id === null || p.college_id === undefined).map(p => p.name);
+                const mastersSet = new Set();
+                const doctorateSet = new Set();
+                nullCollege.forEach(name => {
+                    const n = norm(name);
+                    if (n.includes('master')) mastersSet.add(name);
+                    if (n.includes('doctor')) doctorateSet.add(name);
+                });
+                const openUniSet = new Set(nullCollege); // treat all null-college programs as Open University superset
+                Catalogs.levelProgs = {
+                    masters: Array.from(mastersSet),
+                    doctorate: Array.from(doctorateSet),
+                    open_university: Array.from(openUniSet)
+                };
             }
 
             function initStudentSection(section) {
@@ -844,7 +860,7 @@ $result_inactive = $stmt_inactive->fetchAll();
 
                 const campusCurrent = campusSel.dataset.current || '';
                 const collegeCurrent = collegeSel.dataset.current || '';
-                const programCurrent = programSel.dataset.current || '';
+                let programCurrent = programSel.dataset.current || '';
                 const levelCurrent = levelSel ? (levelSel.dataset.current || '') : '';
 
                 const campusNames = (Catalogs.campuses||[]).map(c => c.name);
@@ -859,7 +875,10 @@ $result_inactive = $stmt_inactive->fetchAll();
                 const collegeNames = (Catalogs.colleges||[]).map(c => c.name);
                 populateSelect(collegeSel, collegeNames, collegeCurrent);
 
-                function rebuildProgramsFor(collegeName, current) {
+                // Helper: show/hide college block
+                const collegeBlock = collegeSel.closest('.mb-3') || collegeSel.parentElement;
+
+                function rebuildProgramsByCollege(collegeName, current) {
                     const id = Catalogs.collegeIdByName[norm(collegeName)] || null;
                     const list = id ? (Catalogs.progsByCollege[String(id)] || []) : [];
                     populateSelect(programSel, list, current || '');
@@ -869,8 +888,50 @@ $result_inactive = $stmt_inactive->fetchAll();
                     }
                 }
 
-                rebuildProgramsFor(collegeCurrent || collegeSel.value, programCurrent);
-                collegeSel.addEventListener('change', function(){ rebuildProgramsFor(this.value, ''); });
+                function rebuildProgramsByLevel(levelName, current) {
+                    const n = norm(levelName);
+                    let list = [];
+                    if (n === 'masters') list = Catalogs.levelProgs.masters || [];
+                    else if (n === 'doctorate') list = Catalogs.levelProgs.doctorate || [];
+                    else list = [];
+                    populateSelect(programSel, list, current || '');
+                    if (current && (!programSel.value || programSel.value === '')) {
+                        ensureSelectedOrAdd(programSel, current);
+                    }
+                }
+
+                function syncStudentProgramOptions() {
+                    const lv = levelSel ? (levelSel.value || levelCurrent) : '';
+                    const lvNorm = norm(lv);
+                    if (lvNorm === 'masters' || lvNorm === 'doctorate') {
+                        // Hide and disable college when level-driven
+                        if (collegeBlock) collegeBlock.style.display = 'none';
+                        collegeSel.disabled = true;
+                        // Rebuild programs by level
+                        rebuildProgramsByLevel(lv, programCurrent);
+                    } else {
+                        // Show/enable college and rebuild by selected/current college
+                        if (collegeBlock) collegeBlock.style.display = '';
+                        collegeSel.disabled = false;
+                        const colName = collegeSel.value || collegeCurrent;
+                        rebuildProgramsByCollege(colName, programCurrent);
+                    }
+                }
+
+                // Initial sync
+                syncStudentProgramOptions();
+                // Change handlers
+                if (levelSel) levelSel.addEventListener('change', function(){
+                    // Clear current program selection when level changes to force a fresh, valid choice
+                    programCurrent = '';
+                    syncStudentProgramOptions();
+                });
+                collegeSel.addEventListener('change', function(){
+                    const lvNorm = norm(levelSel ? levelSel.value : '');
+                    if (lvNorm !== 'masters' && lvNorm !== 'doctorate') {
+                        rebuildProgramsByCollege(this.value, '');
+                    }
+                });
             }
 
             function initEmployeeSection(section) {
@@ -884,7 +945,7 @@ $result_inactive = $stmt_inactive->fetchAll();
                 const campusCurrent = campusSel.dataset.current || '';
                 const collegeCurrent = collegeSel.dataset.current || '';
                 const deptCurrent = deptSel.dataset.current || '';
-                const programCurrent = programSel.dataset.current || '';
+                let programCurrent = programSel.dataset.current || '';
                 const levelCurrent = levelSel ? (levelSel.dataset.current || '') : '';
 
                 const campusNames = (Catalogs.campuses||[]).map(c => c.name);
@@ -892,7 +953,11 @@ $result_inactive = $stmt_inactive->fetchAll();
 
                 if (levelSel) {
                     // Ensure Not Studying, Doctorate, Masters, Open University (preserve order when possible)
-                    const set = new Set((Catalogs.levels||[]).map(l => l.name));
+                    // Exclude Undergraduate for employees
+                    const allLevels = (Catalogs.levels||[])
+                        .map(l => l.name)
+                        .filter(n => n && n.toLowerCase().trim() !== 'undergraduate');
+                    const set = new Set(allLevels);
                     const preferred = ['Not Studying','Doctorate','Masters','Open University'];
                     const employeeLevels = preferred.filter(n => set.has(n)).concat(Array.from(set).filter(n => !preferred.includes(n)));
                     populateSelect(levelSel, employeeLevels, levelCurrent);
@@ -901,10 +966,9 @@ $result_inactive = $stmt_inactive->fetchAll();
                 const collegeNames = (Catalogs.colleges||[]).map(c => c.name);
                 populateSelect(collegeSel, collegeNames, collegeCurrent);
 
-                function rebuildDepsAndProgs(collegeName, depCur, progCur) {
+                function rebuildDepsAndProgs(collegeName, depCur) {
                     const id = Catalogs.collegeIdByName[norm(collegeName)] || null;
                     const deps = id ? (Catalogs.depsByCollege[String(id)] || []) : [];
-                    const progs = id ? (Catalogs.progsByCollege[String(id)] || []) : [];
                     if (deps.length) {
                         deptSel.disabled = false;
                         populateSelect(deptSel, deps, depCur || '');
@@ -915,14 +979,30 @@ $result_inactive = $stmt_inactive->fetchAll();
                         na.value = 'N/A'; na.textContent = 'N/A';
                         deptSel.appendChild(na);
                     }
-                    populateSelect(programSel, progs, progCur || '');
-                    // Fallbacks: ensure preselected values appear even if catalogs changed
+                    // Fallback: ensure preselected dept appears even if catalogs changed
                     if (depCur && (!deptSel.value || deptSel.value === '')) { ensureSelectedOrAdd(deptSel, depCur); }
-                    if (progCur && (!programSel.value || programSel.value === '')) { ensureSelectedOrAdd(programSel, progCur); }
                 }
 
-                rebuildDepsAndProgs(collegeCurrent || collegeSel.value, deptCurrent, programCurrent);
-                collegeSel.addEventListener('change', function(){ rebuildDepsAndProgs(this.value, '', ''); });
+                function rebuildProgramsByLevelEmp(levelName, current) {
+                    const n = norm(levelName);
+                    let list = [];
+                    if (n === 'masters') list = Catalogs.levelProgs.masters || [];
+                    else if (n === 'doctorate') list = Catalogs.levelProgs.doctorate || [];
+                    else if (n === 'open university') list = Catalogs.levelProgs.open_university || [];
+                    else list = [];
+                    populateSelect(programSel, list, current || '');
+                    // Fallback to show stored value if not present
+                    if (current && (!programSel.value || programSel.value === '')) { ensureSelectedOrAdd(programSel, current); }
+                    // If no list and no current, leave default "Choose..."; optionally could add N/A
+                }
+
+                // Initial population
+                rebuildDepsAndProgs(collegeCurrent || collegeSel.value, deptCurrent);
+                rebuildProgramsByLevelEmp(levelCurrent, programCurrent);
+
+                // Change handlers
+                collegeSel.addEventListener('change', function(){ rebuildDepsAndProgs(this.value, ''); });
+                if (levelSel) levelSel.addEventListener('change', function(){ programCurrent = ''; rebuildProgramsByLevelEmp(this.value, ''); });
             }
 
             // Fetch catalogs once, then init modals on open
