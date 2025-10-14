@@ -47,7 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Allow editing Home Address, Mobile Number, and Name fields; handle selects separately
-  const textEditableInputs = form.querySelectorAll('#homeAddress, #mobileNumber, #lastName, #firstName, #middleName');
+  // Include suffix so it becomes editable (was previously omitted, leaving it locked)
+  const textEditableInputs = form.querySelectorAll('#homeAddress, #mobileNumber, #lastName, #firstName, #middleName, #suffix');
   const selectEditableInputs = form.querySelectorAll('#campus, #college, #program, #academicLevel');
   let originalValues = {};
 
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
       select.classList.remove('bg-light');
     });
 
-    // Re-initialize dropdown options from academicData
+    // Re-initialize dropdown options from dynamic catalogs (event listener repopulates & preserves values)
     try {
       document.dispatchEvent(new Event('ipmo:form:show'));
       // restore current selections after population
@@ -155,10 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastName = document.getElementById('lastName');
     const firstName = document.getElementById('firstName');
     const middleName = document.getElementById('middleName');
-    const campusSel = document.getElementById('campus');
+  const campusSel = document.getElementById('campus');
     const collegeSel = document.getElementById('college');
     const programSel = document.getElementById('program');
     const levelSel = document.getElementById('academicLevel');
+  const suffixInput = document.getElementById('suffix');
     const mobileRegex = /^09\d{9}$/; // PH format
     
     if (!home.value.trim()) {
@@ -177,10 +179,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!nameRegex.test(firstName.value.trim())) { showError(firstName, 'First name should contain letters, optional dots, and single spaces.'); isValid = false; }
   if (!nameRegex.test(lastName.value.trim())) { showError(lastName, 'Last name should contain letters, optional dots, and single spaces.'); isValid = false; }
   if (middleName.value.trim() && !nameRegex.test(middleName.value.trim())) { showError(middleName, 'Middle name should contain letters, optional dots, and single spaces.'); isValid = false; }
-    if (!campusSel.value) { showError(campusSel, 'Please select a campus.'); isValid = false; }
+  // Treat 'N/A' as acceptable sentinel for campus/college/program
+  const emptyOrNA = v => !v || v.trim() === '';
+  if (emptyOrNA(campusSel.value)) { showError(campusSel, 'Please select a campus or choose N/A.'); isValid = false; }
     if (!levelSel.value) { showError(levelSel, 'Please select an academic level.'); isValid = false; }
-    if (!collegeSel.value) { showError(collegeSel, 'Please select a college.'); isValid = false; }
-    if (!programSel.value) { showError(programSel, 'Please select a program.'); isValid = false; }
+  if (emptyOrNA(collegeSel.value)) { showError(collegeSel, 'Please select a college or choose N/A.'); isValid = false; }
+  if (emptyOrNA(programSel.value)) { showError(programSel, 'Please select a program or choose N/A.'); isValid = false; }
+
+    // Suffix optional validation: letters and periods only up to 10 chars
+    if (suffixInput && suffixInput.value.trim()) {
+      if (!/^[A-Za-z.]{1,10}$/.test(suffixInput.value.trim())) {
+        showError(suffixInput, 'Suffix can contain letters and periods only (max 10 characters).');
+        isValid = false;
+      }
+    }
 
     if (!isValid) {
       e.preventDefault(); // stop form submission if invalid

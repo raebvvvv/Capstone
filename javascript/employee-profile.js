@@ -200,11 +200,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Dropdown validation (program is optional for employees)
-    if (!campusSel.value) { showError(campusSel, 'Please select a campus.'); isValid = false; }
-    if (!levelSel.value) { showError(levelSel, 'Please select an academic level.'); isValid = false; }
-    if (!collegeSel.value) { showError(collegeSel, 'Please select a college.'); isValid = false; }
-    if (!departmentSel.value) { showError(departmentSel, 'Please select a department.'); isValid = false; }
+  // Dropdown validation (program optional). Allow 'N/A' sentinel for campus/college/department.
+  const emptyOrNA = v => !v || v.trim() === '';
+  if (emptyOrNA(campusSel.value)) { showError(campusSel, 'Please select a campus or choose N/A.'); isValid = false; }
+  if (!levelSel.value) { showError(levelSel, 'Please select an academic level.'); isValid = false; }
+  if (emptyOrNA(collegeSel.value)) { showError(collegeSel, 'Please select a college or choose N/A.'); isValid = false; }
+  if (emptyOrNA(departmentSel.value)) { showError(departmentSel, 'Please select a department or choose N/A.'); isValid = false; }
 
     if (!isValid) {
       e.preventDefault();

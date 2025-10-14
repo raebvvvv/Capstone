@@ -31,6 +31,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
   // reset errors for this POST
   $errors = [];
 
+  // If selects are disabled in the form, the browser may not submit their values (or may submit as empty).
+  // Fetch existing values from the database as fallbacks when incoming values are blank.
+  if ($campus === '' || $college === '' || $program === '' || $academicLevel === '') {
+    try {
+      $stmt = $pdo->prepare("SELECT campus, college, program, academic_level FROM student_profiles WHERE user_id = ? LIMIT 1");
+      $stmt->execute([$user_id]);
+      if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        if ($campus === '')        $campus = trim((string)$row['campus']);
+        if ($college === '')       $college = trim((string)$row['college']);
+        if ($program === '')       $program = trim((string)$row['program']);
+        if ($academicLevel === '') $academicLevel = trim((string)$row['academic_level']);
+      }
+    } catch (Exception $e) {
+      // Fail silently; fallback just helps avoid false required errors
+    }
+  }
+
   // Check last update timestamp (skipped in debug mode)
   if (!$DEBUG_UNLOCK_EDIT_PROFILE) {
     $stmt = $pdo->prepare("SELECT last_updated_at FROM student_profiles WHERE user_id = ?");
@@ -64,23 +81,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
   }
 
     // Validate suffix (optional, but must be valid if provided)
-    if ($suffix) {
-        $validSuffixes = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
-        if (!in_array($suffix, $validSuffixes)) {
-            $errors[] = "Enter a valid suffix (Jr., Sr., I, II, III, IV, V) or leave it blank";
-        }
-    }
+ if ($suffix && !preg_match('/^[A-Za-z.]{1,10}$/', $suffix)) {
+    $errors[] = "Suffix can contain letters and periods only (max 10 characters).";
+}
+
 
     // Validate mobile number (PH format: 09xxxxxxxxx or +639xxxxxxxxx)
     if (!preg_match('/^(09\d{9}|\+639\d{9})$/', $mobileNumber)) {
         $errors[] = "Invalid mobile number format (use 09XXXXXXXXX or +639XXXXXXXXX)";
     }
 
-    // Required fields (suffix & middle initial optional)
+    // Required fields (suffix & middle initial optional). Allow 'N/A' sentinel for campus/college/program.
+  $naProvided = function($v){ return !empty($v) || strcasecmp($v,'N/A')===0; };
   if (empty($firstName) || empty($lastName) || empty($homeAddress) ||
-    empty($mobileNumber) || empty($campus) || empty($college) ||
-    empty($program) || empty($academicLevel)) {
-    $errors[] = "All fields except suffix and middle name are required";
+      empty($mobileNumber) || !$naProvided($campus) || !$naProvided($college) ||
+      !$naProvided($program) || empty($academicLevel)) {
+    $errors[] = "All fields except suffix and middle name are required"; // message unchanged; 'N/A' counts as provided
+  }
+
+  // Catalog existence validation (skip DB check when value is 'N/A')
+  $catalogExists = function($table, $name) use ($pdo) {
+    if ($name === '' || strcasecmp($name, 'N/A') === 0) return true; // treat N/A as acceptable placeholder
+    $allowed = ['campuses','colleges','levels','departments','programs'];
+    if (!in_array($table, $allowed, true)) return true;
+    try {
+      $stmt = $pdo->prepare("SELECT 1 FROM {$table} WHERE name = ? LIMIT 1");
+      $stmt->execute([$name]);
+      return (bool)$stmt->fetchColumn();
+    } catch (Exception $e) {
+      return true; // do not block if table missing/other error
+    }
+  };
+
+  if ($campus !== '' && strcasecmp($campus,'N/A')!==0 && !$catalogExists('campuses',$campus)) {
+    $errors[] = 'Please select a valid campus';
+  }
+  if ($college !== '' && strcasecmp($college,'N/A')!==0 && !$catalogExists('colleges',$college)) {
+    $errors[] = 'Please select a valid college';
+  }
+  if ($program !== '' && strcasecmp($program,'N/A')!==0 && !$catalogExists('programs',$program)) {
+    $errors[] = 'Please select a valid program';
+  }
+  // Academic level must exist (cannot be N/A)
+  if ($academicLevel === '') {
+    $errors[] = 'Academic level is required';
+  } elseif (!$catalogExists('levels',$academicLevel)) {
+    $errors[] = 'Invalid academic level selected';
   }
 
     // Fetch current profile data
@@ -374,7 +420,18 @@ if (!empty($errors) && !$hasRestrictionError): ?>
       <div class="invalid-feedback"><?php echo $errors['campus']; ?></div>
     <?php endif; ?>
   </div>
-
+ <div class="col-md-3">
+    <label class="form-label">Academic Level</label>
+    <select
+           class="form-select bg-light lock <?php echo isset($errors['academic_level']) ? 'is-invalid' : ''; ?>"
+           name="academic_level" id="academicLevel" disabled>
+      <?php $levelVal = trim((string)($profile['academic_level'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($levelVal); ?>" selected><?php echo htmlspecialchars($levelVal ?: 'Choose...'); ?></option>
+    </select>
+    <?php if (isset($errors['academic_level'])): ?>
+      <div class="invalid-feedback"><?php echo $errors['academic_level']; ?></div>
+    <?php endif; ?>
+  </div>
   <div class="col-md-3">
     <label class="form-label">College</label>
     <select 
@@ -400,18 +457,7 @@ if (!empty($errors) && !$hasRestrictionError): ?>
       <div class="invalid-feedback"><?php echo $errors['program']; ?></div>
     <?php endif; ?>
   </div>
-  <div class="col-md-3">
-    <label class="form-label">Academic Level</label>
-    <select
-           class="form-select bg-light lock <?php echo isset($errors['academic_level']) ? 'is-invalid' : ''; ?>"
-           name="academic_level" id="academicLevel" disabled>
-      <?php $levelVal = trim((string)($profile['academic_level'] ?? '')); ?>
-      <option value="<?php echo htmlspecialchars($levelVal); ?>" selected><?php echo htmlspecialchars($levelVal ?: 'Choose...'); ?></option>
-    </select>
-    <?php if (isset($errors['academic_level'])): ?>
-      <div class="invalid-feedback"><?php echo $errors['academic_level']; ?></div>
-    <?php endif; ?>
-  </div>
+
 </div>
 
         <div class="mb-3">

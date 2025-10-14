@@ -297,12 +297,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="row g-3 mb-2">
             <div class="col-md-3">
               <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="lastName" name="lastName" required pattern="[A-Za-z\- ]+" title="Only letters and hyphens (-) allowed">
+              <input type="text" class="form-control" id="lastName" name="lastName" required pattern="[A-Za-z\.\- ]+" title="Only letters, spaces, hyphens (-), and dot (.) allowed">
               <div class="invalid-feedback">Please fill in this field.</div>
             </div>
             <div class="col-md-5">
               <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="firstName" name="firstName" required pattern="[A-Za-z\- ]+" title="Only letters, spaces, and hyphens (-) allowed">
+              <input type="text" class="form-control" id="firstName" name="firstName" required pattern="[A-Za-z\.\- ]+" title="Only letters, spaces, hyphens (-), and dot (.) allowed">
               <div class="invalid-feedback">Please fill in this field.</div>
             </div>
             <div class="col-md-2">
@@ -312,7 +312,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="col-md-2">
               <label for="suffix" class="form-label">Suffix <span class="text-danger"></span></label>
-              <input type="text" class="form-control" id="suffix" name="suffix" maxlength="2"  pattern="[A-Za-z\.]+" title="Up to 2 letters or dot (.) allowed">
+              <input type="text" class="form-control" id="suffix" name="suffix" maxlength="10"  pattern="[A-Za-z\.]+" title="Up to 10 letters and dots (.) allowed">
               
             </div>
           </div>

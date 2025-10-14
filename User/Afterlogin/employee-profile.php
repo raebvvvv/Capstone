@@ -27,6 +27,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
   // reset errors for this POST
   $errors = [];
 
+  // If some academic select fields are disabled, they may post empty values. Fallback to current DB values.
+  if ($campus === '' || $college === '' || $department === '' || $academicLevel === '' || ($program === '' && isset($_POST['program']))) {
+    try {
+      $stmt = $pdo->prepare("SELECT campus, college, program, department, academic_level FROM employee_profiles WHERE user_id = ? LIMIT 1");
+      $stmt->execute([$user_id]);
+      if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        if ($campus === '')        $campus = trim((string)$row['campus']);
+        if ($college === '')       $college = trim((string)$row['college']);
+        if ($department === '')    $department = trim((string)$row['department']);
+        if ($academicLevel === '') $academicLevel = trim((string)$row['academic_level']);
+        // Program is optional; only fallback if field was present in form but empty
+        if (isset($program) && $program === '' && isset($row['program'])) $program = trim((string)$row['program']);
+      }
+    } catch (Exception $e) {
+      // silent fallback failure
+    }
+  }
+
   // Check last update timestamp (skipped in debug mode)
   if (!(isset($DEBUG_UNLOCK_EDIT_PROFILE) && $DEBUG_UNLOCK_EDIT_PROFILE)) {
     $stmt = $pdo->prepare("SELECT last_updated_at FROM employee_profiles WHERE user_id = ?");
@@ -73,46 +91,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
   }
 
   // Required fields (suffix, middle name, and program are optional)
+  // Allow the sentinel value 'N/A' to satisfy the required presence for campus/college/department
+  $naAcceptable = function($value) {
+    return !empty($value) || strcasecmp($value, 'N/A') === 0; // treat 'N/A' as provided
+  };
+
   if (empty($firstName) || empty($lastName) || empty($homeAddress) ||
-    empty($mobileNumber) || empty($campus) || empty($college) || empty($department)) {
-    $errors[] = "All fields except suffix, middle name, and program are required";
+      empty($mobileNumber) || !$naAcceptable($campus) || !$naAcceptable($college) || !$naAcceptable($department)) {
+    $errors[] = "All fields except suffix, middle name, and program are required"; // message unchanged; 'N/A' now allowed for academic fields
   }
 
-  // Additional validation for new editable fields
-  $validCampuses = ['PUP Main (Sta. Mesa, Manila)'];
-  if (!in_array($campus, $validCampuses)) {
+  // Additional validation for new editable fields using dynamic catalogs
+  // Helper: check existence in catalogs tables by name; allow 'N/A' without DB check
+  $catalogExists = function($table, $name) use ($pdo) {
+    if ($name === '' || strcasecmp($name, 'N/A') === 0) return true; // treat empty check elsewhere, but allow N/A
+    $allowed = ['campuses','colleges','levels','departments','programs'];
+    if (!in_array($table, $allowed, true)) return true; // if table not allowed, skip validation
+    try {
+      $stmt = $pdo->prepare("SELECT 1 FROM {$table} WHERE name = ? LIMIT 1");
+      $stmt->execute([$name]);
+      return (bool)$stmt->fetchColumn();
+    } catch (Exception $e) {
+      // If catalogs table not available, do not block user
+      return true;
+    }
+  };
+
+  if (!$catalogExists('campuses', $campus)) {
     $errors[] = "Please select a valid campus";
   }
-
-  $validColleges = [
-    'College of Accountancy and Finance (CAF)',
-    'College of Architecture, Design and the Built Environment (CADBE)',
-    'College of Arts and Letters (CAL)',
-    'College of Business Administration (CBA)',
-    'College of Communication (COC)',
-    'College of Computer and Information Sciences (CCIS)',
-    'College of Education (COED)',
-    'College of Engineering (CE)',
-    'College of Human Kinetics (CHK)',
-    'College of Law (CL)',
-    'College of Political Science and Public Administration (CPSPA)',
-    'College of Social Sciences and Development (CSSD)',
-    'College of Science (CS)',
-    'College of Tourism, Hospitality and Transportation Management (CTHTM)',
-    'Institute of Technology'
-  ];
-  if (!in_array($college, $validColleges)) {
+  if (!$catalogExists('colleges', $college)) {
     $errors[] = "Please select a valid college";
+  }
+  if (!$catalogExists('departments', $department)) {
+    $errors[] = "Please select a valid department";
   }
 
   // Program is optional for employees, but validate if provided
   // (No validation needed for optional program field)
 
-  // Validate academic level (required and must be one of allowed values)
-  $validLevels = ['Not Studying','Doctorate','Masters','Open University'];
+  // Validate academic level (required and must exist in catalogs 'levels')
   if ($academicLevel === '') {
     $errors[] = 'Academic level is required';
-  } elseif (!in_array($academicLevel, $validLevels, true)) {
+  } elseif (!$catalogExists('levels', $academicLevel)) {
     $errors[] = 'Invalid academic level selected';
   }
 
@@ -434,20 +455,17 @@ if (!empty($errors) && !$hasRestrictionError): ?>
       <div class="invalid-feedback"><?php echo $errors['college']; ?></div>
     <?php endif; ?>
   </div>
-
-  <div class="col-md-4">
-    <label class="form-label">Program</label>
-    <select class="form-select <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
-            name="program" id="program" disabled>
-      <?php $programVal = trim((string)($profile['program'] ?? '')); ?>
-      <option value="<?php echo htmlspecialchars($programVal); ?>" selected><?php echo htmlspecialchars($programVal ?: 'Choose...'); ?></option>
+ <div class="col-md-4">
+    <label class="form-label">Department</label>
+    <select class="form-select <?php echo isset($errors['department']) ? 'is-invalid' : ''; ?>" 
+            name="department" id="department" disabled>
+      <?php $deptVal = trim((string)($profile['department'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($deptVal); ?>" selected><?php echo htmlspecialchars($deptVal ?: 'Choose...'); ?></option>
     </select>
-    <?php if (isset($errors['program'])): ?>
-      <div class="invalid-feedback"><?php echo $errors['program']; ?></div>
+    <?php if (isset($errors['department'])): ?>
+      <div class="invalid-feedback"><?php echo $errors['department']; ?></div>
     <?php endif; ?>
   </div>
-</div>
-
 <div class="row mb-3">
   <div class="col-md-4">
     <label class="form-label">Academic Level</label>
@@ -460,18 +478,19 @@ if (!empty($errors) && !$hasRestrictionError): ?>
       <div class="invalid-feedback"><?php echo $errors['academic_level']; ?></div>
     <?php endif; ?>
   </div>
-
   <div class="col-md-4">
-    <label class="form-label">Department</label>
-    <select class="form-select <?php echo isset($errors['department']) ? 'is-invalid' : ''; ?>" 
-            name="department" id="department" disabled>
-      <?php $deptVal = trim((string)($profile['department'] ?? '')); ?>
-      <option value="<?php echo htmlspecialchars($deptVal); ?>" selected><?php echo htmlspecialchars($deptVal ?: 'Choose...'); ?></option>
+    <label class="form-label">Program</label>
+    <select class="form-select <?php echo isset($errors['program']) ? 'is-invalid' : ''; ?>" 
+            name="program" id="program" disabled>
+      <?php $programVal = trim((string)($profile['program'] ?? '')); ?>
+      <option value="<?php echo htmlspecialchars($programVal); ?>" selected><?php echo htmlspecialchars($programVal ?: 'Choose...'); ?></option>
     </select>
-    <?php if (isset($errors['department'])): ?>
-      <div class="invalid-feedback"><?php echo $errors['department']; ?></div>
+    <?php if (isset($errors['program'])): ?>
+      <div class="invalid-feedback"><?php echo $errors['program']; ?></div>
     <?php endif; ?>
   </div>
+</div>
+ 
 </div>
 
         <div class="mb-3">
