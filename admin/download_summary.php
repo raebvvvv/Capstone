@@ -5,6 +5,14 @@ secure_bootstrap();
 require __DIR__ . '/../conn.php';
 require_admin();
 
+require __DIR__ . '/../vendor/autoload.php';
+
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+
 // Helpers
 function fmt_date(string $dateStr): string {
     $ts = strtotime($dateStr);
@@ -67,7 +75,6 @@ function fetch_submission_people(PDO $pdo, int $sid, string $submitterFullName =
 // Use separate 'summary' param for summary flavor to avoid clashing with 'type' filter
 $summary = isset($_GET['summary']) ? strtolower(trim($_GET['summary'])) : 'national';
 $isRmipo = ($summary === 'rmipo');
-$filename = ($isRmipo ? 'summary_rmipo' : 'summary_national') . '_' . date('Ymd_His') . '.csv';
 
 // Optional date range filter (?start=YYYY-MM-DD&end=YYYY-MM-DD)
 $start = isset($_GET['start']) ? trim($_GET['start']) : '';
@@ -243,17 +250,79 @@ foreach ($subs as $s) {
     }
 }
 
-// Output CSV
-header('Content-Type: text/csv; charset=UTF-8');
-header('Content-Disposition: attachment; filename="' . $filename . '"');
-
-// UTF-8 BOM for Excel compatibility
-echo "\xEF\xBB\xBF";
-
-$out = fopen('php://output', 'w');
-fputcsv($out, $headers);
-foreach ($rows as $row) {
-    fputcsv($out, $row);
+// Normalize values so Excel behaves better (no stray spaces/newlines)
+foreach ($rows as &$r) {
+    foreach ($r as &$cell) {
+        $cell = trim((string)$cell);
+    }
+    unset($cell);
 }
-fclose($out);
+unset($r);
+
+// Build XLSX with PhpSpreadsheet
+$spreadsheet = new Spreadsheet();
+$sheet = $spreadsheet->getActiveSheet();
+
+// 1) Write header row (A1, B1, ...)
+$sheet->fromArray($headers, null, 'A1');
+
+// 2) Write data starting at row 2
+if (!empty($rows)) {
+    $sheet->fromArray($rows, null, 'A2');
+}
+
+// 3) Basic styling: bold headers
+$lastColumnIndex  = count($headers); // e.g. 7 for A..G
+$lastColumnLetter = Coordinate::stringFromColumnIndex($lastColumnIndex);
+$highestRow       = $sheet->getHighestRow();
+
+$headerRange = 'A1:' . $lastColumnLetter . '1';
+$sheet->getStyle($headerRange)->getFont()->setBold(true);
+
+// 4) Enable wrap text for text-heavy columns (Title, Author/s)
+// For national summary: A = Title, C = Author/s
+// For RMIPO summary: C = Author/s, D = Title
+if ($isRmipo) {
+    $wrapColumns = ['C', 'D'];
+} else {
+    $wrapColumns = ['A', 'C'];
+}
+foreach ($wrapColumns as $col) {
+    if (Coordinate::columnIndexFromString($col) <= $lastColumnIndex) {
+        $sheet->getStyle($col . '1:' . $col . $highestRow)
+              ->getAlignment()
+              ->setWrapText(true);
+    }
+}
+
+// 5) Auto-size all used columns (A..last)
+foreach (range('A', $lastColumnLetter) as $col) {
+    $sheet->getColumnDimension($col)->setAutoSize(true);
+}
+
+// Optional: align date-ish columns centered
+// National: D (Date), F (Date of Evaluated), G (Date of Evaluation)
+// RMIPO: F (Date Accepted), H (Date of Transfer...)
+if ($isRmipo) {
+    $dateColumns = ['F', 'H'];
+} else {
+    $dateColumns = ['D', 'F', 'G'];
+}
+foreach ($dateColumns as $col) {
+    if (Coordinate::columnIndexFromString($col) <= $lastColumnIndex) {
+        $sheet->getStyle($col . '2:' . $col . $highestRow)
+              ->getAlignment()
+              ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    }
+}
+
+// 6) Send XLSX to browser
+$filename = ($isRmipo ? 'summary_rmipo' : 'summary_national') . '_' . date('Ymd_His') . '.xlsx';
+
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment; filename="' . $filename . '"');
+header('Cache-Control: max-age=0');
+
+$writer = new Xlsx($spreadsheet);
+$writer->save('php://output');
 exit;
