@@ -105,7 +105,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
             <span class="me-3"><img src="Photos/Icons/Email-icon.png" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
             <span><img src="Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm"> (+632) 5335-1787</span>
           </p>
-          <p class="ip-purpose">The IP protection application protects ideas, creations, and the rights of their creators. Click <a href="https://www.wipo.int/portal/en/index.html" class="fw-bold text-primary" target="_blank">here</a> to read about Intellectual Property Rights.</p>
+          <p class="ip-purpose">The Intellectual Property Rights Protection application protects ideas, creations, and the rights of their creators. Click <a href="https://www.wipo.int/portal/en/index.html" class="fw-bold text-primary" target="_blank">here</a> to read about Intellectual Property Rights.</p>
         </div>
         <div class="ms-5">  
           <h2 class="fw-bold">Office Hours</h2>
