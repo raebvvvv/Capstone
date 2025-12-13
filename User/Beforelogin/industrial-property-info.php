@@ -217,7 +217,7 @@
                 <div class="highlight-box tech-innovation-box" style="background: #f8f9fa; border-color: #dee2e6; border-left: 4px solid #6c757d;">
                   <h5 class="fw-bold mb-2" style="color: #495057;">🔬 Technical Innovations</h5>
                   <ul class="feature-list">
-                    <li><span class="feature-icon">🔬</span><strong>Patents:</strong> Major inventions & processes</li>
+                    <li><span class="feature-icon">🔬</span><strong>Patents: </strong> Major inventions & processes</li>
                     <li><span class="feature-icon">⚙️</span><strong>Utility Models:</strong> Minor improvements & innovations</li>
                   </ul>
                 </div>
