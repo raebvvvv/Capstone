@@ -100,7 +100,7 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
       <div class="d-flex flex-row justify-content-between align-items-start w-100 flex-wrap">
         <div class="flex-grow-1" style="max-width: 40%;">
           <h1 class="fw-bold mb-2">e-IPMO Services</h1>
-          <p class="fs-5 mb-3"><span class="fw-bold">e-IPMO</span> is an online system for students to easily register, submit, and track <strong> Intellectual Property </strong> applications in one secure platform. Start your application process smoothly and efficiently.</p>
+          <p class="fs-5 mb-3"><span class="fw-bold">e-IPMO</span> is an online system for students to easily register, submit, and track <strong>Intellectual Property Rights Protection</strong> applications in one secure platform. Start your application process smoothly and efficiently.</p>
           <p class="mb-2">
             <span class="me-3"><img src="Photos/Icons/Email-icon.png" alt="email" class="icon-sm"> ipmo@pup.edu.ph</span>
             <span><img src="Photos/Icons/Landline-icon.png" alt="phone" class="icon-sm"> (+632) 5335-1787</span>
