@@ -136,24 +136,48 @@ $isLoggedIn = isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] 
           <div class="card-body text-center">
             <img src="Photos/Icons/what-ip.png" alt="types" class="mb-3 mx-auto d-block" style="height:40px;">
             <h5 class="fw-bold mb-2">What types of IP can I protect?</h5>
-            <div class="row g-2 mb-2">
-              <div class="col-6">
-                <?php if ($isLoggedIn): ?>
-                  <a href="User/Afterlogin/copyright-info.php" class="btn btn-warning fw-bold w-100" style="text-decoration: none;">Copyright</a>
-                <?php else: ?>
-                  <a href="User/Beforelogin/copyright-info.php" class="btn btn-warning fw-bold w-100" style="text-decoration: none;">Copyright</a>
-                <?php endif; ?>
-                <small class="d-block text-muted mt-1" style="font-size: 0.7rem;">Artistic & Literary Property</small>
-              </div>
-              <div class="col-6">
-                <?php if ($isLoggedIn): ?>
-                  <a href="User/Afterlogin/industrial-property-info.php" class="btn btn-warning fw-bold w-100" style="text-decoration: none;">Industrial Property</a>
-                <?php else: ?>
-                  <a href="User/Beforelogin/industrial-property-info.php" class="btn btn-warning fw-bold w-100" style="text-decoration: none;">Industrial Property</a>
-                <?php endif; ?>
-                <small class="d-block text-muted mt-1" style="font-size: 0.7rem;">Technical & Commercial Property</small>
-              </div>
-            </div>
+              <div class="col-6 d-flex flex-column align-items-stretch">
+                      <?php if ($isLoggedIn): ?>
+                        <a href="User/Afterlogin/copyright-info.php"
+                          class="btn btn-warning fw-bold w-100 d-flex align-items-center justify-content-center"
+                          style="height: 60px; text-decoration: none;">
+                          Copyright
+                        </a>
+                      <?php else: ?>
+                        <a href="User/Beforelogin/copyright-info.php"
+                          class="btn btn-warning fw-bold w-100 d-flex align-items-center justify-content-center"
+                          style="height: 60px; text-decoration: none;">
+                          Copyright
+                        </a>
+                      <?php endif; ?>
+
+                      <small class="d-block text-muted text-center mt-1" style="font-size: 0.7rem;">
+                        Artistic &amp; Literary Property
+                      </small>
+                    </div>
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="col-6 d-flex flex-column align-items-stretch">
+                      <?php if ($isLoggedIn): ?>
+                        <a href="User/Afterlogin/industrial-property-info.php"
+                          class="btn btn-warning fw-bold w-100 d-flex align-items-center justify-content-center"
+                          style="height: 60px; text-decoration: none;">
+                          Industrial Property Rights
+                        </a>
+                      <?php else: ?>
+                        <a href="User/Beforelogin/industrial-property-info.php"
+                          class="btn btn-warning fw-bold w-100 d-flex align-items-center justify-content-center"
+                          style="height: 60px; text-decoration: none;">
+                          Industrial Property Rights
+                        </a>
+                      <?php endif; ?>
+
+                      <small class="d-block text-muted text-center mt-1" style="font-size: 0.7rem;">
+                        Technical &amp; Commercial Property
+                      </small>
+                    </div>
+
+                  </div>
           </div>
         </div>
         <div class="card shadow-sm h-100">
